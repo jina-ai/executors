@@ -1,0 +1,13 @@
+jtype: Flow
+version: '1'
+with:
+  return_results: true
+executors:
+  - name: index
+    uses: 'indexer.yml'
+    shards: $SHARDS
+    timeout_ready: -1
+    polling: 'all'
+    replicas: 2
+    uses_after: TagMatchMerger
+    workspace: $WORKSPACE

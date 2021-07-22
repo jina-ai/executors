@@ -1,0 +1,50 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+
+jobs:
+  prep-push-bed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: changed-files
+        uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
+      - id: set-matrix
+        run: |
+          sudo apt-get install jq
+          echo "::set-output name=matrix::$(bash scripts/get-all-test-paths.sh)"
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.added_modified }}
+      - id: debug
+        run: |
+          echo ${{ steps.set-matrix.outputs.matrix }}
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+  push-executors:
+    needs: [prep-push-bed]
+    runs-on: ubuntu-latest
+    container:
+      image: jinaai/jina:master-standard
+      options: "--entrypoint /bin/bash"
+    strategy:
+      fail-fast: false
+      matrix:
+        test-path: ${{fromJson(needs.prep-push-bed.outputs.matrix)}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: debug
+        run: echo ${{ matrix.test-path }}
+      - name: push to Hubble
+        run: |
+          bash ./scripts/push.sh ${{ matrix.test-path }}
+        env:
+          uuids: ${{ secrets.HUBBLE_UUIDS }}
+          secrets: ${{ secrets.HUBBLE_SECRETS }}

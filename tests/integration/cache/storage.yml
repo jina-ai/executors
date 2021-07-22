@@ -1,0 +1,4 @@
+jtype: LMDBStorage
+metas:
+  name: storage
+  workspace: $STORAGE_WORKSPACE

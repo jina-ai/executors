@@ -1,0 +1,9 @@
+manifest_version: 1
+name: AnnoySearcher
+alias: AnnoySearcher
+description: Annoy powered vector Searcher
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://jina.ai
+documentation: https://github.com/jina-ai/jina-hub
+license: apache-2.0
+keywords: [indexer, annoy, ann]

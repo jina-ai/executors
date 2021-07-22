@@ -1,0 +1,9 @@
+jtype: DocCache
+with:
+  fields: [content_hash]
+metas:
+  name: cache
+  py_modules:
+    - __init__.py
+  workspace: cache
+

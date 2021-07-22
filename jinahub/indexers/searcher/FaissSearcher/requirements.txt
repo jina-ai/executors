@@ -1,0 +1,2 @@
+faiss-cpu==1.6.5
+git+https://github.com/jina-ai/jina-commons

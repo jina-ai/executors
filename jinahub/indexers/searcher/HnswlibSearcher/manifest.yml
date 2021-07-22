@@ -1,0 +1,9 @@
+manifest_version: 1
+name: HnswlibSearcher
+alias: HnswlibSearcher
+description: Hnswlib powered vector indexer
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://github.com/jina-ai/executor-indexers/tree/main/jinahub/indexers/searcher/HnswlibSearcher
+documentation: https://github.com/jina-ai/executor-indexers/tree/main/jinahub/indexers/searcher/HnswlibSearcher
+license: apache-2.0
+keywords: [hnswlib, searcher, indexer]

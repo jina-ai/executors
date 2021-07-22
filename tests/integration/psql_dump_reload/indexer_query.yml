@@ -1,0 +1,3 @@
+jtype: NumpyPostgresSearcher
+metas:
+  name: compound_query_indexer

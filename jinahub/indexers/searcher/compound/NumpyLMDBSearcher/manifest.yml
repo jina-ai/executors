@@ -1,0 +1,9 @@
+manifest_version: 1
+name: NumpyLMDBSearcher
+alias: NumpyLMDBSearcher
+description: A compounded file and numpy based query indexer
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://jina.ai
+documentation: https://github.com/jina-ai/jina-hub
+license: apache-2.0
+keywords: [database, compound, indexer, NumpyIndexer, FileSearcher]

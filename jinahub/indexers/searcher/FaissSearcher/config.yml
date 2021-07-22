@@ -1,0 +1,8 @@
+jtype: FaissSearcher
+with:
+  index_key: 'IVF10,PQ4'
+metas:
+  py_modules:
+    # - you can put more dependencies here
+    - __init__.py
+  name: faiss_searcher

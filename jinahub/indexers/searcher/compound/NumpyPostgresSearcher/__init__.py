@@ -1,0 +1,1 @@
+from .nppsql import NumpyPostgresSearcher

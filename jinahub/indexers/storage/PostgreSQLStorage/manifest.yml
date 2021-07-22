@@ -1,0 +1,9 @@
+manifest_version: 1
+name: PostgreSQLStorage
+alias: PostgreSQLStorage
+description: An indexer wrapper around the PostgreSQL database system
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://github.com/jina-ai/executor-indexers/tree/main/jinahub/indexers/indexer/PostgreSQLStorage
+documentation: https://github.com/jina-ai/executor-indexers/tree/main/jinahub/indexers/indexer/PostgreSQLStorage
+license: apache-2.0
+keywords: [PostgreSQL, indexer]

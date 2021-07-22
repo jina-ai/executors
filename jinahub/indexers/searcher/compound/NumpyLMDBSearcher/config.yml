@@ -1,0 +1,8 @@
+jtype: NumpyLMDBSearcher
+with:
+  {}
+metas:
+  py_modules:  # THIS WILL NOT WORK SINCE IT RELIES ON CODE FILES FROM OTHER FOLDERS
+    - npfile.py
+  workspace: workspace/
+  name: numpy_file_searcher

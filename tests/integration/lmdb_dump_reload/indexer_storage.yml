@@ -1,0 +1,6 @@
+jtype: LMDBStorage
+with:
+  map_size: 1048576000
+metas:
+  workspace: $STORAGE_WORKSPACE
+  name: lmdb

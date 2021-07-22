@@ -1,0 +1,4 @@
+jtype: NumpyLMDBSearcher
+metas:
+  name: compound_query_indexer
+  workspace: $QUERY_WORKSPACE

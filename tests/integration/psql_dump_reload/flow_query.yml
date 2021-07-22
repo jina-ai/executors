@@ -1,0 +1,11 @@
+jtype: Flow
+version: '1'
+with:
+  return_results: true
+pods:
+  - name: indexer_query
+    uses: indexer_query.yml
+    shards: $SHARDS
+    replicas: 2
+    polling: all
+    uses_after: $USES_AFTER

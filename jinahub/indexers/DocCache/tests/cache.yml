@@ -1,0 +1,6 @@
+jtype: DocCache
+with:
+  fields: $CACHE_FIELDS
+metas:
+  name: cache
+  workspace: $CACHE_WORKSPACE

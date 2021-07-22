@@ -1,0 +1,8 @@
+jtype: HnswlibSearcher
+with:
+  distance: 'cosine'
+metas:
+  py_modules:
+    # - you can put more dependencies here
+    - __init__.py
+  name: hnswlib_searcher

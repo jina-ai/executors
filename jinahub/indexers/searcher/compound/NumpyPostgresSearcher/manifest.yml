@@ -1,0 +1,10 @@
+manifest_version: 1
+name: NumpyPostgresSearcher
+alias: NumpyPostgresSearcher
+description: A compound numpy- and PostgreSQL-based query indexer
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://jina.ai
+documentation: https://github.com/jina-ai/jina-hub
+license: apache-2.0
+keywords: [database, compound, indexer, NumpyIndexer, FileSearcher]
+
