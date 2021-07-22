@@ -5,7 +5,8 @@ on:
     branches:
       - main
   workflow_dispatch:
-  pull_request:
+  # comment out to test in a PR
+  # pull_request:
 
 
 jobs:
