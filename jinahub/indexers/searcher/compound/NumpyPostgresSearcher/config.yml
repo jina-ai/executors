@@ -6,3 +6,4 @@ metas:
     - nppsql.py
   workspace: workspace/
   name: numpy_postgres_searcher
+
