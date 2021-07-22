@@ -8,7 +8,7 @@ echo testing $test_dir
 cd $test_dir
 
 if [[ -f "scripts/download_model.sh" ]]; then
-  bash scripts/tests.sh
+  bash scripts/download_model.sh
 fi
 
 if [[ -d "tests/" ]]; then
