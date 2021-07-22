@@ -7,6 +7,10 @@ test_dir=$1
 echo testing $test_dir
 cd $test_dir
 
+if [[ -f "scripts/download_model.sh" ]]; then
+  bash scripts/tests.sh
+fi
+
 if [[ -d "tests/" ]]; then
   echo running tests in $test_dir
   python -m venv .venv
@@ -20,7 +24,7 @@ if [[ -d "tests/" ]]; then
   if [[ $test_dir = "jinahub/encoders/text/LaserEncoder" ]]; then
     python -m laserembeddings download-models
   fi
-  
+
   pytest -s -v tests/
   local_exit_code=$?
   deactivate
