@@ -1,0 +1,4 @@
+jtype: VideoTorchEncoder
+metas:
+  py_modules:
+    - video_torch_encoder.py

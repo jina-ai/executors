@@ -1,0 +1,10 @@
+jtype: Flow
+version: '1'
+with:
+  py_modules:
+    - vggish_audio_encoder.py
+  return_results: true
+executors:
+  - name: encoder
+    uses:
+      jtype: VggishAudioEncoder

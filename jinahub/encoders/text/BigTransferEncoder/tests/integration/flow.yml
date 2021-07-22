@@ -1,0 +1,12 @@
+jtype: Flow
+version: '1'
+with:
+  return_results: true
+  workspace: $WORKSPACE
+executors:
+  - name: encoder
+    uses:
+      jtype: BigTransferEncoder
+      with:
+        model_name: $TRANSFER_MODEL_NAME
+        on_gpu: true

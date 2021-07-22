@@ -1,0 +1,4 @@
+jtype: TextPaddleEncoder
+metas:
+  py_modules:
+    - text_paddle.py

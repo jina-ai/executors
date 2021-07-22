@@ -1,0 +1,10 @@
+jtype: Flow
+version: '1'
+with:
+  py_modules:
+    - audio_clip_encoder.py
+  return_results: true
+executors:
+  - name: encoder
+    uses:
+      jtype: AudioCLIPEncoder
