@@ -15,6 +15,7 @@ if [[ -d "tests/" ]]; then
   pip install pytest pytest-mock
   pip install -r tests/requirements.txt
   pip install -r requirements.txt
+  pip install .
   pytest -s -v tests/
   local_exit_code=$?
   deactivate
