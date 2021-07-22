@@ -14,7 +14,7 @@ def test_dir() -> str:
 @pytest.fixture()
 def data_generator(test_dir: str):
     def _generator():
-        data_file_path = os.path.join(test_dir, 'data', 'test_data.txt')
+        data_file_path = os.path.join(test_dir, 'test_data', 'test_data.txt')
         with open(data_file_path, 'r') as file:
             lines = file.readlines()
         for line in lines:
