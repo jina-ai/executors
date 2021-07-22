@@ -53,7 +53,7 @@ def docs_with_chunk_chunk_blobs() -> DocumentArray:
 def test_images(test_dir: str) -> Dict[str, np.ndarray]:
 
     def get_path(file_name_no_suffix: str) -> str:
-        return os.path.join(test_dir, 'data', file_name_no_suffix + '.png')
+        return os.path.join(test_dir, 'test_data', file_name_no_suffix + '.png')
 
     image_dict = {
         file_name: np.array(Image.open(get_path(file_name)))[:, :, 0:3] for file_name in [
