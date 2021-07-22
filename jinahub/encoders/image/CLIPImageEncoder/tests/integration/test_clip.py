@@ -12,22 +12,22 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 def test_clip_data():
     docs = []
-    for file in glob(os.path.join(cur_dir, 'data', '*')):
+    for file in glob(os.path.join(cur_dir, 'test_data', '*')):
         pil_image = Image.open(file)
         nd_image = np.array(pil_image)
         docs.append(Document(id=file, blob=nd_image))
 
     with Flow().add(uses=CLIPImageEncoder) as f:
         results = f.post(on='/test', inputs=docs, return_results=True)
-        os.path.join(cur_dir, 'data', 'banana2.png')
+        os.path.join(cur_dir, 'test_data', 'banana2.png')
         image_name_to_ndarray = {}
         for d in results[0].docs:
             image_name_to_ndarray[d.id] = d.embedding
 
     def dist(a, b):
         nonlocal image_name_to_ndarray
-        a_embedding = image_name_to_ndarray[os.path.join(cur_dir, 'data', f'{a}.png')]
-        b_embedding = image_name_to_ndarray[os.path.join(cur_dir, 'data', f'{b}.png')]
+        a_embedding = image_name_to_ndarray[os.path.join(cur_dir, 'test_data', f'{a}.png')]
+        b_embedding = image_name_to_ndarray[os.path.join(cur_dir, 'test_data', f'{b}.png')]
         return np.linalg.norm(a_embedding - b_embedding)
 
     # assert semantic meaning is captured in the encoding
