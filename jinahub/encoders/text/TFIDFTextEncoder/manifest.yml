@@ -1,0 +1,9 @@
+manifest_version: 1
+name: TFIDFTextEncoder
+alias: TFIDFTextEncoder
+description: |
+    `TFIDFTextEncoder` encodes data from a with a TFIDF feature representation.
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: None
+avatar: None
+keywords: [text, Scikit-learn, multilingual, encoder, tfidf]

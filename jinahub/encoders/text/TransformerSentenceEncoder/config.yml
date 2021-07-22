@@ -1,0 +1,4 @@
+jtype: TransformerSentenceEncoder
+metas:
+  py_modules:
+    - sentence_encoder.py

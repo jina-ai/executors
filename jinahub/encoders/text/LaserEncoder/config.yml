@@ -1,0 +1,4 @@
+jtype: LaserEncoder
+metas:
+  py_modules:
+    - laser_encoder.py

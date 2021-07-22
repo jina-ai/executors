@@ -1,0 +1,6 @@
+jtype: ImageTorchEncoder
+with:
+  {}
+metas:
+  py_modules:
+    - torch_encoder.py

@@ -1,0 +1,6 @@
+jtype: TFIDFTextEncoder
+with:
+  {}
+metas:
+  py_modules:
+    - tfidf_text_executor.py

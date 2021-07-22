@@ -1,0 +1,4 @@
+jtype: AudioCLIPEncoder
+metas:
+  py_modules:
+    - audio_clip_encoder.py

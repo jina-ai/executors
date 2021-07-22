@@ -1,0 +1,10 @@
+jtype: Flow
+version: '1'
+with:
+  return_results: true
+executors:
+  - name: text_encoder
+    uses:
+      jtype: TransformerTFTextEncoder
+      with:
+        pretrained_model_name_or_path: 'distilbert-base-uncased'

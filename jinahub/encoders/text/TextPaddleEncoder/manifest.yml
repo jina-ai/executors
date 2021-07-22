@@ -1,0 +1,8 @@
+manifest_version: 1
+name: TextPaddleEncoder
+alias: TextPaddleEncoder
+description: Text encoder based on the PaddleHub.
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://jina.ai
+avatar: https://avatars.githubusercontent.com/u/60539444?s=200&v=4
+keywords: [PaddlePaddle, PaddleHub, text, encoder]
