@@ -1,5 +1,5 @@
 #!/bin/bash
-apt-get update && apt-get install -y jq
+apt-get update && apt-get install -y jq curl
 
 push_dir=$1
 echo pushing $push_dir
