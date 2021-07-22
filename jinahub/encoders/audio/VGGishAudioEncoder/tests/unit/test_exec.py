@@ -19,7 +19,7 @@ def test_load():
 
 
 def test_embedding_dimension():
-    x_audio, sample_rate = librosa.load(os.path.join(cur_dir, '../data/sample.wav'))
+    x_audio, sample_rate = librosa.load(os.path.join(cur_dir, '../test_data/sample.wav'))
     log_mel_examples = vggish_input.waveform_to_examples(x_audio, sample_rate)
     doc = DocumentArray([Document(blob=log_mel_examples)])
     ops.reset_default_graph()

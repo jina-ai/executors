@@ -18,7 +18,7 @@ def test_load():
 
 
 def test_embedding_dimension():
-    x_audio, sample_rate = librosa.load(os.path.join(cur_dir, '../data/sample.wav'))
+    x_audio, sample_rate = librosa.load(os.path.join(cur_dir, '../test_data/sample.wav'))
     docs = DocumentArray([Document(blob=x_audio)])
     model = AudioCLIPEncoder()
     model.encode(docs, parameters={})
@@ -27,8 +27,8 @@ def test_embedding_dimension():
 
 def test_many_documents():
 
-    audio1, _ = librosa.load(os.path.join(cur_dir, '../data/sample.mp3'))
-    audio2, _ = librosa.load(os.path.join(cur_dir, '../data/sample.wav'))
+    audio1, _ = librosa.load(os.path.join(cur_dir, '../test_data/sample.mp3'))
+    audio2, _ = librosa.load(os.path.join(cur_dir, '../test_data/sample.wav'))
     docs = DocumentArray([Document(blob=audio1), Document(blob=audio2)])
 
     encoder = AudioCLIPEncoder()
@@ -40,8 +40,8 @@ def test_many_documents():
 
 def test_traversal_paths():
 
-    audio1, _ = librosa.load(os.path.join(cur_dir, '../data/sample.mp3'))
-    audio2, _ = librosa.load(os.path.join(cur_dir, '../data/sample.wav'))
+    audio1, _ = librosa.load(os.path.join(cur_dir, '../test_data/sample.mp3'))
+    audio2, _ = librosa.load(os.path.join(cur_dir, '../test_data/sample.wav'))
 
     audio1_chunks = np.split(audio1, 4)
     audio2_chunks = np.split(audio2, 2)

@@ -20,7 +20,7 @@ def test_flow_from_yml():
 
 def test_embedding_exists():
 
-    x_audio, _ = librosa.load(os.path.join(cur_dir, '../data/sample.mp3'))
+    x_audio, _ = librosa.load(os.path.join(cur_dir, '../test_data/sample.mp3'))
     doc = DocumentArray([Document(blob=x_audio)])
 
     with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as f:
