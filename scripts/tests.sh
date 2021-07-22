@@ -16,6 +16,11 @@ if [[ -d "tests/" ]]; then
   pip install -r tests/requirements.txt
   pip install -r requirements.txt
   pip install .
+
+  if [[ $test_dir = "jinahub/encoders/text/LaserEncoder" ]]; then
+    python -m laserembeddings download-models
+  fi
+  
   pytest -s -v tests/
   local_exit_code=$?
   deactivate
