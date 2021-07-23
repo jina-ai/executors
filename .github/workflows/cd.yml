@@ -5,6 +5,8 @@ on:
     branches:
       - main
   workflow_dispatch:
+  # comment out to test in a PR
+  # pull_request:
 
 
 jobs:
@@ -46,5 +48,4 @@ jobs:
         run: |
           bash ./scripts/push.sh ${{ matrix.test-path }}
         env:
-          uuids: ${{ secrets.HUBBLE_UUIDS }}
-          secrets: ${{ secrets.HUBBLE_SECRETS }}
+          token: ${{ secrets.GH_TOKEN }}
