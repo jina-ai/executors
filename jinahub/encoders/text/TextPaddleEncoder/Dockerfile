@@ -1,7 +1,7 @@
 FROM jinaai/jina:2.0
 
 # install git
-RUN apt-get update && \
+RUN apt-get update && apt-get install -y git &&\
     apt-get -y install libgomp1 libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev && \
     rm -rf /var/cache/apt/*
 
