@@ -6,3 +6,4 @@ metas:
     # - you can put more dependencies here
     - __init__.py
   name: numpy_searcher
+
