@@ -102,6 +102,11 @@ pods:
 	f = Flow().add(uses='docker://executor-image:latest')
 	```
 
+## Contributing
+
+If you want to develop your own Executor, please use the [Executor cookiecutter](https://github.com/jina-ai/cookiecutter-jina-hub) to start with. 
+
+If you are an **external** user, this can then go into your own repository. Please do **not** commit to this repository. This is only for internal Jina Engineers. If you are a Jina Engineer, make sure to add the new executor to the right subfolder. Check [Types](#types) 
 
 ## Reference
 
