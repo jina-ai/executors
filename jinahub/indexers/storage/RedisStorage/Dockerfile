@@ -1,7 +1,7 @@
 FROM jinaai/jina:2.0.10
 
 # install git
-RUN apt-get -y update && apt-get -y install redis-server
+RUN apt-get -y update && apt-get -y install redis-server git
 
 # install requirements before copying the workspace
 COPY requirements.txt /requirements.txt
@@ -12,7 +12,5 @@ COPY . /workspace
 
 WORKDIR /workspace
 
-# for testing the image
-RUN redis-server --bind 0.0.0.0 --port 6379:6379 --daemonize yes && pip install pytest && pip install pytest-mock && pytest
-
+RUN redis-server --bind 0.0.0.0 --port 6379:6379 --daemonize yes
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

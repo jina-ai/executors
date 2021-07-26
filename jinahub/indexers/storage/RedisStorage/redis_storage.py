@@ -10,7 +10,7 @@ from jina import Executor, requests, DocumentArray, Document
 from jina_commons.batching import get_docs_batch_generator
 
 
-class RedisStorage:
+class RedisStorage(Executor):
     """
     :class:`RedisStorage` redis-based Storage Indexer.
 
