@@ -29,6 +29,24 @@ def metas(tmpdir):
     del os.environ['TEST_WORKSPACE']
 
 
+@pytest.mark.parametrize(['metric', 'is_distance'],
+                         [('l2', True), ('ip', True), ('cosine', True),
+                          ('l2', False), ('ip', False), ('cosine', False)])
+def test_metric(tmpdir, metric, is_distance):
+    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
+
+    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, metric=metric, is_distance=is_distance)
+    docs = DocumentArray([Document(embedding=np.random.random(7))])
+    indexer.search(docs, {})
+
+    assert len(docs[0].matches) == TOP_K
+    for i in range(len(docs[0].matches) - 1):
+        if not is_distance:
+            assert docs[0].matches[i].scores[metric].value >= docs[0].matches[i + 1].scores[metric].value
+        else:
+            assert docs[0].matches[i].scores[metric].value <= docs[0].matches[i + 1].scores[metric].value
+
+
 def test_query_vector(tmpdir):
     metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
 

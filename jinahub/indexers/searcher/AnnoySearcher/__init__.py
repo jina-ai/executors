@@ -22,30 +22,33 @@ class AnnoySearcher(Executor):
     """
 
     def __init__(
-        self,
-        top_k: int = 10,
-        metric: str = 'euclidean',
-        num_trees: int = 10,
-        dump_path: Optional[str] = None,
-        default_traversal_paths: List[str] = ['r'],
-        **kwargs,
+            self,
+            default_top_k: int = 10,
+            metric: str = 'euclidean',
+            num_trees: int = 10,
+            dump_path: Optional[str] = None,
+            default_traversal_paths: List[str] = ['r'],
+            is_distance: bool = False,
+            **kwargs,
     ):
         """
         Initialize an AnnoyIndexer
 
-        :param top_k: get tok k vectors
+        :param default_top_k: get tok k vectors
         :param metric: Metric can be "angular", "euclidean", "manhattan", "hamming", or "dot"
         :param num_trees: builds a forest of n_trees trees. More trees gives higher precision when querying.
         :param dump_path: the path to load ids and vecs
         :param traverse_path: traverse path on docs, e.g. ['r'], ['c']
+        :param is_distance: Boolean flag that describes if distance metric need to be reinterpreted as similarities.
         :param args:
         :param kwargs:
         """
         super().__init__(**kwargs)
-        self.top_k = top_k
+        self.default_top_k = default_top_k
         self.metric = metric
         self.num_trees = num_trees
         self.default_traversal_paths = default_traversal_paths
+        self.is_distance = is_distance
         self.logger = get_logger(self)
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path', None)
         if dump_path is not None:
@@ -80,11 +83,22 @@ class AnnoySearcher(Executor):
 
         for doc in docs.traverse_flat(traversal_paths):
             indices, dists = self._indexer.get_nns_by_vector(
-                doc.embedding, self.top_k, include_distances=True
+                doc.embedding, self.default_top_k, include_distances=True
             )
             for idx, dist in zip(indices, dists):
                 match = Document(id=self._ids[idx], embedding=self._vecs[idx])
-                match.scores['distance'] = 1 / (1 + dist)
+                if self.is_distance:
+                    if self.metric == 'dot':
+                        match.scores[self.metric] = 1 - dist
+                    else:
+                        match.scores[self.metric] = dist
+                else:
+                    if self.metric == 'dot':
+                        match.scores[self.metric] = dist
+                    elif self.metric == 'angular' or self.metric == 'hamming':
+                        match.scores[self.metric] = 1 - dist
+                    else:
+                        match.scores[self.metric] = 1 / (1 + dist)
                 doc.matches.append(match)
 
     @requests(on='/fill_embedding')

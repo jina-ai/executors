@@ -23,9 +23,10 @@ class HnswlibSearcher(Executor):
     def __init__(
             self,
             default_top_k: int = 10,
-            distance: str = 'cosine',
+            metric: str = 'cosine',
             dump_path: Optional[str] = None,
             default_traversal_paths: Optional[List[str]] = None,
+            is_distance: bool = False,
             ef_construction: int = 400,
             ef_query: int = 50,
             max_connection: int = 64,
@@ -39,6 +40,7 @@ class HnswlibSearcher(Executor):
         :param distance: distance can be 'l2', 'ip', or 'cosine'
         :param dump_path: the path to load ids and vecs
         :param traverse_path: traverse path on docs, e.g. ['r'], ['c']
+        :param reverse_score: True if add reversed distance as the `similarity` for match score, else return `distance` as score for match score.
         :param ef_construction: defines a construction time/accuracy trade-off
         :param ef_query:  sets the query time accuracy/speed trade-off
         :param max_connection: defines tha maximum number of outgoing connections in the graph
@@ -47,8 +49,9 @@ class HnswlibSearcher(Executor):
         """
         super().__init__(*args, **kwargs)
         self.default_top_k = default_top_k
-        self.distance = distance
+        self.metric = metric
         self.default_traversal_paths = default_traversal_paths or ['r']
+        self.is_distance = is_distance
         self.ef_construction = ef_construction
         self.ef_query = ef_query
         self.max_connection = max_connection
@@ -60,7 +63,7 @@ class HnswlibSearcher(Executor):
             self._ids = np.array(list(ids))
             self._vecs = np.array(list(vecs))
             num_dim = self._vecs.shape[1]
-            self._indexer = hnswlib.Index(space=self.distance, dim=num_dim)
+            self._indexer = hnswlib.Index(space=self.metric, dim=num_dim)
             self._indexer.init_index(max_elements=len(self._vecs), ef_construction=self.ef_construction,
                                      M=self.max_connection)
 
@@ -93,7 +96,14 @@ class HnswlibSearcher(Executor):
             indices, dists = self._indexer.knn_query(doc.embedding, k=top_k)
             for idx, dist in zip(indices[0], dists[0]):
                 match = Document(id=self._ids[idx], embedding=self._vecs[idx])
-                match.scores[self.distance] = dist
+                if self.is_distance:
+                    match.scores[self.metric] = dist
+                else:
+                    if self.metric == 'cosine' or self.metric == 'ip':
+                        match.scores[self.metric] = 1 - dist
+                    else:
+                        match.scores[self.metric] = 1 / (1 + dist)
+
                 doc.matches.append(match)
 
     @requests(on='/fill_embedding')

@@ -70,7 +70,7 @@ class MatchMerger(Executor):
                 try:
                     doc.matches = sorted(
                         doc.matches,
-                        key=lambda m: m.scores['similarity'].value,
+                        key=lambda m: m.scores['cosine'].value,
                         reverse=True,
                     )[:top_k]
                 except TypeError as e:
@@ -188,7 +188,7 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
                 return_results=True,
             )
             assert len(results[0].docs[0].matches) == top_k
-            assert results[0].docs[0].matches[0].scores['similarity'].value == 1.0
+            assert results[0].docs[0].matches[0].scores['cosine'].value == 1.0
 
     idx = PostgreSQLStorage()
     assert idx.size == nr_docs

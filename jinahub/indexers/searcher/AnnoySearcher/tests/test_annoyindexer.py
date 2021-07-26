@@ -42,10 +42,29 @@ def test_simple_annoy():
     assert len(idx1) == 3
 
 
+@pytest.mark.parametrize(['metric', 'is_distance'],
+                         [('angular', True), ('euclidean', True), ('manhattan', True), ('hamming', True),
+                          ('dot', True), ('angular', False), ('euclidean', False), ('manhattan', False),
+                          ('hamming', False), ('dot', False)])
+def test_metric(tmpdir, metric, is_distance):
+    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
+
+    indexer = AnnoySearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, metric=metric, is_distance=is_distance)
+    docs = DocumentArray([Document(embedding=np.random.random(7))])
+    indexer.search(docs, {})
+
+    assert len(docs[0].matches) == TOP_K
+    for i in range(len(docs[0].matches) - 1):
+        if not is_distance:
+            assert docs[0].matches[i].scores[metric].value >= docs[0].matches[i + 1].scores[metric].value
+        else:
+            assert docs[0].matches[i].scores[metric].value <= docs[0].matches[i + 1].scores[metric].value
+
+
 def test_query_vector(tmpdir):
     metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
 
-    indexer = AnnoySearcher(dump_path=DUMP_PATH, top_k=TOP_K, metas=metas)
+    indexer = AnnoySearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas)
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
 
@@ -68,7 +87,7 @@ def test_query_vector(tmpdir):
 def test_query_vector_empty(tmpdir):
     metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
 
-    indexer = AnnoySearcher(top_k=TOP_K, metas=metas)
+    indexer = AnnoySearcher(default_top_k=TOP_K, metas=metas)
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
     assert len(docs[0].matches) == 0
