@@ -9,8 +9,21 @@ from jina.logging.logger import JinaLogger
 from jina import Executor, requests, DocumentArray, Document
 from jina_commons.batching import get_docs_batch_generator
 
-class RedisStorage():
 
+class RedisStorage:
+    """
+    :class:`RedisStorage` redis-based Storage Indexer.
+
+    Initialize the RedisStorage.
+
+    :param hostname: hostname of the redis server
+    :param port: the redis port
+    :param db: the database number
+    :param default_traversal_paths: default traversal paths
+    :param default_batch_size: default batch size
+    :param args: other arguments
+    :param kwargs: other keyword arguments
+    """
     def __init__(self,
                  hostname: str = '0.0.0.0',
                  # default port on linux
@@ -28,9 +41,8 @@ class RedisStorage():
         self.connection_pool = redis.ConnectionPool(host=self.hostname, port=self.port, db=self.db)
         self.logger = JinaLogger(self.__class__.__name__)
 
-
     def get_query_handler(self) -> 'Redis':
-        """Get the database handler.
+        """Get the redis client handler.
         """
         import redis
         try:
@@ -55,6 +67,11 @@ class RedisStorage():
 
     @requests(on='/search')
     def search(self, docs: DocumentArray, parameters: Dict, **kwargs):
+        """Searches documents in the redis server by document ID
+
+        :param docs: document array
+        :param parameters: parameters to the request
+        """
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
@@ -71,6 +88,12 @@ class RedisStorage():
 
     @requests(on=['/index', '/update'])
     def upsert(self, docs: DocumentArray, parameters: Dict, **kwargs):
+        """Inserts documents in the redis server where the key is the document ID. If a document with the same ID
+        already exists, an update operation is performed instead.
+
+        :param docs: document array
+        :param parameters: parameters to the request
+        """
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
@@ -87,6 +110,11 @@ class RedisStorage():
 
     @requests(on='/delete')
     def delete(self, docs: DocumentArray, parameters: Dict, **kwargs):
+        """Deletes documents in the redis server by ID. If no document with the same ID exists, nothing happens.
+
+        :param docs: document array
+        :param parameters: parameters to the request
+        """
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
