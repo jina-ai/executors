@@ -106,7 +106,12 @@ pods:
 
 If you want to develop your own Executor, please use the [Executor cookiecutter](https://github.com/jina-ai/cookiecutter-jina-hub) to start with. 
 
-If you are an **external** user, this can then go into your own repository. Please do **not** commit to this repository. This is only for internal Jina Engineers. If you are a Jina Engineer, make sure to add the new executor to the right subfolder. Check [Types](#types) 
+If you are an **external** user, this can then go into your own repository. Please do **not** commit to this repository. This is **only** for internal Jina Engineers. 
+
+If you are a **Jina Engineer**, make sure to:
+- add the new executor to the right subfolder. Check [Types](#types)
+- push your initial version to Jina Hub. Use the guide [here](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Hubble.md#2-push-and-pull-cli)
+- add the UUID and secret to the secrets store. Make sure `(folder name) == (manifest alias) == (name in secrets store)` 
 
 ## Reference
 
