@@ -104,7 +104,7 @@ pods:
 
 ## Contributing
 
-If you want to develop your own Executor, please use the [Executor cookiecutter](https://github.com/jina-ai/cookiecutter-jina-hub) to start with. 
+If you want to develop your own Executor, please use the [Executor Cookiecutter](https://github.com/jina-ai/cookiecutter-jina-executor/) to start with. 
 
 If you are an **external** user, this can then go into your own repository. Please do **not** commit to this repository. This is **only** for internal Jina Engineers. 
 
