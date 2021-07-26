@@ -1,0 +1,8 @@
+manifest_version: 1
+name: transformer_tf_text_encoder
+alias: TransformerTFTextEncoder
+description: Transformer TensorFlow Text Encoder
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://github.com/jina-ai/executor-text-transformer-tf-encoder
+avatar: https://avatars.githubusercontent.com/u/60539444?s=200&v=4
+keywords: [encoder, text, TensorFlow, Transformers]

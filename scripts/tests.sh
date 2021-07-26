@@ -7,12 +7,25 @@ test_dir=$1
 echo testing $test_dir
 cd $test_dir
 
+if [[ -f "scripts/download_model.sh" ]]; then
+  bash scripts/download_model.sh
+  sudo apt-get install libsndfile-dev ffmpeg
+fi
+
 if [[ -d "tests/" ]]; then
   echo running tests in $test_dir
   python -m venv .venv
   source .venv/bin/activate
+  pip install wheel
   pip install pytest pytest-mock
+  pip install -r tests/requirements.txt
   pip install -r requirements.txt
+  pip install .
+
+  if [[ $test_dir = "jinahub/encoders/text/LaserEncoder" ]]; then
+    python -m laserembeddings download-models
+  fi
+
   pytest -s -v tests/
   local_exit_code=$?
   deactivate

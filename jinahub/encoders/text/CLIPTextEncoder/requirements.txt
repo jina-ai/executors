@@ -1,0 +1,4 @@
+torch==1.7.1
+clip @ git+https://github.com/openai/CLIP.git@cfcffb90e69f37bf2ff1e988237a0fbe41f33c04
+jina==2.0.10
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.1#egg=jina-commons

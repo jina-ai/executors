@@ -1,0 +1,15 @@
+FROM nvidia/cuda:11.3.1-cudnn8-runtime as base
+
+RUN apt update && apt install -y python3.8 python3-pip
+
+COPY . ./tf_encoder/
+WORKDIR ./tf_encoder
+
+RUN pip install .
+
+FROM base
+RUN pip install -r tests/requirements.txt
+RUN pytest -s -v tests
+
+FROM base
+ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

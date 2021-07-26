@@ -1,0 +1,4 @@
+torch==1.9.0
+jina~=2.0
+torchvision==0.10.0
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.1#egg=jina-commons

@@ -1,0 +1,9 @@
+jtype: Flow
+version: '1'
+with:
+  py_modules:
+    - video_torch_encoder.py
+executors:
+  - name: encoder
+    uses:
+      jtype: VideoTorchEncoder

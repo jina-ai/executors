@@ -17,8 +17,8 @@ They are structured into folders, by type. Check out the README documentation by
 We provide the following types of Executors:
 
 - crafters
-- [indexers](./jinahub/indexers)
-- encoders
+- [indexers](./jinahub/indexers) store and retrieve data
+- [encoders](./jinahub/encoders) compute the vector representation of data
 - rankers
 
 ## 🚀 Usage
@@ -101,7 +101,7 @@ pods:
 	
 	f = Flow().add(uses='docker://executor-image:latest')
 	```
-	
+
 
 ## Reference
 
