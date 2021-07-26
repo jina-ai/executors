@@ -1,0 +1,9 @@
+manifest_version: 1
+name: RedisStorage
+alias: RedisStorage
+description: Key-value indexer wrapper around Redis
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://jina.ai
+documentation: https://github.com/jina-ai/jina-hub/blob/master/indexers/keyvalue/RedisDBIndexer/README.md
+license: apache-2.0
+keywords: [database, redis, indexer]
