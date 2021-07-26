@@ -18,7 +18,9 @@ if [[ -d "tests/" ]]; then
   source .venv/bin/activate
   pip install wheel
   pip install pytest pytest-mock
+  if [[ -f "tests/requirements.txt" ]]; then
   pip install -r tests/requirements.txt
+  fi
   pip install -r requirements.txt
   pip install .
 
