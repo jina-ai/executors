@@ -61,8 +61,7 @@ class RedisStorage(Executor):
                     continue
                 data = bytes(result)
                 retrieved_doc = Document(data)
-                # TODO: check why is this performed for postgres storage
-                # retrieved_doc.pop('embedding')
+                retrieved_doc.pop('embedding')
                 doc.MergeFrom(retrieved_doc)
 
     @requests(on='/search')
