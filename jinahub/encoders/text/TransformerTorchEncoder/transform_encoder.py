@@ -62,22 +62,33 @@ class TransformerTorchEncoder(Executor):
         if not device in ['cpu', 'cuda']:
             self.logger.error('Torch device not supported. Must be cpu or cuda!')
             raise RuntimeError('Torch device not supported. Must be cpu or cuda!')
+
         if device == 'cuda' and not torch.cuda.is_available():
             self.logger.warning(
-                'You tried to use GPU but torch did not detect your'
+                'You tried to use GPU but torch did not detect your '
                 'GPU correctly. Defaulting to CPU. Check your CUDA installation!'
             )
             device = 'cpu'
 
+        if device == 'cuda':
+            parallel_device_id = self.runtime_args.pea_id
+            if torch.cuda.device_count() > parallel_device_id:
+                device = f'cuda:{parallel_device_id}'
+                self.logger.debug(f'You will use the cuda device of: {device}')
+            else:
+                self.logger.warning(
+                    f'You tried to use cuda:{parallel_device_id} but torch '
+                    'did not detect your GPU correctly. Default to CPU.'
+                )
+                device = 'cpu'
+
         if device == 'cpu' and num_threads:
             cpu_num = os.cpu_count()
             if num_threads > cpu_num:
-                self.logger.warning(f'You tried to use {num_threads} threads > {cpu_num} CPUs')
+                self.logger.warning(
+                    f'You tried to use {num_threads} threads > {cpu_num} CPUs'
+                )
             else:
-                os.environ['OMP_NUM_THREADS'] = str(num_threads)
-                os.environ['OPENBLAS_NUM_THREADS'] = str(num_threads)
-                os.environ['MKL_NUM_THREADS'] = str(num_threads)
-
                 torch.set_num_threads(num_threads)
 
         self.device = device
@@ -153,6 +164,7 @@ class TransformerTorchEncoder(Executor):
             truncation=True,
             return_tensors='pt',
         )
+
         input_tokens = {
             k: v.to(torch.device(self.device)) for k, v in input_tokens.items()
         }
