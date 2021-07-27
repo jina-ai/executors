@@ -1,0 +1,4 @@
+jtype: Sentencizer
+metas:
+  py_modules:
+    - sentencizer.py
