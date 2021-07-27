@@ -1,25 +1,4 @@
-import pytest as pytest
 from jina import Document, DocumentArray
-
-from pytest_mock_resources import create_redis_fixture
-
-from redis_storage import RedisStorage
-
-redis = create_redis_fixture()
-
-
-@pytest.fixture
-def indexer(redis):
-    kwargs = redis.pmr_credentials.as_redis_kwargs()
-    return RedisStorage(hostname=kwargs['host'], port=kwargs['port'])
-
-
-@pytest.fixture
-def docs():
-    return DocumentArray([
-        Document(content=value)
-        for value in ['cat', 'dog', 'crow', 'pikachu', 'magikarp']
-    ])
 
 
 def test_connection(indexer):
