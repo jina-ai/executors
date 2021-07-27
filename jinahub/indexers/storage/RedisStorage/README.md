@@ -94,7 +94,7 @@ pods:
 
 	```shell
 	git clone https://github.com/jina-ai/executors
-	cd executors/jinahub/indexers/indexer/storage/RedisStorage
+	cd executors/jinahub/indexers/storage/RedisStorage
 	docker build -t redis-storage .
 	```
 
@@ -126,7 +126,7 @@ Any type of `Document`.
 
 ### Returns
 
-Nothing. The `Documents`s are stored.
+Nothing. The `Documents` are stored.
 
 ## 🔍️ Reference
 
