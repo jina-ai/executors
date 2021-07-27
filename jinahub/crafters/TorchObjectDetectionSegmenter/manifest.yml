@@ -1,0 +1,8 @@
+manifest_version: 1
+name: torch_object_detection_segmenter
+alias: TorchObjectDetectionSegmenter
+description: Torch Object Detection Segmenter
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://github.com/jina-ai/EXECUTOR_REPO_NAME
+avatar: https://avatars.githubusercontent.com/u/60539444?s=200&v=4
+keywords: [segmenter, PyTorch, image, fasterrcnn, maskrcnn]
