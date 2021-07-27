@@ -3,6 +3,7 @@ __license__ = "Apache-2.0"
 
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 from jina import Document, DocumentArray
@@ -12,7 +13,7 @@ from jina import Document, DocumentArray
 def download_cache():
     os.system('scripts/download_full.sh')
     yield
-    # shutil.rmtree('.cache') 
+    shutil.rmtree('.cache') 
 
 
 @pytest.fixture()
@@ -21,9 +22,9 @@ def test_dir() -> str:
 
 
 @pytest.fixture()
-def data_generator(test_dir: str):
+def data_generator():
     def _generator():
-        data_file_path = os.path.join(test_dir, 'data', 'test_data.txt')
+        data_file_path = Path(__file__).parent / 'texts' / 'test_data.txt'
         with open(data_file_path, 'r') as file:
             lines = file.readlines()
         for line in lines:
