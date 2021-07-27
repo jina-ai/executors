@@ -1,5 +1,6 @@
+import logging
+
 from jina import Document, DocumentArray
-from ..
 
 def test_connection(indexer):
     assert indexer.hostname == 'localhost'
@@ -29,17 +30,46 @@ def test_upsert_with_duplicates(indexer, docs):
     assert len(qh.keys()) == 5
 
 
-def test_add(indexer, docs, caplog):
+def test_add(indexer, docs):
     indexer.add(docs, parameters={})
-    qh = indexer.get_query_handler()
-    redis_keys = qh.keys()
-    assert all(doc.id.encode() in redis_keys for doc in docs)
 
-    new_docs = DocumentArray()
-    new_docs.append(Document())
-    new_docs.append(docs[0])
-    indexer.add(new_docs, parameters={})
-    assert f'The following IDs already exist: {docs[0].id}' in caplog.text
+    with indexer.get_query_handler() as redis_handler:
+        assert all(doc.id.encode() in redis_handler.keys() for doc in docs)
+
+
+def test_add_existing(indexer, docs):
+    indexer.add(docs, parameters={})
+    existing_doc = Document(id=docs[0].id, content="new content")
+    indexer.add(DocumentArray([existing_doc]), parameters={})
+
+    with indexer.get_query_handler() as redis_handler:
+        result = redis_handler.get(existing_doc.id)
+        data = bytes(result)
+        retrieved_doc = Document(data)
+        assert retrieved_doc.content != existing_doc.content
+
+
+def test_update(indexer, docs):
+    indexer.add(docs, parameters={})
+
+    for doc in docs:
+        doc.content = 'new ' + doc.content
+
+    indexer.update(docs, parameters={})
+
+    with indexer.get_query_handler() as redis_handler:
+        for doc in docs:
+            result = redis_handler.get(doc.id)
+            data = bytes(result)
+            retrieved_doc = Document(data)
+            assert retrieved_doc.content == doc.content
+
+
+def test_update_non_existing(indexer, docs):
+    indexer.update(docs, parameters={})
+
+    with indexer.get_query_handler() as redis_handler:
+        assert all(doc.id.encode() not in redis_handler.keys() for doc in docs)
 
 
 def test_search_not_found(indexer, docs):
