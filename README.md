@@ -1,14 +1,13 @@
-<p align="center">
-<img src="https://github.com/jina-ai/jina/blob/master/.github/logo-only.gif?raw=true" alt="Jina logo: Jina is a cloud-native neural search framework" width="200px">
-</p>
+> ⚠️ Please do **not** commit to this repository. This repository is **only** for Jina engineers to better manage in-house executors.
 
-# ✨ Jina Executors
+> 🧭 To develop your own Executor, please use the [Executor Cookiecutter](https://github.com/jina-ai/cookiecutter-jina-executor/) to start with. 
 
-This repository provides a selection of [Executors](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Executor.md) for [Jina 2.0](https://github.com/jina-ai/jina).
+# Jina Executors
 
-⚙️ Executors are the building blocks of your Jina data pipeline, providing a specific functional needs: preparing data, encoding it with your model, storing, searching, and more.
+This repository provides a selection of [Executors](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Executor.md) for [Jina](https://github.com/jina-ai/jina).
 
-To get started with Jina 2.0 check the guide [here](https://github.com/jina-ai/jina#run-quick-demo)
+⚙️ Executor is how Jina processes Documents. It is the building block of your Jina data pipeline, providing a specific functional needs: preparing data, encoding it with your model, storing, searching, and more.
+
 
 ## Types 
 
@@ -21,15 +20,13 @@ We provide the following types of Executors:
 - [encoders](./jinahub/encoders) compute the vector representation of data
 - rankers
 
-## 🚀 Usage
+## Usage
 
 The following is general guidelines. Check each executor's README for details.
 
-### 🚚 Via JinaHub
+#### via Docker image
 
-#### using Docker images
-
-Use the prebuilt images from JinaHub in your Python code 
+Use the prebuilt image from JinaHub in your Python code 
 
 ```python
 from jina import Flow
@@ -37,16 +34,7 @@ from jina import Flow
 f = Flow().add(uses='jinahub+docker://ExecutorName')
 ```
 
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://ExecutorName'
-``` 
-
-#### using source code
+#### via source code
 
 Use the source code from JinaHub in your Python code:
 
@@ -56,17 +44,10 @@ from jina import Flow
 f = Flow().add(uses='jinahub://ExecutorName')
 ```
 
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://ExecutorName'
-```
-
-
-### 📦️ Via Pypi
+<details>
+<summary>Click here to see advanced usage</summary>
+	
+### Via Pypi
 
 1. Install the `executors` package.
 
@@ -84,7 +65,7 @@ pods:
    ```
 
 
-### 🐳 Via Docker
+### Via Docker
 
 1. Clone the repo and build the docker image
 
@@ -102,13 +83,12 @@ pods:
 	f = Flow().add(uses='docker://executor-image:latest')
 	```
 
+</details>	
+	
 ## Contributing
 
-If you want to develop your own Executor, please use the [Executor Cookiecutter](https://github.com/jina-ai/cookiecutter-jina-executor/) to start with. 
+**For internal Jina enigneers only:**
 
-If you are an **external** user, this can then go into your own repository. Please do **not** commit to this repository. This is **only** for internal Jina Engineers. 
-
-If you are a **Jina Engineer**, make sure to:
 - add the new executor to the right subfolder. Check [Types](#types)
 - push your initial version to Jina Hub. Use the guide [here](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Hubble.md#2-push-and-pull-cli)
 - add the UUID and secret to the secrets store. Make sure `(folder name) == (manifest alias) == (name in secrets store)` 
@@ -118,8 +98,3 @@ If you are a **Jina Engineer**, make sure to:
 Some Executors might require a large model. During CI/tests, it is advisable to download it as part of a fixture and store it to disk, to be re-used by the Executor.
 
 In production, it is recommended to set up your workspace, model, and class to load from disk. If the Executor is served with Docker, make sure to also map the directory, as the Docker runtime does not get persisted.
-
-## Reference
-
-- [Jina documentation](https://github.com/jina-ai/jina/tree/master/.github/2.0/cookbooks)
-- [Jina examples](https://github.com/jina-ai/examples)
