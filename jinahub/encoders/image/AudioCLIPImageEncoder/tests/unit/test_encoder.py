@@ -157,7 +157,7 @@ def test_embeddings_quality(basic_encoder: AudioCLIPImageEncoder):
     of two similar images is smaller than everything else.
     """
 
-    data_dir = Path(__file__).parent.parent / 'data'
+    data_dir = Path(__file__).parent.parent / 'imgs'
     dog = Document(id='dog', blob=np.array(Image.open(data_dir / 'dog.jpg')))
     cat = Document(id='cat', blob=np.array(Image.open(data_dir / 'cat.jpg')))
     airplane = Document(
