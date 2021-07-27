@@ -72,13 +72,21 @@ class TransformerTorchEncoder(Executor):
         if device == 'cpu' and num_threads:
             cpu_num = os.cpu_count()
             if num_threads > cpu_num:
-                self.logger.warning(f'You tried to use {num_threads} threads > {cpu_num} CPUs')
+                self.logger.warning(
+                    f'You tried to use {num_threads} threads > {cpu_num} CPUs'
+                )
             else:
-                os.environ['OMP_NUM_THREADS'] = str(num_threads)
-                os.environ['OPENBLAS_NUM_THREADS'] = str(num_threads)
-                os.environ['MKL_NUM_THREADS'] = str(num_threads)
-
                 torch.set_num_threads(num_threads)
+        elif device == 'cuda':
+            parallel_device_id = self.runtime_args.pea_id
+            if torch.cuda.device_count() > parallel_device_id:
+                device = f'cuda:{parallel_device_id}'
+            else:
+                self.logger.warning(
+                    f'You tried to use cuda:{parallel_device_id} but torch'
+                    'did not detect your GPU correctly. Default to CPU.'
+                )
+                device = 'cpu'
 
         self.device = device
         self.embedding_fn_name = embedding_fn_name
