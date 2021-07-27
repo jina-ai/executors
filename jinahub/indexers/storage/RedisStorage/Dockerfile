@@ -1,4 +1,4 @@
-FROM jinaai/jina:2.0.10
+FROM jinaai/jina:2.0.10 as base
 
 # install git
 RUN apt-get -y update && apt-get -y install redis-server git
@@ -12,5 +12,5 @@ COPY . /workspace
 
 WORKDIR /workspace
 
-RUN redis-server --bind 0.0.0.0 --port 6379:6379 --daemonize yes
-ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
+FROM base as entrypoint
+ENTRYPOINT ["/bin/bash", "/workspace/scripts/entrypoint.sh"]
