@@ -72,8 +72,10 @@ class TransformerTorchEncoder(Executor):
 
         if device == 'cuda':
             parallel_device_id = self.runtime_args.pea_id
+            self.logger.debug(f'the parallel_device_id is: {parallel_device_id}')
             if torch.cuda.device_count() > parallel_device_id:
                 device = f'cuda:{parallel_device_id}'
+                self.logger.debug(f'use the device of: {device}')
             else:
                 self.logger.warning(
                     f'You tried to use cuda:{parallel_device_id} but torch'
