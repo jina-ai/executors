@@ -176,7 +176,6 @@ class PostgreSQLHandler:
             result = cursor.fetchone()
             data = bytes(result[0])
             retrieved_doc = Document(data)
-            retrieved_doc.pop('embedding')
             doc.MergeFrom(retrieved_doc)
 
     def _close_connection(self, connection):
