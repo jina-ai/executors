@@ -6,19 +6,8 @@
 
 This repository provides a selection of [Executors](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Executor.md) for [Jina](https://github.com/jina-ai/jina).
 
-⚙️ Executor is how Jina processes Documents. It is the building block of your Jina data pipeline, providing a specific functional needs: preparing data, encoding it with your model, storing, searching, and more.
+**⚙️ Executor is how Jina processes Documents.** It is the building block of your Jina data pipeline, providing a specific functional needs: preparing data, encoding it with your model, storing, searching, and more.
 
-
-## Types 
-
-They are structured into folders, by type. Check out the README documentation by type, or by individual Executor.
-
-We provide the following types of Executors:
-
-- crafters
-- [indexers](./jinahub/indexers) store and retrieve data
-- [encoders](./jinahub/encoders) compute the vector representation of data
-- rankers
 
 ## Usage
 
@@ -45,7 +34,7 @@ f = Flow().add(uses='jinahub://ExecutorName')
 ```
 
 <details>
-<summary>Click here to see advanced usage</summary>
+<summary>Click here to see advance usage</summary>
 	
 ### Via Pypi
 
@@ -89,7 +78,11 @@ f = Flow().add(uses='jinahub://ExecutorName')
 
 **For internal Jina enigneers only:**
 
-- add the new executor to the right subfolder. Check [Types](#types)
+- add the new executor to the right subfolder.
+	- crafters
+	- [indexers](./jinahub/indexers) store and retrieve data
+	- [encoders](./jinahub/encoders) compute the vector representation of data
+	- rankers
 - push your initial version to Jina Hub. Use the guide [here](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Hubble.md#2-push-and-pull-cli)
 - add the UUID and secret to the secrets store. Make sure `(folder name) == (manifest alias) == (name in secrets store)` 
 
