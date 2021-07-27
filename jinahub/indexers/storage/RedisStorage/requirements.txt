@@ -1,4 +1,3 @@
 jina==2.0.10
 redis==3.5.3
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
-pytest-mock-resources==2.1.0

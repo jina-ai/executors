@@ -1,13 +1,17 @@
+import os
+
+import pytest as pytest
 from jina import Flow, DocumentArray, Document
-from pytest_mock_resources import create_redis_fixture
 
 from .. import RedisStorage
 
-redis = create_redis_fixture()
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+compose_yml = os.path.abspath(os.path.join(cur_dir, 'docker-compose.yml'))
 
 
-def test_flow(docs, redis_kwargs):
-    f = Flow().add(uses=RedisStorage, uses_with={'hostname': redis_kwargs['host'], 'port': redis_kwargs['port']})
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_flow(docs, docker_compose):
+    f = Flow().add(uses=RedisStorage)
     with f:
         f.post(on='/index', inputs=docs)
         resp = f.post(on='/search', inputs=DocumentArray([Document(id=doc.id) for doc in docs]), return_results=True)

@@ -25,7 +25,7 @@ class RedisStorage(Executor):
     :param kwargs: other keyword arguments
     """
     def __init__(self,
-                 hostname: str = '0.0.0.0',
+                 hostname: str = '127.0.0.1',
                  # default port on linux
                  port: int = 6379,
                  db: int = 0,
