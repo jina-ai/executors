@@ -6,9 +6,11 @@ import pytest
 from PIL.Image import fromarray
 from jina import Flow, Document
 
-from jinahub.image.normalizer import ImageNormalizer
+from ...normalizer import ImageNormalizer
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
+
+ImageNormalizer()
 
 
 @pytest.fixture
