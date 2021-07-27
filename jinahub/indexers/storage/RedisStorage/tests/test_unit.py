@@ -1,5 +1,5 @@
 from jina import Document, DocumentArray
-
+from ..
 
 def test_connection(indexer):
     assert indexer.hostname == 'localhost'
@@ -27,6 +27,19 @@ def test_upsert_with_duplicates(indexer, docs):
 
     qh = indexer.get_query_handler()
     assert len(qh.keys()) == 5
+
+
+def test_add(indexer, docs, caplog):
+    indexer.add(docs, parameters={})
+    qh = indexer.get_query_handler()
+    redis_keys = qh.keys()
+    assert all(doc.id.encode() in redis_keys for doc in docs)
+
+    new_docs = DocumentArray()
+    new_docs.append(Document())
+    new_docs.append(docs[0])
+    indexer.add(new_docs, parameters={})
+    assert f'The following IDs already exist: {docs[0].id}' in caplog.text
 
 
 def test_search_not_found(indexer, docs):

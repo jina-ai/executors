@@ -86,9 +86,9 @@ class RedisStorage(Executor):
             redis_handler.mset({doc.id: doc.SerializeToString() for doc in docs})
             redis_handler.execute()
 
-    @requests(on=['/index', '/update'])
+    @requests(on=['/upsert'])
     def upsert(self, docs: DocumentArray, parameters: Dict, **kwargs):
-        """Inserts documents in the redis server where the key is the document ID. If a document with the same ID
+        """Upserts documents in the redis server where the key is the document ID. If a document with the same ID
         already exists, an update operation is performed instead.
 
         :param docs: document array
@@ -103,10 +103,76 @@ class RedisStorage(Executor):
             for document_batch in document_batches_generator:
                 self._upsert_batch(document_batch)
 
+    def _get_existing_ids(self, docs: Iterable[Document]):
+        with self.get_query_handler() as redis_handler:
+            response = redis_handler.mget([doc.id for doc in docs])
+            existing_ids = set([doc_a.id for doc_a, doc_b in zip(docs, response) if doc_b])
+            return set(existing_ids)
+
+    def _add_batch(self, docs: Iterable[Document]):
+        existing = self._get_existing_ids(docs)
+        if existing:
+            self.logger.warning(f'The following IDs already exist: {", ".join(existing)}')
+        docs_to_add = {doc.id: doc.SerializeToString() for doc in docs if doc.id not in existing}
+        if docs_to_add:
+            with self.get_query_handler().pipeline() as redis_handler:
+                redis_handler.mset(docs_to_add)
+                redis_handler.execute()
+
+    @requests(on=['/index'])
+    def add(self, docs: DocumentArray, parameters: Dict, **kwargs):
+        """Indexes documents in the redis server where the key is the document ID. If a document with the same ID
+        already exists, a DuplicateIDError is raised
+
+        :param docs: document array
+        :param parameters: parameters to the request
+        """
+        if docs:
+            document_batches_generator = get_docs_batch_generator(
+                docs,
+                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+                batch_size=parameters.get('batch_size', self.default_batch_size)
+            )
+            for document_batch in document_batches_generator:
+                self._add_batch(document_batch)
+
+    def _update_batch(self, docs: Iterable[Document]):
+        existing = self._get_existing_ids(docs)
+        non_existing = set([doc.id for doc in docs]) - existing
+        if non_existing:
+            self.logger.warning(f'The following IDs do not exist: {", ".join(non_existing)}')
+        docs_to_update = {doc.id: doc.SerializeToString() for doc in docs if doc.id in existing}
+        if docs_to_update:
+            with self.get_query_handler().pipeline() as redis_handler:
+                redis_handler.mset(docs_to_update)
+                redis_handler.execute()
+
+    @requests(on=['/update'])
+    def update(self, docs: DocumentArray, parameters: Dict, **kwargs):
+        """Updates documents in the redis server where the key is the document ID. If no document with the same ID
+        exists, a NoSuchIDError is raised
+
+        :param docs: document array
+        :param parameters: parameters to the request
+        """
+        if docs:
+            document_batches_generator = get_docs_batch_generator(
+                docs,
+                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+                batch_size=parameters.get('batch_size', self.default_batch_size)
+            )
+            for document_batch in document_batches_generator:
+                self._update_batch(document_batch)
+
     def _delete_batch(self, docs: Iterable[Document]):
-        with self.get_query_handler().pipeline() as redis_handler:
-            redis_handler.delete(*[doc.id for doc in docs])
-            redis_handler.execute()
+        existing = self._get_existing_ids(docs)
+        non_existing = set([doc.id for doc in docs]) - existing
+        if non_existing:
+            self.logger.warning(f'The following IDs do not exist: {", ".join(non_existing)}')
+        if existing:
+            with self.get_query_handler().pipeline() as redis_handler:
+                redis_handler.delete(*existing)
+                redis_handler.execute()
 
     @requests(on='/delete')
     def delete(self, docs: DocumentArray, parameters: Dict, **kwargs):

@@ -1,7 +1,7 @@
 from jina import Flow, DocumentArray, Document
 from pytest_mock_resources import create_redis_fixture
 
-from redis_storage import RedisStorage
+from ... import RedisStorage
 
 redis = create_redis_fixture()
 
