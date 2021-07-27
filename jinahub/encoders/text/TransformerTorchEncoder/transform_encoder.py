@@ -99,12 +99,6 @@ class TransformerTorchEncoder(Executor):
         )
         self.model.to(torch.device(device))
 
-        # Do warmup round of inference as the first pass is very slow
-        with torch.no_grad():
-            self.logger.debug('Warmup the model inference ...')
-            input_tokens = self._generate_input_tokens(['hello world'])
-            _ = getattr(self.model, self.embedding_fn_name)(**input_tokens)
-
     def _compute_embedding(
         self, hidden_states: Tuple['torch.Tensor'], input_tokens: Dict
     ):
