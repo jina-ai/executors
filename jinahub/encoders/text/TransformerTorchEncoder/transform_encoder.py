@@ -11,6 +11,7 @@ from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 from transformers import AutoModel, AutoTokenizer
 
+
 class TransformerTorchEncoder(Executor):
     """
     The transformer torch encoder encodes sentences into embeddings.
@@ -61,7 +62,7 @@ class TransformerTorchEncoder(Executor):
         if not device in ['cpu', 'cuda']:
             self.logger.error('Torch device not supported. Must be cpu or cuda!')
             raise RuntimeError('Torch device not supported. Must be cpu or cuda!')
-        
+
         if device == 'cuda' and not torch.cuda.is_available():
             self.logger.warning(
                 'You tried to use GPU but torch did not detect your '
@@ -89,7 +90,6 @@ class TransformerTorchEncoder(Executor):
                 )
             else:
                 torch.set_num_threads(num_threads)
-        
 
         self.device = device
         self.embedding_fn_name = embedding_fn_name
@@ -99,14 +99,13 @@ class TransformerTorchEncoder(Executor):
         )
         self.model.to(torch.device(device))
 
-        self.is_distill_bert = (self.model.config.model_type == 'distilbert')
+        self.is_distill_bert = self.model.config.model_type == 'distilbert'
 
-        # Do warmup round of inference as the first pass is very slow 
+        # Do warmup round of inference as the first pass is very slow
         with torch.no_grad():
             self.logger.debug('Warmup the model inference ...')
             input_tokens = self._generate_input_tokens(['hello world'])
             _ = getattr(self.model, self.embedding_fn_name)(**input_tokens)
-
 
     def _compute_embedding(
         self, hidden_states: Tuple['torch.Tensor'], input_tokens: Dict
