@@ -28,9 +28,10 @@ class FaissSearcher(Executor):
     :param max_num_training_points: Optional argument to consider only a subset of training points to training data from `train_filepath`.
         The points will be selected randomly from the available points
     :param requires_training: Boolean flag indicating if the index type requires training to be run before building index.
-    :param distance: 'l2' or 'inner_product' accepted. Determines which distances to optimize by FAISS. l2...smaller is better, inner_product...larger is better
+    :param metric: 'l2' or 'inner_product' accepted. Determines which distances to optimize by FAISS. l2...smaller is better, inner_product...larger is better
     :param normalize: whether or not to normalize the vectors e.g. for the cosine similarity https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how-can-i-index-vectors-for-cosine-similarity
     :param nprobe: Number of clusters to consider at search time.
+    :param is_distance: Boolean flag that describes if distance metric need to be reinterpreted as similarities.
 
     .. highlight:: python
     .. code-block:: python
@@ -57,11 +58,12 @@ class FaissSearcher(Executor):
         train_filepath: Optional[str] = None,
         max_num_training_points: Optional[int] = None,
         requires_training: bool = True,
-        distance: str = 'l2',
+        metric: str = 'l2',
         normalize: bool = False,
         nprobe: int = 1,
         dump_path: Optional[str] = None,
         default_traversal_paths: List[str] = ['r'],
+        is_distance: bool = False,
         default_top_k: int = 5,
         on_gpu: bool = False,
         *args,
@@ -72,13 +74,14 @@ class FaissSearcher(Executor):
         self.requires_training = requires_training
         self.train_filepath = train_filepath if self.requires_training else None
         self.max_num_training_points = max_num_training_points
-        self.distance = distance
+        self.metric = metric
         self.normalize = normalize
         self.nprobe = nprobe
         self.on_gpu = on_gpu
 
         self.default_top_k = default_top_k
         self.default_traversal_paths = default_traversal_paths
+        self.is_distance = is_distance
 
         self.logger = get_logger(self)
 
@@ -129,12 +132,12 @@ class FaissSearcher(Executor):
         import faiss
 
         metric = faiss.METRIC_L2
-        if self.distance == 'inner_product':
+        if self.metric == 'inner_product':
             self.logger.warning(
                 'inner_product will be output as distance instead of similarity.'
             )
             metric = faiss.METRIC_INNER_PRODUCT
-        if self.distance not in {'inner_product', 'l2'}:
+        if self.metric not in {'inner_product', 'l2'}:
             self.logger.warning(
                 'Invalid distance metric for Faiss index construction. Defaulting to l2 distance'
             )
@@ -214,13 +217,20 @@ class FaissSearcher(Executor):
 
             normalize_L2(vecs)
         dists, ids = self.index.search(vecs, top_k)
-        if self.distance == 'inner_product':
+        if self.metric == 'inner_product':
             dists = 1 - dists
         for doc_idx, matches in enumerate(zip(ids, dists)):
             for m_info in zip(*matches):
                 idx, dist = m_info
                 match = Document(id=self._ids[idx], embedding=self._vecs[idx])
-                match.scores['distance'] = dist
+                if self.is_distance:
+                    match.scores[self.metric] = dist
+                else:
+                    if self.metric == 'inner_product':
+                        match.scores[self.metric] = 1 - dist
+                    else:
+                        match.scores[self.metric] = 1 / (1 + dist)
+
                 query_docs[doc_idx].matches.append(match)
 
     def _train(self, index, data: 'np.ndarray', *args, **kwargs) -> None:

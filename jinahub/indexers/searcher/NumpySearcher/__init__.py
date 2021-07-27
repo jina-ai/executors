@@ -12,14 +12,18 @@ from jina_commons.indexers.dump import import_vectors
 
 class NumpySearcher(Executor):
     def __init__(
-        self,
-        dump_path: str = None,
-        default_top_k: int = 5,
-        default_traversal_paths: List[str] = ['r'],
-        **kwargs,
+            self,
+            dump_path: str = None,
+            default_top_k: int = 5,
+            default_traversal_paths: List[str] = ['r'],
+            metric: str = 'cosine',
+            is_distance: bool = False,
+            **kwargs,
     ):
         super().__init__(**kwargs)
         self.default_traversal_paths = default_traversal_paths
+        self.is_distance = is_distance
+        self.metric = metric
         self.dump_path = dump_path or kwargs.get('runtime_args').get('dump_path')
         self.logger = get_logger(self)
         self.default_top_k = default_top_k
@@ -47,23 +51,42 @@ class NumpySearcher(Executor):
             'traversal_paths', self.default_traversal_paths
         )
 
-        doc_embeddings = np.stack(
-            docs.traverse_flat(traversal_paths).get_attributes('embedding')
-        )
+        doc_embeddings = docs.traverse_flat(traversal_paths).get_attributes('embedding')
+
+        if not docs:
+            self.logger.info('No documents to search for')
+            return
+
+        if not doc_embeddings:
+            self.logger.info('None of the docs have any embeddings')
+            return
+
+        doc_embeddings = np.stack(doc_embeddings)
 
         q_emb = _ext_A(_norm(doc_embeddings))
         d_emb = _ext_B(_norm(self._vecs))
-        dists = _cosine(q_emb, d_emb)
+        if self.metric == 'cosine':
+            dists = _cosine(q_emb, d_emb)
+        elif self.metric == 'euclidean':
+            dists = _euclidean(q_emb, d_emb)
+        else:
+            self.logger.error(f'Metric {self.metric} not supported.')
         positions, dist = self._get_sorted_top_k(dists, top_k)
         for _q, _positions, _dists in zip(docs, positions, dist):
-            for position, _dist in zip(_positions, _dists):
+            for position, dist in zip(_positions, _dists):
                 d = Document(id=self._ids[position], embedding=self._vecs[position])
-                d.scores['similarity'] = 1 - _dist
+                if self.is_distance:
+                    d.scores[self.metric] = dist
+                else:
+                    if self.metric == 'cosine':
+                        d.scores[self.metric] = 1 - dist
+                    elif self.metric == 'euclidean':
+                        d.scores[self.metric] = 1 / (1 + dist)
                 _q.matches.append(d)
 
     @staticmethod
     def _get_sorted_top_k(
-        dist: 'np.array', top_k: int
+            dist: 'np.array', top_k: int
     ) -> Tuple['np.ndarray', 'np.ndarray']:
         if top_k >= dist.shape[1]:
             idx = dist.argsort(axis=1)[:, :top_k]
@@ -85,8 +108,8 @@ def _get_ones(x, y):
 def _ext_A(A):
     nA, dim = A.shape
     A_ext = _get_ones(nA, dim * 3)
-    A_ext[:, dim : 2 * dim] = A
-    A_ext[:, 2 * dim :] = A ** 2
+    A_ext[:, dim: 2 * dim] = A
+    A_ext[:, 2 * dim:] = A ** 2
     return A_ext
 
 
@@ -94,7 +117,7 @@ def _ext_B(B):
     nB, dim = B.shape
     B_ext = _get_ones(dim * 3, nB)
     B_ext[:dim] = (B ** 2).T
-    B_ext[dim : 2 * dim] = -2.0 * B.T
+    B_ext[dim: 2 * dim] = -2.0 * B.T
     del B
     return B_ext
 
