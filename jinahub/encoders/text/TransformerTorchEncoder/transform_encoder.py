@@ -10,7 +10,7 @@ from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 from transformers import AutoModel, AutoTokenizer
-
+from transformers.models.distilbert import DistilBertModel
 
 class TransformerTorchEncoder(Executor):
     """
@@ -100,6 +100,8 @@ class TransformerTorchEncoder(Executor):
         )
         self.model.to(torch.device(device))
 
+        self.is_distill_bert = isinstance(self.model, DistilBertModel)
+
         # Do warmup round of inference as the first pass is very slow 
         with torch.no_grad():
             self.logger.debug('Warmup the model inference ...')
@@ -172,6 +174,12 @@ class TransformerTorchEncoder(Executor):
             truncation=True,
             return_tensors='pt',
         )
+
+        if self.is_distill_bert:
+            # DistilBERT doesn’t have token_type_ids, you don’t need to indicate which token belongs to which segment.
+            # https://huggingface.co/transformers/model_doc/distilbert.html
+            del input_tokens['token_type_ids']
+
         input_tokens = {
             k: v.to(torch.device(self.device)) for k, v in input_tokens.items()
         }
