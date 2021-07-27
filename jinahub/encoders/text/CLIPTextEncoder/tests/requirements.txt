@@ -1,4 +1,5 @@
 torch==1.7.1
 clip @ git+https://github.com/openai/CLIP.git@cfcffb90e69f37bf2ff1e988237a0fbe41f33c04
+transformers==4.9.1
 pytest==6.2.4
 jina[hub]==2.0.10

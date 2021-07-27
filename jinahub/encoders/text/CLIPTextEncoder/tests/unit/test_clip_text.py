@@ -6,6 +6,24 @@ from jina import Document, DocumentArray, Executor
 from jinahub.encoder.clip_text import CLIPTextEncoder
 
 
+def test_compute_tokens():
+    enc = CLIPTextEncoder()
+
+    tokens = enc._generate_input_tokens(["hello this is a test", "and another test"])
+
+    assert tokens["input_ids"].shape == (2, 7)
+    assert tokens["attention_mask"].shape == (2, 7)
+
+
+def test_encoding_cpu():
+    enc = CLIPTextEncoder(device="cpu")
+    input_data = DocumentArray([Document(text="hello world")])
+
+    enc.encode(docs=input_data, parameters={})
+
+    assert input_data[0].embedding.shape == (512,)
+
+
 def test_clip_batch():
     test_docs = DocumentArray((Document(text='random text') for _ in range(30)))
     clip_text_encoder = CLIPTextEncoder()
@@ -16,7 +34,7 @@ def test_clip_batch():
 
 def test_clip_data():
     docs = []
-    words = ['apple', 'banana1', 'banana2', 'studio', 'satelite', 'airplane']
+    words = ['apple', 'banana1', 'banana2', 'studio', 'satellite', 'airplane']
     for word in words:
         docs.append(Document(text=word))
 
@@ -46,7 +64,7 @@ def test_clip_data():
     # assert semantic meaning is captured in the encoding
     small_distance = dist('banana1', 'banana2')
     assert small_distance < dist('banana1', 'airplane')
-    assert small_distance < dist('banana1', 'satelite')
+    assert small_distance < dist('banana1', 'satellite')
     assert small_distance < dist('banana1', 'studio')
     assert small_distance < dist('banana2', 'airplane')
     small_distance = dist('Jina AI is lit', 'Jina AI is great')
@@ -58,7 +76,7 @@ def test_clip_data():
         'Jina AI is an open source neural search project',
     )
 
-    # assert same results like calculating it manually
+    # assert same results with OpenAI's implementation
     model, preprocess = clip.load('ViT-B/32', device='cpu')
     assert len(txt_to_ndarray) == 11
     for text, actual_embedding in txt_to_ndarray.items():
@@ -68,13 +86,15 @@ def test_clip_data():
 
         np.testing.assert_almost_equal(actual_embedding, expected_embedding, 5)
 
+
 def test_traversal_path():
     text = 'blah'
     docs = DocumentArray([Document(id='root1', text=text)])
-    docs[0].chunks = [Document(id='chunk11', text=text),
-                      Document(id='chunk12', text=text),
-                      Document(id='chunk13', text=text)
-                      ]
+    docs[0].chunks = [
+        Document(id='chunk11', text=text),
+        Document(id='chunk12', text=text),
+        Document(id='chunk13', text=text),
+    ]
     docs[0].chunks[0].chunks = [
         Document(id='chunk111', text=text),
         Document(id='chunk112', text=text),
@@ -87,6 +107,11 @@ def test_traversal_path():
     for path, count in [['r', 0], ['c', 3], ['cc', 0]]:
         assert len(docs.traverse_flat([path]).get_attributes('embedding')) == count
 
-    encoder.encode(docs=original_docs, parameters={'traversal_paths': ['cc']}, return_results=True)
+    encoder.encode(
+        docs=original_docs, parameters={'traversal_paths': ['cc']}, return_results=True
+    )
     for path, count in [['r', 0], ['c', 0], ['cc', 2]]:
-        assert len(original_docs.traverse_flat([path]).get_attributes('embedding')) == count
+        assert (
+            len(original_docs.traverse_flat([path]).get_attributes('embedding'))
+            == count
+        )
