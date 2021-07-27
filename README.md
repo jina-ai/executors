@@ -1,6 +1,6 @@
-> ⚠️ Please do **not** commit to this repository. This repository is **only** for Jina engineers to better manage in-house executors.
+> ⚠️ Please do **not** commit to this repository. This repository is **only** for Jina engineers to better manage in-house executors in a centralized way.
 
-> 🧭 To develop your own Executor, please use the [Executor Cookiecutter](https://github.com/jina-ai/cookiecutter-jina-executor/) to start with. 
+> 🧭 To develop your own Executor, please use the [Executor Cookiecutter](https://github.com/jina-ai/cookiecutter-jina-executor/) to create your own Executor repo.
 
 # Jina Executors
 
