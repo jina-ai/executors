@@ -1,0 +1,4 @@
+jtype: PDFCrafter
+metas:
+  py_modules:
+    - pdf_crafter.py
