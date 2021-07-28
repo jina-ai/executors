@@ -1,12 +1,12 @@
-import numpy as np
-from jina import Executor, requests, DocumentArray, Document
-import pytest
 import random
+
+import pytest
+from jina import DocumentArray, Document
 from minranker import MinRanker
 
 
 @pytest.fixture
-def documents():
+def documents_chunk():
     document_array = DocumentArray()
     document = Document(tags={'query_size': 35, 'query_price': 31, 'query_brand': 1})
     for j in range(0, 10):
@@ -14,10 +14,7 @@ def documents():
         for i in range(0, 10):
             match = Document(
                 tags={
-                    'match_size': 35,
-                    'match_price': 31 + 2 * i,
-                    'match_brand': 1,
-                    'relevance': int((100 - i) / 10),
+                    'level': 'chunk',
                 }
             )
             match.scores['cosine'] = random.random()
@@ -29,13 +26,14 @@ def documents():
     return document_array
 
 
-def test_ranker(documents):
-    ranker = MinRanker(metric='cosine')
-    ranker.rank(documents, parameters={})
-    assert documents
+@pytest.mark.parametrize('default_traversal_paths', [['r'], ['c']])
+def test_ranker(documents_chunk, default_traversal_paths):
+    ranker = MinRanker(metric='cosine', default_traversal_paths=default_traversal_paths)
+    ranker.rank(documents_chunk, parameters={})
+    assert documents_chunk
 
-    for doc in documents:
-        for i in range(len(doc.matches)-1):
+    for doc in documents_chunk:
+        for i in range(len(doc.matches) - 1):
             match = doc.matches[i]
             assert match.tags
-            assert match.scores['cosine'].value >= doc.matches[i+1].scores['cosine'].value
+            assert match.scores['cosine'].value >= doc.matches[i + 1].scores['cosine'].value
