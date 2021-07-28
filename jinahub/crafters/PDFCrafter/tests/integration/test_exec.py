@@ -5,7 +5,7 @@ import os
 
 from PIL import Image
 from jina import Flow
-from jinahub.crafter.pdf_crafter import PDFCrafter
+from ...pdf_crafter import PDFCrafter
 
 
 def test_flow(test_dir, doc_generator_img_text, expected_text):
