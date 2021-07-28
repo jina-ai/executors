@@ -32,7 +32,6 @@ class MinRanker(Executor):
         self.metric = metric
         self.default_traversal_paths = default_traversal_paths or ['r']
 
-
     @requests(on='/search')
     def rank(self, docs: DocumentArray, parameters: Dict, *args, **kwargs):
         traversal_paths = parameters.get(

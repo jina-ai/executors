@@ -64,7 +64,7 @@ pods:
 
 	```shell
 	git clone https://github.com/jina-ai/executors.git
-	cd jinahub/rankers/
+	cd jinahub/rankers/MinRanker
 	docker build -t min-ranker .
 	```
 
@@ -84,12 +84,30 @@ Here we **MUST** show a **MINIMAL WORKING EXAMPLE**. We recommend to use `jinahu
 It not necessary to demonstrate the usages of every inputs. It will be demonstrate in the next section.
 
 ```python
-from jina import Flow, DocumentArray
+from jina import Flow, DocumentArray, Document
+import random
 
+document_array = DocumentArray()
+document = Document(tags={'query_size': 35, 'query_price': 31, 'query_brand': 1})
+for i in range(0, 10):
+	chunk = Document()
+	for j in range(0, 10):
+		match = Document(
+			tags={
+				'level': 'chunk',
+			}
+		)
+		match.scores['cosine'] = random.random()
+		match.parent_id = i
+		chunk.matches.append(match)
+	document.chunks.append(chunk)
+
+document_array.extend([document])
+	
 f = Flow().add(uses='jinahub+docker://MinRanker')
 
 with f:
-    resp = f.post(on='search', inputs=DocumentArray(), return_results=True)
+    resp = f.post(on='search', inputs=document_array, return_results=True)
     print(f'{resp}')
 ```
 
