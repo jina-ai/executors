@@ -17,7 +17,7 @@
 
 To install the dependencies locally run 
 ```
-pip install . 
+pip install -r requirements.txt
 ```
 
 To verify the installation works:
