@@ -5,6 +5,7 @@ from itertools import groupby
 from typing import List, Dict
 
 from jina import Executor, requests, DocumentArray
+from jina.logging.logger import JinaLogger
 
 
 class MinRanker(Executor):
@@ -13,7 +14,7 @@ class MinRanker(Executor):
     of the matched doc from the matched chunks.
     For each matched doc, the score is aggregated
     from all the matched chunks belonging to that doc.
-    :param: metric: the distance metric used in `scores`
+    :param metric: the distance metric used in `scores`
     :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
     :param args:  Additional positional arguments
     :param kwargs: Additional keyword arguments
@@ -25,8 +26,12 @@ class MinRanker(Executor):
                  *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = JinaLogger(self.__class__.__name__)
+        if not metric:
+            self.logger.error('metric should not be None')
         self.metric = metric
         self.default_traversal_paths = default_traversal_paths or ['r']
+
 
     @requests(on='/search')
     def rank(self, docs: DocumentArray, parameters: Dict, *args, **kwargs):
