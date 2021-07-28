@@ -60,17 +60,17 @@ pods:
 
 ### 📦️ Via Pypi
 
-1. Install the `jinahub-YoloV5Segmenter` package.
+1. Install the `executors` package.
 
 	```bash
-	pip install git+https://github.com/jina-ai/executor-yolov5.git
+	pip install git+https://github.com/jina-ai/executors.git
 	```
 
-1. Use `jinahub-yolov5-segmenter` in your code
+1. Use `YoloV5Segmenter` in your code
 
 	```python
 	from jina import Flow
-	from jinahub.segmenter.yolov5_segmenter import YoloV5Segmenter
+	from jinahub.crafters.YoloV5Segmenter.yolov5_segmenter import YoloV5Segmenter
 	
 	f = Flow().add(uses='jinahub+docker://YoloV5Segmenter')
 	```
@@ -81,8 +81,8 @@ pods:
 1. Clone the repo and build the docker image
 
 	```shell
-	git clone https://github.com/jina-ai/executor-yolov5.git
-	cd executor-yolov5
+	git clone https://github.com/jina-ai/executors.git
+	cd jinahub/crafters/YoloV5Segmenter
 	docker build -t executor-yolov5-segmenter .
 	```
 

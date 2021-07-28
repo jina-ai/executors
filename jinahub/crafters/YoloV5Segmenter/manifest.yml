@@ -3,5 +3,6 @@ name: YoloV5Segmenter
 alias: YoloV5Segmenter
 description: YoloV5Segmenter based on https://github.com/ultralytics/yolov5
 author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://jina.ai
 avatar: https://avatars.githubusercontent.com/u/60539444?s=200&v=4
 keywords: [segmenter, image, Yolo]
