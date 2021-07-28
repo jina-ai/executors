@@ -1,0 +1,4 @@
+jtype: TorchObjectDetectionSegmenter
+metas:
+  py_modules:
+    - torch_object_detection_segmenter.py
