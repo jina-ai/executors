@@ -5,5 +5,5 @@ description: Storage-type indexer powered by MongoDB
 author: Jina AI Dev-Team (dev-team@jina.ai)
 documentation: https://github.com/jina-ai/executor-indexers/tree/main/jinahub/indexers/indexer/MongoDBStorage
 license: apache-2.0
-url: https://jina.ai
+url: https://github.com/jina-ai/executor-indexers/tree/main/jinahub/indexers/indexer/MongoDBStorage
 keywords: [storage, crud, indexer, mongodb]
