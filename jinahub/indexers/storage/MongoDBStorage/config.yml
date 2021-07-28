@@ -1,0 +1,7 @@
+jtype: MongoDBStorage
+metas:
+  py_modules:
+    - __init__.py
+    - mongohandler.py
+  workspace: workspace/
+  name: mongodb
