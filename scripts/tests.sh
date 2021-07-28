@@ -21,7 +21,6 @@ if [[ -d "tests/" ]]; then
 
   if [[ -f "tests/requirements.txt" ]]; then
   pip install -r tests/requirements.txt
-  pip install .
   fi
   
   pip install -r requirements.txt
