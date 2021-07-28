@@ -1,0 +1,2 @@
+redis==3.5.3
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
