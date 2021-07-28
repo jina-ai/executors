@@ -138,12 +138,12 @@ Here's a basic example demonstrating the use of this encoder
 from jina import Flow, Document
 
 f = Flow().add(
-	uses='jinahub+docker://AudioCLIPTextEncoder',
-	volumes='/path/to/pwd/.cache:/workspace/.cache'
+    uses='jinahub+docker://AudioCLIPTextEncoder',
+    volumes='/path/to/pwd/.cache:/workspace/.cache'
 )
 
 with f:
-	doc = Document(text='test text')
+    doc = Document(text='test text')
     resp = f.post(on='foo', inputs=doc, return_results=True)
     print(resp[0])
 ```

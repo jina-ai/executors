@@ -17,11 +17,6 @@ def download_cache():
 
 
 @pytest.fixture()
-def test_dir() -> str:
-    return os.path.dirname(os.path.abspath(__file__))
-
-
-@pytest.fixture()
 def data_generator():
     def _generator():
         data_file_path = Path(__file__).parent / 'texts' / 'test_data.txt'
