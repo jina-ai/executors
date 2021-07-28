@@ -79,6 +79,8 @@ f = Flow().add(uses='jinahub://ExecutorName')
 Use `jina hub new` to create a new Executor, following easy interactive prompts:
 
 ![jina_hub_new](./.github/img/hub_new.png)
+
+Then follow the guide on [Executors](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Executor.md) and how to [push](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Hubble.md) it to the Jina Hub marketplace.
 	
 ## Contributing
 
