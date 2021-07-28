@@ -93,8 +93,8 @@ pods:
 1. Clone the repo and build the docker image
 
 	```shell
-	git clone https://github.com/jina-ai/executor-indexers/
-	cd jinahub/indexers/storage/MongoDBStorage
+	git clone https://github.com/jina-ai/executors
+	cd executors/jinahub/indexers/storage/MongoDBStorage
 	docker build -t mongo-image .
 	```
 
