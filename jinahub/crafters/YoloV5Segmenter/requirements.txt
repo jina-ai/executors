@@ -1,3 +1,2 @@
-jina==2.0.10
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
 yolov5==5.0.7
