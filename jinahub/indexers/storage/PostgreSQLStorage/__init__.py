@@ -173,5 +173,5 @@ class PostgreSQLStorage(Executor):
         with self.handler as postgres_handler:
             postgres_handler.search(
                 docs.traverse_flat(traversal_paths),
-                return_embeddings=parameters.get("return_embeddings", self.default_return_embeddings)
+                return_embeddings=parameters.get('return_embeddings', self.default_return_embeddings)
             )
