@@ -60,19 +60,19 @@ pods:
 
 ### 📦️ Via Pypi
 
-1. Install the `jinahub-text-sentencizer` package.
+1. Install the `executors` package.
 
 	```bash
-	pip install git+https://github.com/jina-ai/executor-text-sentencizer.git
+	pip install git+https://github.com/jina-ai/executors
 	```
 
-1. Use `jinahub-text-sentencizer` in your code
+1. Use `Sentencizer` in your code
 
 	```python
 	from jina import Flow
-	from jinahub.text.sentencizer import Sentencizer
+	from jinahub.crafters.Sentencizer.sentencizer import Sentencizer
 	
-	f = Flow().add(uses=MyDummyExecutor)
+	f = Flow().add(uses=Sentencizer)
 	```
 
 
@@ -81,12 +81,12 @@ pods:
 1. Clone the repo and build the docker image
 
 	```shell
-	git clone https://github.com/jina-ai/executor-text-sentencizer.git
-	cd executor-text-sentencizer
+	git clone https://github.com/jina-ai/executors
+	cd executors/jinahub/crafters/Sentencizer
 	docker build -t sentencizer .
 	```
 
-1. Use `sentencizer` in your codes
+1. Use `sentencizer` in your code
 
 	```python
 	from jina import Flow
