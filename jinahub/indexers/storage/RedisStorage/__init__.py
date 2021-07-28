@@ -21,9 +21,11 @@ class RedisStorage(Executor):
     :param db: the database number
     :param default_traversal_paths: default traversal paths
     :param default_batch_size: default batch size
+    :param default_return_embeddings: whether to return embeddings on search or not
     :param args: other arguments
     :param kwargs: other keyword arguments
     """
+
     def __init__(self,
                  hostname: str = '127.0.0.1',
                  # default port on linux
@@ -31,6 +33,7 @@ class RedisStorage(Executor):
                  db: int = 0,
                  default_traversal_paths: Tuple = ('r',),
                  default_batch_size: int = 32,
+                 default_return_embeddings: bool = True,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.default_batch_size = default_batch_size
@@ -40,6 +43,7 @@ class RedisStorage(Executor):
         self.db = db
         self.connection_pool = redis.ConnectionPool(host=self.hostname, port=self.port, db=self.db)
         self.logger = JinaLogger(self.__class__.__name__)
+        self.default_return_embeddings = default_return_embeddings
 
     def get_query_handler(self) -> 'Redis':
         """Get the redis client handler.
@@ -53,7 +57,7 @@ class RedisStorage(Executor):
             self.logger.error('Redis connection error: ', r_con_error)
             raise
 
-    def _query_batch(self, docs: Iterable[Document]):
+    def _query_batch(self, docs: Iterable[Document], return_embeddings: bool = True):
         with self.get_query_handler() as redis_handler:
             results = redis_handler.mget([doc.id for doc in docs])
             for doc, result in zip(docs, results):
@@ -61,7 +65,8 @@ class RedisStorage(Executor):
                     continue
                 data = bytes(result)
                 retrieved_doc = Document(data)
-                retrieved_doc.pop('embedding')
+                if not return_embeddings:
+                    retrieved_doc.pop('embedding')
                 doc.MergeFrom(retrieved_doc)
 
     @requests(on='/search')
@@ -71,6 +76,9 @@ class RedisStorage(Executor):
         :param docs: document array
         :param parameters: parameters to the request
         """
+        return_embeddings = parameters.get(
+            'return_embeddings', self.default_return_embeddings
+        )
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
@@ -78,7 +86,7 @@ class RedisStorage(Executor):
                 batch_size=parameters.get('batch_size', self.default_batch_size)
             )
             for document_batch in document_batches_generator:
-                self._query_batch(document_batch)
+                self._query_batch(document_batch, return_embeddings=return_embeddings)
 
     def _upsert_batch(self, docs: Iterable[Document]):
         with self.get_query_handler().pipeline() as redis_handler:
