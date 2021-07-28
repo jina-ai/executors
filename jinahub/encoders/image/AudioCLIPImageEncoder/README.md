@@ -2,7 +2,7 @@
 
 **AudioCLIPImageEncoder** is an encoder that encodes images using the [AudioCLIP](https://arxiv.org/abs/2106.13043) model.
 
-This encoder is meant to be used in conjunction with the AudioCLIP text and audio encoders, as it can embedd text, images and audio to the same latent space.
+This encoder is meant to be used in conjunction with the AudioCLIP text ([AudioCLIPTextEncoder](https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/AudioCLIPTextEncoder)) and audio ([AudioCLIPEncoder](https://github.com/jina-ai/executors/tree/main/jinahub/encoders/audio/AudioCLIPEncoder)) encoders, as it can embedd text, images and audio to the same latent space.
 
 You can use either the `Full` (where all three heads were trained) or the `Partial` (where the text and image heads were frozen) version of the model.
 
