@@ -26,7 +26,7 @@ if [[ -d "tests/" ]]; then
   if [[ -f "setup.py" ]]; then
     pip install .
   fi
-  
+
   pip install -r requirements.txt
 
   if [[ $test_dir = "jinahub/encoders/text/LaserEncoder" ]]; then
