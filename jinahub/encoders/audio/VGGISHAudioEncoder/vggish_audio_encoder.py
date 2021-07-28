@@ -35,7 +35,7 @@ class VggishAudioEncoder(Executor):
         self.pca_path = pca_path
         self.default_traversal_paths = default_traversal_paths or ['r']
 
-        if not os.path.exists(self.model_path):
+        if not os.path.exists(self.model_path) or not os.path.exists(self.pca_path):
             subprocess.call('scripts/download_model.sh')
 
         self.sess = tf.compat.v1.Session()
