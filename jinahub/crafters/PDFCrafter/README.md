@@ -50,17 +50,17 @@ pods:
 
 ### 📦️ Via Pypi
 
-1. Install the `executor-pdf-crafter` package.
+1. Install the `executors` package.
 
 	```bash
-	pip install git+https://github.com/jina-ai/executor-pdf-crafter
+	pip install git+https://github.com/jina-ai/executors
 	```
 
-1. Use `executor-pdf-crafter` in your code
+1. Use `PDFCrafter` in your code
 
 	```python
 	from jina import Flow
-	from jinahub.crafter.pdf_crafter import PDFCrafter
+	from jinahub.crafters.PDFCrafter.pdf_crafter import PDFCrafter
 	
 	f = Flow().add(uses=PDFCrafter)
 	```
@@ -71,8 +71,8 @@ pods:
 1. Clone the repo and build the docker image
 
 	```shell
-	git clone https://github.com/jina-ai/executor-pdf-crafter
-	cd executor-pdf-crafter
+	git clone https://github.com/jina-ai/executors
+	cd executors/jinahub/crafters/PDFCrafter
 	docker build -t executor-pdf-crafter .
 	```
 
