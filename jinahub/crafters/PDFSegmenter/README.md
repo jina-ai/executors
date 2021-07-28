@@ -1,4 +1,4 @@
-# ✨ PDFCrafter
+# ✨ PDFSegmenter
 
 PDFPlumberSegmenter is a segmenter used for extracting images and text as chunks from PDF data. It stores each images and text of each page as chunks separately.
 
@@ -6,6 +6,10 @@ PDFPlumberSegmenter is a segmenter used for extracting images and text as chunks
 ## 🌱 Prerequisites
 
 Some conditions to fulfill before running the executor
+
+Install requirements:
+
+`pip install -r requirements.txt`
 
 ## 🚀 Usages
 
@@ -17,7 +21,7 @@ Use the prebuilt images from JinaHub in your python codes,
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub+docker://PDFCrafter')
+f = Flow().add(uses='jinahub+docker://PDFSegmenter')
 ```
 
 or in the `.yml` config.
@@ -26,7 +30,7 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: crafter
-    uses: 'jinahub+docker://PDFCrafter'
+    uses: 'jinahub+docker://PDFSegmenter'
 ```
 
 #### using source codes
@@ -35,7 +39,7 @@ Use the source codes from JinaHub in your python codes,
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub://PDFCrafter')
+f = Flow().add(uses='jinahub://PDFSegmenter')
 ```
 
 or in the `.yml` config.
@@ -44,7 +48,7 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: crafter
-    uses: 'jinahub://PDFCrafter'
+    uses: 'jinahub://PDFSegmenter'
 ```
 
 
@@ -56,14 +60,14 @@ pods:
 	pip install git+https://github.com/jina-ai/executors
 	```
 
-1. Use `PDFCrafter` in your code
+1. Use `PDFSegmenter` in your code
 
-	```python
-	from jina import Flow
-	from jinahub.crafters.PDFCrafter.pdf_crafter import PDFCrafter
-	
-	f = Flow().add(uses=PDFCrafter)
-	```
+   ```python
+   from jina import Flow
+   from jinahub.crafters.PDFSegmenter.pdf_segmenter import PDFSegmenter
+   
+   f = Flow().add(uses=PDFSegmenter)
+   ```
 
 
 ### 🐳 Via Docker
@@ -72,7 +76,7 @@ pods:
 
 	```shell
 	git clone https://github.com/jina-ai/executors
-	cd executors/jinahub/crafters/PDFCrafter
+	cd executors/jinahub/crafters/PDFSegmenter
 	docker build -t executor-pdf-crafter .
 	```
 
@@ -91,7 +95,7 @@ pods:
 ```python
 from jina import Flow, Document
 
-f = Flow().add(uses='jinahub+docker://PDFCrafter')
+f = Flow().add(uses='jinahub+docker://PDFSegmenter')
 
 with f:
     resp = f.post(on='foo', inputs=Document(), return_results=True)

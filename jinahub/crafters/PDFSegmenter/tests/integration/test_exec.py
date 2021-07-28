@@ -5,11 +5,11 @@ import os
 
 from PIL import Image
 from jina import Flow
-from ...pdf_crafter import PDFCrafter
+from ...pdf_segmenter import PDFSegmenter
 
 
 def test_flow(test_dir, doc_generator_img_text, expected_text):
-    flow = Flow().add(uses=PDFCrafter)
+    flow = Flow().add(uses=PDFSegmenter)
     doc_array = doc_generator_img_text
     for doc in doc_array:
         with flow:

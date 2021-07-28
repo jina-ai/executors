@@ -11,7 +11,7 @@ from jina import DocumentArray, Executor, requests, Document
 from jina.logging.logger import JinaLogger
 
 
-class PDFCrafter(Executor):
+class PDFSegmenter(Executor):
     """
     :class:`PDFCrafter` Extracts data (text and images) from PDF files.
     Stores images (`mime_type`=image/*) on chunk level ('c') and text segments (`mime_type`=text/plain)
