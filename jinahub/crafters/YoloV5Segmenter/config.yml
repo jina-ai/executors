@@ -1,0 +1,4 @@
+jtype: YoloV5Segmenter
+metas:
+  py_modules:
+    - yolov5_segmenter.py

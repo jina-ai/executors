@@ -1,0 +1,10 @@
+jtype: Flow
+version: '1'
+with:
+  py_modules:
+    - yolov5_segmenter.py
+  return_results: true
+executors:
+  - name: segmenter
+    uses:
+      jtype: YoloV5Segmenter
