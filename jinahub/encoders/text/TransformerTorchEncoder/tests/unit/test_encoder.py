@@ -11,12 +11,11 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def test_compute_tokens():
-    enc = TransformerTorchEncoder(base_tokenizer_model="bert-base-cased")
+    enc = TransformerTorchEncoder()
 
     tokens = enc._generate_input_tokens(["hello this is a test", "and another test"])
 
     assert tokens["input_ids"].shape == (2, 7)
-    assert tokens["token_type_ids"].shape == (2, 7)
     assert tokens["attention_mask"].shape == (2, 7)
 
 
