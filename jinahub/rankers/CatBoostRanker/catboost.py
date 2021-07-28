@@ -1,4 +1,5 @@
 import numpy as np
+from catboost import CatBoostRanker, Pool
 
 from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
@@ -28,8 +29,10 @@ class CatBoostRanker(Executor):
         Each query document corresponded to N matched documents, and each query-document pair features
         are combined into a feature vector. We stack all feature vectors and return the training data.
         """
+        group_ids = []
         feature_vectors = []
-        for doc in docs:
+        for idx, doc in enumerate(docs):
+            group_ids.append(idx)
             q_feature_vector = [
                 doc.tags.get(query_feature) for query_feature in self.q_features
             ]
@@ -38,4 +41,5 @@ class CatBoostRanker(Executor):
                     match.tags.get(docum_feature) for docum_feature in self.d_features
                 ]
                 feature_vectors.append(q_feature_vector + d_feature_vector)
-        return np.array(feature_vectors)
+        feature_vectors = np.array(feature_vectors)
+        return Pool(data=feature_vectors, label=self.label, group_id=group_ids)
