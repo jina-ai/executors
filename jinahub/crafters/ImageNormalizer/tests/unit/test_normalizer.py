@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from PIL.Image import Image, fromarray
 from jina import DocumentArray, Document
-from jinahub.image.normalizer import ImageNormalizer
+from ...normalizer import ImageNormalizer
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

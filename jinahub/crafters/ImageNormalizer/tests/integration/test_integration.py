@@ -10,9 +10,6 @@ from ...normalizer import ImageNormalizer
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
-ImageNormalizer()
-
-
 @pytest.fixture
 def numpy_image_uri(tmpdir):
     blob = np.random.randint(255, size=(96, 96, 3), dtype='uint8')
