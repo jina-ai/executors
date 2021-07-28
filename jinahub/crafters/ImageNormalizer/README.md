@@ -76,17 +76,17 @@ pods:
 
 ### 📦️ Via Pypi
 
-1. Install the `executor-image-normalizer` package.
+1. Install the `executors` package.
 
 	```bash
-	pip install git+https://github.com/jina-ai/executor-image-normalizer.git
+	pip install git+https://github.com/jina-ai/executors.git
 	```
 
-1. Use `executor-image-normalizer` in your code
+1. Use `ImageNormalizer` in your code
 
 	```python
 	from jina import Flow
-	from jinahub.image.normalizer import ImageNormalizer
+	from jinahub.crafters.ImageNormalizer.normalizer import ImageNormalizer
 	
 	f = Flow().add(uses=ImageNormalizer)
 	```
@@ -97,8 +97,8 @@ pods:
 1. Clone the repo and build the docker image
 
 	```shell
-	git clone https://github.com/jina-ai/executor-image-normalizer.git
-	cd executor-image-normalizer
+	git clone https://github.com/jina-ai/executors.git
+	cd jinahub/crafters/ImageNormalizer
 	docker build -t image-normalizer .
 	```
 
