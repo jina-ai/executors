@@ -121,7 +121,7 @@ class RedisStorage(Executor):
     @requests(on=['/index'])
     def add(self, docs: DocumentArray, parameters: Dict, **kwargs):
         """Indexes documents in the redis server where the key is the document ID. If a document with the same ID
-        already exists, a DuplicateIDError is raised
+        already exists, a warning is issued and the document is ignored
 
         :param docs: document array
         :param parameters: parameters to the request
@@ -149,7 +149,7 @@ class RedisStorage(Executor):
     @requests(on=['/update'])
     def update(self, docs: DocumentArray, parameters: Dict, **kwargs):
         """Updates documents in the redis server where the key is the document ID. If no document with the same ID
-        exists, a NoSuchIDError is raised
+        exists, a warning is issues and the document is ignored
 
         :param docs: document array
         :param parameters: parameters to the request
@@ -175,7 +175,8 @@ class RedisStorage(Executor):
 
     @requests(on='/delete')
     def delete(self, docs: DocumentArray, parameters: Dict, **kwargs):
-        """Deletes documents in the redis server by ID. If no document with the same ID exists, nothing happens.
+        """Deletes documents in the redis server by ID. If no document with the same ID exists, the document is
+        ignored
 
         :param docs: document array
         :param parameters: parameters to the request
