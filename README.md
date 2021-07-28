@@ -79,9 +79,10 @@ f = Flow().add(uses='jinahub://ExecutorName')
 **For internal Jina enigneers only:**
 
 - add the new executor to the right subfolder.
-	- crafters
-	- [indexers](./jinahub/indexers) store and retrieve data
+	- [crafters](./jinahub/crafters) transform data
 	- [encoders](./jinahub/encoders) compute the vector representation of data
+	- [indexers](./jinahub/indexers) store and retrieve data
+	- [segmenters](./jinahub/segmenters) split data into chunks  
 	- rankers
 - push your initial version to Jina Hub. Use the guide [here](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Hubble.md#2-push-and-pull-cli)
 - add the UUID and secret to the secrets store. Make sure `(folder name) == (manifest alias) == (name in secrets store)` 

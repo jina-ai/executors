@@ -79,7 +79,7 @@ pods:
 
 	```python
 	from jina import Flow
-	from jinahub.crafters.TorchObjectDetectionSegmenter.torch_object_detection_segmenter import TorchObjectDetectionSegmenter
+	from jinahub.segmenters.TorchObjectDetectionSegmenter.torch_object_detection_segmenter import TorchObjectDetectionSegmenter
 	
 	f = Flow().add(uses=TorchObjectDetectionSegmenter)
 	```
@@ -91,7 +91,7 @@ pods:
 
 	```shell
 	git clone https://github.com/jina-ai/executors
-	cd executors/jinahub/crafters/TorchObjectDetectionSegmenter
+	cd executors/jinahub/segmenters/TorchObjectDetectionSegmenter
 	docker build -t executor-image-torch-object-detection-segmenter .
 	```
 
