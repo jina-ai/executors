@@ -18,11 +18,12 @@
 To install the dependencies locally run 
 ```
 pip install . 
-pip install -r tests/requirements.txt
 ```
+
 To verify the installation works:
 ```
-pytest tests
+pip install -r tests/requirements.txt
+pytest -sv tests
 ```
 
 ## 🚀 Usages
@@ -68,17 +69,17 @@ pods:
 
 ### 📦️ Via Pypi
 
-1. Install the `jinahub-executor-image-torch-object-detection-segmenter` package.
+1. Install the `executors` package.
 
 	```bash
-	pip install git+https://github.com/jina-ai/executor-image-torch-object-detection-segmenter.git
+	pip install git+https://github.com/jina-ai/executors
 	```
 
-1. Use `jinahub-executor-image-torch-object-detection-segmenter` in your code
+1. Use `TorchObjectDetectionSegmenter` in your code
 
 	```python
 	from jina import Flow
-	from jinahub.segmenter.torch_object_detection_segmenter import TorchObjectDetectionSegmenter
+	from jinahub.crafters.TorchObjectDetectionSegmenter.torch_object_detection_segmenter import TorchObjectDetectionSegmenter
 	
 	f = Flow().add(uses=TorchObjectDetectionSegmenter)
 	```
@@ -89,12 +90,12 @@ pods:
 1. Clone the repo and build the docker image
 
 	```shell
-	git clone https://github.com/jina-ai/EXECUTOR_REPO_NAME.git
-	cd EXECUTOR_REPO_NAME
+	git clone https://github.com/jina-ai/executors
+	cd executors/jinahub/crafters/TorchObjectDetectionSegmenter
 	docker build -t executor-image-torch-object-detection-segmenter .
 	```
 
-1. Use `executor-image-torch-object-detection-segmenter` in your codes
+1. Use `executor-image-torch-object-detection-segmenter` in your code
 
 	```python
 	from jina import Flow
