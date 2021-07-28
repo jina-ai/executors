@@ -59,11 +59,16 @@ class TransformerTorchEncoder(Executor):
         self.layer_index = layer_index
         self.max_length = max_length
         self.logger = JinaLogger(self.__class__.__name__)
-        if not device in ['cpu', 'cuda']:
-            self.logger.error('Torch device not supported. Must be cpu or cuda!')
-            raise RuntimeError('Torch device not supported. Must be cpu or cuda!')
 
-        if device == 'cuda' and not torch.cuda.is_available():
+        if (not device in ['cpu', 'cuda']) and (not device.startswith('cuda:')):
+            self.logger.error(
+                f'Torch device {device} not supported. Must be cpu or cuda!'
+            )
+            raise RuntimeError(
+                f'Torch device {device} not supported. Must be cpu or cuda!'
+            )
+
+        if device.startswith('cuda') and not torch.cuda.is_available():
             self.logger.warning(
                 'You tried to use GPU but torch did not detect your '
                 'GPU correctly. Defaulting to CPU. Check your CUDA installation!'
