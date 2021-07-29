@@ -20,6 +20,13 @@
 - This Executor works on Python 3.7 and 3.8. 
 - Make sure to install the [requirements](requirements.txt)
 
+📕 **Note on docker network for macOS users**:  
+If you run both the database and the `LMDBStorage` docker container on the same machine 
+localhost in the `LMDBStorage` resolves to a separate network created by Docker which cannot see the database running on the host network.  
+Use `host.docker.internal` to access localhost on the host machine.  
+You can pass this parameter to the `LMDBStorage` storage by using `override_with={'hostname': 'host.docker.internal''}` when
+calling the `flow.add(...)` function.
+
 ## 🚀 Usages
 
 ### 🚚 Via JinaHub
