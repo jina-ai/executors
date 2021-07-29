@@ -106,7 +106,7 @@ def test_openai_embed_match():
 
     # assert same results with OpenAI's implementation
     model, preprocess = clip.load("ViT-B/32", device="cpu")
-    assert len(txt_to_ndarray) == 11
+    assert len(txt_to_ndarray) == 5
     for text, actual_embedding in txt_to_ndarray.items():
         with torch.no_grad():
             tokens = clip.tokenize(text)
