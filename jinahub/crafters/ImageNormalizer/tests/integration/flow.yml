@@ -1,0 +1,11 @@
+jtype: Flow
+version: '1'
+with:
+  workspace: $WORKSPACE
+executors:
+  - name: normalizer
+    uses:
+      jtype: ImageNormalizer
+      with:
+        target_size: 64
+        target_dtype: $DTYPE
