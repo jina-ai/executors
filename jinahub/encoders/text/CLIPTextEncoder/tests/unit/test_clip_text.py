@@ -100,7 +100,7 @@ def test_openai_embed_match():
     for sentence in sentences:
         docs.append(Document(text=sentence))
 
-    clip_text_encoder = CLIPTextEncoder()
+    clip_text_encoder = CLIPTextEncoder("openai/clip-vit-base-patch32")
     clip_text_encoder.encode(DocumentArray(docs), {})
 
     txt_to_ndarray = {}
