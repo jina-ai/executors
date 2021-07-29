@@ -3,7 +3,7 @@ import copy
 import numpy as np
 import torch
 from jina import Document, DocumentArray, Executor
-from jinahub.encoder.clip_text import CLIPTextEncoder
+from ...clip_text import CLIPTextEncoder
 
 
 def test_clip_batch():

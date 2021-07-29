@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 import pytest
 from jina import Flow, Document, DocumentArray
-from jinahub.encoder.image_tf_encoder import ImageTFEncoder
+from ...image_tf_encoder import ImageTFEncoder
 
 input_dim = 336
 target_output_dim = 1280

@@ -6,7 +6,7 @@ from jina import Document, Flow, DocumentArray
 try:
     from spacy_text_encoder import SpacyTextEncoder
 except:
-    from jinahub.encoder.spacy_text_encoder import SpacyTextEncoder
+    from ...spacy_text_encoder import SpacyTextEncoder
 
 
 def test_spacy_text_encoder():

@@ -54,7 +54,7 @@ pods:
 1. Use `TextPaddleEncoder` in your code
 
 	```python
-	from jinahub.encoder.text_paddle import TextPaddleEncoder
+	from ...text_paddle import TextPaddleEncoder
 	from jina import Flow
 	
 	f = Flow().add(uses=TextPaddleEncoder)

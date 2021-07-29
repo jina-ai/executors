@@ -4,7 +4,7 @@ __license__ = "Apache-2.0"
 import numpy as np
 import pytest
 from jina import Document, DocumentArray
-from jinahub.encoder.transformer_tf_text_encode import TransformerTFTextEncoder
+from ...transformer_tf_text_encode import TransformerTFTextEncoder
 
 target_dim = 768
 

@@ -49,7 +49,7 @@ pods:
 1. Use `jinahub-clip-image` in your code
 
 	```python
-	from jinahub.encoder.clip_image import CLIPImageEncoder
+	from ...clip_image import CLIPImageEncoder
 	from jina import Flow
 	
 	f = Flow().add(uses=CLIPImageEncoder)

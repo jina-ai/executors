@@ -7,7 +7,7 @@ import pytest
 
 from jina import DocumentArray
 
-from jinahub.encoder.transform_encoder  import TransformerTorchEncoder
+from ...transform_encoder  import TransformerTorchEncoder
 
 
 MODELS_TO_TEST = [

@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 import pytest
 from jina import Flow, Document, DocumentArray
-from jinahub.encoder.paddle_image import ImagePaddlehubEncoder
+from ...paddle_image import ImagePaddlehubEncoder
 
 
 @pytest.mark.parametrize('arr_in', [

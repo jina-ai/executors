@@ -5,12 +5,9 @@ import os
 import librosa
 
 from jina import Flow, Document, DocumentArray
-from vggish import vggish_input
 
-try:
-    from vggish_audio_encoder import VggishAudioEncoder
-except:
-    from jinahub.encoders.audio.vggish_audio_encoder import VggishAudioEncoder
+from ...vggish import vggish_input
+from ...vggish_audio_encoder import VggishAudioEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
