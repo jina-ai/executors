@@ -15,10 +15,8 @@ class CLIPTextEncoder(Executor):
         - A string, the model id of a pretrained CLIP model hosted
             inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
         - A path to a directory containing model weights saved, e.g., ./my_model_directory/
-        - A path or url to a tensorflow index checkpoint file, e.g, ./tf_model/model.ckpt.index
-        See all CLIP models at https://huggingface.co/models?filter=clip
     :param base_tokenizer_model: Base tokenizer model.
-        Defaults to `pretrained_model_name_or_path` if None
+        Defaults to ``pretrained_model_name_or_path`` if None
     :param max_length: Max length argument for the tokenizer.
         All CLIP models use 77 as the max length
     :param device: Device to be used. Use 'cuda' for GPU.
@@ -35,29 +33,23 @@ class CLIPTextEncoder(Executor):
         base_tokenizer_model: Optional[str] = None,
         max_length: Optional[int] = 77,
         device: str = 'cpu',
-        default_traversal_paths: Optional[List[str]] = None,
+        default_traversal_paths: List[str] = ['r'],
+
         default_batch_size: int = 32,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        if default_traversal_paths is not None:
-            self.default_traversal_paths = default_traversal_paths
-        else:
-            self.default_traversal_paths = ['r']
+        self.default_traversal_paths = default_traversal_paths
         self.default_batch_size = default_batch_size
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.base_tokenizer_model = (
             base_tokenizer_model or pretrained_model_name_or_path
         )
         self.max_length = max_length
-        self.logger = JinaLogger(self.__class__.__name__)
 
-        if device not in ['cpu', 'cuda']:
-            self.logger.error('Torch device not supported. Must be cpu or cuda!')
-            raise RuntimeError('Torch device not supported. Must be cpu or cuda!')
 
-        if device == 'cuda' and not torch.cuda.is_available():
+        if device.startswith('cuda') and not torch.cuda.is_available():
             self.logger.warning(
                 'You tried to use GPU but torch did not detect your'
                 'GPU correctly. Defaulting to CPU. Check your CUDA installation!'
@@ -67,7 +59,7 @@ class CLIPTextEncoder(Executor):
         self.device = device
         self.tokenizer = CLIPTokenizer.from_pretrained(self.base_tokenizer_model)
         self.model = CLIPModel.from_pretrained(self.pretrained_model_name_or_path)
-        self.model.to(torch.device(device))
+        self.model.eval().to(torch.device(device))
 
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
@@ -100,9 +92,6 @@ class CLIPTextEncoder(Executor):
                     document.embedding = numpy_embedding
 
     def _generate_input_tokens(self, texts):
-        if not self.tokenizer.pad_token:
-            self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-            self.model.resize_token_embeddings(len(self.tokenizer.vocab))
 
         input_tokens = self.tokenizer(
             texts,

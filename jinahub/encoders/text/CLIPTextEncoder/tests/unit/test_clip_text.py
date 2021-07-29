@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import torch
 from jina import Document, DocumentArray
-from jinahub.encoder.clip_text import CLIPTextEncoder
+from ...clip_text import CLIPTextEncoder
 
 
 @pytest.fixture(scope="module")
@@ -86,9 +86,6 @@ def test_encodes_semantic_meaning():
 def test_openai_embed_match():
     docs = []
 
-    words = ["apple", "banana1", "banana2", "studio", "satellite", "airplane"]
-    for word in words:
-        docs.append(Document(text=word))
 
     sentences = [
         "Jina AI is lit",
