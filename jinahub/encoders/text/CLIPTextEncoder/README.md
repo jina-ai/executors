@@ -29,7 +29,7 @@ No prerequisites are required to run this executor.
 
 ### 🚚 Via JinaHub
 
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -49,7 +49,7 @@ pods:
     uses: 'jinahub+docker://CLIPTextEncoder'
     volumes: '/your_home_folder/.cache/clip:/root/.cache/clip'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -91,6 +91,7 @@ pods:
 	```
 	
 
+</details>
 
 ## 🎉️ Example 
 

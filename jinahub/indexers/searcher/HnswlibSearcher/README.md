@@ -81,7 +81,7 @@ pods:
   - name: indexer
     uses: 'jinahub://HnswlibSearcher'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -119,6 +119,7 @@ pods:
 	f = Flow().add(uses='docker://hnswlib-image:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

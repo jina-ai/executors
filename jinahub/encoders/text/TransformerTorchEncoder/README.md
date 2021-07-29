@@ -43,7 +43,7 @@ pytest tests
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -66,7 +66,7 @@ pods:
 This does not support GPU at the moment.
 
 #### using source codes
-Use the source codes from JinaHub in your python codes,
+Use the source codes from JinaHub in your Python code:
 
 ```python
 from jina import Flow, Document
@@ -86,7 +86,7 @@ pods:
   - name: encoder
     uses: 'jinahub://TransformerTorchEncoder'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -135,6 +135,7 @@ pods:
 	f = Flow().add(uses='docker://transformer-torch-encoder', docker_kwargs={'runtime': 'nvidia'})
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

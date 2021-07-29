@@ -33,7 +33,7 @@ pytest tests
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -51,7 +51,7 @@ pods:
 ```
 
 #### using source codes
-Use the source codes from JinaHub in your python codes,
+Use the source codes from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -67,7 +67,7 @@ pods:
   - name: encoder
     uses: 'jinahub://ImageTFEncoder'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -105,6 +105,7 @@ pods:
 	f = Flow().add(uses='docker://executor-image-tf-encoder:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

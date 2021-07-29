@@ -78,7 +78,7 @@ pods:
   - name: indexer
     uses: 'jinahub://NumpyLMDBSearcher'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -116,6 +116,7 @@ pods:
 	f = Flow().add(uses='docker://numpy-file-image:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

@@ -23,7 +23,7 @@ pytest tests
 
 ### Via JinaHub (🚧W.I.P.)
 
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow

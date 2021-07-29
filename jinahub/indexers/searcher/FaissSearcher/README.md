@@ -81,7 +81,7 @@ pods:
   - name: indexer
     uses: 'jinahub://FaissSearcher'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -119,6 +119,7 @@ pods:
 	f = Flow().add(uses='docker://faiss-image:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

@@ -31,7 +31,7 @@ pytest tests
 ## 🚀 Usages
 
 ### 🚚 Via JinaHub (WIP)
-Use the prebuilt images from JinaHub in your python codes.
+Use the prebuilt images from JinaHub in your Python codes.
 With the `volumes` argument you can pass model from your local machine into the Docker container.
 ```python
 from jina import Flow
@@ -46,9 +46,9 @@ pods:
   - name: encoder
     uses: 'jinahub+docker://ImageTorchEncoder'
     volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
-```
+```<details>
 
-### 📦️ Via PyPi
+### 📦️ Via Pypi
 1. Install the `ImageTorchEncoder` 
 ```bash
 pip install git+https://github.com/jina-ai/executor-image-torch-encoder.git
@@ -84,6 +84,7 @@ from jina import Flow
 f = Flow().add(uses='docker://executor-image-torch-encoder:latest')
 ```
 	
+</details>
 
 ## 🎉️ Example 
 

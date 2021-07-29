@@ -23,7 +23,7 @@ Run the provided bash script `scripts/download_model.sh` to download the pretrai
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -40,7 +40,7 @@ pods:
 ```
 
 #### using source codes
-Use the source codes from JinaHub in your python codes,
+Use the source codes from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -56,7 +56,7 @@ pods:
   - name: encoder
     uses: 'jinahub://AudioCLIPEncoder'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -93,6 +93,7 @@ pods:
 	
 	f = Flow().add(uses='docker://executor-audio-clip-encoder:latest')
 	```
+</details>
 
 ## 🎉️ Example 
 

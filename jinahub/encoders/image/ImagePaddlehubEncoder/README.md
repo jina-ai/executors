@@ -17,7 +17,7 @@ pytest tests
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -35,7 +35,7 @@ pods:
 ```
 
 #### using source codes
-Use the source codes from JinaHub in your python codes,
+Use the source codes from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -51,7 +51,7 @@ pods:
   - name: encoder
     uses: 'jinahub://ImagePaddlehubEncoder'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 

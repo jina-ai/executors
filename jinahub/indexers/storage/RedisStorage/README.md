@@ -68,7 +68,7 @@ pods:
   - name: indexer
     uses: 'jinahub://RedisStorage'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -106,6 +106,7 @@ pods:
 	f = Flow().add(uses='docker://redis-storage:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

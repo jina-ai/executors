@@ -46,7 +46,7 @@ And then you will also need to pass the argument `model_path='.cache/AudioCLIP-P
 
 #### Using docker images
 
-Use the prebuilt images from JinaHub in your python code, 
+Use the prebuilt images from JinaHub in your Python code, 
 
 ```python
 from jina import Flow
@@ -69,7 +69,7 @@ pods:
 
 #### Using source codes
 
-Use the source code from JinaHub in your python code,
+Use the source code from JinaHub in your Python code,
 
 ```python
 from jina import Flow
@@ -128,6 +128,7 @@ pods:
 	)
 	```
 	
+</details>
 </details>
 
 ## 🎉️ Example 

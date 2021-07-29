@@ -55,7 +55,7 @@ class LaserEncoder(Executor):
         self.language = language.lower()
 
         self.model = Laser(
-            bpe_codes=self._path_to_bpe_codes,
+            bpe_codes=self._path_to_bpe_code:
             bpe_vocab=self._path_to_bpe_vocab,
             encoder=self._path_to_encoder,
         )

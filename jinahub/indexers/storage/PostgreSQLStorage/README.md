@@ -68,7 +68,7 @@ pods:
   - name: indexer
     uses: 'jinahub://PostgreSQLStorage'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -106,6 +106,7 @@ pods:
 	f = Flow().add(uses='docker://psql-indexer-image:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

@@ -86,7 +86,7 @@ pods:
   - name: indexer
     uses: 'jinahub://NumpyPostgresSearcher'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -124,6 +124,7 @@ pods:
 	f = Flow().add(uses='docker://numpy-psql-image:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

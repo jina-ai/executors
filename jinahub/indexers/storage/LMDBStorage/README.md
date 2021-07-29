@@ -60,7 +60,7 @@ pods:
   - name: indexer
     uses: 'jinahub://LMDBStorage'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -98,6 +98,7 @@ pods:
 	f = Flow().add(uses='docker://lmdb-image:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

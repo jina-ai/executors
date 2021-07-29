@@ -62,7 +62,7 @@ pods:
   - name: indexer
     uses: 'jinahub://DocCache'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -100,6 +100,7 @@ pods:
 	f = Flow().add(uses='docker://doc-cache-image:latest')
 	```
 	
+</details></details>
 
 ## 🎉️ Example 
 

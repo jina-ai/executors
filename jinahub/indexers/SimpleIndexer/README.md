@@ -60,7 +60,7 @@ pods:
   - name: indexer
     uses: 'jinahub://SimpleIndexer'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -98,6 +98,7 @@ pods:
 	f = Flow().add(uses='docker://simple-indexer-image:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

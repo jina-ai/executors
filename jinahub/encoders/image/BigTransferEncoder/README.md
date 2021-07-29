@@ -48,7 +48,7 @@ pytest tests
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -84,7 +84,7 @@ pods:
 The prebuilt images do currently not support GPU.  
 
 #### using source codes
-Use the source codes from JinaHub in your python codes,
+Use the source codes from JinaHub in your Python code:
 
 ```python
 import numpy as np
@@ -108,7 +108,7 @@ pods:
     override_with:
       on_gpu: true
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -156,6 +156,7 @@ pods:
     f = Flow().add(uses='docker://big-transfer-encoder-image', docker_kwargs={'runtime': 'nvidia'})
 	```
 	
+</details>
 
 ## 🎉️ Example 
 

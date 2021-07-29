@@ -80,7 +80,7 @@ pods:
   - name: indexer
     uses: 'jinahub://AnnoySearcher'
 ```
-
+<details>
 
 ### 📦️ Via Pypi
 
@@ -118,6 +118,7 @@ pods:
 	f = Flow().add(uses='docker://annoy-image:latest')
 	```
 	
+</details>
 
 ## 🎉️ Example 
 
