@@ -1,6 +1,6 @@
 # ✨ CLIPTextEncoder
 
- **CLIPTextEncoder** is a class that wraps the text embedding functionality from the **CLIP** model.
+ **CLIPTextEncoder** is a class that wraps the text embedding functionality using the **CLIP** model from huggingface transformers
 
 The **CLIP** model was originally proposed in  [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020).
 
@@ -9,6 +9,23 @@ The **CLIP** model was originally proposed in  [Learning Transferable Visual Mod
 - Input shape: `BatchSize `
 
 - Output shape: `BatchSize x EmbeddingDimension`
+
+The following parameters can be passed on initialization:
+- `pretrained_model_name_or_path`: Can be either:
+	- A string, the model id of a pretrained CLIP model hosted
+              inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
+	- A path to a directory containing model weights, saved using
+		the transformers model's `save_pretrained()` method
+- `base_tokenizer_model`: Base tokenizer model.
+        Defaults to ``pretrained_model_name_or_path`` if None
+- `max_length`: Max length argument for the tokenizer.
+        All CLIP models use 77 as the max length
+- `device`: Device to be used. Use 'cuda' for GPU.
+- `default_traversal_paths`: Default traversal paths for encoding, used if the
+        traversal path is not passed as a parameter with the request.
+- `default_batch_size`: Default batch size for encoding, used if the
+        batch size is not passed as a parameter with the request.
+
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -49,48 +66,6 @@ pods:
     uses: 'jinahub+docker://CLIPTextEncoder'
     volumes: '/your_home_folder/.cache/clip:/root/.cache/clip'
 ```
-
-
-### 📦️ Via Pypi
-
-1. Install the `jinahub-text-clip-text-encoder`
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-text-clip-text-encoder.git
-	```
-
-1. Use `jinahub-text-clip-text-encoder` in your code
-
-	```python
-	from jinahub.encoder.clip_text import CLIPTextEncoder
-	from jina import Flow
-	
-	f = Flow().add(uses=CLIPTextEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-text-clip-text-encoder.git
-	cd executor-text-CLIP
-	docker build -t jinahub-clip-text .
-	```
-
-2. Use `jinahub-clip-text` in your code
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(
-	        uses='docker://jinahub-clip-text:latest',
-	        volumes='/your_home_folder/.cache/clip:/root/.cache/clip'
-		)
-	```
-	
-
 
 ## 🎉️ Example 
 
@@ -133,4 +108,4 @@ with f:
 
 - [CLIP blog post](https://openai.com/blog/clip/)
 - [CLIP paper](https://arxiv.org/abs/2103.00020)
-- [CLIP GitHub repository](https://github.com/openai/CLIP)
+- [Huggingface transformers CLIP model documentation](https://huggingface.co/transformers/model_doc/clip.html)

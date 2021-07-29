@@ -22,7 +22,8 @@ class CLIPTextEncoder(Executor):
     :param device: Device to be used. Use 'cuda' for GPU.
     :param default_traversal_paths: Default traversal paths for encoding, used if the
         traversal path is not passed as a parameter with the request.
-    :param default_batch_size: Defines the batch size for inference on the loaded PyTorch model.
+    :param default_batch_size: Default batch size for encoding, used if the
+        batch size is not passed as a parameter with the request.
     :param args: Arguments
     :param kwargs: Keyword Arguments
     """
@@ -34,7 +35,6 @@ class CLIPTextEncoder(Executor):
         max_length: Optional[int] = 77,
         device: str = 'cpu',
         default_traversal_paths: List[str] = ['r'],
-
         default_batch_size: int = 32,
         *args,
         **kwargs,
@@ -47,7 +47,6 @@ class CLIPTextEncoder(Executor):
             base_tokenizer_model or pretrained_model_name_or_path
         )
         self.max_length = max_length
-
 
         if device.startswith('cuda') and not torch.cuda.is_available():
             self.logger.warning(

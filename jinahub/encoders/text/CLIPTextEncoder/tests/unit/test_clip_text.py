@@ -85,8 +85,6 @@ def test_encodes_semantic_meaning():
 
 def test_openai_embed_match():
     docs = []
-
-
     sentences = [
         "Jina AI is lit",
         "Jina AI is great",
