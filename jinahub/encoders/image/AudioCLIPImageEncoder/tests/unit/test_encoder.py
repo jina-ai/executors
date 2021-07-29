@@ -10,7 +10,7 @@ from PIL import Image
 
 from jina import Document, DocumentArray
 from jina.executors import BaseExecutor
-from jinahub.encoder.audioclip_image import AudioCLIPImageEncoder
+from ...audioclip_image import AudioCLIPImageEncoder
 
 
 @pytest.fixture(scope="module")

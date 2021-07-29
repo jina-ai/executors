@@ -6,7 +6,7 @@ from glob import glob
 from PIL import Image
 
 from jina import Flow, Document
-from jinahub.encoder.clip_image import CLIPImageEncoder
+from ...clip_image import CLIPImageEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
