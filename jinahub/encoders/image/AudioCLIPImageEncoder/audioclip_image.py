@@ -9,7 +9,7 @@ from jina_commons.batching import get_docs_batch_generator
 from PIL import Image
 from torchvision import transforms
 
-from audio_clip.model import AudioCLIP
+from .audio_clip.model import AudioCLIP
 
 # Defaults from CLIP
 _IMAGE_SIZE = 224
