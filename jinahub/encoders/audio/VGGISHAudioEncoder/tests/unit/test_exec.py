@@ -25,8 +25,4 @@ def test_embedding_dimension():
     ops.reset_default_graph()
     model = VggishAudioEncoder()
     model.encode(doc, parameters={})
-    assert doc[0].embedding.shape[0] == 128
-    assert doc[0].embedding.shape[-1] == 128
-
-
-
+    assert doc[0].embedding.shape == (128,)

@@ -2,8 +2,9 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-import subprocess
+from pathlib import Path
 
+import requests as requests_
 from typing import Any, Optional, List, Iterable
 import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
@@ -35,8 +36,18 @@ class VggishAudioEncoder(Executor):
         self.pca_path = pca_path
         self.default_traversal_paths = default_traversal_paths or ['r']
 
-        if not os.path.exists(self.model_path) or not os.path.exists(self.pca_path):
-            subprocess.call('scripts/download_model.sh')
+        Path(os.path.join(cur_dir, 'models')).mkdir(exist_ok=True)
+
+        if not os.path.exists(self.model_path):
+            r = requests_.get('https://storage.googleapis.com/audioset/vggish_model.ckpt')
+            with open(model_path, 'wb') as f:
+                f.write(r.content)
+
+        if not os.path.exists(self.pca_path):
+            r = requests_.get('https://storage.googleapis.com/audioset/vggish_pca_params.npz')
+            with open(pca_path, 'wb') as f:
+                f.write(r.content)
+
 
         self.sess = tf.compat.v1.Session()
         define_vggish_slim()
