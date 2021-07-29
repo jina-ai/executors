@@ -2,6 +2,14 @@
 apt-get update && apt-get install -y jq curl
 
 push_dir=$1
+
+# empty change is detected as home directory
+if [ -z "$push_dir" ]
+then
+      echo "\$push_dir is empty"
+      exit 0
+fi
+
 echo pushing $push_dir
 cd $push_dir
 
