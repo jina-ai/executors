@@ -3,14 +3,15 @@ __license__ = "Apache-2.0"
 
 import os
 from pathlib import Path
-
-import requests as requests_
 from typing import Any, Optional, List, Iterable
-import tensorflow as tf
-tf.compat.v1.disable_eager_execution()
 
 from jina import Executor, requests, DocumentArray
 from jina.logging.logger import JinaLogger
+import requests as requests_
+import tensorflow as tf
+
+tf.compat.v1.disable_eager_execution()
+
 from vggish.vggish_postprocess import *
 from vggish.vggish_slim import *
 
