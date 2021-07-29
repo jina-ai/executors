@@ -155,3 +155,19 @@ def test_mwu_empty_dump(tmpdir, docker_compose):
     ids, metas = import_metas(dump_path, pea_id='0')
     assert vecs is not None
     assert metas is not None
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_return_embeddings(docker_compose):
+    indexer = PostgreSQLStorage()
+    doc = Document(embedding=np.random.rand(1, 10))
+    da = DocumentArray([doc])
+    query1 = DocumentArray([Document(id=doc.id)])
+    indexer.add(da, parameters={})
+    indexer.search(query1, parameters={})
+    assert query1[0].embedding is not None
+    assert query1[0].embedding.shape == (1, 10)
+
+    query2 = DocumentArray([Document(id=doc.id)])
+    indexer.search(query2, parameters={"return_embeddings": False})
+    assert query2[0].embedding is None

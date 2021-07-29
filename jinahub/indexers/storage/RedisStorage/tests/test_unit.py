@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pytest as pytest
 from jina import Document, DocumentArray
 
@@ -106,3 +107,18 @@ def test_delete(indexer, docs, docker_compose):
 
     qh = indexer.get_query_handler()
     assert len(qh.keys()) == 3
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_return_embeddings(indexer, docker_compose):
+    doc = Document(embedding=np.random.rand(1, 10))
+    da = DocumentArray([doc])
+    query1 = DocumentArray([Document(id=doc.id)])
+    indexer.add(da, parameters={})
+    indexer.search(query1, parameters={})
+    assert query1[0].embedding is not None
+    assert query1[0].embedding.shape == (1, 10)
+
+    query2 = DocumentArray([Document(id=doc.id)])
+    indexer.search(query2, parameters={"return_embeddings": False})
+    assert query2[0].embedding is None
