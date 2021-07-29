@@ -10,6 +10,7 @@ import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
 
 from jina import Executor, requests, DocumentArray
+from jina.logging.logger import JinaLogger
 from vggish.vggish_postprocess import *
 from vggish.vggish_slim import *
 
@@ -20,43 +21,63 @@ class VggishAudioEncoder(Executor):
     """
      Encode audio data with Vggish embeddings
 
-     :param model_path: path of the pre-trained Vggish model
-     :param pca_path: path of the pre-trained PCA model
+     :param model_path: path of the models directory
      :param default_traversal_paths: fallback batch size in case there is not batch size sent in the request
      """
 
     def __init__(self,
-                 model_path: str = os.path.join(cur_dir, 'models/vggish_model.ckpt'),
-                 pca_path: str = os.path.join(cur_dir, 'models/vggish_pca_params.npz'),
+                 model_path: str = os.path.join(cur_dir, 'models'),
                  default_traversal_paths: Optional[Iterable[str]] = None,
                  *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.model_path = model_path
-        self.pca_path = pca_path
         self.default_traversal_paths = default_traversal_paths or ['r']
+        self.logger = JinaLogger(self.__class__.__name__)
 
-        Path(os.path.join(cur_dir, 'models')).mkdir(exist_ok=True)
+        self.model_path = Path(model_path)
+        self.vgg_model_path = self.model_path / 'vggish_model.ckpt'
+        self.pca_model_path = self.model_path / 'vggish_pca_params.ckpt'
+        self.model_path.mkdir(exist_ok=True)  # Create the model directory if it does not exist yet
 
-        if not os.path.exists(self.model_path):
-            r = requests_.get('https://storage.googleapis.com/audioset/vggish_model.ckpt')
-            with open(model_path, 'wb') as f:
+        if not self.vgg_model_path.exists():
+            self.logger.info('VGGish model cannot be found from the given model path, downloading a new one...')
+            try:
+                r = requests_.get('https://storage.googleapis.com/audioset/vggish_model.ckpt')
+                r.raise_for_status()
+            except requests.exceptions.HTTPError:
+                self.logger.error('received HTTP error response, cannot download vggish model')
+                raise
+            except requests.exceptions.RequestException:
+                self.logger.error('Connection error, cannot download vggish model')
+                raise
+
+            with open(self.vgg_model_path, 'wb') as f:
                 f.write(r.content)
 
-        if not os.path.exists(self.pca_path):
-            r = requests_.get('https://storage.googleapis.com/audioset/vggish_pca_params.npz')
-            with open(pca_path, 'wb') as f:
+        if not self.pca_model_path.exists():
+            self.logger.info('PCA model cannot be found from the given model path, downloading a new one...')
+            try:
+                r = requests_.get('https://storage.googleapis.com/audioset/vggish_pca_params.npz')
+                r.raise_for_status()
+            except requests.exceptions.HTTPError:
+                self.logger.error('received HTTP error response, cannot download pca model')
+                raise
+            except requests.exceptions.RequestException:
+                self.logger.error('Connection error, cannot download pca model')
+                raise
+
+            with open(self.pca_model_path, 'wb') as f:
                 f.write(r.content)
 
 
         self.sess = tf.compat.v1.Session()
         define_vggish_slim()
-        load_vggish_slim_checkpoint(self.sess, self.model_path)
+        load_vggish_slim_checkpoint(self.sess, str(self.vgg_model_path))
         self.feature_tensor = self.sess.graph.get_tensor_by_name(
             INPUT_TENSOR_NAME)
         self.embedding_tensor = self.sess.graph.get_tensor_by_name(
             OUTPUT_TENSOR_NAME)
-        self.post_processor = Postprocessor(self.pca_path)
+        self.post_processor = Postprocessor(str(self.pca_model_path))
 
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: dict, **kwargs):
