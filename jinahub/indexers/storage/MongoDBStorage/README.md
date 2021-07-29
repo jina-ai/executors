@@ -72,13 +72,13 @@ pods:
 
 ### 📦️ Via Pypi
 
-1. Install the `executor-indexers` package.
+1. Install the `executors` package.
 
 	```bash
-	pip install git+https://github.com/jina-ai/executor-indexers/
+	pip install git+https://github.com/jina-ai/executors/
 	```
 
-1. Use `executor-indexers` in your code
+1. Use `MongoDBStorage` in your code
 
    ```python
    from jina import Flow
