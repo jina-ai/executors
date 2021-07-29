@@ -5,6 +5,6 @@ RUN apt update && apt install -y python3.8 python3-pip
 COPY . /big_transfer/
 WORKDIR /big_transfer
 
-RUN pip install .
+RUN pip install -r requirements.txt
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
