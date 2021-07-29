@@ -11,13 +11,17 @@ from transformers import CLIPTokenizer, CLIPModel
 class CLIPTextEncoder(Executor):
     """Encode text into embeddings using a CLIP model.
 
-    :param pretrained_model_name_or_path: The name of one of the pre-trained CLIP models.
-        Can also be a path to a local checkpoint (a ``.pt`` file).
-    :param base_tokenizer_model: Base tokenizer model
-    :param max_length: Max length argument for the tokenizer
-    :param embedding_fn_name: Function to call on the model in order to get output
-    :param device: Device to be used. Use 'cuda' for GPU
-    :param num_threads: The number of threads used for intraop parallelism on CPU
+    :param pretrained_model_name_or_path: Can be either:
+        - A string, the model id of a pretrained CLIP model hosted
+            inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
+        - A path to a directory containing model weights saved, e.g., ./my_model_directory/
+        - A path or url to a tensorflow index checkpoint file, e.g, ./tf_model/model.ckpt.index
+        See all CLIP models at https://huggingface.co/models?filter=clip
+    :param base_tokenizer_model: Base tokenizer model.
+        Defaults to `pretrained_model_name_or_path` if None
+    :param max_length: Max length argument for the tokenizer.
+        All CLIP models use 77 as the max length
+    :param device: Device to be used. Use 'cuda' for GPU.
     :param default_traversal_paths: Default traversal paths for encoding, used if the
         traversal path is not passed as a parameter with the request.
     :param default_batch_size: Defines the batch size for inference on the loaded PyTorch model.
@@ -29,10 +33,8 @@ class CLIPTextEncoder(Executor):
         self,
         pretrained_model_name_or_path: str = 'openai/clip-vit-base-patch32',
         base_tokenizer_model: Optional[str] = None,
-        max_length: Optional[int] = None,
-        embedding_fn_name: str = 'get_text_features',
+        max_length: Optional[int] = 77,
         device: str = 'cpu',
-        num_threads: Optional[int] = None,
         default_traversal_paths: Optional[List[str]] = None,
         default_batch_size: int = 32,
         *args,
@@ -62,17 +64,7 @@ class CLIPTextEncoder(Executor):
             )
             device = 'cpu'
 
-        if device == 'cpu' and num_threads:
-            cpu_num = os.cpu_count()
-            if num_threads > cpu_num:
-                self.logger.warning(
-                    f'You tried to use {num_threads} threads > {cpu_num} CPUs'
-                )
-            else:
-                torch.set_num_threads(num_threads)
-
         self.device = device
-        self.embedding_fn_name = embedding_fn_name
         self.tokenizer = CLIPTokenizer.from_pretrained(self.base_tokenizer_model)
         self.model = CLIPModel.from_pretrained(self.pretrained_model_name_or_path)
         self.model.to(torch.device(device))
@@ -100,11 +92,8 @@ class CLIPTextEncoder(Executor):
 
             with torch.no_grad():
                 input_tokens = self._generate_input_tokens(text_batch)
-                embedding_batch = getattr(self.model, self.embedding_fn_name)(
-                    **input_tokens
-                )
-                if isinstance(embedding_batch, torch.Tensor):
-                    numpy_embedding_batch = embedding_batch.cpu().numpy()
+                embedding_batch = self.model.get_text_features(**input_tokens)
+                numpy_embedding_batch = embedding_batch.cpu().numpy()
                 for document, numpy_embedding in zip(
                     document_batch, numpy_embedding_batch
                 ):
