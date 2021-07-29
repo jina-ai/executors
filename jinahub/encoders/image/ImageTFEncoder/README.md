@@ -16,6 +16,9 @@
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 Some conditions to fulfill before running the executor
 
 ## 🚀 Usages
@@ -50,8 +53,8 @@ pods:
     uses: 'jinahub+docker://ImageTFEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your Python code:
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -67,45 +70,7 @@ pods:
   - name: encoder
     uses: 'jinahub://ImageTFEncoder'
 ```
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `executor-image-tf-encoder` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-image-tf-encoder
-	```
-
-1. Use `jinahub-executor-image-tf-encoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.image_tf_encoder import ImageTFEncoder
-	
-	f = Flow().add(uses=ImageTFEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-image-tf-encoder
-	cd executor-image-tf-encoder
-	docker build -t executor-image-tf-encoder .
-	```
-
-1. Use `executor-image-tf-encoder` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-image-tf-encoder:latest')
-	```
-	
-</details>
 
 ## 🎉️ Example 
 

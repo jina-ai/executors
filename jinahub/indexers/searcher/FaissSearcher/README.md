@@ -18,6 +18,9 @@ Faiss is a library for efficient similarity search and clustering of dense vecto
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 - This Executor works on Python 3.7 and 3.8. 
 - Make sure to install the [requirements](requirements.txt)
 
@@ -81,45 +84,7 @@ pods:
   - name: indexer
     uses: 'jinahub://FaissSearcher'
 ```
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `executor-indexers` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-indexers/
-	```
-
-1. Use `executor-indexers` in your code
-
-   ```python
-   from jina import Flow
-   from jinahub.indexers.searcher import FaissSearcher
-   
-   f = Flow().add(uses=FaissSearcher)
-   ```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-indexers/
-	cd jinahub/indexers/searcher/vector/FaissSearcher
-	docker build -t faiss-image .
-	```
-
-1. Use `faiss-image` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://faiss-image:latest')
-	```
-	
-</details>
 
 ## 🎉️ Example 
 

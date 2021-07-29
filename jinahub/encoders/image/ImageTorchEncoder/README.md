@@ -18,6 +18,9 @@ into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of 
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 To install the dependencies locally run 
 ```
 pip install . 
@@ -46,45 +49,7 @@ pods:
   - name: encoder
     uses: 'jinahub+docker://ImageTorchEncoder'
     volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
-```<details>
-
-### 📦️ Via Pypi
-1. Install the `ImageTorchEncoder` 
-```bash
-pip install git+https://github.com/jina-ai/executor-image-torch-encoder.git
 ```
-2. Use the `ImageTorchEncoder` in your code
-```python
-from jinahub.image.encoder.torch_encoder import ImageTorchEncoder
-from jina import Flow
-
-f = Flow().add(uses=ImageTorchEncoder)
-```
-
-### 🐳 Via Docker
-1. Clone the repo and build the docker image
-```bash
-git clone https://github.com/jina-ai/executor-image-torch-encoder/
-
-cd executor-image-torch-encoder 
-docker build -t jinahub-image-torch-encoder .
-```
-2. Use `jinahub-image-torch-encoder` in your codes
-````python
-from jina import Flow
-
-f = Flow().add(
-        uses='docker://jinahub-image-torch-encoder:latest',
-        volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
-````
-
-1. Use `executor-image-torch-encoder` in your codes
-```python
-from jina import Flow
-f = Flow().add(uses='docker://executor-image-torch-encoder:latest')
-```
-	
-</details>
 
 ## 🎉️ Example 
 

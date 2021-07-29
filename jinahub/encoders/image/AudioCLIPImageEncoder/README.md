@@ -22,6 +22,9 @@ The following arguments can be passed on initialization:
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 First, you should download the model and the vocabulary, which will be saved into the `.cache` folder inside your current directory (will be created if it does not exist yet).
 
 To do this, copy the `scripts/download_full.sh` script to your current directory and execute it:
@@ -86,49 +89,7 @@ pods:
     uses: 'jinahub://AudioCLIPImageEncoder'
 ```
 
-<details>
-<summary>Click here to see advance usage</summary>
 
-### 📦️ Via pip
-
-1. Install the `jinahub-audioclip-image` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-image-audioclip-image-encoder.git
-	```
-
-1. Use `jinahub-audioclip-image` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.audioclip_image import AudioCLIPImageEncoder
-	
-	f = Flow().add(uses=AudioCLIPImageEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executors.git
-	cd jinahub/encoders/image/AudioCLIPImageEncoder
-	docker build -t jinahub-audioclip-image .
-	```
-
-1. Use `jinahub-audioclip-image` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(
-		uses='docker://jinahub-audioclip-image:latest',
-		volumes='/path/to/pwd/.cache:/workspace/.cache'
-	)
-	```
-
-</details>
 
 ## 🎉️ Example 
 

@@ -16,6 +16,9 @@
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 Run the provided bash script `download_model.sh` to download the pretrained model.
 
 To install the dependencies locally run 
@@ -49,8 +52,8 @@ pods:
     uses: 'jinahub+docker://VGGishAudioEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your Python code:
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -66,44 +69,7 @@ pods:
   - name: encoder
     uses: 'jinahub://VGGishAudioEncoder'
 ```
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `jinahub-VGGishAudioEncoder` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-audio-VGGishEncoder.git
-	```
-
-1. Use `jinahub-vggishaudio-encoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.jinahub-vggishaudio-encoder import VggishAudioEncoder
-	
-	f = Flow().add(uses='jinahub+docker://VggishAudioEncoder')
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-audio-VggishAudioEncoder.git
-	cd executor-audio-VGGishEncoder
-	docker build -t executor-audio-vggish-encoder-image .
-	```
-
-1. Use `executor-audio-vggish-encoder-image` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-audio-vggish-encoder-image:latest')
-	```
-</details>
 
 ## 🎉️ Example 
 

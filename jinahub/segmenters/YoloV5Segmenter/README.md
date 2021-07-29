@@ -16,6 +16,9 @@
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 Install dependencies using `pip install -r requirements.txt`.
 
 ## 🚀 Usages
@@ -39,8 +42,8 @@ pods:
     uses: 'jinahub+docker://YoloV5Segmenter'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your Python code:
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -56,44 +59,7 @@ pods:
   - name: encoder
     uses: 'jinahub://YoloV5Segmenter'
 ```
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `executors` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executors.git
-	```
-
-1. Use `YoloV5Segmenter` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.crafters.YoloV5Segmenter.yolov5_segmenter import YoloV5Segmenter
-	
-	f = Flow().add(uses='jinahub+docker://YoloV5Segmenter')
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executors.git
-	cd jinahub/crafters/YoloV5Segmenter
-	docker build -t executor-yolov5-segmenter .
-	```
-
-1. Use `executor-yolov5-segmenter` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-yolov5-segmenter:latest')
-	```
-</details>
 
 ## 🎉️ Example 
 

@@ -29,6 +29,9 @@ The following parameters can be used:
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 No prerequisites are required to run this executor. 
 
 ## 🚀 Usages
@@ -55,8 +58,8 @@ pods:
       target_size: 42
 ``` 
 
-#### using source codes
-Use the source codes from JinaHub in your Python code:
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -73,45 +76,7 @@ pods:
     uses: 'jinahub://ImageNormalizer'
 ```
 
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `executors` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executors.git
-	```
-
-1. Use `ImageNormalizer` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.crafters.ImageNormalizer.normalizer import ImageNormalizer
-	
-	f = Flow().add(uses=ImageNormalizer)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executors.git
-	cd jinahub/crafters/ImageNormalizer
-	docker build -t image-normalizer .
-	```
-
-1. Use `image-normalizer` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://image-normalizer')
-	```
-	
-</details>
 
 ## 🎉️ Example 
 

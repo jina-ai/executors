@@ -29,6 +29,9 @@ The following parameters can be used:
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 No prerequisites are required to run this executor. The executor automatically
 downloads the BiT model specified by `model_name`! Alternatively, you could also 
 download the model in advance and use the `model_path` parameter.
@@ -83,8 +86,8 @@ pods:
 
 The prebuilt images do currently not support GPU.  
 
-#### using source codes
-Use the source codes from JinaHub in your Python code:
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 import numpy as np
@@ -108,55 +111,7 @@ pods:
     override_with:
       on_gpu: true
 ```
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `executor-big-transfer-encoder` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-big-transfer-encoder.git
-	```
-
-1. Use `jinahub-MY-DUMMY-EXECUTOR` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.image.encoder.big_transfer import BigTransferEncoder
-	
-	f = Flow().add(uses=BigTransferEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-big-transfer-encoder.git
-	cd executor-big-transfer-encoder
-	docker build -t big-transfer-encoder-image .
-	```
-    Alternatively, use the GPU dockerfile:
-    ```shell  
-	docker build -f Dockerfile.gpu -t big-transfer-encoder-image .
-    ```
-
-1. Use `big-transfer-encoder-image` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://big-transfer-encoder-image:latest')
-    ```
-    Or, using the GPU image: 
-    ```python
-    from jina import Flow
-    
-    f = Flow().add(uses='docker://big-transfer-encoder-image', docker_kwargs={'runtime': 'nvidia'})
-	```
-	
-</details>
 
 ## 🎉️ Example 
 

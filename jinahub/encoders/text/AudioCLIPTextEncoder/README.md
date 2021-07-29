@@ -22,6 +22,9 @@ The following arguments can be passed on initialization:
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 First, you should download the model and the vocabulary, which will be saved into the `.cache` folder inside your current directory (will be created if it does not exist yet).
 
 To do this, copy the `scripts/download_full.sh` script to your current directory (and make it executable):
@@ -67,7 +70,7 @@ pods:
     volumes: '/path/to/pwd/.cache:/workspace/.cache'
 ```
 
-#### Using source codes
+#### Using source code
 
 Use the source code from JinaHub in your Python code,
 
@@ -86,50 +89,8 @@ pods:
     uses: 'jinahub://AudioCLIPTextEncoder'
 ```
 
-<details>
-<summary>Click here to see advance usage</summary>
 
-### 📦️ Via pip
-
-1. Install the `jinahub-audioclip-text` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-text-audioclip-text-encoder.git
-	```
-
-1. Use `jinahub-audioclip-text` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.audioclip_text import AudioCLIPTextEncoder
-	
-	f = Flow().add(uses=AudioCLIPTextEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-text-audioclip-text-encoder.git
-	cd executor-text-audioclip-text-encoder
-	docker build -t jinahub-audioclip-text .
-	```
-
-1. Use `jinahub-audioclip-text` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(
-		uses='docker://jinahub-audioclip-text:latest',
-		volumes='/path/to/pwd/.cache:/workspace/.cache'
-	)
-	```
-	
-</details>
-</details>
+DETAILSEND
 
 ## 🎉️ Example 
 

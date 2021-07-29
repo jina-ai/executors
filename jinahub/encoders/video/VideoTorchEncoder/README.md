@@ -16,6 +16,9 @@ from [`torchvision.models`](https://pytorch.org/docs/stable/torchvision/models.h
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 To install the dependencies locally run 
 ```
 pip install . 
@@ -50,8 +53,8 @@ pods:
     volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your Python code:
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -67,46 +70,7 @@ pods:
   - name: encoder
     uses: 'jinahub://VideoTorchEncoder'
 ```
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `jinahub-video-torch-encoder` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/EXECUTOR_REPO_NAME.git
-	```
-
-2. Use `jinahub-video-torch-encoder` in your code
-
-	```python
-	from jina import Flow
-	from from jinahub.encoder.video_torch_encoder import VideoTorchEncoder
-	
-	f = Flow().add(uses=VideoTorchEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-video-torch-encoder.git
-	cd executor-video-torch-encoder
-	docker build -t video-torch-encoder-image .
-	```
-
-2. Use `video-torch-encoder` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://video-torch-encoder-image:latest',
-                   volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
-	```
-	
-</details>
 
 ## 🎉️ Example 
 

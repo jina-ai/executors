@@ -23,6 +23,9 @@ The **CLIP** model was originally proposed in  [Learning Transferable Visual Mod
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 No prerequisites are required to run this executor.
 
 ## 🚀 Usages
@@ -49,49 +52,7 @@ pods:
     uses: 'jinahub+docker://CLIPTextEncoder'
     volumes: '/your_home_folder/.cache/clip:/root/.cache/clip'
 ```
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `jinahub-text-clip-text-encoder`
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-text-clip-text-encoder.git
-	```
-
-1. Use `jinahub-text-clip-text-encoder` in your code
-
-	```python
-	from jinahub.encoder.clip_text import CLIPTextEncoder
-	from jina import Flow
-	
-	f = Flow().add(uses=CLIPTextEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-text-clip-text-encoder.git
-	cd executor-text-CLIP
-	docker build -t jinahub-clip-text .
-	```
-
-2. Use `jinahub-clip-text` in your code
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(
-	        uses='docker://jinahub-clip-text:latest',
-	        volumes='/your_home_folder/.cache/clip:/root/.cache/clip'
-		)
-	```
-	
-
-</details>
 
 ## 🎉️ Example 
 

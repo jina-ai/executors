@@ -6,6 +6,9 @@ Internally, `FlairTextEncoder` wraps the DocumentPoolEmbeddings from Flair.
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 To install the dependencies locally run 
 ```
 pip install . 
@@ -38,8 +41,8 @@ pods:
     uses: 'jinahub+docker://FlairTextEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your Python code:
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -55,59 +58,4 @@ pods:
   - name: encoder
     uses: 'jinahub://FlairTextEncoder'
 ```
-<details>
-
-### 📦️ Via Pypi
-
-1. Install the package.
-
-	```bash
-	pip install git+https://github.com/jina-ai//executor-text-flair-encoder.git
-	```
-
-1. Use `FlairTextEncoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.flair_text import FlairTextEncoder
-	
-	f = Flow().add(uses=FlairTextEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-text-flair-encoder.git
-	cd executor-text-flair-encoder
-	docker build -t executor-text-flair-encoder .
-	```
-
-1. Use `executor-text-flair-encoder` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-text-flair-encoder:latest')
-	```
- 
-## 🎉 Example:
-
-Here is an example usage of the **FlairTextEncoder**.
-
-```python
-from jina import Flow, Document
-f = Flow().add(uses='jinahub+docker://FlairTextEncoder')
-with f:
-    resp = f.post(on='foo', inputs=Document(text='hello Jina'), return_results=True)
-```
-
-### Inputs 
-
-`Document` with `text` to be encoded.
-
-### Returns
-
-`Document` with `embedding` fields filled with an `ndarray`  with `dtype=nfloat32`.
+DETAILSSTART

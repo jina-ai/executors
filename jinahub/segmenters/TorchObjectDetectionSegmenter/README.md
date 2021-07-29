@@ -15,6 +15,9 @@
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 To install the dependencies locally run 
 ```
 pip install -r requirements.txt
@@ -48,8 +51,8 @@ pods:
     uses: 'jinahub+docker://TorchObjectDetectionSegmenter'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your Python code:
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -65,45 +68,7 @@ pods:
   - name: encoder
     uses: 'jinahub://TorchObjectDetectionSegmenter'
 ```
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `executors` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executors
-	```
-
-1. Use `TorchObjectDetectionSegmenter` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.segmenters.TorchObjectDetectionSegmenter.torch_object_detection_segmenter import TorchObjectDetectionSegmenter
-	
-	f = Flow().add(uses=TorchObjectDetectionSegmenter)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executors
-	cd executors/jinahub/segmenters/TorchObjectDetectionSegmenter
-	docker build -t executor-image-torch-object-detection-segmenter .
-	```
-
-1. Use `executor-image-torch-object-detection-segmenter` in your code
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-image-torch-object-detection-segmenter:latest')
-	```
-	
-</details>
 
 ## 🎉️ Example 
 

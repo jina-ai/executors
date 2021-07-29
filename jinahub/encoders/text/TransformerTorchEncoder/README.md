@@ -28,6 +28,9 @@ The following parameters can be used:
 
 ## 🌱 Prerequisites
 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 To install the dependencies locally run 
 ```
 pip install . 
@@ -65,8 +68,8 @@ pods:
 ``` 
 This does not support GPU at the moment.
 
-#### using source codes
-Use the source codes from JinaHub in your Python code:
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow, Document
@@ -86,56 +89,7 @@ pods:
   - name: encoder
     uses: 'jinahub://TransformerTorchEncoder'
 ```
-<details>
 
-### 📦️ Via Pypi
-
-1. Install the `executor-transformer-torch-encoder` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-transformer-torch-encoder.git
-	```
-
-1. Use `executor-transformer-torch-encoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.text.encoders.transform_encoder import TransformerTorchEncoder
-
-	
-	f = Flow().add(uses=TransformerTorchEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-transformer-torch-encoder.git
-	cd executor-transformer-torch-encoder
-	docker build -t transformer-torch-encoder .
-	```
-    Alternatively, build the GPU docker image:
-    ```shell
-    docker build -f Dockerfile.gpu -t transformer-torch-encoder .
-	```
-
-1. Use `transformer-torch-encoder` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://transformer-torch-encoder')
-	```
-    Or, when using the GPU image:
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://transformer-torch-encoder', docker_kwargs={'runtime': 'nvidia'})
-	```
-	
-</details>
 
 ## 🎉️ Example 
 
