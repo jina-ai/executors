@@ -3,7 +3,7 @@ name: MongoDBStorage
 alias: MongoDBStorage
 description: Storage-type indexer powered by MongoDB
 author: Jina AI Dev-Team (dev-team@jina.ai)
-documentation: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/indexer/MongoDBStorage
+documentation: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/storage/MongoDBStorage
 license: apache-2.0
-url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/indexer/MongoDBStorage
+url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/storage/MongoDBStorage
 keywords: [storage, crud, indexer, mongodb]
