@@ -90,8 +90,6 @@ pods:
 ```
 
 
-DETAILSEND
-
 ## 🎉️ Example 
 
 Here's a basic example demonstrating the use of this encoder
@@ -123,4 +121,3 @@ with f:
 
 - [AudioCLIP paper](https://arxiv.org/abs/2106.13043)
 - [AudioCLIP GitHub Repository](https://github.com/AndreyGuzhov/AudioCLIP)
-

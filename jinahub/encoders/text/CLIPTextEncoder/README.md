@@ -32,6 +32,8 @@ The following parameters can be passed on initialization:
 
 ## 🌱 Prerequisites
 
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 No prerequisites are required to run this executor.
 
 ## 🚀 Usages

@@ -13,8 +13,8 @@ The Executor only removes Documents in the `/index` endpoint. In the other endpo
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -65,7 +65,7 @@ pods:
   - name: indexer
     uses: 'jinahub://DocCache'
 ```
-DETAILSEND
+
 
 ## 🎉️ Example 
 
@@ -146,3 +146,5 @@ This API is used to delete the hash codes of the cached `Document`. If the Docum
 #### Outputs
 
 `DocumentArray` without the duplicated `Document`.
+
+## 🔍️ Reference

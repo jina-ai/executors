@@ -1,4 +1,4 @@
-# TextPaddleEncoder
+# ✨ TextPaddleEncoder
 
 **TextPaddleEncoder** is a class that wraps the text embedding functionality from the **PaddlePaddle** and **PaddleHub**.
 
@@ -6,22 +6,27 @@
 `TextPaddleEncoder` encode text stored in the `text` attribute of the [**Document**](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) and saves the encoding in the embedding attribute.
 
 
+**Table of Contents**
 
-## Prerequisites
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
-To install the dependencies locally run 
+## 🌱 Prerequisites
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+To install the dependencies locally, run 
 ```
-pip install .
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
+pip install -r requirements.txt
 ```
 
-## Usages
+## 🚀 Usages
 
-### Via JinaHub (🚧W.I.P.)
+### 🚚 Via JinaHub
+
+#### Using docker images
 
 Use the prebuilt images from JinaHub in your Python code: 
 
@@ -42,49 +47,30 @@ pods:
     volumes: '/your_home_folder/.paddlehub:/root/.paddlehub'
 ```
 
+#### Using source code
 
-### Via Pypi
+Use the source code from JinaHub in your Python code,
 
-1. Install the `TextPaddleEncoder`
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-text-paddle.git
-	```
-
-1. Use `TextPaddleEncoder` in your code
-
-	```python
-	from ...text_paddle import TextPaddleEncoder
-	from jina import Flow
+```python
+from jina import Flow
 	
-	f = Flow().add(uses=TextPaddleEncoder)
-	```
+f = Flow().add(uses='jinahub://TextPaddleEncoder',
+			   volumes= '/your_home_folder/.paddlehub:/root/.paddlehub')
+```
 
+or in the `.yml` config.
 
-### Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-text-paddle.git
-	cd executor-text-paddle
-	docker build -t jinahub-text-paddle .
-	```
-
-1. Use `jinahub-text-paddle` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(
-	        uses='docker://jinahub-text-paddle:latest',
-            volumes='/your_home_folder/.paddlehub:/root/.paddlehub')
-	```
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub://TextPaddleEncoder'
+	volumes: '/your_home_folder/.paddlehub:/root/.paddlehub'
+```
 	
 
 
-## Example 
-
+## 🎉️ Example
 
 ```python
 from jina import Flow, Document
@@ -117,5 +103,5 @@ with f:
 
 
 
-## Reference
+## 🔍️ Reference
 - https://www.paddlepaddle.org.cn/hublist?filter=en_category&value=SemanticModel
