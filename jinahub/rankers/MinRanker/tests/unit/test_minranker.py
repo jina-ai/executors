@@ -21,4 +21,7 @@ def test_ranker(documents_chunk, documents_chunk_chunk, default_traversal_paths)
         for i in range(len(doc.matches) - 1):
             match = doc.matches[i]
             assert match.tags
-            assert match.scores['cosine'].value >= doc.matches[i + 1].scores['cosine'].value
+            assert (
+                match.scores['cosine'].value
+                >= doc.matches[i + 1].scores['cosine'].value
+            )

@@ -20,11 +20,13 @@ class MinRanker(Executor):
     :param kwargs: Additional keyword arguments
     """
 
-    def __init__(self,
-                 metric: str = None,
-                 default_traversal_paths: List[str] = None,
-                 *args,
-                 **kwargs):
+    def __init__(
+        self,
+        metric: str = None,
+        default_traversal_paths: List[str] = None,
+        *args,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)
         if not metric:
@@ -42,7 +44,10 @@ class MinRanker(Executor):
             matches_of_chunks = []
             for chunk in doc.chunks:
                 matches_of_chunks.extend(chunk.matches)
-            groups = groupby(sorted(matches_of_chunks, key=lambda d: d.parent_id), lambda d: d.parent_id)
+            groups = groupby(
+                sorted(matches_of_chunks, key=lambda d: d.parent_id),
+                lambda d: d.parent_id,
+            )
             for key, group in groups:
                 chunk_match_list = list(group)
                 chunk_match_list.sort(key=lambda m: -m.scores[self.metric].value)

@@ -33,7 +33,7 @@ def documents_chunk_chunk():
         chunk = Document()
         for j in range(0, 10):
             chunk_chunk = Document()
-            for k in range(0,10):
+            for k in range(0, 10):
 
                 match = Document(
                     tags={
