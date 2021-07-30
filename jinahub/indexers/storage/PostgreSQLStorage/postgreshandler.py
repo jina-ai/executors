@@ -167,7 +167,7 @@ class PostgreSQLHandler:
     def close(self):
         self.postgreSQL_pool.closeall()
 
-    def search(self, docs: DocumentArray, **kwargs):
+    def search(self, docs: DocumentArray, return_embeddings: bool = True, **kwargs):
         """Use the Postgres db as a key-value engine, returning the metadata of a document id"""
         cursor = self.connection.cursor()
         for doc in docs:
@@ -176,7 +176,8 @@ class PostgreSQLHandler:
             result = cursor.fetchone()
             data = bytes(result[0])
             retrieved_doc = Document(data)
-            retrieved_doc.pop('embedding')
+            if not return_embeddings:
+                retrieved_doc.pop('embedding')
             doc.MergeFrom(retrieved_doc)
 
     def _close_connection(self, connection):

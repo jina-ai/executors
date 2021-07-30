@@ -1,6 +1,6 @@
 from jina import DocumentArray, Flow
-
 from ...clip_text import CLIPTextEncoder
+
 
 def test_no_documents():
     test_docs = DocumentArray()
