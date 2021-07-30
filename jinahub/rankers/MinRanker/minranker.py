@@ -10,10 +10,9 @@ from jina.logging.logger import JinaLogger
 
 class MinRanker(Executor):
     """
-    :class:`MinRanker` aggregates the score
-    of the matched doc from the matched chunks.
-    For each matched doc, the score is aggregated
-    from all the matched chunks belonging to that doc.
+    :class:`MinRanker` aggregates the score of the matched doc from the matched chunks.
+    For each matched doc, the score is aggregated from all the matched chunks belonging to that doc.
+    
     :param metric: the distance metric used in `scores`
     :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
     :param args:  Additional positional arguments
