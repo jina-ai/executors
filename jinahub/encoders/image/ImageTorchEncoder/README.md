@@ -11,36 +11,33 @@ into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of 
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 
-
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
-To install the dependencies locally run 
+In case you want to install the dependencies locally run 
 ```
-pip install . 
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
+pip install -r requirements.txt
 ```
 
 ## 🚀 Usages
 
-### 🚚 Via JinaHub (WIP)
+### 🚚 Via JinaHub
+
+#### using docker images
+
 Use the prebuilt images from JinaHub in your Python codes.
 With the `volumes` argument you can pass model from your local machine into the Docker container.
 ```python
 from jina import Flow
 
 flow = Flow().add(uses='jinahub+docker://ImageTorchEncoder',
-		  volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
+                  volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
 ```
 Alternatively, reference the docker image in the `yml` config
 ```yaml
@@ -48,6 +45,26 @@ jtype: Flow
 pods:
   - name: encoder
     uses: 'jinahub+docker://ImageTorchEncoder'
+    volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
+```
+
+#### using source code
+Use the source code from JinaHub in your Python code:
+
+```python
+from jina import Flow
+	
+f = Flow().add(uses='jinahub://ImageTorchEncoder',
+               volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
+```
+
+or in the `.yml` config.
+
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub://ImageTorchEncoder'
     volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
 ```
 

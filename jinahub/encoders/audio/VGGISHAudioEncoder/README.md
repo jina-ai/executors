@@ -9,8 +9,8 @@
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -111,9 +111,6 @@ print(f'{resp}')
 ```
 
 
-
-
-
 ### Inputs 
 
 `Document` with `blob` of containing loaded audio.
@@ -126,4 +123,3 @@ print(f'{resp}')
 ## 🔍️ Reference
 - [VGGISH paper](https://research.google/pubs/pub45611/)
 - [VGGISH code](https://github.com/tensorflow/models/tree/master/research/audioset/vggish)
-

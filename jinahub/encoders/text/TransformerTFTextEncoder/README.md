@@ -12,7 +12,7 @@ TransformerTFEncoder wraps the tensorflow-version of transformers from huggingfa
 
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
-To install the dependencies locally, run 
+In case you want to install the dependencies locally run 
 ```
 pip install -r requirements.txt
 ```

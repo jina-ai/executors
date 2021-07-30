@@ -11,13 +11,12 @@ Hnswlib is a fast approximate nearest neighbor search library and clustering of 
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
-
 
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
@@ -84,7 +83,6 @@ pods:
   - name: indexer
     uses: 'jinahub://HnswlibSearcher'
 ```
-
 
 ## 🎉️ Example 
 

@@ -10,13 +10,12 @@ It encodes `Document` content from an 1d array of string in size `B` into an nda
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
-
 
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
@@ -24,14 +23,9 @@ It encodes `Document` content from an 1d array of string in size `B` into an nda
 python -m laserembeddings download-models
 ```
 
-To install the dependencies locally run 
+In case you want to install the dependencies locally run 
 ```
-pip install . 
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
+pip install -r requirements.txt
 ```
 
 ## 🚀 Usages

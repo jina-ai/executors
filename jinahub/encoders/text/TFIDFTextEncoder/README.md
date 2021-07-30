@@ -1,13 +1,3 @@
-<p align="center">
-<img src="https://github.com/jina-ai/jina/blob/master/.github/logo-only.gif?raw=true" alt="Jina banner" width="200px">
-</p>
-
-# TFIDFTextEncoder
-
-
-
-
-
 # ✨ TFIDFTextEncoder
 
 **TFIDFTextEncoder** is a class that wraps the text embedding functionality of a TFIDF model.
@@ -24,29 +14,22 @@ The TFIDF model is a classic vector representation for [information retrieval](h
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-
 
 ## 🌱 Prerequisites
 
 
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
-You need a TF-IDF vectorizer pretrained.
+In case you want to install the dependencies locally run
+```
+pip install -r requirements.txt
+```
 
-To install the dependencies locally run 
-```
-pip install . 
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
-```
+You also need a TF-IDF vectorizer pretrained.
 
 ### Pretraining a TF-IDF Vectorizer
 
@@ -113,7 +96,6 @@ pods:
 
 ## 🎉️ Example 
 
-
 ```python
 from jina import Flow, Document
 
@@ -136,7 +118,3 @@ with f:
 
 ## 🔍️ Reference
 https://en.wikipedia.org/wiki/Tf-idf
-
-
-
-### 

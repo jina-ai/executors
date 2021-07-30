@@ -1,4 +1,4 @@
-# CLIPImageEncoder
+# ✨ CLIPImageEncoder
 
  **CLIPImageEncoder** is a class that wraps the image embedding functionality from the **CLIP** model.
 
@@ -6,16 +6,28 @@ The **CLIP** model originally was proposed in [Learning Transferable Visual Mode
 
 `CLIPImageEncoder` encode images stored in the blob attribute of the [**Document**](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) and saves the encoding in the embedding attribute.
 
+**Table of Contents**
+
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 
-## Prerequisites
+## 🌱 Prerequisites
 
-None
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
+In case you want to install the dependencies locally run 
+```
+pip install -r requirements.txt
+```
 
-## Usages
+## 🚀 Usages
 
-### Via JinaHub
+### 🚚 Via JinaHub
+
+#### using docker images
 
 Use the prebuilt images from JinaHub in your Python code: 
 
@@ -37,48 +49,28 @@ pods:
     volumes: '/your_home_folder/.cache/clip:/root/.cache/clip'
 ```
 
+#### using source code
+Use the source code from JinaHub in your Python code:
 
-### Via Pypi
-
-1. Install the `jinahub-clip-image`
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-clip-image.git
-	```
-
-1. Use `jinahub-clip-image` in your code
-
-	```python
-	from ...clip_image import CLIPImageEncoder
-	from jina import Flow
+```python
+from jina import Flow
 	
-	f = Flow().add(uses=CLIPImageEncoder)
-	```
+f = Flow().add(uses='jinahub://CLIPImageEncoder',
+			   volumes='/your_home_folder/.cache/clip:/root/.cache/clip')
+```
+
+or in the `.yml` config.
+
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub://CLIPImageEncoder'
+	volumes: '/your_home_folder/.cache/clip:/root/.cache/clip'
+```
 
 
-### Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-clip-image.git
-	cd executor-clip-image
-	docker build -t jinahub-clip-image .
-	```
-
-1. Use `jinahub-clip-image` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(
-	        uses='docker://jinahub-clip-image:latest',
-	        volumes='/your_home_folder/.cache/clip:/root/.cache/clip')
-	```
-	
-
-
-## Example 
+## 🎉️ Example 
 
 
 ```python
@@ -110,7 +102,6 @@ with f:
 
 
 
-## Reference
+## 🔍️ Reference
 - https://cdn.openai.com/papers/Learning_Transferable_Visual_Models_From_Natural_Language_Supervision.pdf
 - https://github.com/openai/CLIP
-

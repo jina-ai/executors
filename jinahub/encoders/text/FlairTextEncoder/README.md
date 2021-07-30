@@ -13,17 +13,11 @@ Internally, `FlairTextEncoder` wraps the DocumentPoolEmbeddings from Flair.
 
 ## 🌱 Prerequisites
 
-
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
-To install the dependencies locally run 
+In case you want to install the dependencies locally run 
 ```
-pip install . 
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
+pip install -r requirements.txt
 ```
 
 ## 🚀 Usages

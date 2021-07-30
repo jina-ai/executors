@@ -22,13 +22,12 @@ The following parameters can be used:
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
-
 
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
@@ -38,8 +37,7 @@ download the model in advance and use the `model_path` parameter.
 
 In case you want to install the dependencies locally run 
 ```
-pip install . 
-pip install -r tests/requirements.txt
+pip install -r requirements.txt
 ```
 To verify the installation works:
 ```
@@ -113,8 +111,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
-
+## 🎉️ Example
 
 ```python
 from jina import Flow, Document

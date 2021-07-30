@@ -17,8 +17,8 @@ The following arguments can be passed on initialization:
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 ## 🌱 Prerequisites
 
@@ -90,7 +90,6 @@ pods:
 ```
 
 
-
 ## 🎉️ Example 
 
 Here's a basic example demonstrating the use of this encoder
@@ -128,4 +127,3 @@ If you set `use_default_preprocessing=False` when creating this encoder, then yo
 
 - [AudioCLIP paper](https://arxiv.org/abs/2106.13043)
 - [AudioCLIP GitHub Repository](https://github.com/AndreyGuzhov/AudioCLIP)
-
