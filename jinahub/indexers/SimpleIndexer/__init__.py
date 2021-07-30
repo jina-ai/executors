@@ -1,8 +1,11 @@
+from collections import defaultdict
 from typing import Dict, Tuple, Optional, List
 
+from pathlib import Path
 import numpy as np
 from jina import Executor, DocumentArray, requests, Document
 from jina.types.arrays.memmap import DocumentArrayMemmap
+from jina.excepts import ValidationError, NotSupportedError
 
 
 class SimpleIndexer(Executor):
@@ -19,6 +22,7 @@ class SimpleIndexer(Executor):
         default_traversal_paths: Optional[List[str]] = None,
         default_top_k: int = 5,
         distance_metric: str = 'cosine',
+        aggregate: bool = False,
         **kwargs,
     ):
         """
@@ -32,9 +36,17 @@ class SimpleIndexer(Executor):
             most similar embeddings. Either 'euclidean' or 'cosine'.
         """
         super().__init__(**kwargs)
+        self.aggregate = aggregate
         self._docs = DocumentArrayMemmap(self.workspace + f'/{index_file_name}')
+
+        if self.aggregate:
+            top_level_docs_dir_path = Path(self.workspace) / 'top_level'
+            top_level_docs_dir_path.mkdir(exist_ok=True)
+            self._top_level_docs = DocumentArrayMemmap(str(top_level_docs_dir_path) + f'/{index_file_name}')
+
         self.default_traversal_paths = default_traversal_paths or ['r']
         self.default_top_k = default_top_k
+        self.distance_metric = distance_metric
         if distance_metric == 'cosine':
             self.distance = _cosine
         elif distance_metric == 'euclidean':
@@ -57,8 +69,22 @@ class SimpleIndexer(Executor):
         :param docs: the docs to add
         :param parameters: the parameters dictionary
         """
-        traversal_path = parameters.get('traversal_paths', self.default_traversal_paths)
-        flat_docs = docs.traverse_flat(traversal_path)
+        traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
+
+        if self.aggregate and traversal_paths != self.default_traversal_paths:
+            raise ValidationError(
+                    'if aggregation is enabled, the traversal path in search flow '
+                    'must match the one used in index flow. Hence, to enforce this rule, '
+                    'please provide default_traversal_paths as an argument when initializing '
+                    'and adding this indexer to the flow and ensure the traversal_paths '
+                    'provided in parameters is the same as default_traversal_paths. '
+                    f'traversal_paths: {traversal_paths} != '
+                    f'default_traversal_paths: {self.default_traversal_paths}')
+
+        if self.aggregate:
+            self._top_level_docs.extend(docs)
+
+        flat_docs = docs.traverse_flat(traversal_paths)
         self._docs.extend(flat_docs)
         self._flush = True
 
@@ -68,9 +94,20 @@ class SimpleIndexer(Executor):
 
         :param docs: the Documents to search with
         :param parameters: the parameters for the search"""
-        traversal_path = parameters.get('traversal_paths', self.default_traversal_paths)
+        traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
+
+        if self.aggregate and traversal_paths != self.default_traversal_paths:
+            raise ValidationError(
+                    'if aggregation is enabled, the traversal path in search flow '
+                    'must match the one used in index flow. Hence, to enforce this rule, '
+                    'please provide default_traversal_paths as an argument when initializing '
+                    'and adding this indexer to the flow and ensure the traversal_paths '
+                    'provided in parameters is the same as default_traversal_paths. '
+                    f'traversal_paths: {traversal_paths} != '
+                    f'default_traversal_paths: {self.default_traversal_paths}')
+
         top_k = parameters.get('top_k', self.default_top_k)
-        flat_docs = docs.traverse_flat(traversal_path)
+        flat_docs = docs.traverse_flat(traversal_paths)
         a = np.stack(flat_docs.get_attributes('embedding'))
         b = self.index_embeddings
         q_emb = _ext_A(_norm(a))
@@ -80,8 +117,48 @@ class SimpleIndexer(Executor):
         for _q, _ids, _dists in zip(flat_docs, idx, dist):
             for _id, _dist in zip(_ids, _dists):
                 d = Document(self._docs[int(_id)], copy=True)
-                d.scores['cosine'] = 1 - _dist
+                d.scores[self.distance_metric] = 1 - _dist if not self.aggregate else _dist
                 _q.matches.append(d)
+
+        if self.aggregate:
+            self._aggregate(docs, flat_docs)
+
+    def _aggregate(
+        self,
+        queries: 'DocumentArray',
+        queries_descendants: 'DocumentArray',
+    ):
+        def reverse_traverse(doc, lvls):
+            # TODO: modify this to support multilevels
+            if lvls > 1:
+                raise NotSupportedError(
+                    'currently we only support reverse traverse on chunk with granularity=1')
+            return doc.parent_id
+
+        if len(self.default_traversal_paths) > 1 or 'm' in self.default_traversal_paths[0]:
+            raise ValidationError('if traversal_paths is given, '
+                'expects a single traversal path which traverses itself or its chunk descendants only')
+
+        # if traversal path is 'r', no aggregation is needed, return
+        if not self.default_traversal_paths or self.default_traversal_paths == ['r']: return
+
+        ancestor_ids = defaultdict(list)
+
+        levels = len(self.default_traversal_paths[0])
+        print('here: ', levels)
+
+        for descendant in queries_descendants:
+            top_level_query_id = reverse_traverse(descendant, levels)
+            for match in descendant.matches:
+                ancestor_ids[(top_level_query_id, reverse_traverse(match, levels))].append(match.scores[self.distance_metric].value)
+
+        for (query_id, index_id), scores in ancestor_ids.items():
+            match = self._top_level_docs[index_id]
+            match.scores[self.distance_metric] = 1 - np.mean(scores)
+            queries[query_id].matches.append(match)
+
+        for query in queries:
+            query.matches.sort(key=lambda match: match.scores[self.distance_metric].value, reverse=True)
 
     @staticmethod
     def _get_sorted_top_k(

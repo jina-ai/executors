@@ -48,3 +48,30 @@ def test_simple_indexer(tmpdir):
     assert search_docs_id[0].embedding is None
     indexer.fill_embedding(search_docs_id)
     assert search_docs_id[0].embedding is not None
+
+
+def test_aggregate(tmpdir):
+    metas = {'workspace': str(tmpdir)}
+    indexer = SimpleIndexer(index_file_name='name', aggregate=True, default_traversal_paths=['c'], metas=metas)
+
+    idx1 = Document(id='idx1')
+    idx1.chunks.append(Document(id='idx1-chunk1'), embedding=np.array([1, 0, 0, 0]))
+    idx1.chunks.append(Document(id='idx1-chunk2'), embedding=np.array([0, 1, 0, 0]))
+
+    idx2 = Document(id='idx2')
+    idx2.chunks.append(Document(id='idx2-chunk1'), embedding=np.array([0, 0, 1, 0]))
+    idx2.chunks.append(Document(id='idx2-chunk2'), embedding=np.array([0, 0, 0, 1]))
+
+    q1 = Document(id='q1')
+    q1.chunks.append(Document(id='q1-chunk1'), embedding=np.array([1, 0, 0, 0]))
+    q1.chunks.append(Document(id='q1-chunk2'), embedding=np.array([0, 1, 0, 0]))
+
+    q2 = Document(id='q2')
+    q2.chunks.append(Document(id='q2-chunk1'), embedding=np.array([0, 0, 1, 0]))
+    q2.chunks.append(Document(id='q2-chunk2'), embedding=np.array([0, 0, 0, 1]))
+
+    indexer.index(DocumentArray([idx1, idx2]), {})
+    indexer.search(DocumentArray([q1, q2]), {})
+
+    assert q1.matches[0].id == 'idx1'
+    assert q2.matches[0].id == 'idx2'
