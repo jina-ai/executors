@@ -2,22 +2,29 @@
 
 **ImagePaddlehubEncoder** encodes `Document` content from a ndarray, potentially B x (Channel x Height x Width) into a ndarray of `B x D`. Internally, **ImagePaddlehubEncoder** wraps the models from [paddlehub](https://github.com/PaddlePaddle/PaddleHub)
 
-## 🚀 Usages
+**Table of Contents**
 
-To install the dependencies locally run 
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
+
+
+## 🌱 Prerequisites
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+To install the dependencies locally, run 
 ```
-pip install . 
-pip install -r tests/requirements.txt
+pip install -r requirements.txt
 ```
-To verify the installation works:
-```
-pytest tests
-```
+
+## 🚀 Usages  
 
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -34,8 +41,8 @@ pods:
     uses: 'jinahub+docker://ImagePaddlehubEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -51,44 +58,6 @@ pods:
   - name: encoder
     uses: 'jinahub://ImagePaddlehubEncoder'
 ```
-
-
-### 📦️ Via Pypi
-
-1. Install the package.
-
-	```bash
-	pip install git+https://github.com/jina-ai//executor-image-paddle-encoder.git
-	```
-
-1. Use `ImagePaddlehubEncoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.paddle_image import ImagePaddlehubEncoder
-	
-	f = Flow().add(uses=ImagePaddlehubEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-image-paddle-encoder.git
-	cd executor-image-paddle-encoder
-	docker build -t executor-image-paddle-encoder .
-	```
-
-1. Use `executor-image-paddle-encoder` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-image-paddle-encoder:latest')
-	```
- 
 ## 🎉 Example:
 
 Here is an example usage of the **ImagePaddlehubEncoder**.
@@ -96,7 +65,6 @@ Here is an example usage of the **ImagePaddlehubEncoder**.
 ```python
     def process_response(resp):
         ...
-
     f = Flow().add(uses={
         'jtype': ImagePaddlehubEncoder.__name__,
         'with': {
@@ -118,3 +86,5 @@ Here is an example usage of the **ImagePaddlehubEncoder**.
 ### Returns
 
 `Document` with `embedding` fields filled with an `ndarray`  with `dtype=nfloat32`.
+
+## 🔍️ Reference

@@ -1,5 +1,5 @@
 from jina import Flow, Document, DocumentArray
-from jinahub.encoder.flair_text import FlairTextEncoder
+from ...flair_text import FlairTextEncoder
 
 
 def data_generator(num_docs):

@@ -1,14 +1,10 @@
-import pytest
 import os
 
 import numpy as np
-
+import pytest
 from jina import Document, DocumentArray
 
-try:
-    from custom_image_torch_encoder import CustomImageTorchEncoder
-except:
-    from jinahub.encoder.custom_image_torch_encoder import CustomImageTorchEncoder
+from ...custom_image_torch_encoder import CustomImageTorchEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

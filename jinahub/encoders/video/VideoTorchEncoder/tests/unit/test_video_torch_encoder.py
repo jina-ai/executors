@@ -15,7 +15,7 @@ from jina import Document, DocumentArray
 try:
     from video_torch_encoder import VideoTorchEncoder, ConvertFHWCtoFCHW, ConvertFCHWtoCFHW
 except:
-    from jinahub.encoder.video_torch_encoder import VideoTorchEncoder, ConvertFHWCtoFCHW, ConvertFCHWtoCFHW
+    from ...video_torch_encoder import VideoTorchEncoder, ConvertFHWCtoFCHW, ConvertFCHWtoCFHW
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

@@ -2,18 +2,18 @@
 
 **NumpyLMDBSearcher** is a compound Searcher Executor for Jina, made up of [NumpySearcher](../../NumpySearcher) for performing similarity search on the embeddings, and of [FileSearcher](../../keyvalue/FileSearcher) for retrieving the metadata of the Documents. 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
 - This Executor works on Python 3.7 and 3.8. 
 - Make sure to install the [requirements](requirements.txt)
@@ -80,43 +80,6 @@ pods:
 ```
 
 
-### 📦️ Via Pypi
-
-1. Install the `executor-indexers` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-indexers/
-	```
-
-1. Use `executor-indexers` in your code
-
-   ```python
-   from jina import Flow
-   from jinahub.indexers.searcher.compound.NumpyLMDBSearcher import NumpyLMDBSearcher
-   
-   f = Flow().add(uses=NumpyLMDBSearcher)
-   ```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-indexers/
-	cd jinahub/indexers/searcher/compound/NumpyLMDBSearcher
-	docker build -t numpy-file-image .
-	```
-
-1. Use `numpy-file-image` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://numpy-file-image:latest')
-	```
-	
-
 ## 🎉️ Example 
 
 
@@ -139,3 +102,5 @@ with f:
 The NumpySearcher attaches matches to the Documents sent as inputs, with the id of the match, and its embedding.
 Then, the FileSearcher retrieves the full metadata (original text or image blob) and attaches those to the Document.
 You receive back the full Document.
+
+## 🔍️ Reference

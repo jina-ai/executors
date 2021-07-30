@@ -4,27 +4,21 @@
 It relies on having a [`state_dict`](https://pytorch.org/tutorials/beginner/saving_loading_models.html#what-is-a-state-dict) stored
 together with a `python` file and `class` name to load the model from.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
+- 
 
 ## 🌱 Prerequisites
 
-To install the dependencies locally run 
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+In case you want to install the dependencies locally run 
 ```
-pip install . 
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
+pip install -r requirements.txt
 ```
 
 ## 🚀 Usages
@@ -32,7 +26,7 @@ pytest tests
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -49,8 +43,8 @@ pods:
     uses: 'jinahub+docker://CustomImageTorchEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -68,45 +62,7 @@ pods:
 ```
 
 
-### 📦️ Via Pypi
-
-1. Install the `jinahub-custom-image-torch-encoder` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-image-custom-torch-encoder.git
-	```
-
-2. Use `jinahub-custom-image-torch-encode` in your code
-
-	```python
-	from jina import Flow
-	from from jinahub.encoder.custom_image_torch_encoder import CustomImageTorchEncoder
-	
-	f = Flow().add(uses=CustomImageTorchEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-image-custom-torch-encoder.git
-	cd executor-image-custom-torch-encoder
-	docker build -t custom-image-torch-encoder-image .
-	```
-
-2. Use `video-torch-encoder` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://custom-image-torch-encoder-image:latest')
-	```
-	
-
 ## 🎉️ Example
-
 
 ```python
 import torch

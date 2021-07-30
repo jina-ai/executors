@@ -3,27 +3,30 @@
 
 **YoloV5Segmenter** is a class that wraps the [YoloV5](https://github.com/ultralytics/yolov5) model for generating bounding boxes from images and creating chunks. 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 
-Install dependencies using `pip install -r requirements.txt`.
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+In case you want to install the dependencies locally run 
+```
+pip install -r requirements.txt
+```
 
 ## 🚀 Usages
 
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -39,8 +42,8 @@ pods:
     uses: 'jinahub+docker://YoloV5Segmenter'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -56,43 +59,6 @@ pods:
   - name: encoder
     uses: 'jinahub://YoloV5Segmenter'
 ```
-
-
-### 📦️ Via Pypi
-
-1. Install the `executors` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executors.git
-	```
-
-1. Use `YoloV5Segmenter` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.crafters.YoloV5Segmenter.yolov5_segmenter import YoloV5Segmenter
-	
-	f = Flow().add(uses='jinahub+docker://YoloV5Segmenter')
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executors.git
-	cd jinahub/crafters/YoloV5Segmenter
-	docker build -t executor-yolov5-segmenter .
-	```
-
-1. Use `executor-yolov5-segmenter` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-yolov5-segmenter:latest')
-	```
 
 ## 🎉️ Example 
 
@@ -115,10 +81,6 @@ with f:
     
 print(f'{resp}')
 ```
-
-
-
-
 
 ### Inputs 
 

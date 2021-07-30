@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import torch
 from jina import Document, DocumentArray
-from jinahub.encoder.transform_encoder import TransformerTorchEncoder
+from ...transform_encoder import TransformerTorchEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

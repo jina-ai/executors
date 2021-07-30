@@ -4,16 +4,20 @@
  
 Internally, `FlairTextEncoder` wraps the DocumentPoolEmbeddings from Flair.
 
+**Table of Contents**
+
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
+
 ## 🌱 Prerequisites
 
-To install the dependencies locally run 
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+In case you want to install the dependencies locally run 
 ```
-pip install . 
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
+pip install -r requirements.txt
 ```
 
 ## 🚀 Usages
@@ -21,7 +25,7 @@ pytest tests
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -38,8 +42,8 @@ pods:
     uses: 'jinahub+docker://FlairTextEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -57,42 +61,6 @@ pods:
 ```
 
 
-### 📦️ Via Pypi
-
-1. Install the package.
-
-	```bash
-	pip install git+https://github.com/jina-ai//executor-text-flair-encoder.git
-	```
-
-1. Use `FlairTextEncoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.flair_text import FlairTextEncoder
-	
-	f = Flow().add(uses=FlairTextEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-text-flair-encoder.git
-	cd executor-text-flair-encoder
-	docker build -t executor-text-flair-encoder .
-	```
-
-1. Use `executor-text-flair-encoder` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-text-flair-encoder:latest')
-	```
- 
 ## 🎉 Example:
 
 Here is an example usage of the **FlairTextEncoder**.
@@ -111,3 +79,6 @@ with f:
 ### Returns
 
 `Document` with `embedding` fields filled with an `ndarray`  with `dtype=nfloat32`.
+
+
+## 🔍️ Reference

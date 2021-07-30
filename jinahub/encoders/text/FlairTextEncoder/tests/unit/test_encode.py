@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from jina import DocumentArray, Document
-from jinahub.encoder.flair_text import FlairTextEncoder
+from ...flair_text import FlairTextEncoder
 
 
 @pytest.fixture()

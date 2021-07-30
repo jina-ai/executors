@@ -8,10 +8,7 @@ import pytest
 
 from jina import Flow, Document, DocumentArray
 
-try:
-    from torch_encoder import ImageTorchEncoder
-except:
-    from jinahub.image.encoder.torch_encoder import ImageTorchEncoder
+from ...torch_encoder import ImageTorchEncoder
 
 
 @pytest.mark.parametrize('arr_in', [

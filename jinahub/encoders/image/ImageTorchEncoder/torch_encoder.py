@@ -11,7 +11,7 @@ import torch
 from jina import Executor, requests, DocumentArray
 from jina_commons.batching import get_docs_batch_generator
 
-from jinahub.image.encoder.models import EmbeddingModelWrapper
+from .models import EmbeddingModelWrapper
 
 
 class ImageTorchEncoder(Executor):

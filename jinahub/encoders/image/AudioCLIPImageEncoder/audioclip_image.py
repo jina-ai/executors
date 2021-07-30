@@ -9,6 +9,11 @@ from jina_commons.batching import get_docs_batch_generator
 from PIL import Image
 from torchvision import transforms
 
+# required to handle imports
+# without it, the test_config fails importing
+import sys
+sys.path.append('.')
+
 from audio_clip.model import AudioCLIP
 
 # Defaults from CLIP

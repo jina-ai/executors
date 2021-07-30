@@ -3,34 +3,29 @@
 **TransformerSentenceEncoder** wraps the [Sentence Transformer](https://www.sbert.net/docs)
 library into an `Jina` executor. 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 
-To install the dependencies locally run 
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+In case you want to install the dependencies locally run 
 ```
-pip install . 
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
+pip install -r requirements.txt
 ```
 
 ## 🚀 Usages
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -47,8 +42,8 @@ pods:
     uses: 'jinahub+docker://TransformerSentenceEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -64,40 +59,6 @@ pods:
   - name: encoder
     uses: 'jinahub://TransformerSentenceEncoder'
 ```
-
-
-### 📦️ Via Pypi
-1. Install the `executor-sentence-transformer` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-image-torch-encoder.git
-	```
-
-1. Use `executor-sentence-transformer` in your code
-
-```python
-from jina import Flow
-from jinahub.text.encoders.sentence_encoder import TransformerSentenceEncoder
-f = Flow().add(uses=TransformerSentenceEncoder)
-```
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-sentence-transformer.git
-	cd executor-sentence-transformer
-	docker build -t executor-sentence-transformer .
-	```
-
-1. Use `executor-sentence-transformer` in your codes
-
-	```python
-	from jina import Flow
-
-	f = Flow().add(uses='docker://executor-sentence-transformer:latest')
-	```
 
 
 ## 🎉️ Example 
@@ -123,4 +84,3 @@ with f:
 
 ## 🔍️ Reference
 - [Sentence Transformer Library](https://www.sbert.net/docs)
-

@@ -3,7 +3,7 @@ from typing import Dict
 
 import numpy as np
 from jina import DocumentArray, Document
-from jinahub.encoder.paddle_image import ImagePaddlehubEncoder
+from ...paddle_image import ImagePaddlehubEncoder
 
 directory = os.path.dirname(os.path.realpath(__file__))
 

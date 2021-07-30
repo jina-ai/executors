@@ -3,18 +3,17 @@
 **PostgreSQLStorage** is Indexer wrapper around the PostgreSQL DBMS. Postgres is an open source object-relational database. You can read more about it here: https://www.postgresql.org/
 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
 - This Executor works on Python 3.7 and 3.8. 
 - Make sure to install the [requirements](requirements.txt)
@@ -75,44 +74,6 @@ pods:
   - name: indexer
     uses: 'jinahub://PostgreSQLStorage'
 ```
-
-
-### 📦️ Via Pypi
-
-1. Install the `executor-indexers` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/EXECUTOR_REPO_NAME.git
-	```
-
-1. Use `executor-indexers` in your code
-
-   ```python
-   from jina import Flow
-   from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
-   
-   f = Flow().add(uses=PostgreSQLStorage)
-   ```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-indexers
-	cd executor-indexers/jinahub/indexers/indexer/PostgreSQLStorage
-	docker build -t psql-indexer-image .
-	```
-
-1. Use `psql-indexer-image` in your code
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://psql-indexer-image:latest')
-	```
-	
 
 ## 🎉️ Example 
 

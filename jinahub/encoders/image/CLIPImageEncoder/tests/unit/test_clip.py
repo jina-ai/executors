@@ -5,7 +5,7 @@ import numpy as np
 
 from jina import Flow, Document, DocumentArray
 from jina.executors import BaseExecutor
-from jinahub.encoder.clip_image import CLIPImageEncoder
+from ...clip_image import CLIPImageEncoder
 
 
 def test_clip_any_image_shape():

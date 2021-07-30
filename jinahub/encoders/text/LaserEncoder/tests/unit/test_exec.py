@@ -3,7 +3,7 @@ __license__ = "Apache-2.0"
 
 import pytest
 from jina import Document, DocumentArray
-from jinahub.encoder.laser_encoder import LaserEncoder
+from ...laser_encoder import LaserEncoder
 
 
 @pytest.fixture()

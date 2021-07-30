@@ -3,18 +3,18 @@
 
 **VggishAudioEncoder** is a class that wraps the [VGGISH](https://github.com/tensorflow/models/tree/master/research/audioset/vggish) model for generating embeddings for audio data. 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 ## 🌱 Prerequisites
+
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
 Run the provided bash script `download_model.sh` to download the pretrained model.
 
@@ -33,7 +33,7 @@ pytest tests
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -49,8 +49,8 @@ pods:
     uses: 'jinahub+docker://VGGishAudioEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -67,42 +67,6 @@ pods:
     uses: 'jinahub://VGGishAudioEncoder'
 ```
 
-
-### 📦️ Via Pypi
-
-1. Install the `jinahub-VGGishAudioEncoder` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-audio-VGGishEncoder.git
-	```
-
-1. Use `jinahub-vggishaudio-encoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.jinahub-vggishaudio-encoder import VggishAudioEncoder
-	
-	f = Flow().add(uses='jinahub+docker://VggishAudioEncoder')
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-audio-VggishAudioEncoder.git
-	cd executor-audio-VGGishEncoder
-	docker build -t executor-audio-vggish-encoder-image .
-	```
-
-1. Use `executor-audio-vggish-encoder-image` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-audio-vggish-encoder-image:latest')
-	```
 
 ## 🎉️ Example 
 
@@ -144,9 +108,6 @@ print(f'{resp}')
 ```
 
 
-
-
-
 ### Inputs 
 
 `Document` with `blob` of containing loaded audio.
@@ -159,4 +120,3 @@ print(f'{resp}')
 ## 🔍️ Reference
 - [VGGISH paper](https://research.google/pubs/pub45611/)
 - [VGGISH code](https://github.com/tensorflow/models/tree/master/research/audioset/vggish)
-

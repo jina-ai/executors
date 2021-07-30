@@ -7,7 +7,7 @@ import PIL.Image as Image
 
 from jina import DocumentArray, Document
 
-from jinahub.image.encoder.big_transfer import BigTransferEncoder
+from ...big_transfer import BigTransferEncoder
 
 directory = os.path.dirname(os.path.realpath(__file__))
 

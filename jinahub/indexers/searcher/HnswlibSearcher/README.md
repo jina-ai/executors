@@ -5,18 +5,17 @@
 Hnswlib is a fast approximate nearest neighbor search library and clustering of dense vectors.
 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
 - This Executor works on Python 3.7 and 3.8. 
 - Make sure to install the [requirements](requirements.txt)
@@ -81,44 +80,6 @@ pods:
   - name: indexer
     uses: 'jinahub://HnswlibSearcher'
 ```
-
-
-### 📦️ Via Pypi
-
-1. Install the `executor-indexers` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-indexers/
-	```
-
-1. Use `executor-indexers` in your code
-
-   ```python
-   from jina import Flow
-   from jinahub.indexers.searcher import HnswlibSearcher
-   
-   f = Flow().add(uses=HnswlibSearcher)
-   ```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-indexers/
-	cd jinahub/indexers/searcher/HnswlibSearcher
-	docker build -t hnswlib-image .
-	```
-
-1. Use `hnswlib-image` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://hnswlib-image:latest')
-	```
-	
 
 ## 🎉️ Example 
 

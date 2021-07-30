@@ -7,10 +7,7 @@ import numpy as np
 
 from jina import Document, Flow, DocumentArray
 
-try:
-    from custom_image_torch_encoder import CustomImageTorchEncoder
-except:
-    from jinahub.encoder.custom_image_torch_encoder import CustomImageTorchEncoder
+from ...custom_image_torch_encoder import CustomImageTorchEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

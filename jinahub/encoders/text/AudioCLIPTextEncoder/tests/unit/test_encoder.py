@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import torch
 from jina import Document, DocumentArray
-from jinahub.encoder.audioclip_text import AudioCLIPTextEncoder
+from ...audioclip_text import AudioCLIPTextEncoder
 
 _EMBEDDING_DIM = 1024
 

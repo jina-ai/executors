@@ -11,7 +11,7 @@ from jina import Document, DocumentArray
 try:
     from spacy_text_encoder import SpacyTextEncoder
 except:
-    from jinahub.encoder.spacy_text_encoder import SpacyTextEncoder
+    from ...spacy_text_encoder import SpacyTextEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
