@@ -5,8 +5,6 @@
 **ImageTorchEncoder** encodes `Document` blobs of type a `ndarray` and shape Batch x Height x Width x Channel 
 into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of the `Document`.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
@@ -14,7 +12,6 @@ into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of 
 - [🎉️ Example](#-example)
 - [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 

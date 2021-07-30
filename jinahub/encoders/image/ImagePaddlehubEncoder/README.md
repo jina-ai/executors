@@ -2,14 +2,12 @@
 
 **ImagePaddlehubEncoder** encodes `Document` content from a ndarray, potentially B x (Channel x Height x Width) into a ndarray of `B x D`. Internally, **ImagePaddlehubEncoder** wraps the models from [paddlehub](https://github.com/PaddlePaddle/PaddleHub)
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
+
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
 - [🎉️ Example](#-example)
 - [🔍️ Reference](#-reference)
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
 ## 🌱 Prerequisites

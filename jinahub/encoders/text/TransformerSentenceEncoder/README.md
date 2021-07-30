@@ -3,8 +3,7 @@
 **TransformerSentenceEncoder** wraps the [Sentence Transformer](https://www.sbert.net/docs)
 library into an `Jina` executor. 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
@@ -12,7 +11,6 @@ library into an `Jina` executor.
 - [🎉️ Example](#-example)
 - [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 

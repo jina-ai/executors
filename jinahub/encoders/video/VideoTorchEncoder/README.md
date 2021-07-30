@@ -3,8 +3,7 @@
 **VideoTorchEncoder** is a class that encodes video clips into dense embeddings using pretrained models 
 from [`torchvision.models`](https://pytorch.org/docs/stable/torchvision/models.html) for video data.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
@@ -12,7 +11,6 @@ from [`torchvision.models`](https://pytorch.org/docs/stable/torchvision/models.h
 - [🎉️ Example](#-example)
 - [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 

@@ -4,16 +4,13 @@
 It relies on having a [`state_dict`](https://pytorch.org/tutorials/beginner/saving_loading_models.html#what-is-a-state-dict) stored
 together with a `python` file and `class` name to load the model from.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
 - [🎉️ Example](#-example)
 - [🔍️ Reference](#-reference)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- 
 
 ## 🌱 Prerequisites
 

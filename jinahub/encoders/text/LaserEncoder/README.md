@@ -4,8 +4,7 @@
 
 It encodes `Document` content from an 1d array of string in size `B` into an ndarray in size `B x D`.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
@@ -13,7 +12,6 @@ It encodes `Document` content from an 1d array of string in size `B` into an nda
 - [🎉️ Example](#-example)
 - [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 

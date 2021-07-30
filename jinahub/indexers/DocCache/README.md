@@ -7,8 +7,6 @@ This is useful for continuously indexing Documents, and not having to worry abou
 ## Notes
 The Executor only removes Documents in the `/index` endpoint. In the other endpoints, operations are done by the Document `id`.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
@@ -16,7 +14,6 @@ The Executor only removes Documents in the `/index` endpoint. In the other endpo
 - [🎉️ Example](#-example)
 - [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 
