@@ -2,17 +2,16 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from itertools import groupby
-from typing import List, Dict
+from typing import Iterable, Dict
 
 from jina import Executor, requests, DocumentArray
-from jina.logging.logger import JinaLogger
 
 
 class MinRanker(Executor):
     """
     :class:`MinRanker` aggregates the score of the matched doc from the matched chunks.
     For each matched doc, the score is aggregated from all the matched chunks belonging to that doc.
-    
+
     :param metric: the distance metric used in `scores`
     :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
     :param args:  Additional positional arguments
@@ -21,17 +20,14 @@ class MinRanker(Executor):
 
     def __init__(
         self,
-        metric: str = None,
-        default_traversal_paths: List[str] = None,
+        metric: str,
+        default_traversal_paths: Iterable[str] = ('r',),
         *args,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self.logger = JinaLogger(self.__class__.__name__)
-        if not metric:
-            self.logger.error("metric should not be None, please set it the same as your indexer's metric")
         self.metric = metric
-        self.default_traversal_paths = default_traversal_paths or ['r']
+        self.default_traversal_paths = default_traversal_paths
 
     @requests(on='/search')
     def rank(self, docs: DocumentArray, parameters: Dict, *args, **kwargs):
