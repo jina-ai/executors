@@ -29,7 +29,7 @@ class MinRanker(Executor):
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)
         if not metric:
-            self.logger.error('metric should not be None')
+            self.logger.error("metric should not be None, please set it the same as your indexer's metric")
         self.metric = metric
         self.default_traversal_paths = default_traversal_paths or ['r']
 
