@@ -15,7 +15,9 @@
 
 ## 🌱 Prerequisites
 
-Some conditions to fulfill before running the executor
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.  
+
+There are no requirements for running this executor.
 
 ## 🚀 Usages
 
