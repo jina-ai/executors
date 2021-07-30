@@ -4,11 +4,6 @@
 
 The **CLIP** model was originally proposed in  [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020).
 
-`CLIPTextEncoder` encodes data from a `np.ndarray` of strings and returns a `np.ndarray` of floating point values.
-
-- Input shape: `BatchSize `
-
-- Output shape: `BatchSize x EmbeddingDimension`
 
 The following parameters can be passed on initialization:
 - `pretrained_model_name_or_path`: Can be either:
@@ -27,8 +22,6 @@ The following parameters can be passed on initialization:
         batch size is not passed as a parameter with the request.
 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
@@ -36,7 +29,6 @@ The following parameters can be passed on initialization:
 - [🎉️ Example](#%EF%B8%8F-example)
 - [🔍️ Reference](#%EF%B8%8F-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 
@@ -53,7 +45,6 @@ from jina import Flow
 	
 f = Flow().add(
         uses='jinahub+docker://CLIPTextEncoder',
-        volumes='/your_home_folder/.cache/clip:/root/.cache/clip'
 	)
 ```
 
@@ -64,7 +55,6 @@ jtype: Flow
 pods:
   - name: encoder
     uses: 'jinahub+docker://CLIPTextEncoder'
-    volumes: '/your_home_folder/.cache/clip:/root/.cache/clip'
 ```
 
 ## 🎉️ Example 
@@ -76,7 +66,6 @@ import numpy as np
 	
 f = Flow().add(
         uses='jinahub+docker://CLIPTextEncoder',
-        volumes='/your_home_folder/.cache/clip:/root/.cache/clip'
 	)
 	
 def check_emb(resp):

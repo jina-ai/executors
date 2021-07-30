@@ -47,6 +47,7 @@ class CLIPTextEncoder(Executor):
             base_tokenizer_model or pretrained_model_name_or_path
         )
         self.max_length = max_length
+        self.logger = JinaLogger(self.__class__.__name__)
 
         if device.startswith('cuda') and not torch.cuda.is_available():
             self.logger.warning(
