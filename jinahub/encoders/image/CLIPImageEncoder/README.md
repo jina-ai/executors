@@ -9,8 +9,10 @@ The following parameters can be passed on initialization:
     - A string, the model id of a pretrained CLIP model hosted
         inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
     - A path to a directory containing model weights saved, e.g., ./my_model_directory/
-- `processor`: a CLIP processor which wraps a CLIP feature extractor and a CLIP
-    tokenizer into a single processor. Defaults to ``pretrained_model_name_or_path`` if None
+- `use_default_preprocessing`: Whether to use the default preprocessing on
+        images (blobs) before encoding them. If you disable this, you must ensure
+        that the images you pass in have the correct format, see the ``encode`` method
+        for details.
 - `device`: device that the model is on (should be "cpu", "cuda" or "cuda:X",
     where X is the index of the GPU on the machine)
 - `default_batch_size`: fallback batch size in case there is no batch size sent in the request

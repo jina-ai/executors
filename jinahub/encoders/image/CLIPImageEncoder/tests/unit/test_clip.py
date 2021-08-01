@@ -19,6 +19,11 @@ def encoder() -> CLIPImageEncoder:
     return CLIPImageEncoder()
 
 
+@pytest.fixture(scope="module")
+def encoder_no_pre() -> CLIPImageEncoder:
+    return CLIPImageEncoder(use_default_preprocessing=False)
+
+
 @pytest.fixture(scope="function")
 def nested_docs() -> DocumentArray:
     blob = np.ones((224, 224, 3), dtype=np.uint8)
@@ -62,9 +67,31 @@ def test_docs_no_blobs(encoder: CLIPImageEncoder):
     assert docs[0].embedding is None
 
 
+def test_err_preprocessing(encoder):
+    docs = DocumentArray([Document(blob=np.ones((3, 100, 100), dtype=np.uint8))])
+
+    with pytest.raises(ValueError, match="If `use_default_preprocessing=True`"):
+        encoder.encode(docs, {})
+
+
+def test_err_no_preprocessing(encoder_no_pre):
+    docs = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
+
+    with pytest.raises(ValueError, match="If `use_default_preprocessing=False`"):
+        encoder_no_pre.encode(docs, {})
+
+
 def test_single_image(encoder: CLIPImageEncoder):
     docs = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
     encoder.encode(docs, {})
+
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
+    assert docs[0].embedding.dtype == np.float32
+
+
+def test_single_image_no_preprocessing(encoder_no_pre):
+    docs = DocumentArray([Document(blob=np.ones((3, 224, 224), dtype=np.uint8))])
+    encoder_no_pre.encode(docs, {})
 
     assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
     assert docs[0].embedding.dtype == np.float32
@@ -100,18 +127,31 @@ def test_clip_any_image_shape(encoder: CLIPImageEncoder):
     assert len(docs.get_attributes("embedding")) == 1
 
 
-def test_clip_batch():
+def test_clip_batch(encoder):
     """
     This tests that the encoder can handle inputs of various size
     which is not a factorial of ``default_batch_size``
 
     """
-    encoder = CLIPImageEncoder(default_batch_size=10, device="cpu")
     docs = DocumentArray(
-        [Document(blob=np.ones((224, 224, 3), dtype=np.uint8)) for _ in range(25)]
+        [Document(blob=np.ones((100, 100, 3), dtype=np.uint8)) for _ in range(25)]
     )
     encoder.encode(docs, parameters={})
     assert len(docs.get_attributes("embedding")) == 25
+
+
+def test_batch_no_preprocessing(encoder_no_pre):
+    docs = DocumentArray(
+        [
+            Document(blob=np.ones((3, 224, 224), dtype=np.uint8)),
+            Document(blob=np.ones((3, 224, 224), dtype=np.uint8)),
+        ]
+    )
+    encoder_no_pre.encode(docs, {})
+
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
+    assert docs[0].embedding.dtype == np.float32
+    np.testing.assert_allclose(docs[0].embedding, docs[1].embedding)
 
 
 @pytest.mark.parametrize(
@@ -182,7 +222,7 @@ def test_openai_embed_match():
     docs = DocumentArray([dog, cat, airplane, helicopter])
 
     clip_text_encoder = CLIPImageEncoder("openai/clip-vit-base-patch32")
-    clip_text_encoder.encode(DocumentArray(docs), {})
+    clip_text_encoder.encode(docs, {})
 
     actual_embedding = docs.get_attributes("embedding")
 
