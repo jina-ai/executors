@@ -1,0 +1,8 @@
+manifest_version: 1
+name: DPRReaderRanker
+alias: DPRReaderRanker
+description: A ranker based on the DPR Reader model
+author: Jina AI Dev-Team (dev-team@jina.ai)
+url: https://github.com/jina-ai/jinahub/ranker/DPRReaderRanker
+avatar: https://avatars.githubusercontent.com/u/60539444?s=200&v=4
+keywords: [dpr, text, qa, ranker, PyTorch, en]
