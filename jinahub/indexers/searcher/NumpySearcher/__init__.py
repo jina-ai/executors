@@ -72,7 +72,7 @@ class NumpySearcher(Executor):
         else:
             self.logger.error(f'Metric {self.metric} not supported.')
         positions, dist = self._get_sorted_top_k(dists, top_k)
-        for _q, _positions, _dists in zip(docs, positions, dist):
+        for _q, _positions, _dists in zip(docs.traverse_flat(traversal_paths), positions, dist):
             for position, dist in zip(_positions, _dists):
                 d = Document(id=self._ids[position], embedding=self._vecs[position])
                 if self.is_distance:
