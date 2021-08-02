@@ -171,18 +171,16 @@ class DPRReaderRanker(Executor):
 
             # Replace previous matches with actual answers
             doc.matches.clear()
-            new_matches = []
             for span, rel_score, span_score, title in zip(
                 answer_spans, answer_relevance_scores, answer_span_scores, answer_titles
             ):
-                new_matches.append(
+                doc.matches.append(
                     Document(
                         text=span,
                         scores={'relevance_score': rel_score},
                         tags={'title': title, 'span_score': span_score},
                     )
                 )
-            doc.matches.extend(new_matches)
 
     def _get_outputs(
         self, question: str, contexts: List[str], titles: List[str]
