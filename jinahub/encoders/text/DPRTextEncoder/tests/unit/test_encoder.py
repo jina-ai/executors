@@ -13,10 +13,21 @@ def basic_encoder() -> DPRTextEncoder:
     return DPRTextEncoder()
 
 
+@pytest.fixture(scope='session')
+def basic_encoder_ctx() -> DPRTextEncoder:
+    return DPRTextEncoder(
+        'facebook/dpr-ctx_encoder-single-nq-base',
+        encoder_type='context',
+        title_tag_key='title',
+    )
+
+
 def test_config():
     encoder = BaseExecutor.load_config('../../config.yml')
     assert encoder.default_batch_size == 32
     assert encoder.default_traversal_paths == ['r']
+    assert encoder.encoder_type == 'question'
+    assert encoder.title_tag_key is None
 
 
 def test_no_document(basic_encoder: DPRTextEncoder):
@@ -36,6 +47,19 @@ def test_no_text_documents(basic_encoder: DPRTextEncoder):
     assert docs[0].embedding is None
 
 
+def test_context_encoder_no_title_tag_key_init():
+    with pytest.warns(UserWarning, match='The `title_tag_key` argument is not'):
+        DPRTextEncoder(
+            'facebook/dpr-ctx_encoder-single-nq-base', encoder_type='context'
+        )
+
+
+def test_context_encoder_doc_no_title(basic_encoder_ctx: DPRTextEncoder):
+    docs = DocumentArray([Document(text='hello there')])
+    with pytest.raises(ValueError, match='If you set `title_tag_key` property'):
+        basic_encoder_ctx.encode(docs, {})
+
+
 def test_wrong_encoder_type():
     with pytest.raises(ValueError, match='The ``encoder_type`` parameter'):
         encoder = DPRTextEncoder(encoder_type='worng_type')
@@ -49,14 +73,16 @@ def test_encoding_cpu():
     assert docs[0].embedding.shape == (768,)
 
 
-def test_encoding_question_type():
+def test_encoding_question_type(basic_encoder: DPRTextEncoder):
     docs = DocumentArray([Document(text='hello there')])
-    encoder = DPRTextEncoder(
-        pretrained_model_name_or_path='facebook/dpr-question_encoder-single-nq-base',
-        encoder_type='question',
-        device='cpu',
-    )
-    encoder.encode(docs, {})
+    basic_encoder.encode(docs, {})
+
+    assert docs[0].embedding.shape == (768,)
+
+
+def test_encoding_context_type(basic_encoder_ctx: DPRTextEncoder):
+    docs = DocumentArray([Document(text='hello there', tags={'title': 'greeting'})])
+    basic_encoder_ctx.encode(docs, {})
 
     assert docs[0].embedding.shape == (768,)
 

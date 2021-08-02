@@ -18,6 +18,9 @@ The following parameters can be passed on initialization:
 - `base_tokenizer_model`: Base tokenizer model. The possible values are
 	the same as for the ``pretrained_model_name_or_path`` parameters. If not
 	provided, the ``pretrained_model_name_or_path`` parameter value will be used
+- `title_tag_key`: The key under which the titles are saved in the documents'
+    tag property. It is recommended to set this property for context encoders,
+    to match the model pre-training. It has no effect for question encoders.
 - `max_length`: Max length argument for the tokenizer
 - `default_batch_size`: Default batch size for encoding, used if the
 	batch size is not passed as a parameter with the request.

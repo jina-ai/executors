@@ -1,3 +1,4 @@
+import warnings
 from typing import List, Literal, Optional
 
 import torch
@@ -16,6 +17,10 @@ class DPRTextEncoder(Executor):
     Encode text into embeddings using a DPR model. You have to choose
     whether to use a context or a question encoder.
 
+    For context encoders it is recommened to encode them together with the title,
+    by setting the ``title_tag_key`` property. This is in order to match the
+    encoding method used in the model pre-training.
+
     :param pretrained_model_name_or_path: Can be either:
         - the model id of a pretrained model hosted inside a model repo
           on huggingface.co.
@@ -26,6 +31,9 @@ class DPRTextEncoder(Executor):
     :param base_tokenizer_model: Base tokenizer model. The possible values are
         the same as for the ``pretrained_model_name_or_path`` parameters. If not
         provided, the ``pretrained_model_name_or_path`` parameter value will be used
+    :param title_tag_key: The key under which the titles are saved in the documents'
+        tag property. It is recommended to set this property for context encoders,
+        to match the model pre-training. It has no effect for question encoders.
     :param max_length: Max length argument for the tokenizer
     :param default_batch_size: Default batch size for encoding, used if the
         batch size is not passed as a parameter with the request.
@@ -36,9 +44,10 @@ class DPRTextEncoder(Executor):
 
     def __init__(
         self,
-        pretrained_model_name_or_path: str = 'facebook/dpr-ctx_encoder-single-nq-base',
-        encoder_type: Literal['context', 'question'] = 'context',
+        pretrained_model_name_or_path: str = 'facebook/dpr-question_encoder-single-nq-base',
+        encoder_type: Literal['context', 'question'] = 'question',
         base_tokenizer_model: Optional[str] = None,
+        title_tag_key: Optional[str] = None,
         max_length: Optional[int] = None,
         default_batch_size: int = 32,
         default_traversal_paths: List[str] = ['r'],
@@ -49,17 +58,25 @@ class DPRTextEncoder(Executor):
         super().__init__(*args, **kwargs)
         self.device = device
         self.max_length = max_length
+        self.title_tag_key = title_tag_key
 
         if encoder_type not in ['context', 'question']:
             raise ValueError(
                 'The ``encoder_type`` parameter should be either "context"'
                 f' or "question", but got {encoder_type}'
             )
+        self.encoder_type = encoder_type
 
         if not base_tokenizer_model:
             base_tokenizer_model = pretrained_model_name_or_path
 
         if encoder_type == 'context':
+            if not self.title_tag_key:
+                warnings.warn(
+                    'The `title_tag_key` argument is not set - it is recommended'
+                    ' to encode the context text together with the title to match the'
+                    ' model pre-training. '
+                )
             self.tokenizer = DPRContextEncoderTokenizerFast.from_pretrained(
                 base_tokenizer_model
             )
@@ -105,8 +122,23 @@ class DPRTextEncoder(Executor):
             for batch_docs in document_batches_generator:
                 with torch.no_grad():
                     texts = batch_docs.get_attributes('text')
+                    if self.encoder_type == 'context' and self.title_tag_key:
+                        text_pair = batch_docs.get_attributes(
+                            f'tags__{self.title_tag_key}'
+                        )
+                        if len(text_pair) != len(batch_docs):
+                            raise ValueError(
+                                'If you set `title_tag_key` property, all documents'
+                                ' that you want to encode must have this tag. Found'
+                                f' {len(text_pair) - len(batch_docs)} documents'
+                                ' without it.'
+                            )
+                    else:
+                        text_pair = None
+
                     inputs = self.tokenizer(
-                        texts,
+                        text=texts,
+                        text_pair=text_pair,
                         max_length=self.max_length,
                         padding='longest',
                         truncation=True,
