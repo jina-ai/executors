@@ -19,7 +19,7 @@ class CatBoostRanker(Executor):
             'custom_metric': ['NDCG', 'PFound', 'AverageGain:top=10'],
             'verbose': False,
             'random_seed': 0,
-            'loss_function': 'RMSE',
+            'loss_function': 'YetiRank',
         },
         *args,
         **kwargs,
@@ -32,7 +32,7 @@ class CatBoostRanker(Executor):
         self.catboost_parameters = catboost_parameters
         self.model = None
         if self.model_path and os.path.exists(self.model_path):
-            self.model = self._load_model()
+            self._load_model()
 
     def _load_model(self):
         """Load model from model path"""
@@ -65,13 +65,23 @@ class CatBoostRanker(Executor):
         feature_vectors = np.array(feature_vectors)
         return Pool(data=feature_vectors, label=self.label, group_id=group_ids)
 
-    @requests(on='train')
-    def train(self, parameters: Dict, **kwargs):
+    @requests(on='/train')
+    def train(self, docs: DocumentArray, parameters: Optional[Dict], **kwargs):
         catboost_parameters = parameters.get(
             'catboost_parameters', self.catboost_parameters
         )
+        train_pool = self._extract_features_from_docs(docs)
         self.model = CatBoostRanker(**catboost_parameters)
         self.model.fit(train_pool)
+
+    @requests(on='/predict')
+    def predict(self, docs: DocumentArray, parameters: Optional[Dict], **kwargs):
+        catboost_parameters = parameters.get(
+            'catboost_parameters', self.catboost_parameters
+        )
+        predict_pool = self._extract_features_from_docs(docs)
+        self.model = CatBoostRanker(**catboost_parameters)
+        self.model.fit(predict_pool)
 
     @requests(on='/dump')
     def dump(self, parameters: Dict, **kwargs):
