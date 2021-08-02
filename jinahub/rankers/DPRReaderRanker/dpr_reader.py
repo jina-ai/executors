@@ -30,8 +30,9 @@ def _logistic_fn(x: np.ndarray) -> List[float]:
 
 class DPRReaderRanker(Executor):
     """
-    Performs a re-ranking of the matches for each document (question), as well as
-    the answer spans extraction for each match.
+    This executor first extracts answers (answers spans) from all the matches,
+    ranks them according to their relevance score, and then replaces the original
+    matches with these extracted answers.
 
     This executor uses the DPR Reader model to re-rank documents based on
     cross-attention between the question (main document text) and the answer
@@ -87,17 +88,22 @@ class DPRReaderRanker(Executor):
         self.default_batch_size = default_batch_size
 
     @requests
-    def rank(self, docs: Optional[DocumentArray], parameters: dict, **kwargs):
+    def rank(
+        self, docs: Optional[DocumentArray], parameters: dict, **kwargs
+    ) -> DocumentArray:
         """
-        Re-rank the matches of the documents, and provide an answer span for each one.
+        Extracts answers from existing matches, (re)ranks them, and replaces the current
+        matches with extracted answers.
 
-        The new score will be saved under the ``'dpr'`` key in the ``scores`` attribute
-        of the matches. The scores are a similarity measure in the (0,1) range.
+        The new matches will be have a score called ``relevance_score`` saved under
+        their scores. They will also have a tag ``span_score``, which refers to their
+        span score, which is used to rank answers that come from the same match. The
+        tag ``title`` will also be added, and will equal the title of the match from
+        which they were extracted.
 
-        The answer spans ,which will be a list of strings of length
-        ``self.num_spans_per_match``, will be saved under the ``'answer_spans'``
-        key in the ``tags`` attribute of the matches. Each span is a substring of the
-        match's ``text`` attribute.
+        For each match ``num_spans_per_match`` of answers will be extracted, which
+        means that the new matches of the document will have a length of previous
+        number of matches times ``num_spans_per_match``.
 
         :param docs: Documents whose matches to re-rank (specifically, the matches of
             the documents on the traversal paths will be re-ranked). The document's
