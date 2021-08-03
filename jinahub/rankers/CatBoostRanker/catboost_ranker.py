@@ -60,34 +60,28 @@ class CatboostRanker(Executor):
         Each query document corresponded to N matched documents, and each query-document pair features
         are combined into a feature vector. We stack all feature vectors and return the training data.
         """
+        group_ids = []
+        label_vector = []
         feature_vectors = []
         for idx, doc in enumerate(docs):
             q_feature_vector = [
                 doc.tags.get(query_feature) for query_feature in self.q_features
             ]
             for match in doc.matches:
+                group_ids.append(idx)
+                label_vector.append(match.tags.get(self.label))
                 m_feature_vector = [
                     match.tags.get(docum_feature) for docum_feature in self.m_features
                 ]
                 feature_vectors.append(q_feature_vector + m_feature_vector)
-        return np.array(feature_vectors)
-
-    def _extract_group_labels(self, docs: DocumentArray):
-        group_ids = []
-        label_vector = []
-        for idx, doc in enumerate(docs):
-            for match in doc.matches:
-                group_ids.append(idx)
-                label_vector.append(match.tags.get(self.label))
-        return group_ids, label_vector
+        return np.array(feature_vectors), label_vector, group_ids
 
     def _extract_weights(self, docs: DocumentArray):
         return [doc.tags.get(self.weight) for doc in docs]
 
     def build_catboost_pool(self, docs: DocumentArray):
         """"""
-        data = self._extract_features(docs)
-        group_id, label = self._extract_group_labels(docs)
+        data, label, group_id = self._extract_features(docs)
         if self.weight:
             return Pool(
                 data=data,
