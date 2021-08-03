@@ -1,8 +1,8 @@
-from typing import Iterable, List, Optional, Tuple
+from itertools import groupby
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-
 from jina import Document, DocumentArray, Executor, requests
 from transformers import DPRReader, DPRReaderTokenizerFast
 
@@ -15,11 +15,6 @@ def _batcher(iterable, n=1):
     l = len(iterable)
     for ndx in range(0, l, n):
         yield iterable[ndx : ndx + n]
-
-
-def _sort_by(x: List, sort_by: List, reverse: bool = True) -> List:
-    """Sort a list x by another list (sort_by)"""
-    return [elem_x for (_, elem_x) in sorted(zip(sort_by, x), reverse=reverse)]
 
 
 def _logistic_fn(x: np.ndarray) -> List[float]:
@@ -116,13 +111,20 @@ class DPRReaderRanker(Executor):
             ``batch_size``. For example::
             parameters={'traversal_paths': ['r'], 'batch_size': 10}
         """
-
         if not docs:
             return None
 
-        for doc in docs.traverse_flat(
-            parameters.get('traversal_paths', self.default_traversal_paths)
-        ):
+        new_matches = []
+        old_matches = []
+
+        docs_list = []
+        old_match_ref_doc_dict = {}
+        new_match_ref_doc_dict = {}
+
+        # Perpare a list of docs to add matches to later and extract their
+        # matches, plus build a reference to their reference docs
+        trav_paths = parameters.get('traversal_paths', self.default_traversal_paths)
+        for ind, doc in enumerate(docs.traverse_flat(trav_paths)):
             if not doc.text:
                 raise ValueError(
                     f'No question (text) found for document with id {doc.id}.'
@@ -130,65 +132,77 @@ class DPRReaderRanker(Executor):
                     ' and context (text) from its matches.'
                 )
 
-            answer_spans = []
-            answer_relevance_scores = []
-            answer_span_scores = []
-            answer_titles = []
+            docs_list.append(doc)
+            old_matches += doc.matches
+            for match in doc.matches:
+                old_match_ref_doc_dict[match.id] = ind
 
-            match_batches_generator = _batcher(
-                doc.matches, n=parameters.get('batch_size', self.default_batch_size)
-            )
-            for matches in match_batches_generator:
-                contexts = matches.get_attributes('text')
+        # Traverse all matches
+        batch_size = parameters.get('batch_size', self.default_batch_size)
+        for matches in _batcher(old_matches, n=batch_size):
 
-                titles = None
-                if self.title_tag_key:
-                    titles = matches.get_attributes(f'tags__{self.title_tag_key}')
+            inputs = self._prepare_inputs(matches, docs_list, old_match_ref_doc_dict)
+            with torch.no_grad():
+                outputs = self._get_outputs(*inputs)
 
-                    if len(titles) != len(matches):
-                        raise ValueError(
-                            'All matches are required to have the'
-                            f' {self.title_tag_key} tag, but found'
-                            f' {len(titles) - len(matches)} matches without it.'
-                        )
-
-                with torch.no_grad():
-                    (
-                        relevance_scores,
-                        span_scores,
-                        spans,
-                        titles,
-                    ) = self._get_outputs(doc.text, contexts, titles)
-
-                answer_spans += spans
-                answer_relevance_scores += relevance_scores
-                answer_span_scores += span_scores
-                answer_titles += titles
-
-            # Make sure answers are sorted by relevance scores
-            sorting_list = list(zip(answer_relevance_scores, answer_span_scores))
-            answer_spans = _sort_by(answer_spans, sorting_list)
-            answer_relevance_scores = _sort_by(answer_relevance_scores, sorting_list)
-            answer_span_scores = _sort_by(answer_span_scores, sorting_list)
-            answer_titles = _sort_by(answer_titles, sorting_list)
-
-            # Replace previous matches with actual answers
-            doc.matches.clear()
-            for span, rel_score, span_score, title in zip(
-                answer_spans, answer_relevance_scores, answer_span_scores, answer_titles
-            ):
+            for rel_score, span, tags, ref_ind in zip(*outputs):
                 scores = {'relevance_score': rel_score}
-                tags = {'span_score': span_score}
-                if title:
-                    tags['title'] = title
-                doc.matches.append(Document(text=span, scores=scores, tags=tags))
+                new_match = Document(text=span, scores=scores, tags=tags)
+                new_matches.append(new_match)
+                new_match_ref_doc_dict[new_match.id] = ref_ind
+
+        # Clear old matches
+        for doc in docs_list:
+            doc.matches.clear()
+
+        # Append new matches, first sorting them
+        for ref_ind, new_matches_group in groupby(
+            new_matches, lambda x: new_match_ref_doc_dict[x.id]
+        ):
+            new_matches_list = list(new_matches_group)
+            new_matches_list.sort(
+                key=lambda x: (x.scores['relevance_score'].value, x.tags['span_score']),
+                reverse=True,
+            )
+
+            docs_list[ref_ind].matches.extend(new_matches_list)
+
+    def _prepare_inputs(
+        self,
+        matches: List[Document],
+        docs_list: Dict[str, Document],
+        old_match_ref_doc_dict: Dict[str, str],
+    ) -> Tuple[List[str], List[str], Optional[List[str]], List[str]]:
+        contexts = []
+        questions = []
+        ref_inds = []
+        for match in matches:
+            contexts.append(match.text)
+            ref_inds.append(old_match_ref_doc_dict[match.id])
+            questions.append(docs_list[old_match_ref_doc_dict[match.id]].text)
+
+        titles = None
+        if self.title_tag_key:
+            try:
+                titles = [match.tags[self.title_tag_key] for match in matches]
+            except KeyError:
+                raise ValueError(
+                    f'All matches are required to have the {self.title_tag_key} tag,'
+                    ' but found somem atches without it.'
+                )
+
+        return questions, contexts, titles, ref_inds
 
     def _get_outputs(
-        self, question: str, contexts: List[str], titles: Optional[List[str]]
-    ) -> Tuple[List[float], List[float], List[str], List[Optional[str]]]:
+        self,
+        questions: List[str],
+        contexts: List[str],
+        titles: Optional[List[str]],
+        ref_inds: List[str],
+    ) -> Tuple[List[float], List[str], List[Dict[str, Union[str, float]]], List[str]]:
 
         encoded_inputs = self.tokenizer(
-            questions=question,
+            questions=questions,
             titles=titles,
             texts=contexts,
             padding='longest',
@@ -198,14 +212,20 @@ class DPRReaderRanker(Executor):
 
         # For each context, extract num_spans_per_match best spans
         best_spans = self.tokenizer.decode_best_spans(
-            encoded_inputs, outputs, num_spans_per_passage=self.num_spans_per_match
+            encoded_inputs,
+            outputs,
+            num_spans=self.num_spans_per_match * len(questions),
+            num_spans_per_passage=self.num_spans_per_match,
         )
         relevance_scores = _logistic_fn([span.relevance_score for span in best_spans])
-        span_scores = _logistic_fn([span.span_score for span in best_spans])
         spans = [span.text for span in best_spans]
-        if titles:
-            answer_titles = [titles[span.doc_id] for span in best_spans]
-        else:
-            answer_titles = [None] * len(best_spans)
+        answer_ref_inds = [ref_inds[span.doc_id] for span in best_spans]
 
-        return relevance_scores, span_scores, spans, answer_titles
+        tags = []
+        for span in best_spans:
+            tags_span = {'span_score': _logistic_fn(span.span_score)}
+            if titles:
+                tags_span['title'] = titles[span.doc_id]
+            tags.append(tags_span)
+
+        return relevance_scores, spans, tags, answer_ref_inds

@@ -27,10 +27,3 @@ def test_integration(request_size: int):
         )
 
     assert sum(len(resp_batch.docs) for resp_batch in resp) == 50
-
-
-match = Document(
-    text='Jina AI is a Neural Search Company, enabling cloud-native neural'
-    ' search powered by state-of-the-art AI and deep learning',
-    tags={'title': 'Jina AI'},
-)
