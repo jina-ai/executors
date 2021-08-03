@@ -57,7 +57,7 @@ class NumpySearcher(Executor):
             self.logger.info('No documents to search for')
             return
 
-        if not doc_embeddings:
+        if len(doc_embeddings) == 0 or not doc_embeddings:
             self.logger.info('None of the docs have any embeddings')
             return
 
