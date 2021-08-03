@@ -4,7 +4,6 @@ import numpy as np
 import torch
 
 from jina import Document, DocumentArray, Executor, requests
-from jina_commons.batching import get_docs_batch_generator
 from transformers import DPRReader, DPRReaderTokenizerFast
 
 
@@ -36,7 +35,7 @@ class DPRReaderRanker(Executor):
 
     This executor uses the DPR Reader model to re-rank documents based on
     cross-attention between the question (main document text) and the answer
-    passages (text of the matches + their titles).
+    passages (text of the matches + their titles, if specified).
 
     :param pretrained_model_name_or_path: Can be either:
         - the model id of a pretrained model hosted inside a model repo
@@ -47,7 +46,8 @@ class DPRReaderRanker(Executor):
         the same as for the ``pretrained_model_name_or_path`` parameters. If not
         provided, the ``pretrained_model_name_or_path`` parameter value will be used
     :param title_tag_key: The key of the tag that contains document title in the
-        match documents.
+        match documents. Specify it if you want the text of the matches to be combined
+        with their titles (to mirror the method used in training of the original model)
     :param num_spans_per_match: Number of spans to extract per match
     :param max_length: Max length argument for the tokenizer
     :param default_batch_size: Default batch size for processing documents, used if the
@@ -61,7 +61,7 @@ class DPRReaderRanker(Executor):
         self,
         pretrained_model_name_or_path: str = 'facebook/dpr-reader-single-nq-base',
         base_tokenizer_model: Optional[str] = None,
-        title_tag_key: str = 'title',
+        title_tag_key: Optional[str] = None,
         num_spans_per_match: int = 1,
         max_length: Optional[int] = None,
         default_batch_size: int = 32,
@@ -95,25 +95,26 @@ class DPRReaderRanker(Executor):
         Extracts answers from existing matches, (re)ranks them, and replaces the current
         matches with extracted answers.
 
-        The new matches will be have a score called ``relevance_score`` saved under
-        their scores. They will also have a tag ``span_score``, which refers to their
-        span score, which is used to rank answers that come from the same match. The
-        tag ``title`` will also be added, and will equal the title of the match from
-        which they were extracted.
-
         For each match ``num_spans_per_match`` of answers will be extracted, which
         means that the new matches of the document will have a length of previous
         number of matches times ``num_spans_per_match``.
 
+        The new matches will be have a score called ``relevance_score`` saved under
+        their scores. They will also have a tag ``span_score``, which refers to their
+        span score, which is used to rank answers that come from the same match.
+
+        If you specified ``title_tag_key`` at initialization, the tag ``title`` will
+        also be added to the new matches, and will equal the title of the match from
+        which they were extracted.
+
         :param docs: Documents whose matches to re-rank (specifically, the matches of
             the documents on the traversal paths will be re-ranked). The document's
             ``text`` attribute is taken as the question, and the ``text`` attribute
-            of the matches as the context. The matches must also have a title, which
-            should be available in the tag with the key specified by the
-            ``title_tag_key`` parameter passed on the executor initialization.
+            of the matches as the context. If you specified ``title_tag_key`` at
+            initialization, the matches must also have a title (under this tag).
         :param parameters: dictionary to define the ``traversal_path`` and the
-            ``batch_size``. For example,
-            ``parameters={'traversal_paths': ['r'], 'batch_size': 10}``
+            ``batch_size``. For example::
+            parameters={'traversal_paths': ['r'], 'batch_size': 10}
         """
 
         if not docs:
@@ -139,14 +140,17 @@ class DPRReaderRanker(Executor):
             )
             for matches in match_batches_generator:
                 contexts = matches.get_attributes('text')
-                titles = matches.get_attributes(f'tags__{self.title_tag_key}')
 
-                if len(titles) != len(matches):
-                    raise ValueError(
-                        'All matches are required to have the'
-                        f' {self.title_tag_key} tag, but found'
-                        f' {len(titles) - len(matches)} matches without it.'
-                    )
+                titles = None
+                if self.title_tag_key:
+                    titles = matches.get_attributes(f'tags__{self.title_tag_key}')
+
+                    if len(titles) != len(matches):
+                        raise ValueError(
+                            'All matches are required to have the'
+                            f' {self.title_tag_key} tag, but found'
+                            f' {len(titles) - len(matches)} matches without it.'
+                        )
 
                 with torch.no_grad():
                     (
@@ -164,27 +168,24 @@ class DPRReaderRanker(Executor):
             # Make sure answers are sorted by relevance scores
             sorting_list = list(zip(answer_relevance_scores, answer_span_scores))
             answer_spans = _sort_by(answer_spans, sorting_list)
-
-            answer_titles = _sort_by(answer_titles, sorting_list)
             answer_relevance_scores = _sort_by(answer_relevance_scores, sorting_list)
             answer_span_scores = _sort_by(answer_span_scores, sorting_list)
+            answer_titles = _sort_by(answer_titles, sorting_list)
 
             # Replace previous matches with actual answers
             doc.matches.clear()
             for span, rel_score, span_score, title in zip(
                 answer_spans, answer_relevance_scores, answer_span_scores, answer_titles
             ):
-                doc.matches.append(
-                    Document(
-                        text=span,
-                        scores={'relevance_score': rel_score},
-                        tags={'title': title, 'span_score': span_score},
-                    )
-                )
+                scores = {'relevance_score': rel_score}
+                tags = {'span_score': span_score}
+                if title:
+                    tags['title'] = title
+                doc.matches.append(Document(text=span, scores=scores, tags=tags))
 
     def _get_outputs(
-        self, question: str, contexts: List[str], titles: List[str]
-    ) -> Tuple[List[float], List[float], List[str], List[str]]:
+        self, question: str, contexts: List[str], titles: Optional[List[str]]
+    ) -> Tuple[List[float], List[float], List[str], List[Optional[str]]]:
 
         encoded_inputs = self.tokenizer(
             questions=question,
@@ -201,7 +202,10 @@ class DPRReaderRanker(Executor):
         )
         relevance_scores = _logistic_fn([span.relevance_score for span in best_spans])
         span_scores = _logistic_fn([span.span_score for span in best_spans])
-        answer_titles = [titles[span.doc_id] for span in best_spans]
         spans = [span.text for span in best_spans]
+        if titles:
+            answer_titles = [titles[span.doc_id] for span in best_spans]
+        else:
+            answer_titles = [None] * len(best_spans)
 
         return relevance_scores, span_scores, spans, answer_titles
