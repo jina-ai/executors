@@ -1,27 +1,36 @@
 import random
+
 import pytest
 import numpy as np
 from jina import Document, DocumentArray
 
+from ..catboost_ranker import CatboostRanker
+
 NUM_DOCS = 50
+NUM_MATCHES = 5
+
+
+@pytest.fixture
+def ranker():
+    return CatboostRanker(
+        query_features=['brand', 'price'],
+        match_features=['brand', 'price'],
+        label='relevance',
+    )
 
 
 @pytest.fixture
 def relevances():
-    return np.random.uniform(1, 10, [1, NUM_DOCS])
+    return np.random.uniform(1, 10, [1, NUM_DOCS]).flatten()
 
 
 @pytest.fixture
-def prices():
-    return np.random.randint(low=50, high=200, size=NUM_DOCS)
-
-
-def documents_to_train_stub_model(relevances, prices):
+def documents_to_train_stub_model(relevances):
     """features: color, brand, price. Label relevance"""
     # initial stub model, relevance purely dependent on brand, not price.
     # brand relevance 5 > 4 > 3 > 2 > 1.
     da = DocumentArray()
-    for price, relevance in zip(prices, relevances):
+    for relevance in relevances:
         if 8 <= relevance <= 10:
             brand = 5
         elif 6 <= relevance < 8:
@@ -32,12 +41,23 @@ def documents_to_train_stub_model(relevances, prices):
             brand = 2
         else:
             brand = 1
-        da.append(
-            Document(tags={'brand': brand, 'price': price, 'relevance': relevance})
-        )
+        doc = Document(tags={'brand': brand, 'price': random.randint(50, 200)})
+        for _ in range(NUM_MATCHES):
+            # each match has an extra relevance field indicates score.
+            doc.matches.append(
+                Document(
+                    tags={
+                        'brand': brand,
+                        'price': random.randint(50, 200),
+                        'relevance': float(relevance),
+                    }
+                )
+            )
+        da.append(doc)
     return da
 
 
+@pytest.fixture
 def documents_to_train_price_sensitive_model(relevances):
     """features: color, brand, price. Label relevance"""
     # price sensitive, relevance based on pure price, cheaper relevance higher.

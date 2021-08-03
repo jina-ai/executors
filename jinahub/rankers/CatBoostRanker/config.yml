@@ -1,4 +1,4 @@
-jtype: CatBoostRanker
+jtype: CatboostRanker
 metas:
   py_modules:
     - catboost_ranker.py

@@ -12,11 +12,11 @@ from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 
 
-class CatBoostRanker(Executor):
+class CatboostRanker(Executor):
     def __init__(
         self,
         query_features: List[str],
-        document_features: List[str],
+        match_features: List[str],
         label: str,
         model_path: str = None,
         catboost_parameters: Dict = {
@@ -31,7 +31,7 @@ class CatBoostRanker(Executor):
     ):
         super().__init__(*args, **kwargs)
         self.q_features = query_features
-        self.d_features = document_features
+        self.m_features = match_features
         self.label = label
         self.model_path = model_path
         self.catboost_parameters = catboost_parameters
@@ -39,6 +39,8 @@ class CatBoostRanker(Executor):
         self.logger = JinaLogger('catboost logger')
         if self.model_path and os.path.exists(self.model_path):
             self._load_model()
+        else:
+            self.model = CatBoostRanker()
 
     def _load_model(self):
         """Load model from model path"""
@@ -52,36 +54,39 @@ class CatBoostRanker(Executor):
         """Loop over docs, build dataset to train the model.
 
         This func get all :attr:`query_feature` from tags inside :class:`Document`,
-        and get all :attr:`document_features` from all matched :class:`Document` for each query document.
+        and get all :attr:`match_features` from all matched :class:`Document` for each query document.
         Each query document corresponded to N matched documents, and each query-document pair features
         are combined into a feature vector. We stack all feature vectors and return the training data.
         """
         group_ids = []
         feature_vectors = []
+        label_vector = []
         for idx, doc in enumerate(docs):
             group_ids.append(idx)
             q_feature_vector = [
                 doc.tags.get(query_feature) for query_feature in self.q_features
             ]
             for match in doc.matches:
-                d_feature_vector = [
-                    match.tags.get(docum_feature) for docum_feature in self.d_features
+                m_feature_vector = [
+                    match.tags.get(docum_feature) for docum_feature in self.m_features
                 ]
-                feature_vectors.append(q_feature_vector + d_feature_vector)
+                label_vector.append(match.tags.get(self.label))
+                feature_vectors.append(q_feature_vector + m_feature_vector)
         feature_vectors = np.array(feature_vectors)
-        return Pool(data=feature_vectors, label=self.label, group_id=group_ids)
+        return Pool(data=feature_vectors, label=label_vector, group_id=group_ids)
 
     @requests(on='/train')
-    def train(self, docs: DocumentArray, parameters: Optional[Dict], **kwargs):
+    def train(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
         catboost_parameters = parameters.get(
             'catboost_parameters', self.catboost_parameters
         )
-        train_pool = self._extract_features_from_docs(docs)
-        self.model = CatBoostRanker(**catboost_parameters)
-        self.model.fit(train_pool)
+        self._extract_features_from_docs(docs)
+        # train_pool = self._extract_features_from_docs(docs)
+        # self.model = CatBoostRanker(**catboost_parameters)
+        # self.model.fit(train_pool)
 
     @requests(on='/predict')
-    def predict(self, docs: DocumentArray, parameters: Optional[Dict], **kwargs):
+    def predict(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
         catboost_parameters = parameters.get(
             'catboost_parameters', self.catboost_parameters
         )

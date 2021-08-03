@@ -1,6 +1,6 @@
 manifest_version: 1
-name: CatBoostRanker
-alias: CatBoostRanker
+name: CatboostRanker
+alias: CatboostRanker
 description: Learning to rank with CatBoost
 author: Jina AI Dev-Team (dev-team@jina.ai)
 url: https://github.com/jina-ai/executors/jinahub/rankers/CatBoostRanker

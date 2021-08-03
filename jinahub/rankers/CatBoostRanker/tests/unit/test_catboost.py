@@ -1,12 +1,9 @@
 import pytest
 
-from ...catboost_ranker import CatBoostRanker
+
+def test_init(ranker):
+    assert not ranker.model.is_fitted()
 
 
-def test_dump_load():
-    assert 1
-    ran = CatBoostRanker(
-        query_features=['brand', 'price'],
-        document_features=['brand', 'price'],
-        label='relevance',
-    )
+def test_train(ranker, documents_to_train_stub_model):
+    ranker.train(docs=documents_to_train_stub_model)
