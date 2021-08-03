@@ -174,10 +174,7 @@ class PostgreSQLHandler:
             # retrieve metadata
             cursor.execute(f'SELECT DOC FROM {self.table} WHERE ID = %s;', (doc.id,))
             result = cursor.fetchone()
-            try:
-                data = bytes(result[0])
-            except:
-                print('x')
+            data = bytes(result[0])
             retrieved_doc = Document(data)
             if not return_embeddings:
                 retrieved_doc.pop('embedding')
