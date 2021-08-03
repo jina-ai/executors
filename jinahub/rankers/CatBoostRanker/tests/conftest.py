@@ -21,7 +21,7 @@ def ranker():
 
 @pytest.fixture
 def relevances():
-    return np.random.uniform(1, 10, [1, NUM_DOCS]).flatten()
+    return np.random.uniform(0, 1, [1, NUM_DOCS]).flatten()
 
 
 @pytest.fixture
@@ -31,13 +31,13 @@ def documents_to_train_stub_model(relevances):
     # brand relevance 5 > 4 > 3 > 2 > 1.
     da = DocumentArray()
     for relevance in relevances:
-        if 8 <= relevance <= 10:
+        if 0.8 <= relevance <= 1:
             brand = 5
-        elif 6 <= relevance < 8:
+        elif 0.6 <= relevance < 0.8:
             brand = 4
-        elif 4 <= relevance < 6:
+        elif 0.4 <= relevance < 0.6:
             brand = 3
-        elif 2 <= relevance < 4:
+        elif 0.2 <= relevance < 0.4:
             brand = 2
         else:
             brand = 1
