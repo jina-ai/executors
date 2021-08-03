@@ -1,7 +1,7 @@
 from typing import Dict
 
 import numpy as np
-from catboost import CatBoostRanker, Pool
+from catboost_ranker import CatBoostRanker, Pool
 
 from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
