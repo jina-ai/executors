@@ -62,7 +62,7 @@ class DPRReaderRanker(Executor):
         pretrained_model_name_or_path: str = 'facebook/dpr-reader-single-nq-base',
         base_tokenizer_model: Optional[str] = None,
         title_tag_key: Optional[str] = None,
-        num_spans_per_match: int = 1,
+        num_spans_per_match: int = 2,
         max_length: Optional[int] = None,
         default_batch_size: int = 32,
         default_traversal_paths: Iterable[str] = ('r',),
