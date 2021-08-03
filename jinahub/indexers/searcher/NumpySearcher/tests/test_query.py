@@ -83,7 +83,7 @@ def test_empty_documents(tmpdir):
         'replica_id': 0,
     }
     indexer = NumpySearcher(dump_path='tests/dump1', runtime_args=runtime)
-    docs = DocumentArray([Document(id=0)])
+    docs = DocumentArray([Document()])
     indexer.search(docs, {'top_k': TOP_K})
     assert len(docs) == 1
     assert len(docs[0].matches) == 0
