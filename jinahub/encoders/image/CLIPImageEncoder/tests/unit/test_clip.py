@@ -67,20 +67,6 @@ def test_docs_no_blobs(encoder: CLIPImageEncoder):
     assert docs[0].embedding is None
 
 
-def test_err_preprocessing(encoder):
-    docs = DocumentArray([Document(blob=np.ones((3, 100, 100), dtype=np.uint8))])
-
-    with pytest.raises(ValueError, match="If `use_default_preprocessing=True`"):
-        encoder.encode(docs, {})
-
-
-def test_err_no_preprocessing(encoder_no_pre):
-    docs = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
-
-    with pytest.raises(ValueError, match="If `use_default_preprocessing=False`"):
-        encoder_no_pre.encode(docs, {})
-
-
 def test_single_image(encoder: CLIPImageEncoder):
     docs = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
     encoder.encode(docs, {})
@@ -89,7 +75,7 @@ def test_single_image(encoder: CLIPImageEncoder):
     assert docs[0].embedding.dtype == np.float32
 
 
-def test_single_image_no_preprocessing(encoder_no_pre):
+def test_single_image_no_preprocessing(encoder_no_pre: CLIPImageEncoder):
     docs = DocumentArray([Document(blob=np.ones((3, 224, 224), dtype=np.uint8))])
     encoder_no_pre.encode(docs, {})
 
@@ -106,10 +92,31 @@ def test_encoding_cpu():
     assert input_data[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
+def test_cpu_no_preprocessing():
+    encoder = CLIPImageEncoder(device="cpu", use_default_preprocessing=False)
+    input_data = DocumentArray([Document(blob=np.ones((3, 224, 224), dtype=np.uint8))])
+
+    encoder.encode(docs=input_data, parameters={})
+
+    assert input_data[0].embedding.shape == (_EMBEDDING_DIM,)
+
+
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU is needed for this test")
 def test_encoding_gpu():
     encoder = CLIPImageEncoder(device="cuda")
     input_data = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
+
+    encoder.encode(docs=input_data, parameters={})
+
+    assert input_data[0].embedding.shape == (_EMBEDDING_DIM,)
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU is needed for this test")
+def test_gpu_no_preprocessing():
+    encoder = CLIPImageEncoder(device="cuda", use_default_preprocessing=False)
+    input_data = DocumentArray(
+        [Document(blob=np.ones((3, 224, 224), dtype=np.float32))]
+    )
 
     encoder.encode(docs=input_data, parameters={})
 
@@ -127,28 +134,34 @@ def test_clip_any_image_shape(encoder: CLIPImageEncoder):
     assert len(docs.get_attributes("embedding")) == 1
 
 
-def test_clip_batch(encoder):
+def test_clip_batch(encoder: CLIPImageEncoder):
     """
     This tests that the encoder can handle inputs of various size
     which is not a factorial of ``default_batch_size``
 
     """
     docs = DocumentArray(
-        [Document(blob=np.ones((100, 100, 3), dtype=np.uint8)) for _ in range(25)]
+        [
+            Document(blob=np.ones((100, 100, 3), dtype=np.uint8)),
+            Document(blob=np.ones((100, 100, 3), dtype=np.uint8)),
+        ]
     )
     encoder.encode(docs, parameters={})
-    assert len(docs.get_attributes("embedding")) == 25
+    assert len(docs.get_attributes("embedding")) == 2
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
+    assert docs[0].embedding.dtype == np.float32
+    np.testing.assert_allclose(docs[0].embedding, docs[1].embedding)
 
 
-def test_batch_no_preprocessing(encoder_no_pre):
+def test_batch_no_preprocessing(encoder_no_pre: CLIPImageEncoder):
     docs = DocumentArray(
         [
-            Document(blob=np.ones((3, 224, 224), dtype=np.uint8)),
-            Document(blob=np.ones((3, 224, 224), dtype=np.uint8)),
+            Document(blob=np.ones((3, 224, 224), dtype=np.float32)),
+            Document(blob=np.ones((3, 224, 224), dtype=np.float32)),
         ]
     )
     encoder_no_pre.encode(docs, {})
-
+    assert len(docs.get_attributes("embedding")) == 2
     assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
     assert docs[0].embedding.dtype == np.float32
     np.testing.assert_allclose(docs[0].embedding, docs[1].embedding)
@@ -174,9 +187,19 @@ def test_traversal_path(
 
 @pytest.mark.parametrize("batch_size", [1, 2, 4, 8])
 def test_batch_size(encoder: CLIPImageEncoder, batch_size: int):
-    blob = np.ones((224, 224, 3), dtype=np.uint8)
+    blob = np.ones((100, 100, 3), dtype=np.uint8)
     docs = DocumentArray([Document(blob=blob) for _ in range(32)])
     encoder.encode(docs, parameters={"batch_size": batch_size})
+
+    for doc in docs:
+        assert doc.embedding.shape == (_EMBEDDING_DIM,)
+
+
+@pytest.mark.parametrize("batch_size", [1, 2, 4, 8])
+def test_batch_size_no_preprocessing(encoder_no_pre: CLIPImageEncoder, batch_size: int):
+    blob = np.ones((3, 224, 224), dtype=np.uint8)
+    docs = DocumentArray([Document(blob=blob) for _ in range(32)])
+    encoder_no_pre.encode(docs, parameters={"batch_size": batch_size})
 
     for doc in docs:
         assert doc.embedding.shape == (_EMBEDDING_DIM,)

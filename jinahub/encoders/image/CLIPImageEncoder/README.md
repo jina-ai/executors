@@ -9,7 +9,9 @@ The following parameters can be passed on initialization:
     - A string, the model id of a pretrained CLIP model hosted
         inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
     - A path to a directory containing model weights saved, e.g., ./my_model_directory/
-- `use_default_preprocessing`: Whether to use the default preprocessing on
+- `base_feature_extractor`: Base feature extractor for images. 
+      Defaults to ``pretrained_model_name_or_path`` if None
+- `use_default_preprocessing`: Whether to use the `base_feature_extractor` on
         images (blobs) before encoding them. If you disable this, you must ensure
         that the images you pass in have the correct format, see the ``encode`` method
         for details.
@@ -47,9 +49,7 @@ Use the prebuilt images from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(
-        uses='jinahub+docker://CLIPImageEncoder',
-        volumes='/your_home_folder/.cache/clip:/root/.cache/clip')
+f = Flow().add(uses='jinahub+docker://CLIPImageEncoder')
 ```
 
 or in the `.yml` config.
@@ -59,7 +59,6 @@ jtype: Flow
 pods:
   - name: encoder
     uses: 'jinahub+docker://CLIPImageEncoder'
-    volumes: '/your_home_folder/.cache/clip:/root/.cache/clip'
 ```
 
 #### using source code
@@ -68,7 +67,7 @@ Use the source code from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub://CLIPImageEncoder',
+f = Flow().add(uses='jinahub://CLIPImageEncoder')
 ```
 
 or in the `.yml` config.
@@ -86,9 +85,9 @@ pods:
 
 ```python
 from jina import Flow, Document
-import numpy as n
+import numpy as np
 
-f = Flow().add(uses='jinahub+docker://CLIPImageEncoder', )
+f = Flow().add(uses='jinahub+docker://CLIPImageEncoder')
 
 
 def check_resp(resp):
@@ -107,7 +106,11 @@ with f:
 
 ### Inputs 
 
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with `blob` of the shape `Height x Width x 3`. By default, the input `blob` must be an `ndarray` with `dtype=uint8`. The `Height` and `Width` can have arbitrary values. When setting `use_default_preprocessing=False`, the input `blob` must have the size of `224x224x3` with `dtype=float32`.
+[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with `blob` of the shape `Height x Width x 3`. By default, the input `blob` must be an `ndarray` with `dtype=uint8`. The `Height` and `Width` can have arbitrary values.
+
+If you set `use_default_preprocessing=True` when creating this encoder, then the image arrays should have the shape `[H, W, C]`, and be in the RGB color format.
+
+If you set `use_default_preprocessing=False` when creating this encoder, then you need to ensure that the images you pass in are already pre-processed. This means that they are all the same size (for batching) - the CLIP model was trained on `224 x 224` images, and that they are of the shape `[C, H, W]` (in the RGB color format). They should also be normalized.
 
 ### Returns
 
