@@ -1,9 +1,14 @@
-from typing import Dict
+__copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
+__license__ = "Apache-2.0"
+
+import os
+from typing import Dict, List, Optional
 
 import numpy as np
-from catboost_ranker import CatBoostRanker, Pool
+from catboost import CatBoostRanker, Pool
 
 from jina import DocumentArray, Executor, requests
+from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 
 
@@ -31,6 +36,7 @@ class CatBoostRanker(Executor):
         self.model_path = model_path
         self.catboost_parameters = catboost_parameters
         self.model = None
+        self.logger = JinaLogger('catboost logger')
         if self.model_path and os.path.exists(self.model_path):
             self._load_model()
 
@@ -90,7 +96,7 @@ class CatBoostRanker(Executor):
             self._save_model(model_path)
         else:
             self._save_model('tmp/model')
-            logger.info(
+            self.logger.info(
                 f'Model {model_path} does not exist. Model has been saved to tmp/model.cbm.'
             )
 
@@ -100,6 +106,6 @@ class CatBoostRanker(Executor):
         if model_path:
             self._load_model(model_path)
         else:
-            logger.warning(
+            self.logger.warning(
                 f'Model {model_path} does not exist. Please specify the correct model_path inside parameters.'
             )
