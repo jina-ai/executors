@@ -247,7 +247,7 @@ def test_openai_embed_match():
     clip_text_encoder = CLIPImageEncoder("openai/clip-vit-base-patch32")
     clip_text_encoder.encode(docs, {})
 
-    actual_embedding = docs.get_attributes("embedding")
+    actual_embedding = np.stack(docs.get_attributes("embedding"))
 
     # assert same results with OpenAI's implementation
     model, preprocess = clip.load("ViT-B/32", device="cpu")
