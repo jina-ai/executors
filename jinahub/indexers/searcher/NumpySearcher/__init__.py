@@ -56,11 +56,15 @@ class NumpySearcher(Executor):
         if not docs:
             self.logger.info('No documents to search for')
             return
-
+        print('******before')
+        print(doc_embeddings)
+        print('******')
         if len(doc_embeddings) == 0 or not doc_embeddings:
             self.logger.info('None of the docs have any embeddings')
             return
-
+        print('******after')
+        print(doc_embeddings)
+        print('******')
         doc_embeddings = np.stack(doc_embeddings)
 
         q_emb = _ext_A(_norm(doc_embeddings))
