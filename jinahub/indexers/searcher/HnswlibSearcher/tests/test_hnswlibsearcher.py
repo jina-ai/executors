@@ -33,9 +33,10 @@ def metas(tmpdir):
                          [('l2', True), ('ip', True), ('cosine', True),
                           ('l2', False), ('ip', False), ('cosine', False)])
 def test_metric(tmpdir, metric, is_distance):
-    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
+    metas = {'workspace': str(tmpdir), 'name': 'searcher'}
+    runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, metric=metric, is_distance=is_distance)
+    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, metric=metric, is_distance=is_distance, runtime_args=runtime_args)
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
 
@@ -48,9 +49,10 @@ def test_metric(tmpdir, metric, is_distance):
 
 
 def test_query_vector(tmpdir):
-    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
+    metas = {'workspace': str(tmpdir), 'name': 'searcher'}
+    runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas)
+    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, runtime_args=runtime_args)
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
 
@@ -71,27 +73,31 @@ def test_query_vector(tmpdir):
 
 
 def test_none_doc(tmpdir):
-    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
-    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas)
+    metas = {'workspace': str(tmpdir), 'name': 'searcher'}
+    runtime_args = {'pea_id': 0, 'replica_id': 0}
+
+    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, runtime_args=runtime_args)
     indexer.search(None, {})
 
     indexer.fill_embedding(None)
 
 
 def test_query_vector_empty(tmpdir):
-    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
+    metas = {'workspace': str(tmpdir), 'name': 'searcher'}
+    runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = HnswlibSearcher(default_top_k=TOP_K, metas=metas)
+    indexer = HnswlibSearcher(default_top_k=TOP_K, metas=metas, runtime_args=runtime_args)
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
     assert len(docs[0].matches) == 0
 
 
 def test_flow(tmpdir):
-    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
+    metas = {'workspace': str(tmpdir), 'name': 'searcher'}
+    runtime_args = {'pea_id': 0, 'replica_id': 0}
 
     flow = Flow().add(uses=HnswlibSearcher, override_with={'dump_path': DUMP_PATH, 'default_top_k': TOP_K},
-                      override_metas=metas)
+                      override_metas=metas, runtime_args=runtime_args)
     with flow:
         resp = flow.post(
             on='/search',

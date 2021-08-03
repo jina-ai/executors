@@ -60,6 +60,7 @@ class AnnoySearcher(Executor):
             self._indexer = AnnoyIndex(num_dim, self.metric)
             self._doc_id_to_offset = {}
             self._load_index(self._ids, self._vecs)
+            self.logger.info('Done building Annoy index')
         else:
             self.logger.warning(
                 'No data loaded in "AnnoyIndexer". Use .rolling_update() to re-initialize it...'
