@@ -62,7 +62,6 @@ class CatboostRanker(Executor):
         feature_vectors = []
         label_vector = []
         for idx, doc in enumerate(docs):
-            group_ids.append(idx)
             q_feature_vector = [
                 doc.tags.get(query_feature) for query_feature in self.q_features
             ]
@@ -72,6 +71,7 @@ class CatboostRanker(Executor):
                 ]
                 label_vector.append(match.tags.get(self.label))
                 feature_vectors.append(q_feature_vector + m_feature_vector)
+                group_ids.append(idx)
         feature_vectors = np.array(feature_vectors)
         return Pool(data=feature_vectors, label=label_vector, group_id=group_ids)
 
