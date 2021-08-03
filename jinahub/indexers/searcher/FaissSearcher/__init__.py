@@ -97,7 +97,7 @@ class FaissSearcher(Executor):
             self.index = self._build_index(self._vecs)
         else:
             self.logger.warning(
-                'No data loaded in "AnnoyIndexer". Use .rolling_update() to re-initialize it...'
+                'No data loaded in "FaissIndexer". Use .rolling_update() to re-initialize it...'
             )
 
     def device(self):
