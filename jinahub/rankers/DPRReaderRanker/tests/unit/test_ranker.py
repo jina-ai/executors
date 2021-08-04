@@ -1,4 +1,3 @@
-from itertools import chain
 from pathlib import Path
 from typing import List
 
@@ -66,8 +65,8 @@ def test_empty_documents(basic_ranker: DPRReaderRanker):
 
 def test_no_text_documents(basic_ranker: DPRReaderRanker):
     docs = DocumentArray([Document()])
-    with pytest.raises(ValueError, match=r'No question \(text\) found for document'):
-        basic_ranker.rank(docs, {})
+    basic_ranker.rank(docs, {})
+    assert len(docs[0].matches) == 0
 
 
 def test_documents_no_matches(basic_ranker: DPRReaderRanker):
@@ -98,7 +97,7 @@ def test_ranking_cpu(basic_ranker: DPRReaderRanker, example_docs: DocumentArray)
 
     for match in example_docs[0].matches:
         assert 'relevance_score' in match.scores
-        assert 'span_score' in match.tags
+        assert 'span_score' in match.scores
 
 
 @pytest.mark.parametrize('example_docs', [10], indirect=['example_docs'])
@@ -133,7 +132,7 @@ def test_ranking_gpu(example_docs: DocumentArray):
 
     for match in example_docs[0].matches:
         assert 'relevance_score' in match.scores
-        assert 'span_score' in match.tags
+        assert 'span_score' in match.scores
 
 
 @pytest.mark.parametrize('example_docs', [2], indirect=['example_docs'])
@@ -147,7 +146,7 @@ def test_num_spans_per_match(num_spans_per_match: int, example_docs: DocumentArr
         exp_len = 10 * num_spans_per_match
         assert len(doc.matches) in [exp_len, exp_len - 1]
         assert 'relevance_score' in doc.matches[0].scores
-        assert 'span_score' in doc.matches[0].tags
+        assert 'span_score' in doc.matches[0].scores
 
 
 @pytest.mark.parametrize('example_docs', [10], indirect=['example_docs'])
@@ -161,7 +160,7 @@ def test_batch_size(
         # A quirk related to how HF chooses spans/overlapping
         assert len(doc.matches) in [20, 19]
         assert 'relevance_score' in doc.matches[0].scores
-        assert 'span_score' in doc.matches[0].tags
+        assert 'span_score' in doc.matches[0].scores
 
 
 @pytest.mark.parametrize('example_docs', [3], indirect=['example_docs'])

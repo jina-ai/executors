@@ -122,7 +122,7 @@ class DPRReaderRanker(Executor):
             new_matches = []
 
             match_batches_generator = get_docs_batch_generator(
-                DocumentArray[doc],
+                DocumentArray([doc]),
                 traversal_path=['m'],
                 batch_size=parameters.get('batch_size', self.default_batch_size),
                 needs_attr='text',
@@ -134,7 +134,10 @@ class DPRReaderRanker(Executor):
 
             # Make sure answers are sorted by relevance scores
             new_matches.sort(
-                key=lambda x: (x.scores['relevance_score'], x.scores['span_score']),
+                key=lambda x: (
+                    x.scores['relevance_score'].value,
+                    x.scores['span_score'].value,
+                ),
                 reverse=True,
             )
 
@@ -164,7 +167,7 @@ class DPRReaderRanker(Executor):
     ) -> List[Document]:
 
         encoded_inputs = self.tokenizer(
-            questions=question,
+            questions=[question] * len(contexts),
             titles=titles,
             texts=contexts,
             padding='longest',
@@ -186,7 +189,7 @@ class DPRReaderRanker(Executor):
             new_match.scores['relevance_score'] = _logistic_fn(span.relevance_score)
             new_match.scores['span_score'] = _logistic_fn(span.span_score)
             if titles:
-                new_matches.tags['title'] = titles[span.doc_id]
+                new_match.tags['title'] = titles[span.doc_id]
             new_matches.append(new_match)
 
         return new_matches
