@@ -234,7 +234,6 @@ def test_embeddings_quality(encoder: CLIPImageEncoder):
 def test_openai_embed_match():
     data_dir = Path(__file__).parent.parent / "imgs"
     dog = Document(id="dog", blob=np.array(Image.open(data_dir / "dog.jpg")))
-    cat = Document(id="cat", blob=np.array(Image.open(data_dir / "cat.jpg")))
     airplane = Document(
         id="airplane", blob=np.array(Image.open(data_dir / "airplane.jpg"))
     )
@@ -242,9 +241,9 @@ def test_openai_embed_match():
         id="helicopter", blob=np.array(Image.open(data_dir / "helicopter.jpg"))
     )
 
-    docs = DocumentArray([dog, cat, airplane, helicopter])
+    docs = DocumentArray([dog, airplane, helicopter])
 
-    clip_text_encoder = CLIPImageEncoder("openai/clip-vit-base-patch32")
+    clip_text_encoder = CLIPImageEncoder("openai/clip-vit-base-patch32", device="cpu")
     clip_text_encoder.encode(docs, {})
 
     actual_embedding = np.stack(docs.get_attributes("embedding"))
