@@ -38,3 +38,19 @@ def test_rank(ranker, documents_to_train_stub_model, documents_without_label):
     matches_after_rank = documents_without_label.traverse_flat(['m'])
     for match in matches_after_rank:
         assert isinstance(match.tags.get('relevance'), float)
+
+
+def test_rank_price_sensitive_model(
+    ranker,
+    documents_to_train_price_sensitive_model,
+    documents_without_label_random_brand,
+):
+    """train the model using price sensitive data, assure higher price get lower relevance score."""
+    ranker.train(docs=documents_to_train_price_sensitive_model)
+    assert ranker.model.is_fitted()
+    ranker.rank(documents_without_label_random_brand)
+    predicted_relevances = []
+    matches_after_rank = documents_without_label_random_brand.traverse_flat(['m'])
+    for match in matches_after_rank:
+        predicted_relevances.append(match.tags.get('relevance'))
+    assert predicted_relevances[0] <= predicted_relevances[1] <= predicted_relevances[2]

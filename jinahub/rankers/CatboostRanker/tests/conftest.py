@@ -112,36 +112,30 @@ def documents_to_train_price_sensitive_model(relevances):
 
 
 @pytest.fixture
-def documents_without_label(relevances):
+def documents_without_label_random_price():
     """features: color, brand, price. Label relevance"""
-    # price sensitive, relevance based on pure price, cheaper relevance higher.
+    # expect 5 > 3 > 1
     da = DocumentArray()
-    for relevance in relevances:
-        if 8 <= relevance <= 10:
-            price = random.randint(30, 50)
-        elif 6 <= relevance < 8:
-            price = random.randint(50, 70)
-        elif 4 <= relevance < 6:
-            price = random.randint(70, 90)
-        elif 2 <= relevance < 4:
-            price = random.randint(90, 110)
-        else:
-            price = random.randint(110, 130)
-        doc = Document(
-            tags={
-                'brand': random.randint(1, 5),
-                'price': price,
-            }
-        )
-        for _ in range(NUM_MATCHES):
-            # each match has an extra relevance field indicates score.
-            doc.matches.append(
-                Document(
-                    tags={
-                        'brand': random.randint(1, 5),
-                        'price': price,
-                    }
-                )
-            )
-        da.append(doc)
+    d1 = Document(tags={'brand': 1, 'price': 50})
+    d1.matches.append(Document(tags={'brand': 1, 'price': 55}))
+    d2 = Document(tags={'brand': 3, 'price': 155})
+    d2.matches.append(Document(tags={'brand': 3, 'price': 158}))
+    d3 = Document(tags={'brand': 5, 'price': 197})
+    d3.matches.append(Document(tags={'brand': 5, 'price': 200}))
+    da.extend([d1, d2, d3])
+    return da
+
+
+@pytest.fixture
+def documents_without_label_random_brand():
+    """features: color, brand, price. Label relevance"""
+    # expect price
+    da = DocumentArray()
+    d1 = Document(tags={'brand': random.randint(0, 5), 'price': 200})
+    d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 196}))
+    d2 = Document(tags={'brand': random.randint(0, 5), 'price': 100})
+    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 98}))
+    d3 = Document(tags={'brand': random.randint(0, 5), 'price': 55})
+    d3.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 56}))
+    da.extend([d1, d2, d3])
     return da
