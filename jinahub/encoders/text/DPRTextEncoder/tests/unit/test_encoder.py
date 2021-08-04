@@ -25,7 +25,7 @@ def basic_encoder_ctx() -> DPRTextEncoder:
 def test_config():
     encoder = BaseExecutor.load_config('../../config.yml')
     assert encoder.default_batch_size == 32
-    assert encoder.default_traversal_paths == ['r']
+    assert encoder.default_traversal_paths == ('r',)
     assert encoder.encoder_type == 'question'
     assert encoder.title_tag_key is None
 
