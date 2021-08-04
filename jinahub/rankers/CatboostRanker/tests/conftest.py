@@ -6,7 +6,7 @@ from jina import Document, DocumentArray
 
 from ..catboost_ranker import CatboostRanker
 
-NUM_DOCS = 50
+NUM_DOCS = 1000
 NUM_MATCHES = 5
 
 
@@ -74,40 +74,29 @@ def documents_to_train_stub_model(relevances):
 
 
 @pytest.fixture
-def documents_to_train_price_sensitive_model(relevances):
+def documents_to_train_price_sensitive_model():
     """features: color, brand, price. Label relevance"""
     # price sensitive, relevance based on pure price, cheaper relevance higher.
     da = DocumentArray()
-    for relevance in relevances:
-        if 8 <= relevance <= 10:
-            price = random.randint(30, 50)
-        elif 6 <= relevance < 8:
-            price = random.randint(50, 70)
-        elif 4 <= relevance < 6:
-            price = random.randint(70, 90)
-        elif 2 <= relevance < 4:
-            price = random.randint(90, 110)
-        else:
-            price = random.randint(110, 130)
-        doc = Document(
-            tags={
-                'brand': random.randint(1, 5),
-                'price': price,
-                'relevance': relevance,
-            }
-        )
+    for _ in range(NUM_DOCS):
+        root = Document(tags={'price': random.randint(200, 500), 'brand': 1})
         for _ in range(NUM_MATCHES):
-            # each match has an extra relevance field indicates score.
-            doc.matches.append(
-                Document(
-                    tags={
-                        'brand': random.randint(1, 5),
-                        'price': price,
-                        'relevance': float(relevance),
-                    }
-                )
+            root_price = root.tags['price']
+            root.matches.extend(
+                [
+                    Document(
+                        tags={'price': root_price - 100, 'brand': 3, 'relevance': 0.8}
+                    ),
+                    Document(tags={'price': root_price, 'brand': 3, 'relevance': 0.6}),
+                    Document(
+                        tags={'price': root_price + 100, 'brand': 3, 'relevance': 0.4}
+                    ),
+                    Document(
+                        tags={'price': root_price + 200, 'brand': 3, 'relevance': 0.2}
+                    ),
+                ]
             )
-        da.append(doc)
+        da.append(root)
     return da
 
 
@@ -130,15 +119,10 @@ def documents_without_label_random_brand():
     """features: color, brand, price. Label relevance"""
     # expect price
     da = DocumentArray()
-    d1 = Document(tags={'brand': random.randint(0, 5), 'price': 200})
-    d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 196}))
-    d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 100}))
-    d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 50}))
-    d2 = Document(tags={'brand': random.randint(0, 5), 'price': 200})
-    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 196}))
-    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 100}))
-    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 50}))
-    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 198}))
+    d1 = Document(tags={'brand': 2, 'price': 200})
+    d1.matches.append(Document(id=1, tags={'brand': 2, 'price': 405}))
+    d1.matches.append(Document(id=2, tags={'brand': 2, 'price': 305}))
+    d1.matches.append(Document(id=3, tags={'brand': 2, 'price': 96}))
+    d1.matches.append(Document(id=4, tags={'brand': 2, 'price': 200}))
     da.append(d1)
-    da.append(d2)
     return da

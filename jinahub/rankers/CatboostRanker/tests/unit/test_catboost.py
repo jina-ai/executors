@@ -1,7 +1,5 @@
 import os
 
-import pytest
-
 
 def test_init(ranker):
     assert not ranker.model.is_fitted()
@@ -54,11 +52,14 @@ def test_rank_price_sensitive_model(
     ranker.rank(documents_without_label_random_brand)
     for doc in documents_without_label_random_brand:
         predicted_relevances = []
+        predicted_ids = []
+        expected_ids = [3, 4, 2, 1]  # Price smaller to large.
         for match in doc.matches:
             predicted_relevances.append(match.scores.get('relevance').value)
-        print(predicted_relevances)
+            predicted_ids.append(match.id)
         assert (
             predicted_relevances[0]
             >= predicted_relevances[1]
             >= predicted_relevances[2]
         )
+        assert predicted_ids == expected_ids
