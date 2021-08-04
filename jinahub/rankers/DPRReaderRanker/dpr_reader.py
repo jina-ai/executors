@@ -1,25 +1,17 @@
-from itertools import groupby
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Tuple
 
 import numpy as np
 import torch
+
 from jina import Document, DocumentArray, Executor, requests
+from jina.logging.logger import JinaLogger
+from jina_commons.batching import get_docs_batch_generator
 from transformers import DPRReader, DPRReaderTokenizerFast
-
-
-def _batcher(iterable, n=1):
-    """Batch an iterable. Here temporarily until
-    https://github.com/jina-ai/jina/issues/3068
-    is solved.
-    """
-    l = len(iterable)
-    for ndx in range(0, l, n):
-        yield iterable[ndx : ndx + n]
 
 
 def _logistic_fn(x: np.ndarray) -> List[float]:
     """Compute the logistic function"""
-    return (np.exp(x) / (1 + np.exp(x))).tolist()
+    return (1 / (1 + np.exp(-x))).tolist()
 
 
 class DPRReaderRanker(Executor):
@@ -70,6 +62,7 @@ class DPRReaderRanker(Executor):
         self.device = device
         self.max_length = max_length
         self.num_spans_per_match = num_spans_per_match
+        self.logger = JinaLogger(self.__class__.__name__)
 
         if not base_tokenizer_model:
             base_tokenizer_model = pretrained_model_name_or_path
@@ -111,98 +104,67 @@ class DPRReaderRanker(Executor):
             ``batch_size``. For example::
             parameters={'traversal_paths': ['r'], 'batch_size': 10}
         """
+
         if not docs:
             return None
 
-        new_matches = []
-        old_matches = []
-
-        docs_list = []
-        old_match_ref_doc_dict = {}
-        new_match_ref_doc_dict = {}
-
-        # Perpare a list of docs to add matches to later and extract their
-        # matches, plus build a reference to their reference docs
-        trav_paths = parameters.get('traversal_paths', self.default_traversal_paths)
-        for ind, doc in enumerate(docs.traverse_flat(trav_paths)):
-            if not doc.text:
-                raise ValueError(
-                    f'No question (text) found for document with id {doc.id}.'
-                    ' DPRReaderRanker requires a question from the main document'
-                    ' and context (text) from its matches.'
-                )
-
-            docs_list.append(doc)
-            old_matches += doc.matches
-            for match in doc.matches:
-                old_match_ref_doc_dict[match.id] = ind
-
-        # Traverse all matches
-        batch_size = parameters.get('batch_size', self.default_batch_size)
-        for matches in _batcher(old_matches, n=batch_size):
-
-            inputs = self._prepare_inputs(matches, docs_list, old_match_ref_doc_dict)
-            with torch.no_grad():
-                outputs = self._get_outputs(*inputs)
-
-            for rel_score, span, tags, ref_ind in zip(*outputs):
-                scores = {'relevance_score': rel_score}
-                new_match = Document(text=span, scores=scores, tags=tags)
-                new_matches.append(new_match)
-                new_match_ref_doc_dict[new_match.id] = ref_ind
-
-        # Clear old matches
-        for doc in docs_list:
-            doc.matches.clear()
-
-        # Append new matches, first sorting them
-        for ref_ind, new_matches_group in groupby(
-            new_matches, lambda x: new_match_ref_doc_dict[x.id]
+        for doc in docs.traverse_flat(
+            parameters.get('traversal_paths', self.default_traversal_paths)
         ):
-            new_matches_list = list(new_matches_group)
-            new_matches_list.sort(
-                key=lambda x: (x.scores['relevance_score'].value, x.tags['span_score']),
+            if not doc.text:
+                self.logger.warning(
+                    f'No question (text) found for document with id {doc.id}; skipping'
+                    ' document. DPRReaderRanker requires a question from the main'
+                    ' document and context (text) from its matches.'
+                )
+                continue
+
+            new_matches = []
+
+            match_batches_generator = get_docs_batch_generator(
+                DocumentArray[doc],
+                traversal_path=['m'],
+                batch_size=parameters.get('batch_size', self.default_batch_size),
+                needs_attr='text',
+            )
+            for matches in match_batches_generator:
+                inputs = self._prepare_inputs(doc, matches)
+                with torch.no_grad():
+                    new_matches += self._get_new_matches(*inputs)
+
+            # Make sure answers are sorted by relevance scores
+            new_matches.sort(
+                key=lambda x: (x.scores['relevance_score'], x.scores['span_score']),
                 reverse=True,
             )
 
-            docs_list[ref_ind].matches.extend(new_matches_list)
+            # Replace previous matches with actual answers
+            doc.matches = new_matches
 
     def _prepare_inputs(
-        self,
-        matches: List[Document],
-        docs_list: Dict[str, Document],
-        old_match_ref_doc_dict: Dict[str, str],
-    ) -> Tuple[List[str], List[str], Optional[List[str]], List[str]]:
-        contexts = []
-        questions = []
-        ref_inds = []
-        for match in matches:
-            contexts.append(match.text)
-            ref_inds.append(old_match_ref_doc_dict[match.id])
-            questions.append(docs_list[old_match_ref_doc_dict[match.id]].text)
+        self, doc: Document, matches: DocumentArray
+    ) -> Tuple[str, List[str], Optional[List[str]]]:
+        question = doc.text
+        contexts = matches.get_attributes('text')
 
         titles = None
         if self.title_tag_key:
-            try:
-                titles = [match.tags[self.title_tag_key] for match in matches]
-            except KeyError:
+            titles = matches.get_attributes(f'tags__{self.title_tag_key}')
+
+            if len(titles) != len(matches):
                 raise ValueError(
-                    f'All matches are required to have the {self.title_tag_key} tag,'
-                    ' but found somem atches without it.'
+                    f'All matches are required to have the {self.title_tag_key}'
+                    ' tag, but found some matches without it.'
                 )
 
-        return questions, contexts, titles, ref_inds
+        return question, contexts, titles
 
-    def _get_outputs(
-        self,
-        questions: List[str],
-        contexts: List[str],
-        titles: Optional[List[str]],
-        ref_inds: List[str],
-    ) -> Tuple[List[float], List[str], List[Dict[str, Union[str, float]]], List[str]]:
+    def _get_new_matches(
+        self, question: str, contexts: List[str], titles: Optional[List[str]]
+    ) -> List[Document]:
 
         encoded_inputs = self.tokenizer(
-            questions=questions,
+            questions=question,
             titles=titles,
             texts=contexts,
             padding='longest',
@@ -214,18 +176,17 @@ class DPRReaderRanker(Executor):
         best_spans = self.tokenizer.decode_best_spans(
             encoded_inputs,
             outputs,
-            num_spans=self.num_spans_per_match * len(questions),
+            num_spans=self.num_spans_per_match * len(contexts),
             num_spans_per_passage=self.num_spans_per_match,
         )
-        relevance_scores = _logistic_fn([span.relevance_score for span in best_spans])
-        spans = [span.text for span in best_spans]
-        answer_ref_inds = [ref_inds[span.doc_id] for span in best_spans]
 
-        tags = []
+        new_matches = []
         for span in best_spans:
-            tags_span = {'span_score': _logistic_fn(span.span_score)}
+            new_match = Document(text=span.text)
+            new_match.scores['relevance_score'] = _logistic_fn(span.relevance_score)
+            new_match.scores['span_score'] = _logistic_fn(span.span_score)
             if titles:
-                tags_span['title'] = titles[span.doc_id]
-            tags.append(tags_span)
+                new_matches.tags['title'] = titles[span.doc_id]
+            new_matches.append(new_match)
 
-        return relevance_scores, spans, tags, answer_ref_inds
+        return new_matches

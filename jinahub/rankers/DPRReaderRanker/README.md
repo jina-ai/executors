@@ -6,21 +6,24 @@ The **DPR** model was originally proposed in [Dense Passage Retrieval for Open-D
 
 The following parameters can be passed on initialization:
 
-- `pretrained_model_name_or_path` Can be either:
+- `pretrained_model_name_or_path`: Can be either:
     - the model id of a pretrained model hosted inside a model repo
         on huggingface.co.
     - A path to a directory containing model weights, saved using
         the transformers model's `save_pretrained()` method
-- `base_tokenizer_model` Base tokenizer model. The possible values are the same as for the `pretrained_model_name_or_path` parameters. If not provided, the `pretrained_model_name_or_path` parameter value will be used
-- `title_tag_key` The key of the tag that contains document title in the
-    match documents.
-- `num_spans_per_match` Number of spans to extract per match
-- `max_length` Max length argument for the tokenizer
-- `default_batch_size` Default batch size for processing documents, used if the
+- `base_tokenizer_model`: Base tokenizer model. The possible values are the 
+    same as for the `pretrained_model_name_or_path` parameters. If not provided,
+    the `pretrained_model_name_or_path` parameter value will be used
+- `title_tag_key`: The key of the tag that contains document title in the
+        match documents. Specify it if you want the text of the matches to be combined
+        with their titles (to mirror the method used in training of the original model)
+- `num_spans_per_match`: Number of spans to extract per match
+- `max_length`: Max length argument for the tokenizer
+- `default_batch_size`: Default batch size for processing documents, used if the
     batch size is not passed as a parameter with the request.
-- `default_traversal_paths` Default traversal paths for processing documents,
+- `default_traversal_paths`: Default traversal paths for processing documents,
     used if the traversal path is not passed as a parameter with the request.
-- `device` The device (cpu or gpu) that the model should be on.
+- `device`: The device (cpu or gpu) that the model should be on.
 
 
 **Table of Contents**
@@ -62,7 +65,6 @@ pods:
 
 ```python
 from jina import Flow, Document
-import numpy as np
 	
 f = Flow().add(uses='jinahub+docker://DPRReaderRanker')
 
@@ -85,11 +87,11 @@ with f:
 
 ### Inputs 
 
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the [`text`](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md#document-attributes) attribute.
+[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the [`text`](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md#document-attributes) attribute, and with matches that themselves also have a `text` attribute (and optionally a title tag, see initialization parameters).
 
 ### Returns
 
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the `embedding` attribute filled with an `ndarray` of the shape `768` with `dtype=float32`.
+[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with new matches, where the `text` attribute of those matches is taken from the best-scoring spans from `text` of the original matches.
 
 
 
