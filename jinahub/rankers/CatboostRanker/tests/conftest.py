@@ -115,14 +115,13 @@ def documents_to_train_price_sensitive_model(relevances):
 def documents_without_label_random_price():
     """features: color, brand, price. Label relevance"""
     # expect 5 > 3 > 1
+    # expect price
     da = DocumentArray()
-    d1 = Document(tags={'brand': 1, 'price': 50})
-    d1.matches.append(Document(tags={'brand': 1, 'price': 55}))
-    d2 = Document(tags={'brand': 3, 'price': 155})
-    d2.matches.append(Document(tags={'brand': 3, 'price': 158}))
-    d3 = Document(tags={'brand': 5, 'price': 197})
-    d3.matches.append(Document(tags={'brand': 5, 'price': 200}))
-    da.extend([d1, d2, d3])
+    d1 = Document(tags={'brand': random.randint(0, 5), 'price': 200})
+    d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 196}))
+    d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 100}))
+    d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 50}))
+    da.append(d1)
     return da
 
 
@@ -133,9 +132,13 @@ def documents_without_label_random_brand():
     da = DocumentArray()
     d1 = Document(tags={'brand': random.randint(0, 5), 'price': 200})
     d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 196}))
-    d2 = Document(tags={'brand': random.randint(0, 5), 'price': 100})
-    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 98}))
-    d3 = Document(tags={'brand': random.randint(0, 5), 'price': 55})
-    d3.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 56}))
-    da.extend([d1, d2, d3])
+    d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 100}))
+    d1.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 50}))
+    d2 = Document(tags={'brand': random.randint(0, 5), 'price': 200})
+    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 196}))
+    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 100}))
+    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 50}))
+    d2.matches.append(Document(tags={'brand': random.randint(0, 5), 'price': 198}))
+    da.append(d1)
+    da.append(d2)
     return da

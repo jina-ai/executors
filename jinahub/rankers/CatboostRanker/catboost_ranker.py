@@ -20,11 +20,11 @@ class CatboostRanker(Executor):
         weight: Optional[str] = None,
         model_path: Optional[str] = None,
         catboost_parameters: Dict = {
-            'iterations': 2000,
             'custom_metric': ['NDCG', 'AverageGain:top=10'],
             'verbose': False,
             'random_seed': 0,
-            'loss_function': 'QuerySoftMax',
+            'loss_function': 'RMSE',
+            'num_trees': 5,
         },
         *args,
         **kwargs,
@@ -119,7 +119,7 @@ class CatboostRanker(Executor):
         self.model = CatBoostRanker(**catboost_parameters)
         self.model.fit(train_pool)
 
-    @requests(on='/rank')
+    @requests(on='/search')
     def rank(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
         """This endpoint ranks a catboost ranker based on docs.
 
@@ -137,7 +137,9 @@ class CatboostRanker(Executor):
         preds = self.model.predict(feature_vecs)
         matches = docs.traverse_flat(traversal_paths=['m'])
         for match, pred in zip(matches, preds):
-            match.tags[self.label] = pred
+            match.scores[self.label] = pred
+        for doc in docs:
+            doc.matches.sort(key=lambda x: x.scores[self.label].value, reverse=True)
 
     @requests(on='/dump')
     def dump(self, parameters: Dict, **kwargs):
