@@ -89,13 +89,23 @@ def documents_to_train_price_sensitive_model(relevances):
             price = random.randint(90, 110)
         else:
             price = random.randint(110, 130)
-        da.append(
-            Document(
-                tags={
-                    'brand': random.randint(1, 5),
-                    'price': price,
-                    'relevance': relevance,
-                }
-            )
+        doc = Document(
+            tags={
+                'brand': random.randint(1, 5),
+                'price': price,
+                'relevance': relevance,
+            }
         )
+        for _ in range(NUM_MATCHES):
+            # each match has an extra relevance field indicates score.
+            doc.matches.append(
+                Document(
+                    tags={
+                        'brand': random.randint(1, 5),
+                        'price': price,
+                        'relevance': float(relevance),
+                    }
+                )
+            )
+        da.append(doc)
     return da
