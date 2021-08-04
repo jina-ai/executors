@@ -76,6 +76,9 @@ class CatboostRanker(Executor):
         return np.array(feature_vectors), label_vector, group_ids
 
     def _extract_weights(self, docs: DocumentArray):
+        """Extract weights data from docs, weights are needed if the query_docs has different
+        importance. Once given, we'll get values stored in the Document.tags based on the field name.
+        """
         weight_vector = []
         for doc in docs:
             for _ in doc.matches:
@@ -84,7 +87,11 @@ class CatboostRanker(Executor):
         return weight_vector
 
     def build_catboost_pool(self, docs: DocumentArray):
-        """"""
+        """Create the catboost :class:`Pool` for training.
+
+        :param docs: A :class:`DocumentArray` to build the pool.
+        :return: A :class:`Pool` object of catboost.
+        """
         data, label, group_id = self._extract_features(docs)
         if self.weight:
             return Pool(
@@ -98,6 +105,13 @@ class CatboostRanker(Executor):
 
     @requests(on='/train')
     def train(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
+        """This endpoint fits a catboost ranker based on docs.
+
+        :param docs: Documents to fit the model, each docs should have fields corresponded to
+          the :attr:`query_features` and has matches with corresponded :attr:`match_features` to
+          extract feature from. Also, a label field should be stored in each match document.
+        :param parameters: Parameters to set, we'll get :attr:`catboost_parameters` from the parameters field.
+        """
         catboost_parameters = parameters.get(
             'catboost_parameters', self.catboost_parameters
         )
@@ -107,6 +121,14 @@ class CatboostRanker(Executor):
 
     @requests(on='/rank')
     def rank(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
+        """This endpoint ranks a catboost ranker based on docs.
+
+        :param docs: Documents to fit the model, each docs should have fields corresponded to
+          the :attr:`query_features` and has matches with corresponded :attr:`match_features` to
+          extract feature from. An additional field will be attached to the matched documents as was defined
+          as :attr:`label`.
+        :param parameters: Parameters to set, we'll get :attr:`catboost_parameters` from the parameters field.
+        """
         feature_vecs, _, _ = self._extract_features(docs)
         if not self.model.is_fitted():
             raise ValueError(
@@ -118,7 +140,11 @@ class CatboostRanker(Executor):
             match.tags[self.label] = pred
 
     @requests(on='/dump')
-    def dump(self, parameters: Dict = {}, **kwargs):
+    def dump(self, parameters: Dict, **kwargs):
+        """Dump trained model to specified path
+
+        :param parameters: Parameters pass to this endpoint, expect :attr:`model_path` to be set.
+        """
         model_path = parameters.get('model_path', None)
         if model_path:
             self._save_model(model_path)
@@ -126,7 +152,11 @@ class CatboostRanker(Executor):
             raise ValueError('Please specify a `model_path` inside parameters variable')
 
     @requests(on='/load')
-    def load(self, parameters: Dict = {}, **kwargs):
+    def load(self, parameters: Dict, **kwargs):
+        """Load trained model from specified path
+
+        :param parameters: Parameters pass to this endpoint, expect :attr:`model_path` to be set.
+        """
         model_path = parameters.get('model_path', self.model_path)
         if model_path:
             self._load_model(model_path)
