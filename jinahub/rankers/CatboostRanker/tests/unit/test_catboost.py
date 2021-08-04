@@ -28,7 +28,13 @@ def test_dump_load(ranker, documents_to_train_stub_model, tmpdir):
     assert ranker.model.is_fitted()
 
 
-def test_predict(
-    ranker, documents_to_train_stub_model, documents_to_train_price_sensitive_model
-):
-    pass
+def test_rank(ranker, documents_to_train_stub_model, documents_without_label):
+    ranker.train(docs=documents_to_train_stub_model)
+    assert ranker.model.is_fitted()
+    matches_before_rank = documents_without_label.traverse_flat(['m'])
+    for match in matches_before_rank:
+        assert not match.tags.get('relevance')
+    ranker.rank(documents_without_label)
+    matches_after_rank = documents_without_label.traverse_flat(['m'])
+    for match in matches_after_rank:
+        assert isinstance(match.tags.get('relevance'), float)

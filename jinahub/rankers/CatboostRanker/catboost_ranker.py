@@ -97,7 +97,7 @@ class CatboostRanker(Executor):
             return Pool(data=data, label=label, group_id=group_id)
 
     @requests(on='/train')
-    def train(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def train(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
         catboost_parameters = parameters.get(
             'catboost_parameters', self.catboost_parameters
         )
@@ -105,17 +105,20 @@ class CatboostRanker(Executor):
         self.model = CatBoostRanker(**catboost_parameters)
         self.model.fit(train_pool)
 
-    @requests(on='/predict')
-    def predict(self, docs: DocumentArray, parameters: Dict, **kwargs):
-        catboost_parameters = parameters.get(
-            'catboost_parameters', self.catboost_parameters
-        )
-        predict_pool = self._extract_features_from_docs(docs)
-        self.model = CatBoostRanker(**catboost_parameters)
-        self.model.fit(predict_pool)
+    @requests(on='/rank')
+    def rank(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
+        feature_vecs, _, _ = self._extract_features(docs)
+        if not self.model.is_fitted():
+            raise ValueError(
+                'You need to train your model before make prediction, call `train` endpoint first.'
+            )
+        preds = self.model.predict(feature_vecs)
+        matches = docs.traverse_flat(traversal_paths=['m'])
+        for match, pred in zip(matches, preds):
+            match.tags[self.label] = pred
 
     @requests(on='/dump')
-    def dump(self, parameters: Dict, **kwargs):
+    def dump(self, parameters: Dict = {}, **kwargs):
         model_path = parameters.get('model_path', None)
         if model_path:
             self._save_model(model_path)
@@ -123,7 +126,7 @@ class CatboostRanker(Executor):
             raise ValueError('Please specify a `model_path` inside parameters variable')
 
     @requests(on='/load')
-    def load(self, parameters: Dict, **kwargs):
+    def load(self, parameters: Dict = {}, **kwargs):
         model_path = parameters.get('model_path', self.model_path)
         if model_path:
             self._load_model(model_path)
