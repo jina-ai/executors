@@ -18,8 +18,8 @@ class CatboostRanker(Executor):
         query_features: List[str],
         match_features: List[str],
         label: str,
-        weight: str,
-        model_path: str = None,
+        weight: Optional[str] = None,
+        model_path: Optional[str] = None,
         catboost_parameters: Dict = {
             'iterations': 2000,
             'custom_metric': ['NDCG', 'AverageGain:top=10'],
@@ -44,13 +44,13 @@ class CatboostRanker(Executor):
         else:
             self.model = CatBoostRanker()
 
-    def _load_model(self):
+    def _load_model(self, path):
         """Load model from model path"""
-        self.model = CatBoostRanker().load_model(self.model_path)
+        self.model = CatBoostRanker().load_model(path)
 
-    def _save_model(self):
+    def _save_model(self, path):
         """Dump model into cbm."""
-        CatBoostRanker.save_model(self.model_path, format='cbm')
+        self.model.save_model(fname=path, format='cbm')
 
     def _extract_features(self, docs: DocumentArray):
         """Loop over docs, build dataset to train the model.
@@ -116,10 +116,7 @@ class CatboostRanker(Executor):
         if model_path:
             self._save_model(model_path)
         else:
-            self._save_model('tmp/model')
-            self.logger.info(
-                f'Model {model_path} does not exist. Model has been saved to tmp/model.cbm.'
-            )
+            raise ValueError('Please specify a `model_path` inside parameters variable')
 
     @requests(on='/load')
     def load(self, parameters: Dict, **kwargs):
@@ -127,6 +124,6 @@ class CatboostRanker(Executor):
         if model_path:
             self._load_model(model_path)
         else:
-            self.logger.warning(
+            raise FileNotFoundError(
                 f'Model {model_path} does not exist. Please specify the correct model_path inside parameters.'
             )
