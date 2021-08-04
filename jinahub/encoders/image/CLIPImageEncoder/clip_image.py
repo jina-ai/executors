@@ -30,9 +30,9 @@ class CLIPImageEncoder(Executor):
     def __init__(
         self,
         pretrained_model_name_or_path: str = "openai/clip-vit-base-patch32",
-        base_feature_extractor: str = "openai/clip-vit-base-patch32",
+        base_feature_extractor: Optional[str] = None,
         use_default_preprocessing: bool = True,
-        device: Optional[str] = "cpu",
+        device: str = "cpu",
         default_batch_size: int = 32,
         default_traversal_paths: Tuple = ("r",),
         *args,
