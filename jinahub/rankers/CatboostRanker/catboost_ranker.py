@@ -9,7 +9,6 @@ from catboost import CatBoostRanker, Pool
 
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
-from jina_commons.batching import get_docs_batch_generator
 
 
 class CatboostRanker(Executor):
@@ -98,7 +97,7 @@ class CatboostRanker(Executor):
             return Pool(data=data, label=label, group_id=group_id)
 
     @requests(on='/train')
-    def train(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
+    def train(self, docs: DocumentArray, parameters: Dict, **kwargs):
         catboost_parameters = parameters.get(
             'catboost_parameters', self.catboost_parameters
         )
@@ -107,7 +106,7 @@ class CatboostRanker(Executor):
         self.model.fit(train_pool)
 
     @requests(on='/predict')
-    def predict(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
+    def predict(self, docs: DocumentArray, parameters: Dict, **kwargs):
         catboost_parameters = parameters.get(
             'catboost_parameters', self.catboost_parameters
         )
