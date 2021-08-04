@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Literal, Optional
+from typing import Iterable, Literal, Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -19,7 +19,7 @@ class DPRTextEncoder(Executor):
 
     For context encoders it is recommened to encode them together with the title,
     by setting the ``title_tag_key`` property. This is in order to match the
-    encoding method used in the model pre-training.
+    encoding method used in model training.
 
     :param pretrained_model_name_or_path: Can be either:
         - the model id of a pretrained model hosted inside a model repo
@@ -50,7 +50,7 @@ class DPRTextEncoder(Executor):
         title_tag_key: Optional[str] = None,
         max_length: Optional[int] = None,
         default_batch_size: int = 32,
-        default_traversal_paths: List[str] = ['r'],
+        default_traversal_paths: Iterable[str] = ('r',),
         device: str = 'cpu',
         *args,
         **kwargs,
@@ -122,23 +122,22 @@ class DPRTextEncoder(Executor):
             for batch_docs in document_batches_generator:
                 with torch.no_grad():
                     texts = batch_docs.get_attributes('text')
+                    text_pairs = None
                     if self.encoder_type == 'context' and self.title_tag_key:
-                        text_pair = batch_docs.get_attributes(
+                        text_pairs = batch_docs.get_attributes(
                             f'tags__{self.title_tag_key}'
                         )
-                        if len(text_pair) != len(batch_docs):
+                        if len(text_pairs) != len(batch_docs):
                             raise ValueError(
                                 'If you set `title_tag_key` property, all documents'
                                 ' that you want to encode must have this tag. Found'
-                                f' {len(text_pair) - len(batch_docs)} documents'
+                                f' {len(text_pairs) - len(batch_docs)} documents'
                                 ' without it.'
                             )
-                    else:
-                        text_pair = None
 
                     inputs = self.tokenizer(
                         text=texts,
-                        text_pair=text_pair,
+                        text_pair=text_pairs,
                         max_length=self.max_length,
                         padding='longest',
                         truncation=True,
@@ -147,5 +146,5 @@ class DPRTextEncoder(Executor):
                     embeddings = self.model(**inputs).pooler_output
                     embeddings = embeddings.cpu().numpy()
 
-                    for i, doc in enumerate(batch_docs):
-                        doc.embedding = embeddings[i]
+                    for doc, embed in zip(batch_docs, embeddings):
+                        doc.embedding = embed

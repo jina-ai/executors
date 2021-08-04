@@ -38,7 +38,13 @@ The following parameters can be passed on initialization:
 
 ## 🌱 Prerequisites
 
-No prerequisites are required to run this executor.
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below. 
+
+You can install the requirements with
+
+```
+pip install -r requirements.txt
+```
 
 ## 🚀 Usages
 
@@ -72,23 +78,18 @@ import numpy as np
 	
 f = Flow().add(uses='jinahub+docker://DPRTextEncoder')
 
-def check_emb(resp):
-    for doc in resp.data.docs:
-        if doc.emb:
-            assert doc.emb.shape == (768,)
-
 with f:
     f.post(
         on='/foo', 
         inputs=Document(text='your text'), 
-        on_done=check_emb
+        on_done=print
     )
 ```
 
 
 ### Inputs 
 
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the [`text`](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md#document-attributes) attribute.
+[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the [`text`](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md#document-attributes) attribute. If you are using a context encoder the documents can additionally have a title tag, see initialization parameters.
 
 ### Returns
 
