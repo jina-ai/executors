@@ -56,11 +56,9 @@ class NumpySearcher(Executor):
         if not docs:
             self.logger.info('No documents to search for')
             return
-
-        if not doc_embeddings:
+        if not doc_embeddings or doc_embeddings[0] is None:
             self.logger.info('None of the docs have any embeddings')
             return
-
         doc_embeddings = np.stack(doc_embeddings)
 
         q_emb = _ext_A(_norm(doc_embeddings))
@@ -72,7 +70,7 @@ class NumpySearcher(Executor):
         else:
             self.logger.error(f'Metric {self.metric} not supported.')
         positions, dist = self._get_sorted_top_k(dists, top_k)
-        for _q, _positions, _dists in zip(docs, positions, dist):
+        for _q, _positions, _dists in zip(docs.traverse_flat(traversal_paths), positions, dist):
             for position, dist in zip(_positions, _dists):
                 d = Document(id=self._ids[position], embedding=self._vecs[position])
                 if self.is_distance:
