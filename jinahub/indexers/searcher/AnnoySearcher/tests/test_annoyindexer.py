@@ -9,7 +9,7 @@ from jina import Document, DocumentArray
 from jina.executors.metas import get_default_metas
 from jina_commons.indexers.dump import import_vectors
 
-from .. import AnnoySearcher
+from ..annoy import AnnoySearcher
 
 # fix the seed here
 np.random.seed(500)

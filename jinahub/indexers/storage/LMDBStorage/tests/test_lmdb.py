@@ -6,7 +6,7 @@ from jina import Document, DocumentArray, Flow
 from jina.logging.profile import TimeContext
 
 from jina_commons.indexers.dump import import_metas, import_vectors
-from .. import LMDBStorage
+from ..lmdb_storage import LMDBStorage
 
 np.random.seed(0)
 d_embedding = np.array([1, 1, 1, 1, 1, 1, 1])

@@ -3,7 +3,7 @@ import os
 import pytest as pytest
 from jina import Flow, DocumentArray, Document
 
-from .. import RedisStorage
+from ..redis_storage import RedisStorage
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.abspath(os.path.join(cur_dir, 'docker-compose.yml'))

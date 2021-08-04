@@ -3,7 +3,7 @@ with:
   index_file_name: indexer
 metas:
   py_modules:
-    - __init__.py
+    - simple_indexer.py
   workspace: workspace/
   name: indexer
 
