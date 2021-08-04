@@ -20,6 +20,16 @@ def ranker():
 
 
 @pytest.fixture
+def ranker_with_weight():
+    return CatboostRanker(
+        query_features=['brand', 'price'],
+        match_features=['brand', 'price'],
+        label='relevance',
+        weight='weight',
+    )
+
+
+@pytest.fixture
 def relevances():
     return np.random.uniform(0, 1, [1, NUM_DOCS]).flatten()
 
@@ -41,7 +51,13 @@ def documents_to_train_stub_model(relevances):
             brand = 2
         else:
             brand = 1
-        doc = Document(tags={'brand': brand, 'price': random.randint(50, 200)})
+        doc = Document(
+            tags={
+                'brand': brand,
+                'price': random.randint(50, 200),
+                'weight': random.uniform(0, 1),
+            }
+        )
         for _ in range(NUM_MATCHES):
             # each match has an extra relevance field indicates score.
             doc.matches.append(

@@ -77,7 +77,12 @@ class CatboostRanker(Executor):
         return np.array(feature_vectors), label_vector, group_ids
 
     def _extract_weights(self, docs: DocumentArray):
-        return [doc.tags.get(self.weight) for doc in docs]
+        weight_vector = []
+        for doc in docs:
+            for _ in doc.matches:
+                # weight need to have the same size of matches, while get from doc.
+                weight_vector.append(doc.tags.get(self.weight))
+        return weight_vector
 
     def build_catboost_pool(self, docs: DocumentArray):
         """"""
