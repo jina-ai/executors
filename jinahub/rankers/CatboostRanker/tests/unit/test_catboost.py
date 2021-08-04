@@ -53,7 +53,7 @@ def test_rank_price_sensitive_model(
     for doc in documents_without_label_random_brand:
         predicted_relevances = []
         predicted_ids = []
-        expected_ids = [3, 4, 2, 1]  # Price smaller to large.
+        expected_ids = ['3', '4', '2', '1']  # Price smaller to large.
         for match in doc.matches:
             predicted_relevances.append(match.scores.get('relevance').value)
             predicted_ids.append(match.id)
