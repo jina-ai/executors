@@ -1,13 +1,3 @@
-<p align="center">
-<img src="https://github.com/jina-ai/jina/blob/master/.github/logo-only.gif?raw=true" alt="Jina banner" width="200px">
-</p>
-
-# TFIDFTextEncoder
-
-
-
-
-
 # ✨ TFIDFTextEncoder
 
 **TFIDFTextEncoder** is a class that wraps the text embedding functionality of a TFIDF model.
@@ -17,33 +7,25 @@ The TFIDF model is a classic vector representation for [information retrieval](h
 `TfidfTextEncoder` encodes data from a `DocumentArray` and updates the `doc.embedding` attributes with a  `scipy.csr_matrix`of floating point values for each doc in DocumentArray.
 
 
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 
 ## 🌱 Prerequisites
 
-You need a TF-IDF vectorizer pretrained.
 
-To install the dependencies locally run 
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+In case you want to install the dependencies locally run
 ```
-pip install . 
-pip install -r tests/requirements.txt
+pip install -r requirements.txt
 ```
-To verify the installation works:
-```
-pytest tests
-```
+
+You also need a TF-IDF vectorizer pretrained.
 
 ### Pretraining a TF-IDF Vectorizer
 
@@ -72,7 +54,7 @@ if __name__ == '__main__':
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -89,8 +71,8 @@ pods:
     uses: 'jinahub+docker://TFIDFTextEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -108,46 +90,7 @@ pods:
 ```
 
 
-### 📦️ Via Pypi
-
-1. Install the `jinahub-executor-text-tfidfencoder` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-text-tfidfencoder.git
-	```
-
-1. Use `jinahub-executor-text-tfidfencoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.tfidf_text_executor import TFIDFTextEncoder
-	
-	f = Flow().add(uses=TFIDFTextEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-text-tfidfencoder.git
-	cd executor-text-tfidfencoder
-	docker build -t executor-text-tfidfencoder-image .
-	```
-
-1. Use `executor-text-tfidfencoder` in your code
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-text-tfidfencoder:latest')
-	```
-
-
-
 ## 🎉️ Example 
-
 
 ```python
 from jina import Flow, Document
@@ -171,7 +114,3 @@ with f:
 
 ## 🔍️ Reference
 https://en.wikipedia.org/wiki/Tf-idf
-
-
-
-### 

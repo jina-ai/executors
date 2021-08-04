@@ -191,3 +191,19 @@ def test_dump(tmpdir, shards):
 
     for pea_id in range(shards):
         _assert_dump_data(dump_path, docs, shards, pea_id)
+
+
+def test_return_embeddings(tmpdir):
+    metas = {'workspace': str(tmpdir), 'name': 'storage', 'pea_id': 0}
+    indexer = LMDBStorage(metas=metas)
+    doc = Document(embedding=np.random.rand(1, 10))
+    da = DocumentArray([doc])
+    query1 = DocumentArray([Document(id=doc.id)])
+    indexer.index(da, parameters={})
+    indexer.search(query1, parameters={})
+    assert query1[0].embedding is not None
+    assert query1[0].embedding.shape == (1, 10)
+
+    query2 = DocumentArray([Document(id=doc.id)])
+    indexer.search(query2, parameters={"return_embeddings": False})
+    assert query2[0].embedding is None

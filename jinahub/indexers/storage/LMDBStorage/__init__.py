@@ -54,6 +54,7 @@ class LMDBStorage(Executor):
     :param map_size: the maximal size of teh database. Check more information at
         https://lmdb.readthedocs.io/en/release/#environment-class
     :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+    :param default_return_embeddings: whether to return embeddings on search or not
     """
 
     def __init__(
@@ -61,6 +62,7 @@ class LMDBStorage(Executor):
         map_size: int = 1048576000,  # in bytes, 1000 MB
         default_traversal_paths: List[str] = ['r'],
         dump_path: str = None,
+        default_return_embeddings: bool = True,
         *args,
         **kwargs,
     ):
@@ -84,6 +86,7 @@ class LMDBStorage(Executor):
                 serialized_doc.id = id
                 da.append(serialized_doc)
             self.index(da, parameters={})
+        self.default_return_embeddings = default_return_embeddings
 
     def _handler(self):
         # required to create a new connection to the same file
@@ -156,6 +159,9 @@ class LMDBStorage(Executor):
         traversal_paths = parameters.get(
             'traversal_paths', self.default_traversal_paths
         )
+        return_embeddings = parameters.get(
+            'return_embeddings', self.default_return_embeddings
+        )
         if docs is None:
             return
         docs_to_get = docs.traverse_flat(traversal_paths)
@@ -164,6 +170,8 @@ class LMDBStorage(Executor):
                 for i, d in enumerate(docs_to_get):
                     id = d.id
                     serialized_doc = Document(transaction.get(d.id.encode()))
+                    if not return_embeddings:
+                        serialized_doc.pop('embedding')
                     d.update(serialized_doc)
                     d.id = id
 

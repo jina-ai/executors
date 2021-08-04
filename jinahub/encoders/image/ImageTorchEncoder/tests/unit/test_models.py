@@ -5,7 +5,7 @@ import pytest
 import numpy as np
 import torch
 
-from jinahub.image.encoder.models import EmbeddingModelWrapper, _ModelCatalogue
+from ...models import EmbeddingModelWrapper, _ModelCatalogue
 
 
 @pytest.mark.parametrize(

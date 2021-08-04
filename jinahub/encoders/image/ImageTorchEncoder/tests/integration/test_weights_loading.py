@@ -6,10 +6,8 @@ import os
 from torch import hub
 from pytest_mock import MockerFixture
 
-try:
-    from torch_encoder import ImageTorchEncoder
-except:
-    from jinahub.image.encoder.torch_encoder import ImageTorchEncoder
+from ...torch_encoder import ImageTorchEncoder
+
 
 
 def test_load_from_url(tmpdir: str, mocker: MockerFixture) -> None:

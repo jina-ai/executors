@@ -6,7 +6,7 @@ import pytest
 import torch
 from jina import DocumentArray, Document
 
-from jinahub.text.encoders.sentence_encoder import TransformerSentenceEncoder
+from ...sentence_encoder import TransformerSentenceEncoder
 
 
 def test_encoding_cpu():

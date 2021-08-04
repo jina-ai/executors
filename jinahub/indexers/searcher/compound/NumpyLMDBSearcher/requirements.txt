@@ -1,2 +1,2 @@
-git+https://github.com/jina-ai/executor-indexers.git
+git+https://github.com/jina-ai/executors
 git+https://github.com/jina-ai/jina-commons

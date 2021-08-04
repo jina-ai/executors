@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from jina import Document, DocumentArray, Flow
-from jinahub.encoder.audioclip_image import AudioCLIPImageEncoder
+from ...audioclip_image import AudioCLIPImageEncoder
 
 
 @pytest.mark.parametrize("request_size", [1, 10, 50, 100])

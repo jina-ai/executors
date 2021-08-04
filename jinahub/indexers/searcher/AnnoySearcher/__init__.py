@@ -53,13 +53,14 @@ class AnnoySearcher(Executor):
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path', None)
         if dump_path is not None:
             self.logger.info('Start building "AnnoyIndexer" from dump data')
-            ids, vecs = import_vectors(dump_path, str(self.metas.pea_id))
+            ids, vecs = import_vectors(dump_path, str(self.runtime_args.pea_id))
             self._ids = np.array(list(ids))
             self._vecs = np.array(list(vecs))
             num_dim = self._vecs.shape[1]
             self._indexer = AnnoyIndex(num_dim, self.metric)
             self._doc_id_to_offset = {}
             self._load_index(self._ids, self._vecs)
+            self.logger.info('Done building Annoy index')
         else:
             self.logger.warning(
                 'No data loaded in "AnnoyIndexer". Use .rolling_update() to re-initialize it...'

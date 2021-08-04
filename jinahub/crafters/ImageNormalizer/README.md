@@ -15,28 +15,29 @@ The following parameters can be used:
 - `target_channel_axis` (int): The desired channel axis in the images. If this is not equal to the channel_axis, the axis is moved.
 - `target_dtype` (np.dtype, default `np.float32`): The desired type of the image array 
 
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 ## 🌱 Prerequisites
 
-No prerequisites are required to run this executor. 
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+In case you want to install the dependencies locally run 
+```
+pip install -r requirements.txt
+```
 
 ## 🚀 Usages
 
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -49,14 +50,14 @@ or in the `.yml` config.
 ```yaml
 jtype: Flow
 pods:
-  - name: encoder
+  - name: crafter
     uses: 'jinahub+docker://ImageNormalizer'
     override_with: 
       target_size: 42
 ``` 
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -69,47 +70,11 @@ or in the `.yml` config.
 ```yaml
 jtype: Flow
 pods:
-  - name: encoder
+  - name: crafter
     uses: 'jinahub://ImageNormalizer'
 ```
 
 
-### 📦️ Via Pypi
-
-1. Install the `executors` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executors.git
-	```
-
-1. Use `ImageNormalizer` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.crafters.ImageNormalizer.normalizer import ImageNormalizer
-	
-	f = Flow().add(uses=ImageNormalizer)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executors.git
-	cd jinahub/crafters/ImageNormalizer
-	docker build -t image-normalizer .
-	```
-
-1. Use `image-normalizer` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://image-normalizer')
-	```
-	
 
 ## 🎉️ Example 
 

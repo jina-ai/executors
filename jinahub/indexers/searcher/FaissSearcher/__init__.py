@@ -87,7 +87,7 @@ class FaissSearcher(Executor):
 
         dump_path = dump_path or kwargs.get('runtime_args').get('dump_path')
         if dump_path is not None:
-            self.logger.info('Start building "AnnoyIndexer" from dump data')
+            self.logger.info('Start building "FaissIndexer" from dump data')
             ids, vecs = import_vectors(dump_path, str(self.runtime_args.pea_id))
             self._ids = np.array(list(ids))
             self._ext2int = {v: i for i, v in enumerate(self._ids)}
@@ -97,7 +97,7 @@ class FaissSearcher(Executor):
             self.index = self._build_index(self._vecs)
         else:
             self.logger.warning(
-                'No data loaded in "AnnoyIndexer". Use .rolling_update() to re-initialize it...'
+                'No data loaded in "FaissIndexer". Use .rolling_update() to re-initialize it...'
             )
 
     def device(self):

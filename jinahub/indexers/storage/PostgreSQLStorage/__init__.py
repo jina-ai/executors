@@ -28,6 +28,7 @@ class PostgreSQLStorage(Executor):
     :param password: the password to authenticate
     :param database: the database name
     :param table: the table name to use
+    :param default_return_embeddings: whether to return embeddings on search or not
     :param args: other arguments
     :param kwargs: other keyword arguments
     """
@@ -42,6 +43,7 @@ class PostgreSQLStorage(Executor):
         table: str = 'default_table',
         max_connections=5,
         default_traversal_paths: List[str] = ['r'],
+        default_return_embeddings: bool = True,
         *args,
         **kwargs,
     ):
@@ -63,6 +65,7 @@ class PostgreSQLStorage(Executor):
             table=self.table,
             max_connections=max_connections,
         )
+        self.default_return_embeddings = default_return_embeddings
 
     def _get_generator(self) -> Generator[Tuple[str, np.array, bytes], None, None]:
         with self.handler as handler:
@@ -168,4 +171,7 @@ class PostgreSQLStorage(Executor):
         )
 
         with self.handler as postgres_handler:
-            postgres_handler.search(docs.traverse_flat(traversal_paths))
+            postgres_handler.search(
+                docs.traverse_flat(traversal_paths),
+                return_embeddings=parameters.get('return_embeddings', self.default_return_embeddings)
+            )

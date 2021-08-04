@@ -1,12 +1,28 @@
 # TransformerTFTextEncoder
 TransformerTFEncoder wraps the tensorflow-version of transformers from huggingface, encodes data from an array of string in size `B` into an ndarray in size `B x D`
 
+**Table of Contents**
+
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
+
+## 🌱 Prerequisites
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+In case you want to install the dependencies locally run 
+```
+pip install -r requirements.txt
+```
+
 ## 🚀 Usages
 
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -23,8 +39,8 @@ pods:
     uses: 'jinahub+docker://TransformerTFTextEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow, Document
@@ -45,43 +61,6 @@ pods:
     uses: 'jinahub://TransformerTFTextEncoder'
 ```
 
-
-### 📦️ Via Pypi
-
-1. Install the package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-text-transformer-tf-encoder.git
-	```
-
-1. Use `TransformerTFTextEncoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.transformer_tf_text_encode import TransformerTFTextEncoder
-	
-	f = Flow().add(uses=TransformerTFTextEncoder)
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-text-transformer-tf-encoder.git
-	cd executor-text-transformer-tf-encoder
-	docker build -t executor-text-transformer-tf-encoder .
-	```
-
-1. Use `executor-text-transformer-tf-encoder` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-text-transformer-tf-encoder:latest')
-	```
- 
 ## 🎉 Example:
 
 Here is an example usage of the **TransformerTFTextEncoder**.
@@ -89,7 +68,6 @@ Here is an example usage of the **TransformerTFTextEncoder**.
 ```python
     def process_response(resp):
         print(resp)
-
     f = Flow().add(uses={
         'jtype': TransformerTFTextEncoder.__name__,
         'with': {
@@ -110,3 +88,5 @@ Here is an example usage of the **TransformerTFTextEncoder**.
 ### Returns
 
 `Document` with `embedding` fields filled with an `ndarray`  with `dtype==np.float32`.
+
+## 🔍️ Reference
