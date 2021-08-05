@@ -2,7 +2,7 @@
 
 **CatboostRanker** is a Jina ranker, using the [CatBoost](https://catboost.ai/) library, mode specifically, the `CatBoostRanker` for learning-to-rank.
 
-`CatboostRanker` retrieves `query_features`, `match_features` and `label` stored inside `Document` object from `DocumentArray`, and builds a feature-label dataset to train the model.
+`CatboostRanker` retrieves `query_features`, `match_features` and `relevance_label` stored inside `Document` object from `DocumentArray`, and builds a feature-label dataset to train the model.
 
 **Table of Contents**
 
@@ -119,7 +119,7 @@ Parameters:
 
 - `query_features` the tag names to extract value from query document. Each query-match pair will be combined into a feature vector.
 - `match_features` the tag names to extract value from match document. Each query-match pair will be combined into a feature vector.
-- `label` the tag name considered as groundtruth.
+- `relevance_label` the tag name to extract value from match to train the learning-to-rank model.
 - `weight` (Optional)the tag name to store the importance of query, stored in each query document.
 - `model_path` (Optional)the default model path to dump/load the document.
 - `catboost_parameters` (Optional) the parameters to train catboost ranker, please refer to catboost documentation for more info.
