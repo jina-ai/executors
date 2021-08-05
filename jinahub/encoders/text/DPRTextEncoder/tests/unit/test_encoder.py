@@ -47,13 +47,6 @@ def test_no_text_documents(basic_encoder: DPRTextEncoder):
     assert docs[0].embedding is None
 
 
-def test_context_encoder_no_title_tag_key_init():
-    with pytest.warns(UserWarning, match='The `title_tag_key` argument is not'):
-        DPRTextEncoder(
-            'facebook/dpr-ctx_encoder-single-nq-base', encoder_type='context'
-        )
-
-
 def test_context_encoder_doc_no_title(basic_encoder_ctx: DPRTextEncoder):
     docs = DocumentArray([Document(text='hello there')])
     with pytest.raises(ValueError, match='If you set `title_tag_key` property'):
