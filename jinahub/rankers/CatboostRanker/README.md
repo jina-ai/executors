@@ -91,7 +91,7 @@ Parameters:
 
 ### Inputs 
 
-`Document`, with `tags` and matches with `tags`.
+`Document`, with `tags` corresponded to `query_features` and matches with `tags` corresponded to `match_features` and `relevance_label`.
 
 ### Returns
 
