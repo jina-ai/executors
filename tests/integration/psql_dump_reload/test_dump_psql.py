@@ -14,6 +14,8 @@ from jina_commons.indexers.dump import (
 )
 
 
+METRIC = 'l2'
+
 @pytest.fixture()
 def docker_compose(request):
     os.system(
@@ -33,8 +35,8 @@ from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
 
 # required in order to be found by Flow creation
 # noinspection PyUnresolvedReferences
-from jinahub.indexers.searcher.compound.NumpyPostgresSearcher import (
-    NumpyPostgresSearcher,
+from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
+    FaissPostgresSearcher,
 )
 from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 
@@ -85,7 +87,7 @@ def get_documents(nr=10, index_start=0, emb_size=7):
         with Document() as d:
             d.id = f'aa{i}'  # to test it supports non-int ids
             d.text = f'hello world {i}'
-            d.embedding = np.random.random(emb_size)
+            d.embedding = np.random.random(emb_size).astype(np.float32)
             d.tags['field'] = f'tag data {i}'
         yield d
 
@@ -188,7 +190,8 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
                 return_results=True,
             )
             assert len(results[0].docs[0].matches) == top_k
-            assert results[0].docs[0].matches[0].scores['cosine'].value == 1.0
+            # TODO score is not deterministic
+            assert results[0].docs[0].matches[0].scores[METRIC].value > 0.0
 
     idx = PostgreSQLStorage()
     assert idx.size == nr_docs

@@ -7,12 +7,12 @@ from typing import Dict
 from jina import requests, DocumentArray, Executor
 
 from jina_commons import get_logger
-from jinahub.indexers.searcher.NumpySearcher import NumpySearcher
+from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
 from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 
 
-class NumpyPostgresSearcher(Executor):
-    """A Compound Indexer made up of a NumpyIndexer (for vectors) and a Postgres Indexer"""
+class FaissPostgresSearcher(Executor):
+    """A Compound Indexer made up of a FaissSearcher (for vectors) and a Postgres Indexer"""
 
     def __init__(
         self,
@@ -26,7 +26,7 @@ class NumpyPostgresSearcher(Executor):
         self._kv_indexer = None
         self._vec_indexer = None
         if dump_path:
-            self._vec_indexer = NumpySearcher(dump_path=dump_path, **kwargs)
+            self._vec_indexer = FaissSearcher(dump_path=dump_path, **kwargs)
             self._kv_indexer = PostgreSQLStorage(**kwargs)
         else:
             self.logger.warning(

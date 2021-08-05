@@ -1,6 +1,6 @@
-# ✨ NumpyLMDBSearcher
+# ✨ FaissLMDBSearcher
 
-**NumpyLMDBSearcher** is a compound Searcher Executor for Jina, made up of [NumpySearcher](../../NumpySearcher) for performing similarity search on the embeddings, and of [FileSearcher](../../keyvalue/FileSearcher) for retrieving the metadata of the Documents. 
+**FaissLMDBSearcher** is a compound Searcher Executor for Jina, made up of [FaissSearcher](../../FaissSearcher) for performing similarity search on the embeddings, and of [FileSearcher](../../keyvalue/FileSearcher) for retrieving the metadata of the Documents. 
 
 
 **Table of Contents**
@@ -31,7 +31,7 @@ This can be provided in different ways:
 - in the YAML definition
   
 ```yaml
-jtype: NumpyLMDBSearcher
+jtype: FaissLMDBSearcher
 with:
     dump_path: /tmp/your_dump_location
 ...
@@ -49,7 +49,7 @@ Use the prebuilt images from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub+docker://NumpyLMDBSearcher')
+f = Flow().add(uses='jinahub+docker://FaissLMDBSearcher')
 ```
 
 or in the `.yml` config.
@@ -58,7 +58,7 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: indexer
-    uses: 'jinahub+docker://NumpyLMDBSearcher'
+    uses: 'jinahub+docker://FaissLMDBSearcher'
 ```
 
 #### using source code
@@ -67,7 +67,7 @@ Use the source code from JinaHub in your code
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub://NumpyLMDBSearcher')
+f = Flow().add(uses='jinahub://FaissLMDBSearcher')
 ```
 
 or in the `.yml` config.
@@ -76,7 +76,7 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: indexer
-    uses: 'jinahub://NumpyLMDBSearcher'
+    uses: 'jinahub://FaissLMDBSearcher'
 ```
 
 
@@ -86,7 +86,7 @@ pods:
 ```python
 from jina import Flow, Document
 
-f = Flow().add(uses='jinahub+docker://NumpyLMDBSearcher')
+f = Flow().add(uses='jinahub+docker://FaissLMDBSearcher')
 
 with f:
     resp = f.post(on='/search', inputs=Document(), return_results=True)
@@ -95,11 +95,11 @@ with f:
 
 ### Inputs 
 
-`Document` with `.embedding` the same shape as the `Documents` stored in the `NumpySearcher`. The ids of the `Documents` stored in `NumpySearcher` need to exist in the `FileSearcher`. Otherwise you will not get back the original metadata. 
+`Document` with `.embedding` the same shape as the `Documents` stored in the `FaissSearcher`. The ids of the `Documents` stored in `FaissSearcher` need to exist in the `FileSearcher`. Otherwise you will not get back the original metadata. 
 
 ### Returns
 
-The NumpySearcher attaches matches to the Documents sent as inputs, with the id of the match, and its embedding.
+The FaissSearcher attaches matches to the Documents sent as inputs, with the id of the match, and its embedding.
 Then, the FileSearcher retrieves the full metadata (original text or image blob) and attaches those to the Document.
 You receive back the full Document.
 

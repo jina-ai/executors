@@ -54,7 +54,7 @@ class FaissSearcher(Executor):
 
     def __init__(
         self,
-        index_key: str,
+        index_key: str = 'Flat',
         train_filepath: Optional[str] = None,
         max_num_training_points: Optional[int] = None,
         requires_training: bool = True,
@@ -196,6 +196,7 @@ class FaissSearcher(Executor):
         :param docs: the DocumentArray containing the documents to search with
         :param parameters: the parameters for the request
         """
+        self.logger.warning(f'searching on Faiss pea id {self.runtime_args.pea_id} with size {self.size}')
         if not hasattr(self, 'index'):
             self.logger.warning('Querying against an empty Index')
             return
@@ -203,7 +204,7 @@ class FaissSearcher(Executor):
         if parameters is None:
             parameters = {}
 
-        top_k = parameters.get('top_k', self.default_top_k)
+        top_k = int(parameters.get('top_k', self.default_top_k))
         traversal_paths = parameters.get(
             'traversal_paths', self.default_traversal_paths
         )
