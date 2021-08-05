@@ -60,41 +60,6 @@ pods:
 ```
 
 
-### 📦️ Via Pypi
-
-1. Install the `executors` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executors/
-	```
-
-1. Use `executors` in your code
-
-   ```python
-   from jina import Flow
-   from jinahub.rankers.CatboostRanker.catboost_ranker import CatboostRanker
-   
-   f = Flow().add(uses=CatboostRanker)
-   ```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executors/
-	cd jinahub/rankers/CatboostRanker
-	docker build -t catboostranker .
-	```
-
-1. Use `catboostranker` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://catboostranker:latest')
-	```
 	
 
 ## 🎉️ Example 
