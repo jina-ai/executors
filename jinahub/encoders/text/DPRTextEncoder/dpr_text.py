@@ -1,8 +1,8 @@
-import warnings
 from typing import Iterable, Literal, Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
+from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 from transformers import (
     DPRContextEncoder,
@@ -23,7 +23,7 @@ class DPRTextEncoder(Executor):
 
     :param pretrained_model_name_or_path: Can be either:
         - the model id of a pretrained model hosted inside a model repo
-          on huggingface.co.
+          on [huggingface.co](huggingface.co).
         - A path to a directory containing model weights, saved using
           the transformers model's ``save_pretrained()`` method
     :param encoder_type: Either ``'context'`` or ``'question'``. Make sure this
@@ -59,6 +59,7 @@ class DPRTextEncoder(Executor):
         self.device = device
         self.max_length = max_length
         self.title_tag_key = title_tag_key
+        self.logger = JinaLogger(self.__class__.__name__)
 
         if encoder_type not in ['context', 'question']:
             raise ValueError(
@@ -72,7 +73,7 @@ class DPRTextEncoder(Executor):
 
         if encoder_type == 'context':
             if not self.title_tag_key:
-                warnings.warn(
+                self.logger.warning(
                     'The `title_tag_key` argument is not set - it is recommended'
                     ' to encode the context text together with the title to match the'
                     ' model pre-training. '
