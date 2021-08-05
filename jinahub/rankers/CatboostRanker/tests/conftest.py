@@ -15,7 +15,7 @@ def ranker():
     return CatboostRanker(
         query_features=['brand', 'price'],
         match_features=['brand', 'price'],
-        label='relevance',
+        relevance_label='relevance',
     )
 
 
@@ -24,7 +24,7 @@ def ranker_with_weight():
     return CatboostRanker(
         query_features=['brand', 'price'],
         match_features=['brand', 'price'],
-        label='relevance',
+        relevance_label='relevance',
         weight='weight',
     )
 
