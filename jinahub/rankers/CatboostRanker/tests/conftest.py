@@ -40,20 +40,12 @@ def documents_to_train_stub_model(relevances):
     # initial stub model, relevance purely dependent on brand, not price.
     # brand relevance 5 > 4 > 3 > 2 > 1.
     da = DocumentArray()
-    for relevance in relevances:
-        if 0.8 <= relevance <= 1:
-            brand = 5
-        elif 0.6 <= relevance < 0.8:
-            brand = 4
-        elif 0.4 <= relevance < 0.6:
-            brand = 3
-        elif 0.2 <= relevance < 0.4:
-            brand = 2
-        else:
-            brand = 1
+    bins = np.array([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    inds = np.digitize(relevances, bins)
+    for brand, relevance in zip(inds, relevances):
         doc = Document(
             tags={
-                'brand': brand,
+                'brand': int(brand),
                 'price': random.randint(50, 200),
                 'weight': random.uniform(0, 1),
             }
@@ -63,7 +55,7 @@ def documents_to_train_stub_model(relevances):
             doc.matches.append(
                 Document(
                     tags={
-                        'brand': brand,
+                        'brand': int(brand),
                         'price': random.randint(50, 200),
                         'relevance': float(relevance),
                     }

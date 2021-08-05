@@ -13,7 +13,7 @@ def flow():
         uses_with={
             'query_features': ['brand', 'price'],
             'match_features': ['brand', 'price'],
-            'label': 'relevance',
+            'relevance_label': 'relevance',
         },
     )
 
