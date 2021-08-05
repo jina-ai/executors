@@ -143,7 +143,7 @@ class CatboostRanker(Executor):
         feature_vecs, _, _ = self._extract_features(docs)
         if not self.model.is_fitted():
             raise ValueError(
-                'You need to train your model before make prediction, call `train` endpoint first.'
+                'You need to train your model before make prediction, or provide a pre-trained model in `model_path`.'
             )
         preds = self.model.predict(feature_vecs)
         matches = docs.traverse_flat(traversal_paths=['m'])
