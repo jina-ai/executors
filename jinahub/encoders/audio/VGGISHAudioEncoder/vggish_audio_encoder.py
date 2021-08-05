@@ -7,7 +7,7 @@ from typing import Any, Optional, List, Iterable
 
 from jina import Executor, requests, DocumentArray
 from jina.logging.logger import JinaLogger
-import requests as requests_
+import requests as _requests
 import tensorflow as tf
 
 tf.compat.v1.disable_eager_execution()
@@ -27,7 +27,7 @@ class VggishAudioEncoder(Executor):
      """
 
     def __init__(self,
-                 model_path: str = os.path.join(cur_dir, 'models'),
+                 model_path: str = Path(cur_dir) / 'models',
                  default_traversal_paths: Optional[Iterable[str]] = None,
                  *args, **kwargs):
 
@@ -43,12 +43,12 @@ class VggishAudioEncoder(Executor):
         if not self.vgg_model_path.exists():
             self.logger.info('VGGish model cannot be found from the given model path, downloading a new one...')
             try:
-                r = requests_.get('https://storage.googleapis.com/audioset/vggish_model.ckpt')
+                r = _requests.get('https://storage.googleapis.com/audioset/vggish_model.ckpt')
                 r.raise_for_status()
-            except requests.exceptions.HTTPError:
+            except _requests.exceptions.HTTPError:
                 self.logger.error('received HTTP error response, cannot download vggish model')
                 raise
-            except requests.exceptions.RequestException:
+            except _requests.exceptions.RequestException:
                 self.logger.error('Connection error, cannot download vggish model')
                 raise
 
@@ -58,12 +58,12 @@ class VggishAudioEncoder(Executor):
         if not self.pca_model_path.exists():
             self.logger.info('PCA model cannot be found from the given model path, downloading a new one...')
             try:
-                r = requests_.get('https://storage.googleapis.com/audioset/vggish_pca_params.npz')
+                r = _requests.get('https://storage.googleapis.com/audioset/vggish_pca_params.npz')
                 r.raise_for_status()
-            except requests.exceptions.HTTPError:
+            except _requests.exceptions.HTTPError:
                 self.logger.error('received HTTP error response, cannot download pca model')
                 raise
-            except requests.exceptions.RequestException:
+            except _requests.exceptions.RequestException:
                 self.logger.error('Connection error, cannot download pca model')
                 raise
 
