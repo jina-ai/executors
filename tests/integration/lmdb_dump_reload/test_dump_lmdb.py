@@ -13,7 +13,7 @@ from jina_commons.indexers.dump import (
     import_metas,
 )
 
-from jinahub.indexers.storage.LMDBStorage import LMDBStorage
+from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
     doc_without_embedding,
 )
