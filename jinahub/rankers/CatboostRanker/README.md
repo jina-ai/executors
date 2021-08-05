@@ -2,7 +2,7 @@
 
 **CatboostRanker** is a Jina ranker, using the [CatBoost](https://catboost.ai/) library, mode specifically, the `CatBoostRanker` for learning-to-rank.
 
-`CatboostRanker` get `query_features`, `match_features` and `label` stored inside `Document` object from `DocumentArray`, and build a feature-label dataset to train the model.
+`CatboostRanker` retrieves `query_features`, `match_features` and `label` stored inside `Document` object from `DocumentArray`, and builds a feature-label dataset to train the model.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -134,5 +134,4 @@ Parameters:
 ### Returns
 
 Nothing
-
 
