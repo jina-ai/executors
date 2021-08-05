@@ -9,7 +9,7 @@ from jina import Document, Flow, DocumentArray, requests
 
 from jina_commons.indexers.dump import dump_docs
 from jinahub.indexers.searcher.compound.NumpyLMDBSearcher.npfile import NumpyLMDBSearcher
-from jinahub.indexers.storage.LMDBStorage import LMDBStorage
+from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 from tests.integration.psql_dump_reload.test_dump_psql import (
     MatchMerger,
 )

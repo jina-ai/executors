@@ -3,8 +3,8 @@ import os
 from jina import Flow, DocumentArray, Document
 
 # noinspection PyUnresolvedReferences
-from jinahub.indexers.DocCache import DocCache
-from jinahub.indexers.storage.LMDBStorage import LMDBStorage
+from jinahub.indexers.DocCache.doc_cache import DocCache
+from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 
 
 def test_cache(tmpdir):
