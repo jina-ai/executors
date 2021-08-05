@@ -108,12 +108,12 @@ from jina import Flow, DocumentArray
 f = Flow().add(uses='jinahub://CatboostRanker')
 
 da_to_train = DocumentArray()
-da_to_predict = DocumentArray()
+da_to_search = DocumentArray()
 # note, to see how we build a document array, please refer to tests/conftest.py
 
 with f:
     f.post(on='/train', inputs=da_to_train)
-    f.post(on='/predict', inputs=da_to_predict)
+    f.post(on='/search', inputs=da_to_search)
     f.post(on='/dump', parameters={'model_path': '/tmp/model.cbm'})
     f.post(on='/load', parameters={'model_path': '/tmp/model.cbm'})
 ```

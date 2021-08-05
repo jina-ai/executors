@@ -37,7 +37,6 @@ class CatboostRanker(Executor):
         self.model_path = model_path
         self.catboost_parameters = catboost_parameters
         self.model = None
-        self.logger = JinaLogger('catboost logger')
         if self.model_path and os.path.exists(self.model_path):
             self._load_model()
         else:
