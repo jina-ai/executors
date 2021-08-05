@@ -33,7 +33,7 @@ from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
 
 # required in order to be found by Flow creation
 # noinspection PyUnresolvedReferences
-from jinahub.indexers.searcher.compound.NumpyPostgresSearcher import (
+from jinahub.indexers.searcher.compound.NumpyPostgresSearcher.nppsql import (
     NumpyPostgresSearcher,
 )
 from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
