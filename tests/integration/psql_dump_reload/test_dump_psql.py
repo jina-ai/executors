@@ -36,7 +36,7 @@ from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
 from jinahub.indexers.searcher.compound.NumpyPostgresSearcher.nppsql import (
     NumpyPostgresSearcher,
 )
-from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+from jinahub.indexers.storage.PostgreSQLStorage.postgres import PostgreSQLStorage
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.join(cur_dir, 'docker-compose.yml')
