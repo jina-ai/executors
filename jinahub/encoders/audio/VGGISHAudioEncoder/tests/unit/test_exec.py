@@ -12,7 +12,8 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 def test_load():
     encoder = Executor.load_config(os.path.join(cur_dir, '../../config.yml'))
-    assert encoder.model_path.endswith('vggish_model.ckpt')
+    assert str(encoder.vgg_model_path).endswith('vggish_model.ckpt')
+    assert str(encoder.pca_model_path).endswith('vggish_pca_params.ckpt')
 
 
 def test_embedding_dimension():
@@ -22,7 +23,4 @@ def test_embedding_dimension():
     ops.reset_default_graph()
     model = VggishAudioEncoder()
     model.encode(doc, parameters={})
-    assert doc[0].embedding.shape[-1] == 128
-
-
-
+    assert doc[0].embedding.shape == (128,)

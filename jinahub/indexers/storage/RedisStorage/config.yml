@@ -3,4 +3,4 @@ with:
   {}
 metas:
   py_modules:
-    - __init__.py
+    - redis_storage.py

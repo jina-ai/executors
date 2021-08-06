@@ -38,7 +38,7 @@ from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
 from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
     FaissPostgresSearcher,
 )
-from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+from jinahub.indexers.storage.PostgreSQLStorage.postgres import PostgreSQLStorage
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.join(cur_dir, 'docker-compose.yml')
@@ -84,11 +84,11 @@ class MatchMerger(Executor):
 
 def get_documents(nr=10, index_start=0, emb_size=7):
     for i in range(index_start, nr + index_start):
-        with Document() as d:
-            d.id = f'aa{i}'  # to test it supports non-int ids
-            d.text = f'hello world {i}'
-            d.embedding = np.random.random(emb_size).astype(np.float32)
-            d.tags['field'] = f'tag data {i}'
+        d = Document()
+        d.id = f'aa{i}'  # to test it supports non-int ids
+        d.text = f'hello world {i}'
+        d.embedding = np.random.random(emb_size).astype(np.float32)
+        d.tags['field'] = f'tag data {i}'
         yield d
 
 

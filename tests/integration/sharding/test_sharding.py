@@ -8,8 +8,8 @@ import pytest
 from jina import Document, Flow, DocumentArray, requests, Executor
 from jina_commons.indexers.dump import dump_docs
 
-from jinahub.indexers.searcher.compound.FaissLMDBSearcher import FaissLMDBSearcher
-from jinahub.indexers.storage.LMDBStorage import LMDBStorage
+from jinahub.indexers.searcher.compound.FaissLMDBSearcher.faiss_lmdb import FaissLMDBSearcher
+from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 
 random.seed(0)
 np.random.seed(0)

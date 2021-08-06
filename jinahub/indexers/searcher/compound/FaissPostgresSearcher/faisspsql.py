@@ -7,8 +7,8 @@ from typing import Dict
 from jina import requests, DocumentArray, Executor
 
 from jina_commons import get_logger
-from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
-from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+from jinahub.indexers.searcher.FaissSearcher.faiss_searcher import FaissSearcher
+from jinahub.indexers.storage.PostgreSQLStorage.postgres import PostgreSQLStorage
 
 
 class FaissPostgresSearcher(Executor):

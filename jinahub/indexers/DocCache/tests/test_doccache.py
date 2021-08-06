@@ -4,7 +4,7 @@ import shutil
 import pytest
 from jina import Flow, DocumentArray, Document
 
-from .. import DocCache
+from ..doc_cache import DocCache
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 default_config = os.path.abspath(os.path.join(cur_dir, '..', 'config.yml'))
