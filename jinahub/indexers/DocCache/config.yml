@@ -4,7 +4,7 @@ with:
 metas:
   name: cache
   py_modules:
-    - __init__.py
+    - doc_cache.py
   workspace: cache
 
 

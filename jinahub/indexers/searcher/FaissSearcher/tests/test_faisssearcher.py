@@ -10,7 +10,7 @@ from jina import DocumentArray, Document
 from jina.executors.metas import get_default_metas
 
 from jina_commons.indexers.dump import export_dump_streaming
-from .. import FaissSearcher
+from ..faiss_searcher import FaissSearcher
 
 
 def _get_docs_from_vecs(queries):

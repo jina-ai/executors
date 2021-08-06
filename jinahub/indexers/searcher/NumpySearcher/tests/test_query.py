@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from jina import Document, DocumentArray
 
-from .. import NumpySearcher
+from ..numpy_searcher import NumpySearcher
 
 TOP_K = 5
 cur_dir = os.path.dirname(os.path.abspath(__file__))

@@ -7,8 +7,8 @@ from typing import Dict
 from jina import requests, DocumentArray, Executor
 
 from jina_commons import get_logger
-from jinahub.indexers.searcher.NumpySearcher import NumpySearcher
-from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+from jinahub.indexers.searcher.NumpySearcher.numpy_searcher import NumpySearcher
+from jinahub.indexers.storage.PostgreSQLStorage.postgres import PostgreSQLStorage
 
 
 class NumpyPostgresSearcher(Executor):

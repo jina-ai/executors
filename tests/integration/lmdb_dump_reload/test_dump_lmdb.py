@@ -13,7 +13,7 @@ from jina_commons.indexers.dump import (
     import_metas,
 )
 
-from jinahub.indexers.storage.LMDBStorage import LMDBStorage
+from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
     doc_without_embedding,
 )
@@ -74,10 +74,10 @@ class MatchMerger(Executor):
 
 def get_documents(nr=10, index_start=0, emb_size=7):
     for i in range(index_start, nr + index_start):
-        with Document(id=i) as d:
-            d.text = f'hello world {i}'
-            d.embedding = np.random.random(emb_size)
-            d.tags['field'] = f'tag data {i}'
+        d = Document(id=i)
+        d.text = f'hello world {i}'
+        d.embedding = np.random.random(emb_size)
+        d.tags['field'] = f'tag data {i}'
         yield d
 
 

@@ -6,8 +6,8 @@ from typing import Dict
 
 from jina import requests, DocumentArray, Executor
 
-from jinahub.indexers.searcher.NumpySearcher import NumpySearcher
-from jinahub.indexers.storage.LMDBStorage import LMDBStorage
+from jinahub.indexers.searcher.NumpySearcher.numpy_searcher import NumpySearcher
+from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 
 
 class NumpyLMDBSearcher(Executor):
