@@ -64,7 +64,7 @@ def get_documents(chunks, same_content, nr=10, index_start=0, same_tag_content=N
         elif same_tag_content is False:
             d.tags['field'] = f'tag data {i}'
         for j in range(chunks):
-            c = Document():
+            c = Document()
             c.id = next_chunk_id
             if same_content:
                 c.text = 'hello world from chunk'
