@@ -16,11 +16,11 @@ c_embedding = np.array([2, 2, 2, 2, 2, 2, 2])
 def get_documents(nr=10, index_start=0, emb_size=7, text='hello world'):
     docs = []
     for i in range(index_start, nr + index_start):
-        with Document() as d:
-            d.id = i
-            d.text = f'{text} {i}'
-            d.embedding = np.random.random(emb_size)
-            d.tags['field'] = f'tag data {i}'
+        d = Document()
+        d.id = i
+        d.text = f'{text} {i}'
+        d.embedding = np.random.random(emb_size)
+        d.tags['field'] = f'tag data {i}'
         docs.append(d)
     return DocumentArray(docs)
 
