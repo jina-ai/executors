@@ -6,14 +6,14 @@ from typing import Dict
 
 from jina import requests, DocumentArray, Executor
 
-from jinahub.indexers.searcher.NumpySearcher.numpy_searcher import NumpySearcher
+from jinahub.indexers.searcher.FaissSearcher.faiss_searcher import FaissSearcher
 from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 
 
-class NumpyLMDBSearcher(Executor):
+class FaissLMDBSearcher(Executor):
     def __init__(self, dump_path=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._vec_indexer = NumpySearcher(dump_path=dump_path, *args, **kwargs)
+        self._vec_indexer = FaissSearcher(dump_path=dump_path, *args, **kwargs)
         self._kv_indexer = LMDBStorage(dump_path=dump_path, *args, **kwargs)
 
     @requests(on='/search')

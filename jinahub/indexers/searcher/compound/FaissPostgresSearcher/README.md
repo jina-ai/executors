@@ -1,6 +1,6 @@
-# ✨ NumpyPostgresSearcher
+# ✨ FaissPostgresSearcher
 
-**NumpyPostgresSearcher** is a compound Searcher Executor for Jina, made up of [NumpySearcher](../../NumpySearcher) for performing similarity search on the embeddings, and of [PostgresSearcher](../../keyvalue/PostgresSearcher) for retrieving the metadata of the Documents. 
+**FaissPostgresSearcher** is a compound Searcher Executor for Jina, made up of [FaissSearcher](../../FaissSearcher) for performing similarity search on the embeddings, and of [PostgresSearcher](../../keyvalue/PostgresSearcher) for retrieving the metadata of the Documents. 
 
 
 **Table of Contents**
@@ -39,7 +39,7 @@ This can be provided in different ways:
 - in the YAML definition
   
 ```yaml
-jtype: NumpyPostgresSearcher
+jtype: FaissPostgresSearcher
 with:
     dump_path: /tmp/your_dump_location
 ...
@@ -57,7 +57,7 @@ Use the prebuilt images from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub+docker://NumpyPostgresSearcher')
+f = Flow().add(uses='jinahub+docker://FaissPostgresSearcher')
 ```
 
 or in the `.yml` config.
@@ -66,7 +66,7 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: indexer
-    uses: 'jinahub+docker://NumpyPostgresSearcher'
+    uses: 'jinahub+docker://FaissPostgresSearcher'
 ```
 
 #### using source code
@@ -75,7 +75,7 @@ Use the source code from JinaHub in your code
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub://NumpyPostgresSearcher')
+f = Flow().add(uses='jinahub://FaissPostgresSearcher')
 ```
 
 or in the `.yml` config.
@@ -84,7 +84,7 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: indexer
-    uses: 'jinahub://NumpyPostgresSearcher'
+    uses: 'jinahub://FaissPostgresSearcher'
 ```
 
 
@@ -94,7 +94,7 @@ pods:
 ```python
 from jina import Flow, Document
 
-f = Flow().add(uses='jinahub+docker://NumpyPostgresSearcher')
+f = Flow().add(uses='jinahub+docker://FaissPostgresSearcher')
 
 with f:
     resp = f.post(on='/search', inputs=Document(), return_results=True)
@@ -103,12 +103,14 @@ with f:
 
 ### Inputs 
 
-`Document` with `.embedding` the same shape as the `Documents` stored in the `NumpySearcher`. The ids of the `Documents` stored in `NumpySearcher` need to exist in the `PostgresSearcher`. Otherwise you will not get back the original metadata. 
+`Document` with `.embedding` the same shape as the `Documents` stored in the `FaissSearcher`. The ids of the `Documents` stored in `FaissSearcher` need to exist in the `PostgresSearcher`. Otherwise you will not get back the original metadata. 
 
 ### Returns
 
-The NumpySearcher attaches matches to the Documents sent as inputs, with the id of the match, and its embedding.
+The FaissSearcher attaches matches to the Documents sent as inputs, with the id of the match, and its embedding.
 Then, the PostgresSearcher retrieves the full metadata (original text or image blob) and attaches those to the Document.
 You receive back the full Document.
 
 ## 🔍️ Reference
+
+

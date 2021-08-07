@@ -1,9 +1,0 @@
-manifest_version: 1
-name: NumpySearcher
-alias: NumpySearcher
-description: A basic numpy-based vector searcher
-author: Jina AI Dev-Team (dev-team@jina.ai)
-url: https://github.com/jina-ai/executor-indexers/tree/main/jinahub/indexers/searcher/vector/NumpySearcher
-documentation: https://github.com/jina-ai/executor-indexers/tree/main/jinahub/indexers/searcher/vector/NumpySearcher
-license: apache-2.0
-keywords: [numpy, indexer, searcher, Executor, vector]

@@ -1,0 +1,10 @@
+jtype: FaissPostgresSearcher
+with:
+  {}
+metas:
+  py_modules:
+    - __init__.py
+    - faisspsql.py
+  workspace: workspace/
+  name: faiss_postgres_searcher
+

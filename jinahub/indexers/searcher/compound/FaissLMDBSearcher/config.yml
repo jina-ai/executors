@@ -1,9 +1,10 @@
-jtype: NumpyLMDBSearcher
+jtype: FaissLMDBSearcher
 with:
   {}
 metas:
   py_modules:  # THIS WILL NOT WORK SINCE IT RELIES ON CODE FILES FROM OTHER FOLDERS
-    - npfile.py
+    - __init__.py
+    - faissfile.py
   workspace: workspace/
-  name: numpy_file_searcher
+  name: faiss_file_searcher
 

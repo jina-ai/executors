@@ -1,39 +1,56 @@
 import os
 import random
 import time
-from typing import Dict
+from typing import Dict, OrderedDict
 
 import numpy as np
 import pytest
-from jina import Document, Flow, DocumentArray, requests
-
+from jina import Document, Flow, DocumentArray, requests, Executor
 from jina_commons.indexers.dump import dump_docs
-from jinahub.indexers.searcher.compound.NumpyLMDBSearcher.npfile import NumpyLMDBSearcher
+
+from jinahub.indexers.searcher.compound.FaissLMDBSearcher.faiss_lmdb import FaissLMDBSearcher
 from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
-from tests.integration.psql_dump_reload.test_dump_psql import (
-    MatchMerger,
-)
 
 random.seed(0)
 np.random.seed(0)
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 ORIGIN_TAG = 'origin'
-TOP_K = 30
+TOP_K = 100
 
 
-class TagMatchMerger(MatchMerger):
+class TagMatchMerger(Executor):
     @requests(on='/tag_search')
     def merge(self, docs_matrix, parameters: Dict, **kwargs):
-        MatchMerger.merge(
-            self, docs_matrix=docs_matrix, parameters=parameters, **kwargs
-        )
+        if docs_matrix:
+            # noinspection PyTypeHints
+            results = OrderedDict()
+            for docs in docs_matrix:
+                for doc in docs:
+                    if doc.id in results:
+                        results[doc.id].matches.extend(doc.matches)
+                    else:
+                        results[doc.id] = doc
+
+            top_k = parameters.get('top_k')
+            if top_k:
+                top_k = int(top_k)
+
+            for doc in results.values():
+                doc.matches = sorted(
+                    doc.matches,
+                    key=lambda m: m.scores['l2'].value,
+                    reverse=True,
+                )[:top_k]
+
+            docs = DocumentArray(list(results.values()))
+            return docs
 
 
 class TaggingFileSearcher(LMDBStorage):
     def __init__(
-        self,
-        **kwargs,
+            self,
+            **kwargs,
     ):
         super().__init__(**kwargs)
 
@@ -46,11 +63,11 @@ class TaggingFileSearcher(LMDBStorage):
                 match.tags[ORIGIN_TAG] = self.runtime_args.pea_id
 
 
-class NumpyTaggingFileSearcher(NumpyLMDBSearcher):
+class FaissTaggingFileSearcher(FaissLMDBSearcher):
     def __init__(
-        self,
-        dump_path=None,
-        **kwargs,
+            self,
+            dump_path=None,
+            **kwargs,
     ):
         super().__init__(**kwargs)
         self._kv_indexer = TaggingFileSearcher(dump_path=dump_path, **kwargs)
@@ -64,7 +81,7 @@ def random_docs(start, end, embed_dim=10):
     for j in range(start, end):
         d = Document()
         d.content = f'hello world from {j}'
-        d.embedding = np.random.random([embed_dim])
+        d.embedding = np.random.random([embed_dim]).astype(dtype=np.float32)
         yield d
 
 
@@ -89,8 +106,7 @@ def assert_folder(dump_path, num_shards):
         assert os.path.exists(os.path.join(dump_path, str(i), 'metas'))
 
 
-# TODO: add num_shards=7
-@pytest.mark.parametrize('num_shards', (2, 3))
+@pytest.mark.parametrize('num_shards', (2, 3, 7))
 def test_shards_numpy_filequery(tmpdir, num_shards):
     pod_name = 'index'
     os.environ['WORKSPACE'] = str(tmpdir)
