@@ -85,7 +85,7 @@ class LMDBStorage(Executor):
                 serialized_doc = Document(meta)
                 serialized_doc.id = id
                 da.append(serialized_doc)
-            self.index(da, parameters={})
+            self.index(da, parameters={'traversal_paths': ['r']})
         self.default_return_embeddings = default_return_embeddings
 
     def _handler(self):
