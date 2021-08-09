@@ -3,7 +3,7 @@ with:
   {}
 metas:
   py_modules:
-    - postgres.py
+    - __init__.py
     - postgreshandler.py
   workspace: workspace/
   name: psql
