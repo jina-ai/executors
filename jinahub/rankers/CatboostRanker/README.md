@@ -1,4 +1,4 @@
-# ✨ CatboostRanker
+# ✨  CatboostRanker
 
 **CatboostRanker** is a Jina ranker, using the [CatBoost](https://catboost.ai/) library, mode specifically, the `CatBoostRanker` for learning-to-rank.
 

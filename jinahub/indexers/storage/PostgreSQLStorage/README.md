@@ -1,4 +1,4 @@
-# ✨ PostgreSQLStorage
+# ✨  PostgreSQLStorage
 
 **PostgreSQLStorage** is Indexer wrapper around the PostgreSQL DBMS. Postgres is an open source object-relational database. You can read more about it here: https://www.postgresql.org/
 

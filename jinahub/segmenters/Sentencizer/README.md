@@ -1,4 +1,4 @@
-# ✨ Sentencizer
+# ✨  Sentencizer
 
 **Sentencizer** is a class that splits texts into sentences.
 

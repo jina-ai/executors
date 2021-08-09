@@ -1,4 +1,4 @@
-# ✨ FaissLMDBSearcher
+# ✨  FaissLMDBSearcher
 
 **FaissLMDBSearcher** is a compound Searcher Executor for Jina, made up of [FaissSearcher](../../FaissSearcher) for performing similarity search on the embeddings, and of [FileSearcher](../../keyvalue/FileSearcher) for retrieving the metadata of the Documents. 
 

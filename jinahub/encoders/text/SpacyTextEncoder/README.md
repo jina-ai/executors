@@ -1,4 +1,4 @@
-# ✨ SpacyTextEncoder
+# ✨  SpacyTextEncoder
 
 **SpacyTextEncoder** is a class that encodes text with spaCy models.
 

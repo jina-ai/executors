@@ -1,4 +1,4 @@
-# ✨ LMDBStorage
+# ✨  LMDBStorage
 
 **LMDBStorage** is a Jina indexer, using [lmdb](https://lmdb.readthedocs.io/en/release/) as a backend. 
 

@@ -1,4 +1,4 @@
-# ✨ Jina Indexers
+# ✨  Jina Indexers
 
 This repository contains a selection of Executors for Jina 2.0.
 They are to be used for storing or retrieving your data.

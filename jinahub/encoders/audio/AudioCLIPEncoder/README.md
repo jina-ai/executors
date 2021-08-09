@@ -1,5 +1,5 @@
 
-# ✨ AudioCLIPEncoder
+# ✨  AudioCLIPEncoder
 
 **AudioCLIPEncoder** is a class that wraps the [AudioCLIP](https://github.com/AndreyGuzhov/AudioCLIP) model for generating embeddings for audio data. 
 

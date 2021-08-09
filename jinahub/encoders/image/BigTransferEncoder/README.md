@@ -1,4 +1,4 @@
-# ✨ Big Transfer Image Encoder
+# ✨  Big Transfer Image Encoder
 
 **Big Transfer Image Encoder** is a class that uses the Big Transfer models presented by Google [here]((https://github.com/google-research/big_transfer)).
 It uses a pretrained version of a BiT model to encode an image from an array of shape 

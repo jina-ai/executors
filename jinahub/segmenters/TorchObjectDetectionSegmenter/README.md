@@ -1,4 +1,4 @@
-# ✨ TorchObjectDetectionSegmenter
+# ✨  TorchObjectDetectionSegmenter
 
 **TorchObjectDetectionSegmenter** is a class that supports object detection and bounding box extraction using PyTorch with Faster R-CNN and Mask R-CNN models.
 

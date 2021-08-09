@@ -1,4 +1,4 @@
-# ✨ FaissPostgresSearcher
+# ✨  FaissPostgresSearcher
 
 **FaissPostgresSearcher** is a compound Searcher Executor for Jina, made up of [FaissSearcher](../../FaissSearcher) for performing similarity search on the embeddings, and of [PostgresSearcher](../../keyvalue/PostgresSearcher) for retrieving the metadata of the Documents. 
 

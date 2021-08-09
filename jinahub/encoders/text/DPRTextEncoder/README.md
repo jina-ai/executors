@@ -1,4 +1,4 @@
-# ✨ DPRTextEncoder
+# ✨  DPRTextEncoder
 
  **DPRTextEncoder** is a class that encodes text into embeddings using the DPR model from huggingface transformers.
 

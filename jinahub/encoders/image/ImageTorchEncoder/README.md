@@ -1,4 +1,4 @@
-# ✨ ImageTorchEncoder
+# ✨  ImageTorchEncoder
 
 **ImageTorchEncoder** wraps the models from [torchvision](https://pytorch.org/vision/stable/index.html).
 

@@ -1,4 +1,4 @@
-# ✨ CLIPImageEncoder
+# ✨  CLIPImageEncoder
 
 **CLIPImageEncoder** is a class that wraps the image embedding functionality using the **CLIP** model from huggingface transformers.
 

@@ -1,4 +1,4 @@
-# ✨ MinRanker
+# ✨  MinRanker
 
 **MinRanker** is a class aggregates the score of the matched doc from the matched chunks.
 

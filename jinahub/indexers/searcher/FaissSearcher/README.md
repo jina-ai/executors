@@ -1,4 +1,4 @@
-# ✨ FaissSearcher
+# ✨  FaissSearcher
 
 **FaissSearcher** is a Faiss-powered vector Searcher.
 

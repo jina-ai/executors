@@ -1,4 +1,4 @@
-# ✨ Transformer Torch Encoder
+# ✨  Transformer Torch Encoder
 
 **Transformer Torch Encoder** is a class that encodes sentences into embeddings.
 

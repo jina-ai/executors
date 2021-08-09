@@ -1,5 +1,5 @@
 
-# ✨ YoloV5Segmenter
+# ✨  YoloV5Segmenter
 
 **YoloV5Segmenter** is a class that wraps the [YoloV5](https://github.com/ultralytics/yolov5) model for generating bounding boxes from images and creating chunks. 
 

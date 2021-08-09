@@ -1,4 +1,4 @@
-# ✨ AudioCLIPImageEncoder
+# ✨  AudioCLIPImageEncoder
 
 **AudioCLIPImageEncoder** is an encoder that encodes images using the [AudioCLIP](https://arxiv.org/abs/2106.13043) model.
 

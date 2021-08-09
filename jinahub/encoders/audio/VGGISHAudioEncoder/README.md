@@ -1,5 +1,5 @@
 
-# ✨ VggishAudioEncoder
+# ✨  VggishAudioEncoder
 
 **VggishAudioEncoder** is a class that wraps the [VGGISH](https://github.com/tensorflow/models/tree/master/research/audioset/vggish) model for generating embeddings for audio data. 
 

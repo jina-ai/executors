@@ -1,4 +1,4 @@
-# ✨ CLIPTextEncoder
+# ✨  CLIPTextEncoder
 
  **CLIPTextEncoder** is a class that wraps the text embedding functionality using the **CLIP** model from huggingface transformers
 

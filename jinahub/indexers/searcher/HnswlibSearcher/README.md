@@ -1,4 +1,4 @@
-# ✨ HnswlibSearcher
+# ✨  HnswlibSearcher
 
 **HnswlibSearcher** is a Hnswlib-powered vector Searcher.
 
