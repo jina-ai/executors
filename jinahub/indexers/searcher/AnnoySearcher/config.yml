@@ -3,6 +3,6 @@ with:
   {}
 metas:
   py_modules:
-    - annoy.py
+    - annoy_searcher.py
   name: annoy_searcher
 
