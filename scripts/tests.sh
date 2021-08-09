@@ -43,9 +43,7 @@ if [[ -d "tests/" ]]; then
     nohup jina executor --uses docker://foo:latest > nohup.out 2>&1 &
     PID=$!
     sleep 10
-    kill -0 $PID
-    EXISTS=$?
-    if [[ ! $EXISTS == 0 ]]; then
+    if [[ ! `kill -0 $PID` == 0 ]]; then
       echo "jina executor --uses docker://foo:latest" could NOT start
       local_exit_code=1
     else
