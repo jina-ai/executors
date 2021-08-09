@@ -33,7 +33,7 @@ if [[ -d "tests/" ]]; then
     python -m laserembeddings download-models
   fi
 
-  pytest -s -v tests/
+  python -m pytest -s -v tests/
   local_exit_code=$?
   deactivate
 else

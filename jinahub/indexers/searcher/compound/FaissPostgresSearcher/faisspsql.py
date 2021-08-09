@@ -8,7 +8,9 @@ from jina import requests, DocumentArray, Executor
 
 from jina_commons import get_logger
 from jinahub.indexers.searcher.FaissSearcher.faiss_searcher import FaissSearcher
-from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+from jinahub.indexers.storage.PostgreSQLStorage.postgres_indexer import (
+    PostgreSQLStorage,
+)
 
 
 class FaissPostgresSearcher(Executor):

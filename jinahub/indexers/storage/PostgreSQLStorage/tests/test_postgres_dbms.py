@@ -7,7 +7,7 @@ from jina import Document, DocumentArray, Flow
 from jina.logging.profile import TimeContext
 from jina_commons.indexers.dump import import_vectors, import_metas
 
-from .. import PostgreSQLStorage
+from ..postgres_indexer import PostgreSQLStorage
 from ..postgreshandler import doc_without_embedding
 
 
