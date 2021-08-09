@@ -35,6 +35,27 @@ if [[ -d "tests/" ]]; then
 
   pytest -s -v tests/
   local_exit_code=$?
+
+  # test docker image actually runs
+  if [[ -f "Dockerfile" ]]; then
+    docker build -t foo .
+    pip install docker
+    nohup jina executor --uses docker://foo:latest > nohup.out 2>&1 &
+    PID=$!
+    sleep 10
+    kill -0 $PID
+    EXISTS=$?
+    if [[ ! $EXISTS == 0 ]]; then
+      echo "jina executor --uses docker://foo:latest" could NOT start
+      local_exit_code=1
+    else
+      kill -9 $PID
+    fi
+    echo OUTPUT BELOW
+    cat nohup.out
+
+  fi
+
   deactivate
 else
   echo no tests or Dockerfile in $test_dir
