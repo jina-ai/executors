@@ -96,8 +96,8 @@ def test_flow(tmpdir):
     metas = {'workspace': str(tmpdir), 'name': 'searcher'}
     runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    flow = Flow().add(uses=HnswlibSearcher, override_with={'dump_path': DUMP_PATH, 'default_top_k': TOP_K},
-                      override_metas=metas, runtime_args=runtime_args)
+    flow = Flow().add(uses=HnswlibSearcher, uses_with={'dump_path': DUMP_PATH, 'default_top_k': TOP_K},
+                      uses_metas=metas, runtime_args=runtime_args)
     with flow:
         resp = flow.post(
             on='/search',
