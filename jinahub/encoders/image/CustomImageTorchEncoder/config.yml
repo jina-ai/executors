@@ -1,4 +1,10 @@
 jtype: CustomImageTorchEncoder
+with:
+  # required in order to have a default model for starting the image in CI
+  model_definition_file: 'tests/model/external_model.py'
+  model_state_dict_path: 'tests/model/model_state_dict.pth'
+  model_class_name: 'ExternalModel'
+  layer_name: 'conv1'
 metas:
   py_modules:
     - __init__.py

@@ -1,18 +1,20 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+import importlib
 import os
-from typing import Optional, Dict, List, Any, Iterable, Tuple
+import types
+from typing import Optional, Dict, Iterable, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
-import importlib
-import types
-
-from jina import Executor, requests, Document, DocumentArray
-from jina.excepts import PretrainedModelFileDoesNotExist
 from jina_commons.batching import get_docs_batch_generator
+
+from jina import Executor, requests, DocumentArray
+from jina.excepts import PretrainedModelFileDoesNotExist
+
+cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 class CustomImageTorchEncoder(Executor):
@@ -41,7 +43,7 @@ class CustomImageTorchEncoder(Executor):
                  layer_name: Optional[str] = 'features',
                  device: Optional[str] = None,
                  default_batch_size: int = 32,
-                 default_traversal_paths: Tuple = ('r', ),
+                 default_traversal_paths: Tuple = ('r',),
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.layer_name = layer_name
