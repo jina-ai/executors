@@ -7,8 +7,8 @@ from ..simple_indexer import SimpleIndexer
 def test_simple_indexer_flow(tmpdir):
     f = Flow().add(
         uses=SimpleIndexer,
-        override_with={'index_file_name': 'name'},
-        override_metas={'workspace': str(tmpdir)},
+        uses_with={'index_file_name': 'name'},
+        uses_metas={'workspace': str(tmpdir)},
     )
 
     with f:
