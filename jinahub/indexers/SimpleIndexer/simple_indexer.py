@@ -57,6 +57,7 @@ class SimpleIndexer(Executor):
         :param docs: the docs to add
         :param parameters: the parameters dictionary
         """
+        if not docs: return
         traversal_path = parameters.get('traversal_paths', self.default_traversal_paths)
         flat_docs = docs.traverse_flat(traversal_path)
         self._docs.extend(flat_docs)
@@ -68,6 +69,7 @@ class SimpleIndexer(Executor):
 
         :param docs: the Documents to search with
         :param parameters: the parameters for the search"""
+        if not docs: return
         traversal_path = parameters.get('traversal_paths', self.default_traversal_paths)
         top_k = parameters.get('top_k', self.default_top_k)
         flat_docs = docs.traverse_flat(traversal_path)
