@@ -107,6 +107,7 @@ class SimpleIndexer(Executor):
 
         :param docs: DocumentArray to search with
         """
+        if not docs: return
         for doc in docs:
             doc.embedding = self._docs[doc.id].embedding
 
