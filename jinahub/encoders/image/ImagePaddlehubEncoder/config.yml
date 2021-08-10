@@ -3,4 +3,4 @@ with:
   {}
 metas:
   py_modules:
-    - paddle_image.py
+    - __init__.py

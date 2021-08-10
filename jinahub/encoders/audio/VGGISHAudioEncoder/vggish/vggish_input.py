@@ -24,8 +24,8 @@ import sys
 import os
 sys.path.append(os.getcwd())
 
-from vggish.vggish_params import *
-from vggish.mel_features import *
+from .vggish_params import *
+from .mel_features import *
 
 try:
     import soundfile as sf

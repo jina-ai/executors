@@ -3,8 +3,7 @@ with:
   {}
 metas:
   py_modules:
-    - postgres_indexer.py
-    - postgreshandler.py
+    - __init__.py
   workspace: workspace/
   name: psql
 

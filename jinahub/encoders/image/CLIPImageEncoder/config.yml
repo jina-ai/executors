@@ -1,4 +1,4 @@
 jtype: CLIPImageEncoder
 metas:
   py_modules:
-    - clip_image.py
+    - __init__.py

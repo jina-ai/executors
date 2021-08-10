@@ -8,7 +8,7 @@ from jina import Executor, requests, DocumentArray, Document
 
 from jina_commons import get_logger
 from jina_commons.indexers.dump import export_dump_streaming
-from postgreshandler import PostgreSQLHandler
+from .postgreshandler import PostgreSQLHandler
 
 
 def doc_without_embedding(d: Document):

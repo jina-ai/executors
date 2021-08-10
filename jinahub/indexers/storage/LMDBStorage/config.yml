@@ -1,7 +1,7 @@
 jtype: LMDBStorage
 metas:
   py_modules:
-    - lmdb_storage.py
+    - __init__.py
   workspace: workspace/
   name: lmdb
 

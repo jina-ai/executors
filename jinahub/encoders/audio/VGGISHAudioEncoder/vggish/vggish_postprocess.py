@@ -19,7 +19,7 @@ __license__ = "Apache-2.0"
 """Post-process embeddings from VGGish."""
 
 import numpy as np
-from vggish.vggish_params import *
+from .vggish_params import *
 
 
 class Postprocessor(object):

@@ -6,8 +6,8 @@ from typing import Optional, Iterable, Any
 from jina import Executor, DocumentArray, requests
 import torch
 
-from model import AudioCLIP
-from utils.transforms import ToTensor1D
+from .audioclip.model import AudioCLIP
+from .audioclip.utils.transforms import ToTensor1D
 
 
 class AudioCLIPEncoder(Executor):

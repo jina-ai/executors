@@ -1,4 +1,4 @@
 jtype: DPRReaderRanker
 metas:
   py_modules:
-    - dpr_reader.py
+    - __init__.py

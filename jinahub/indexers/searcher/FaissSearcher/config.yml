@@ -3,6 +3,6 @@ with:
   index_key: 'IVF10,PQ4'
 metas:
   py_modules:
-    - faiss_searcher.py
+    - __init__.py
   name: faiss_searcher
 

@@ -1,4 +1,4 @@
 jtype: CustomImageTorchEncoder
 metas:
   py_modules:
-    - custom_image_torch_encoder.py
+    - __init__.py

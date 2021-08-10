@@ -1,4 +1,4 @@
 jtype: MinRanker
 metas:
   py_modules:
-    - minranker.py
+    - __init__.py
