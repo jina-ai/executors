@@ -2,11 +2,11 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from operator import itemgetter
-import pytest
+from pathlib import Path
 
-from jina import Executor, Document, DocumentArray
 import cv2
+import pytest
+from jina import Executor, Document, DocumentArray
 
 from ...yolov5_segmenter import YoloV5Segmenter
 
@@ -14,7 +14,7 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def test_load():
-    segmenter = Executor.load_config('config.yml')
+    segmenter = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert segmenter.model_name_or_path == 'yolov5s'
 
 
