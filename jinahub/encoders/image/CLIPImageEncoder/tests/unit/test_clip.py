@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 import torch
 from PIL import Image
-from jina import Document, DocumentArray
-from jina.executors import BaseExecutor
+from jina import Document, DocumentArray, Executor
 
 from ...clip_image import CLIPImageEncoder
 
@@ -42,7 +41,7 @@ def nested_docs() -> DocumentArray:
 
 
 def test_config():
-    ex = BaseExecutor.load_config("../../config.yml")
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.default_batch_size == 32
     assert len(ex.default_traversal_paths) == 1
     assert ex.default_traversal_paths[0] == "r"

@@ -1,16 +1,22 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-import os
+from pathlib import Path
 from typing import Dict
 
 import numpy as np
-from jina import DocumentArray, Document
-from jina.executors import BaseExecutor
+from jina import DocumentArray, Document, Executor
 
-directory = os.path.dirname(os.path.realpath(__file__))
+from ...image_tf_encoder import ImageTFEncoder
+
+
 input_dim = 336
 target_output_dim = 1280
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    ex.model_name == 'MobileNetV2'
 
 
 def test_encoding_results():
@@ -20,8 +26,7 @@ def test_encoding_results():
     for i in range(num_doc):
         doc.append(Document(blob=test_data[i]))
 
-    encoder = BaseExecutor.load_config(
-        os.path.join(directory, '../../config.yml'))
+    encoder = ImageTFEncoder()
     encoder.encode(doc, parameters={})
     assert len(doc) == num_doc
     for i in range(num_doc):
@@ -30,8 +35,7 @@ def test_encoding_results():
 
 def test_image_results(test_images: Dict[str, np.array]):
     embeddings = {}
-    encoder = BaseExecutor.load_config(
-        os.path.join(directory, '../../config.yml'))
+    encoder = ImageTFEncoder()
     for name, image_arr in test_images.items():
         docs = DocumentArray([Document(blob=image_arr)])
         encoder.encode(docs, parameters={})
