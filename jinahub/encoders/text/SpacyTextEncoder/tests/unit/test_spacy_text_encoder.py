@@ -2,24 +2,30 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
+from pathlib import Path
 
 import pytest
 import spacy
 
-from jina import Document, DocumentArray
+from jina import Document, DocumentArray, Executor
 
-try:
-    from spacy_text_encoder import SpacyTextEncoder
-except:
-    from ...spacy_text_encoder import SpacyTextEncoder
+from ...spacy_text_encoder import SpacyTextEncoder
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.lang == 'en_core_web_sm'
 
 
 def test_spacy_text_encoder():
     # Input
-    docs = DocumentArray([Document(text='Han likes eating pizza'), Document(text='Han likes pizza'),
-                         Document(text='Jina rocks')])
+    docs = DocumentArray(
+        [
+            Document(text='Han likes eating pizza'),
+            Document(text='Han likes pizza'),
+            Document(text='Jina rocks'),
+        ]
+    )
 
     # Encoder embedding
     encoder = SpacyTextEncoder()
@@ -27,13 +33,22 @@ def test_spacy_text_encoder():
     # Compare with ouptut
     assert len(docs) == 3
     for doc in docs:
-        assert doc.embedding.shape == (96, )
+        assert doc.embedding.shape == (96,)
 
 
 def test_spacy_text_encoder_traversal_paths():
     # Input
-    docs = DocumentArray([Document(chunks=[Document(text='Han likes eating pizza'), Document(text='Han likes pizza')]),
-                         Document(chunks=[Document(text='Jina rocks')])])
+    docs = DocumentArray(
+        [
+            Document(
+                chunks=[
+                    Document(text='Han likes eating pizza'),
+                    Document(text='Han likes pizza'),
+                ]
+            ),
+            Document(chunks=[Document(text='Jina rocks')]),
+        ]
+    )
 
     # Encoder embedding
     encoder = SpacyTextEncoder()
@@ -42,10 +57,10 @@ def test_spacy_text_encoder_traversal_paths():
     assert len(docs) == 2
     assert len(docs[0].chunks) == 2
     for chunk in docs[0].chunks:
-        assert chunk.embedding.shape == (96, )
+        assert chunk.embedding.shape == (96,)
     assert len(docs[1].chunks) == 1
     for chunk in docs[1].chunks:
-        assert chunk.embedding.shape == (96, )
+        assert chunk.embedding.shape == (96,)
 
 
 def test_unsupported_lang(tmpdir):

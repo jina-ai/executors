@@ -1,15 +1,21 @@
-import os
-from typing import Callable, List
+from pathlib import Path
+from typing import List
 
 import numpy as np
 import pytest
 import torch
-from jina import Document, DocumentArray
+from jina import Document, DocumentArray, Executor
 
 from ..integration.test_integration import filter_none
 from ...transform_encoder import TransformerTorchEncoder
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert (
+        ex.pretrained_model_name_or_path
+        == 'sentence-transformers/distilbert-base-nli-stsb-mean-tokens'
+    )
 
 
 def test_compute_tokens():
@@ -21,14 +27,14 @@ def test_compute_tokens():
     assert tokens["attention_mask"].shape == (2, 7)
 
 
-@pytest.mark.parametrize(
-    'hidden_seqlen', [4, 8]
-)
+@pytest.mark.parametrize('hidden_seqlen', [4, 8])
 def test_compute_embeddings(hidden_seqlen):
     embedding_size = 10
     enc = TransformerTorchEncoder()
     tokens = enc._generate_input_tokens(["hello world"])
-    hidden_states = tuple(torch.zeros(1, hidden_seqlen, embedding_size) for _ in range(7))
+    hidden_states = tuple(
+        torch.zeros(1, hidden_seqlen, embedding_size) for _ in range(7)
+    )
 
     embeddings = enc._compute_embedding(
         hidden_states=hidden_states, input_tokens=tokens
