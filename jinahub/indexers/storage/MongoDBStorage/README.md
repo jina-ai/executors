@@ -2,7 +2,7 @@
 
 **MongoStorage** is a Jina indexer, using [mongodb](https://www.mongodb.com/) as a backend. 
 
-`mongodb` is a no-sql document data model storage system. It's naturally supports JSON and provide an expressive query language allows developers to learn and use. 
+`mongodb` is a no-sql document data model storage system. It supports JSON and provides an expressive query language for developers.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
