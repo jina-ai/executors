@@ -97,7 +97,7 @@ def validate_db_side(postgres_indexer, expected_data):
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
-    assert ex.username == 'postrgres'
+    assert ex.username == 'postgres'
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
