@@ -1,19 +1,18 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
 from PIL.Image import Image, fromarray
-from jina import DocumentArray, Document
-from ...normalizer import ImageNormalizer
+from jina import DocumentArray, Document, Executor
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
+from ...normalizer import ImageNormalizer
 
 
 @pytest.fixture
 def numpy_image_uri(tmpdir):
     blob = np.random.randint(255, size=(96, 96, 3), dtype='uint8')
     im = fromarray(blob)
-    uri = os.path.join(tmpdir, 'tmp.png')
+    uri = str(Path(__file__).parent / 'tmp.png')
     im.save(uri)
     return uri
 
@@ -37,6 +36,11 @@ def test_image_blob_doc(numpy_image_uri):
     return doc
 
 
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.target_size == 224
+
+
 def test_initialization():
     norm = ImageNormalizer()
     assert norm.target_size == 224
@@ -47,7 +51,7 @@ def test_initialization():
         resize_dim=256,
         channel_axis=4,
         target_channel_axis=5,
-        target_dtype=np.uint8
+        target_dtype=np.uint8,
     )
     assert norm.target_size == 96
     assert np.array_equal(norm.img_std, [[[2, 2, 2]]])
@@ -59,7 +63,7 @@ def test_initialization():
 
 
 def test_convert_image_to_blob(
-        test_image_uri_doc, test_image_buffer_doc, test_image_blob_doc
+    test_image_uri_doc, test_image_buffer_doc, test_image_blob_doc
 ):
     norm = ImageNormalizer(
         resize_dim=123, img_mean=(0.1, 0.1, 0.1), img_std=(0.5, 0.5, 0.5)
@@ -83,7 +87,10 @@ def test_crafting_image(test_image_uri_doc, manual_convert, dtype_conversion):
     doc = Document(test_image_uri_doc, copy=True)
     doc.convert_image_uri_to_blob()
     norm = ImageNormalizer(
-        resize_dim=123, img_mean=(0.1, 0.1, 0.1), img_std=(0.5, 0.5, 0.5), target_dtype=dtype_conversion
+        resize_dim=123,
+        img_mean=(0.1, 0.1, 0.1),
+        img_std=(0.5, 0.5, 0.5),
+        target_dtype=dtype_conversion,
     )
     assert norm.target_dtype == dtype_conversion
     img = norm._load_image(doc.blob)
