@@ -33,7 +33,7 @@ if [[ -d "tests/" ]]; then
     python -m laserembeddings download-models
   fi
 
-  python -m pytest -s -v tests/
+  pytest -s -v tests/
   local_exit_code=$?
 
   # test docker image actually runs
