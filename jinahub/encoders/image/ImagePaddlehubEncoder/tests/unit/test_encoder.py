@@ -14,8 +14,7 @@ tmp_files = []
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.model_path == 'pretrained'
-    assert ex.model_name == 'R50x1'
+    assert ex.model_name == 'xception71_imagenet'
 
 
 def test_imagepaddlehubencoder_encode(test_images: Dict[str, np.array]):
