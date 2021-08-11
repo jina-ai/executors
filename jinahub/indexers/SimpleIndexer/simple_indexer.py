@@ -36,6 +36,7 @@ class SimpleIndexer(Executor):
         self._docs = DocumentArrayMemmap(self.workspace + f'/{index_file_name}')
         self.default_traversal_paths = default_traversal_paths or ['r']
         self.default_top_k = default_top_k
+        self.metric_name = distance_metric
         if distance_metric == 'cosine':
             self.distance = _cosine
         elif distance_metric == 'euclidean':
@@ -97,6 +98,7 @@ class SimpleIndexer(Executor):
                 _ext_A(_norm(q_emb)), _ext_B(_norm(d_emb))
             ),
             limit=top_k,
+            metric_name=self.metric_name
         )
         self._flush = False
 

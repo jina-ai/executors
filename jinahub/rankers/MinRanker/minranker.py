@@ -22,11 +22,16 @@ class MinRanker(Executor):
         self,
         metric: str,
         default_traversal_paths: Iterable[str] = ('r',),
+        metric_is_distance: bool = False,
         *args,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.metric = metric
+        if metric_is_distance:
+            self.distance_mult = 1
+        else:
+            self.distance_mult = -1
         self.default_traversal_paths = default_traversal_paths
 
     @requests(on='/search')
@@ -45,8 +50,8 @@ class MinRanker(Executor):
             )
             for key, group in groups:
                 chunk_match_list = list(group)
-                chunk_match_list.sort(key=lambda m: -m.scores[self.metric].value)
+                chunk_match_list.sort(key=lambda m: self.distance_mult * m.scores[self.metric].value)
                 match = chunk_match_list[0]
                 match.id = chunk_match_list[0].parent_id
                 doc.matches.append(match)
-            doc.matches.sort(key=lambda d: -d.scores[self.metric].value)
+            doc.matches.sort(key=lambda d: self.distance_mult * d.scores[self.metric].value)
