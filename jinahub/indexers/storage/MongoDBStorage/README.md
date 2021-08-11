@@ -17,6 +17,8 @@
 
 ## 🌱 Prerequisites
 
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
 - This Executor works on Python 3.7 and 3.8.
 - Make sure to install the [requirements](requirements.txt)
 
@@ -68,44 +70,6 @@ pods:
   - name: indexer
     uses: 'jinahub://MongoDBStorage'
 ```
-
-
-### 📦️ Via Pypi
-
-1. Install the `executors` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executors/
-	```
-
-1. Use `MongoDBStorage` in your code
-
-   ```python
-   from jina import Flow
-   from jinahub.indexers.storage.MongoDBStorage import MongoDBStorage
-   
-   f = Flow().add(uses= MongoDBStorage)
-   ```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executors
-	cd executors/jinahub/indexers/storage/MongoDBStorage
-	docker build -t mongo-image .
-	```
-
-1. Use `mongo-image` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://mongo-image:latest')
-	```
-	
 
 ## 🎉️ Example 
 
