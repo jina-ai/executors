@@ -14,7 +14,7 @@ from ...torch_encoder import ImageTorchEncoder
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    ex.default_batch_size == 32
+    assert ex.default_batch_size == 32
 
 
 @pytest.mark.parametrize(

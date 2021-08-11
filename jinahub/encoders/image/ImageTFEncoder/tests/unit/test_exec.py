@@ -16,7 +16,7 @@ target_output_dim = 1280
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    ex.model_name == 'MobileNetV2'
+    assert ex.model_name == 'MobileNetV2'
 
 
 def test_encoding_results():
