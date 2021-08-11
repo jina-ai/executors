@@ -1,8 +1,9 @@
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 import numpy as np
-from jina import Flow, Document, DocumentArray
+from jina import Document, DocumentArray, Executor, Flow
 
 from ..simple_indexer import SimpleIndexer
 
@@ -28,6 +29,11 @@ def docs():
     doc2.chunks.append(Document(id='doc2-chunk2', embedding=np.array([0, 0, 0, 1])))
     doc2.chunks.append(Document(id='doc2-chunk3', embedding=np.array([0, 1, 0, 1])))
     return DocumentArray([doc1, doc2])
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.default_top_k == 5
 
 
 def test_simple_indexer_flow(tmpdir):

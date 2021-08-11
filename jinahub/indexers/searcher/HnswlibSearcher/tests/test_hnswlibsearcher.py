@@ -2,10 +2,11 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray, Flow
+from jina import Document, DocumentArray, Executor, Flow
 from jina.executors.metas import get_default_metas
 from jina_commons.indexers.dump import import_vectors
 
@@ -29,30 +30,58 @@ def metas(tmpdir):
     del os.environ['TEST_WORKSPACE']
 
 
-@pytest.mark.parametrize(['metric', 'is_distance'],
-                         [('l2', True), ('ip', True), ('cosine', True),
-                          ('l2', False), ('ip', False), ('cosine', False)])
+@pytest.mark.parametrize(
+    ['metric', 'is_distance'],
+    [
+        ('l2', True),
+        ('ip', True),
+        ('cosine', True),
+        ('l2', False),
+        ('ip', False),
+        ('cosine', False),
+    ],
+)
 def test_metric(tmpdir, metric, is_distance):
     metas = {'workspace': str(tmpdir), 'name': 'searcher'}
     runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, metric=metric, is_distance=is_distance, runtime_args=runtime_args)
+    indexer = HnswlibSearcher(
+        dump_path=DUMP_PATH,
+        default_top_k=TOP_K,
+        metas=metas,
+        metric=metric,
+        is_distance=is_distance,
+        runtime_args=runtime_args,
+    )
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
 
     assert len(docs[0].matches) == TOP_K
     for i in range(len(docs[0].matches) - 1):
         if not is_distance:
-            assert docs[0].matches[i].scores[metric].value >= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                >= docs[0].matches[i + 1].scores[metric].value
+            )
         else:
-            assert docs[0].matches[i].scores[metric].value <= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                <= docs[0].matches[i + 1].scores[metric].value
+            )
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.metric == 'cosine'
 
 
 def test_query_vector(tmpdir):
     metas = {'workspace': str(tmpdir), 'name': 'searcher'}
     runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, runtime_args=runtime_args)
+    indexer = HnswlibSearcher(
+        dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, runtime_args=runtime_args
+    )
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
 
@@ -76,7 +105,9 @@ def test_none_doc(tmpdir):
     metas = {'workspace': str(tmpdir), 'name': 'searcher'}
     runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = HnswlibSearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, runtime_args=runtime_args)
+    indexer = HnswlibSearcher(
+        dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, runtime_args=runtime_args
+    )
     indexer.search(None, {})
 
     indexer.fill_embedding(None)
@@ -86,7 +117,9 @@ def test_query_vector_empty(tmpdir):
     metas = {'workspace': str(tmpdir), 'name': 'searcher'}
     runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = HnswlibSearcher(default_top_k=TOP_K, metas=metas, runtime_args=runtime_args)
+    indexer = HnswlibSearcher(
+        default_top_k=TOP_K, metas=metas, runtime_args=runtime_args
+    )
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
     assert len(docs[0].matches) == 0
@@ -96,23 +129,23 @@ def test_flow(tmpdir):
     metas = {'workspace': str(tmpdir), 'name': 'searcher'}
     runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    flow = Flow().add(uses=HnswlibSearcher, uses_with={'dump_path': DUMP_PATH, 'default_top_k': TOP_K},
-                      uses_metas=metas, runtime_args=runtime_args)
+    flow = Flow().add(
+        uses=HnswlibSearcher,
+        uses_with={'dump_path': DUMP_PATH, 'default_top_k': TOP_K},
+        uses_metas=metas,
+        runtime_args=runtime_args,
+    )
     with flow:
         resp = flow.post(
             on='/search',
             inputs=DocumentArray([Document(embedding=np.random.random(7))]),
-            return_results=True
+            return_results=True,
         )
     assert len(resp[0].data.docs[0].matches) == TOP_K
 
     doc_array = DocumentArray([Document(id=0), Document(id=1), Document(id=2)])
     with flow:
-        resp = flow.post(
-            on='/fill_embedding',
-            inputs=doc_array,
-            return_results=True
-        )
+        resp = flow.post(on='/fill_embedding', inputs=doc_array, return_results=True)
     for i, doc in enumerate(resp[0].data.docs):
         assert doc.embedding
         assert doc.embedding.dense.shape == [7]

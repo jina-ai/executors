@@ -3,10 +3,11 @@ __license__ = "Apache-2.0"
 
 import gzip
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import DocumentArray, Document
+from jina import DocumentArray, Document, Executor
 from jina.executors.metas import get_default_metas
 
 from jina_commons.indexers.dump import export_dump_streaming
@@ -56,6 +57,11 @@ def tmpdir_dump(tmpdir):
     return os.path.join(tmpdir, 'dump')
 
 
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.index_key == 'Flat'
+
+
 def test_faiss_indexer_empty(metas, tmpdir_dump):
     train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
@@ -89,14 +95,15 @@ def test_faiss_indexer(metas, tmpdir_dump):
     assert len(query_docs[0].matches) == 4
     for d in query_docs:
         assert (
-                d.matches[0].scores[indexer.metric].value
-                >= d.matches[1].scores[indexer.metric].value
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
         )
 
 
-@pytest.mark.parametrize(['metric', 'is_distance'],
-                         [('l2', True), ('inner_product', True),
-                          ('l2', False), ('inner_product', False)])
+@pytest.mark.parametrize(
+    ['metric', 'is_distance'],
+    [('l2', True), ('inner_product', True), ('l2', False), ('inner_product', False)],
+)
 def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
     train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
@@ -119,9 +126,15 @@ def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
 
     for i in range(len(docs[0].matches) - 1):
         if not is_distance:
-            assert docs[0].matches[i].scores[metric].value >= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                >= docs[0].matches[i + 1].scores[metric].value
+            )
         else:
-            assert docs[0].matches[i].scores[metric].value <= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                <= docs[0].matches[i + 1].scores[metric].value
+            )
 
 
 @pytest.mark.parametrize('train_data', ['new', 'none', 'index'])
