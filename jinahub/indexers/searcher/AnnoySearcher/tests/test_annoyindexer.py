@@ -32,7 +32,7 @@ def metas(tmpdir):
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
-    assert ex.metric == 'metric'
+    assert ex.metric == 'euclidean'
 
 
 def test_simple_annoy():

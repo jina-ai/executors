@@ -59,7 +59,7 @@ def tmpdir_dump(tmpdir):
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
-    assert ex.index_key == 'Flat'
+    assert ex.index_key == 'IVF10,PQ4'
 
 
 def test_faiss_indexer_empty(metas, tmpdir_dump):

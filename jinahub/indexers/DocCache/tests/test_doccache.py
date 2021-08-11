@@ -12,7 +12,7 @@ default_config = os.path.abspath(os.path.join(cur_dir, '..', 'config.yml'))
 
 
 def test_config():
-    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
 
 
 @pytest.mark.parametrize('cache_fields', ['[content_hash]', '[id]'])
