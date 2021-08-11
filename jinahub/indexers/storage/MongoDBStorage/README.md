@@ -4,6 +4,15 @@
 
 `mongodb` is a no-sql document data model storage system. It supports JSON and provides an expressive query language for developers.
 
+The class constructer receive the following parameters:
+
+1. `host`: the mongodb instance host address, default value is `localhost`.
+2. `port`: the mongodb instance port, default value is 27017.
+3. `username`: the username of the instance, optional, default value is `None`.
+4. `password`: the password of the instance, optional, default value is `None`.
+5. `database`: the database name.
+6. `collection`: the collection name.
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
