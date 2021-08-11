@@ -40,8 +40,8 @@ if [[ -d "tests/" ]]; then
   if [[ -f "Dockerfile" ]]; then
     docker build -t foo .
     pip install docker
-    if [[ -f "pre-docker.sh" ]]; then # allow entrypoint for any pre-docker run operations, liek downloading a model to mount
-      bash ./pre-docker.sh
+    if [[ -f "tests/pre-docker.sh" ]]; then # allow entrypoint for any pre-docker run operations, liek downloading a model to mount
+      bash tests/pre-docker.sh
     fi
     if [[ -f "tests/docker_args.txt" ]]; then # allow args to be passed to the `jina pea`
         ARGS=`cat tests/docker_args.txt`
