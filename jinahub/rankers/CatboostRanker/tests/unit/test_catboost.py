@@ -1,4 +1,11 @@
 import os
+from pathlib import Path
+
+from jina import Executor
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
 
 
 def test_init(ranker):
