@@ -1,4 +1,4 @@
 jtype: LaserEncoder
 metas:
   py_modules:
-    - __init__.py
+    - laser_encoder.py

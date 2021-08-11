@@ -3,6 +3,6 @@ with:
   distance: 'cosine'
 metas:
   py_modules:
-    - __init__.py
+    - hnswlib_searcher.py
   name: hnswlib_searcher
 

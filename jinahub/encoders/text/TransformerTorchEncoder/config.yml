@@ -3,4 +3,4 @@ with:
   device: 'cuda'
 metas:
   py_modules:
-    - __init__.py
+    - transform_encoder.py

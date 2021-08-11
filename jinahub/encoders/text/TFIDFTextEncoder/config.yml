@@ -3,4 +3,4 @@ with:
   {}
 metas:
   py_modules:
-    - __init__.py
+    - tfidf_text_executor.py

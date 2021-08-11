@@ -1,4 +1,4 @@
 jtype: SpacyTextEncoder
 metas:
   py_modules:
-    - __init__.py
+    - spacy_text_encoder.py

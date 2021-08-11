@@ -1,4 +1,4 @@
 jtype: PDFSegmenter
 metas:
   py_modules:
-    - __init__.py
+    - pdf_segmenter.py

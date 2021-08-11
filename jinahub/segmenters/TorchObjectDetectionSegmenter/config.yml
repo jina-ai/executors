@@ -1,4 +1,4 @@
 jtype: TorchObjectDetectionSegmenter
 metas:
   py_modules:
-    - __init__.py
+    - torch_object_detection_segmenter.py

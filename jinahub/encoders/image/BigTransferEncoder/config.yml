@@ -3,4 +3,4 @@ with:
   on_gpu: true
 metas:
   py_modules:
-    - __init__.py
+    - big_transfer.py

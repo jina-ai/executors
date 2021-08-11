@@ -1,4 +1,4 @@
 jtype: CLIPTextEncoder
 metas:
   py_modules:
-    - __init__.py
+    - clip_text.py

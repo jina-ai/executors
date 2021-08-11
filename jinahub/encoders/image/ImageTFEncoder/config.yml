@@ -1,4 +1,4 @@
 jtype: ImageTFEncoder
 metas:
   py_modules:
-    - __init__.py
+    - image_tf_encoder.py

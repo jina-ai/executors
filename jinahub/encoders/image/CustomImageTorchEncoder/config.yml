@@ -7,4 +7,4 @@ with:
   layer_name: 'conv1'
 metas:
   py_modules:
-    - __init__.py
+    - custom_image_torch_encoder.py
