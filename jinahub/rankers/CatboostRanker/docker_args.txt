@@ -1,1 +1,1 @@
---override-with={'query_features':['query'],'match_features':['match'],'relevance_label':'rel'}
+--uses-with query_features=query match_features=match relevance_label=rel
