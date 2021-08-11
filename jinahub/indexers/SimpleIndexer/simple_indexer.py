@@ -93,7 +93,7 @@ class SimpleIndexer(Executor):
         top_k = parameters.get('top_k', self.default_top_k)
         flat_docs.match(
             self._docs,
-            metric=lambda q_emb, d_emb: self.distance(
+            metric=lambda q_emb, d_emb, _: self.distance(
                 _ext_A(_norm(q_emb)), _ext_B(_norm(d_emb))
             ),
             limit=top_k,
@@ -106,7 +106,8 @@ class SimpleIndexer(Executor):
 
         :param docs: DocumentArray to search with
         """
-        if not docs: return
+        if not docs:
+            return
         for doc in docs:
             doc.embedding = self._docs[doc.id].embedding
 
