@@ -21,43 +21,54 @@ def test_dir() -> str:
 @pytest.fixture()
 def mobilenet_weights(tmpdir: str) -> str:
     weights_file = os.path.join(tmpdir, 'w.pth')
-    torch.hub.download_url_to_file(url=model_urls['mobilenet_v2'], dst=weights_file)
+    torch.hub.download_url_to_file(
+        url=model_urls['mobilenet_v2'], dst=weights_file, progress=False
+    )
     return weights_file
 
 
 @pytest.fixture()
 def docs_with_blobs() -> DocumentArray:
-    return DocumentArray([
-        Document(blob=np.ones((10, 10, 3), dtype=np.uint8)) for _ in range(11)
-    ])
+    return DocumentArray(
+        [Document(blob=np.ones((10, 10, 3), dtype=np.uint8)) for _ in range(11)]
+    )
 
 
 @pytest.fixture()
 def docs_with_chunk_blobs() -> DocumentArray:
-    return DocumentArray([
-        Document(
-            chunks=[Document(blob=np.ones((10, 10, 3), dtype=np.uint8))]) for _ in range(11)
-    ])
+    return DocumentArray(
+        [
+            Document(chunks=[Document(blob=np.ones((10, 10, 3), dtype=np.uint8))])
+            for _ in range(11)
+        ]
+    )
 
 
 @pytest.fixture()
 def docs_with_chunk_chunk_blobs() -> DocumentArray:
-    return DocumentArray([
-        Document(
-            chunks=[Document(
-                chunks=[Document(blob=np.ones((10, 10, 3), dtype=np.uint8)) for _ in range(11)])])
-    ])
+    return DocumentArray(
+        [
+            Document(
+                chunks=[
+                    Document(
+                        chunks=[
+                            Document(blob=np.ones((10, 10, 3), dtype=np.uint8))
+                            for _ in range(11)
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
 
 
 @pytest.fixture()
 def test_images(test_dir: str) -> Dict[str, np.ndarray]:
-
     def get_path(file_name_no_suffix: str) -> str:
         return os.path.join(test_dir, 'test_data', file_name_no_suffix + '.png')
 
     image_dict = {
-        file_name: np.array(Image.open(get_path(file_name)))[:, :, 0:3] for file_name in [
-            'airplane', 'banana1', 'banana2', 'satellite', 'studio'
-        ]
+        file_name: np.array(Image.open(get_path(file_name)))[:, :, 0:3]
+        for file_name in ['airplane', 'banana1', 'banana2', 'satellite', 'studio']
     }
     return image_dict
