@@ -20,7 +20,7 @@ def encoder():
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.layer_name == 'features'
+    assert ex.layer_name == 'conv1'
 
 
 def test_encoder(encoder):
