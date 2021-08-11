@@ -1,7 +1,7 @@
-FROM jinaai/jina:2.0
+FROM jinaai/jina:master-py37-perf
 
 # install git
-RUN apt-get -y update && apt-get install -y git
+RUN apt-get -y update && apt-get install -y git libgomp1 libglib2.0-0 libsm6 libxext6 libfontconfig1 libxrender1
 
 # install requirements before copying the workspace
 COPY requirements.txt /requirements.txt
