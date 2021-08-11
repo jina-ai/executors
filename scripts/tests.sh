@@ -43,7 +43,7 @@ if [[ -d "tests/" ]]; then
     if [[ -f "pre-docker.sh" ]]; then # allow entrypoint for any pre-docker run operations, liek downloading a model to mount
       bash ./pre-docker.sh
     fi
-    if [[ -f "docker_args.txt" ]]; then # allow args to be passed to the `jina pea`
+    if [[ -f "tests/docker_args.txt" ]]; then # allow args to be passed to the `jina pea`
         ARGS=`cat docker_args.txt`
       else
         ARGS=""
