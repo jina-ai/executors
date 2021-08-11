@@ -44,7 +44,7 @@ if [[ -d "tests/" ]]; then
       bash ./pre-docker.sh
     fi
     if [[ -f "tests/docker_args.txt" ]]; then # allow args to be passed to the `jina pea`
-        ARGS=`cat docker_args.txt`
+        ARGS=`cat tests/docker_args.txt`
       else
         ARGS=""
     fi
