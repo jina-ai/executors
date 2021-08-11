@@ -1,9 +1,10 @@
 import os
 import time
+from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray, Flow
+from jina import Document, DocumentArray, Executor, Flow
 from jina.logging.profile import TimeContext
 from jina_commons.indexers.dump import import_vectors, import_metas
 
@@ -85,15 +86,18 @@ def validate_db_side(postgres_indexer, expected_data):
     ids, vecs, metas = zip(*expected_data)
     with postgres_indexer.handler as handler:
         cursor = handler.connection.cursor()
-        cursor.execute(
-            f'SELECT ID, DOC from {postgres_indexer.table} ORDER BY ID::int'
-        )
+        cursor.execute(f'SELECT ID, DOC from {postgres_indexer.table} ORDER BY ID::int')
         record = cursor.fetchall()
         for i in range(len(expected_data)):
             np.testing.assert_equal(ids[i], str(record[i][0]))
             doc = Document(bytes(record[i][1]))
             np.testing.assert_equal(vecs[i], doc.embedding)
             np.testing.assert_equal(metas[i], doc_without_embedding(doc))
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.username == 'postrgres'
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
