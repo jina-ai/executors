@@ -11,8 +11,8 @@ from ...custom_image_torch_encoder import CustomImageTorchEncoder
 def encoder():
     model_dir = Path(__file__).parents[1] / 'model'
     return CustomImageTorchEncoder(
-        model_definition_file=model_dir / 'external_model.py',
-        model_state_dict_path=model_dir / 'model_state_dict.pth',
+        model_definition_file=str(model_dir / 'external_model.py'),
+        model_state_dict_path=str(model_dir / 'model_state_dict.pth'),
         layer_name='conv1',
         model_class_name='ExternalModel',
     )
