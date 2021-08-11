@@ -9,7 +9,7 @@ compose_yml = Path(__file__).parent / 'docker-compose.yml'
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
-    assert ex.username == 'postrgres'
+    assert ex.port == 6379
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
