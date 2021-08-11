@@ -57,7 +57,7 @@ class CustomImageTorchEncoder(Executor):
         self.model_class_name = model_class_name
 
         if self.model_state_dict_path and (not self.model_definition_file or not self.model_class_name):
-            raise Exception(
+            raise ValueError(
                 f' model_state_dict_path option requires to have model_definition_file and model_class_name parameters')
 
         if self.model_state_dict_path and os.path.exists(self.model_state_dict_path):
