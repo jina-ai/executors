@@ -19,8 +19,8 @@ def encoder():
 
 
 def test_config():
-    with pytest.raises(ValueError, match='model_state_dict_path option requires'):
-        ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.layer_name == 'features'
 
 
 def test_encoder(encoder):
