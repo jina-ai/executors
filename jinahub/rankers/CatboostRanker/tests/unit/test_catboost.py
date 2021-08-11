@@ -7,12 +7,11 @@ from jina import Executor
 def test_config():
     ex = Executor.load_config(
         str(Path(__file__).parents[2] / 'config.yml'),
-        uses_with={
-            'query_features': ['query'],
-            'match_features': ['match'],
-            'relevance_label': 'rel',
-        },
+        query_features=['query'],
+        match_features=['match'],
+        relevance_label='rel',
     )
+    assert ex.q_features == ['query']
 
 
 def test_init(ranker):
