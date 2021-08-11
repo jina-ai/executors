@@ -90,7 +90,7 @@ class SimpleIndexer(Executor):
         flat_docs = docs.traverse_flat(traversal_paths)
         if not flat_docs:
             return
-        top_k = parameters.get('top_k', self.default_top_k)
+        top_k = int(parameters.get('top_k', self.default_top_k))
         flat_docs.match(
             self._docs,
             metric=lambda q_emb, d_emb, _: self.distance(
