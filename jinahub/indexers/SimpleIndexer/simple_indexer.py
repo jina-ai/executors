@@ -94,9 +94,7 @@ class SimpleIndexer(Executor):
         top_k = int(parameters.get('top_k', self.default_top_k))
         flat_docs.match(
             self._docs,
-            metric=lambda q_emb, d_emb, _: self.distance(
-                _ext_A(_norm(q_emb)), _ext_B(_norm(d_emb))
-            ),
+            metric=lambda q_emb, d_emb, _: self.distance(q_emb, d_emb),
             limit=top_k,
             metric_name=self.metric_name
         )
@@ -131,8 +129,8 @@ def _ext_B(B):
     return B_ext
 
 
-def _euclidean(A_ext, B_ext):
-    sqdist = A_ext.dot(B_ext).clip(min=0)
+def _euclidean(A, B):
+    sqdist = _ext_A(A).dot(_ext_B(B)).clip(min=0)
     return np.sqrt(sqdist)
 
 
@@ -141,4 +139,4 @@ def _norm(A):
 
 
 def _cosine(A_norm_ext, B_norm_ext):
-    return A_norm_ext.dot(B_norm_ext).clip(min=0) / 2
+    return _ext_A(_norm(A)).dot(_ext_B(_norm(B))).clip(min=0) / 2

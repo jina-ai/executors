@@ -22,7 +22,6 @@ class MinRanker(Executor):
         self,
         metric: str,
         default_traversal_paths: Iterable[str] = ('r',),
-        metric_is_distance: bool = False,
         *args,
         **kwargs
     ):
