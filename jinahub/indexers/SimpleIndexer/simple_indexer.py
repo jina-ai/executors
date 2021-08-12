@@ -138,5 +138,5 @@ def _norm(A):
     return A / np.linalg.norm(A, ord=2, axis=1, keepdims=True)
 
 
-def _cosine(A_norm_ext, B_norm_ext):
+def _cosine(A, B):
     return _ext_A(_norm(A)).dot(_ext_B(_norm(B))).clip(min=0) / 2
