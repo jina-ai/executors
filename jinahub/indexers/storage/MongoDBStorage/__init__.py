@@ -10,7 +10,7 @@ from .mongohandler import MongoHandler
 
 
 def doc_without_embedding(d: Document) -> str:
-    new_doc = Document(d, copy=True, hash_content=False)
+    new_doc = Document(d, copy=True)
     new_doc.ClearField('embedding')
     return new_doc.SerializeToString()
 
@@ -118,6 +118,6 @@ class MongoDBStorage(Executor):
         records = self._handler.collection.find({}, projection={'_id': False})
         for record in records:
             vec = np.array(record['embedding'])
-            doc = Document(record, hash_content=False)
+            doc = Document(record)
             metas = doc_without_embedding(doc)
             yield doc.id, vec, metas
