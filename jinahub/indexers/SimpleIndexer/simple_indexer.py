@@ -94,7 +94,7 @@ class SimpleIndexer(Executor):
         top_k = int(parameters.get('top_k', self.default_top_k))
         flat_docs.match(
             self._docs,
-            metric=lambda q_emb, d_emb: self.distance(
+            metric=lambda q_emb, d_emb, _: self.distance(
                 _ext_A(_norm(q_emb)), _ext_B(_norm(d_emb))
             ),
             limit=top_k,
