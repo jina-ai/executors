@@ -2,9 +2,8 @@ jtype: FaissLMDBSearcher
 with:
   {}
 metas:
-  py_modules:  # THIS WILL NOT WORK SINCE IT RELIES ON CODE FILES FROM OTHER FOLDERS
-    - __init__.py
-    - faissfile.py
+  py_modules:
+    - faiss_lmdb.py
   workspace: workspace/
   name: faiss_file_searcher
 
