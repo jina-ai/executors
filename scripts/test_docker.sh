@@ -36,7 +36,7 @@ if [[ -f "Dockerfile" ]]; then
   if ps -p $PID > /dev/null;
   then
     kill -9 $PID
-    docker stop $(docker ps -a -q)
+    docker rm -f $(docker ps -a -q)
     docker rmi foo:latest
     local_exit_code=0
   else
