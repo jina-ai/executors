@@ -117,11 +117,12 @@ def test_simple_indexer_index(tmpdir, docs):
     assert_document_arrays_equal(docs_indexer._docs, docs.traverse_flat(['c']))
 
 
-def test_simple_indexer_search(tmpdir, docs):
+@pytest.mark.parametrize('distance_metric', ['euclidean', 'cosine', 'sqeuclidean', 'hamming'])
+def test_simple_indexer_search(tmpdir, distance_metric, docs):
     metas = {'workspace': str(tmpdir)}
 
     # test general/normal case
-    indexer = SimpleIndexer(index_file_name='search_normal', metas=metas)
+    indexer = SimpleIndexer(index_file_name='search_normal', distance_metric=distance_metric, metas=metas)
     indexer.index(docs)
     search_docs = deepcopy(docs)
     indexer.search(search_docs)
