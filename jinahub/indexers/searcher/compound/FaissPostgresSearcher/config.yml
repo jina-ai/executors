@@ -3,7 +3,7 @@ with:
   {}
 metas:
   py_modules:
-    - faisspsql.py
+    - __init__.py
   workspace: workspace/
   name: faiss_postgres_searcher
 

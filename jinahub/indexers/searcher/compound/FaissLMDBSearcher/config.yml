@@ -3,7 +3,7 @@ with:
   {}
 metas:
   py_modules:
-    - faiss_lmdb.py
+    - __init__.py
   workspace: workspace/
-  name: faiss_file_searcher
+  name: faiss_lmdb_searcher
 

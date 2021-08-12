@@ -37,6 +37,7 @@ if [[ -f "Dockerfile" ]]; then
   then
     kill -9 $PID
     docker stop $(docker ps -a -q)
+    docker rmi foo:latest
     local_exit_code=0
   else
     echo "jina pea --uses docker://foo:latest" could NOT start
