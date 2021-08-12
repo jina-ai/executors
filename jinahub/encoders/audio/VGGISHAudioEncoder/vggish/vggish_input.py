@@ -22,7 +22,6 @@ import resampy
 
 import sys
 import os
-sys.path.append(os.getcwd())
 
 from .vggish_params import *
 from .mel_features import *
