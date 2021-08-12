@@ -50,7 +50,7 @@ jobs:
         uses: actions/checkout@v2
       - name: debug
         run: echo ${{ matrix.test-path }}
-      - name: run unit tests
+      - name: run docker tests
         run: |
           bash ./scripts/test_docker.sh ${{ matrix.test-path }}
 
@@ -64,7 +64,7 @@ jobs:
         run: ./scripts/integration.sh
 
   success-all-test:
-    needs: [integration-tests, unit-tests]
+    needs: [integration-tests, unit-tests, docker-tests]
     if: always()
     runs-on: ubuntu-latest
     steps:

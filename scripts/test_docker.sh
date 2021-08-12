@@ -1,6 +1,6 @@
 #!/bin/bash
 # find all the examples with changed code
-# run the tests in that directory
+# run the docker test in that directory
 set -ex
 
 test_dir=$1
@@ -12,8 +12,16 @@ local_exit_code=1
 
 # test docker image actually runs
 if [[ -f "Dockerfile" ]]; then
+  python -m venv .venv
+  source .venv/bin/activate
+  pip install wheel docker
+  pip install -r requirements.txt
+
+  if [[ -f "tests/requirements.txt" ]]; then
+    pip install -r tests/requirements.txt
+  fi
+
   docker build -t foo .
-  pip install docker
   if [[ -f "tests/pre-docker.sh" ]]; then # allow entrypoint for any pre-docker run operations, liek downloading a model to mount
     bash tests/pre-docker.sh
   fi
@@ -35,8 +43,10 @@ if [[ -f "Dockerfile" ]]; then
   fi
   echo ~~~~~~~OUTPUT BELOW~~~~~~~
   cat nohup.out
-
+else
+  echo no Dockerfile, nothing to test
+  local_exit_code=0
 fi
 
-echo final exit code = $EXIT_CODE
+echo final exit code = $local_exit_code
 exit $local_exit_code
