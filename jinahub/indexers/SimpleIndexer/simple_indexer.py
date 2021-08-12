@@ -1,6 +1,5 @@
-from typing import Dict, Tuple, Optional, List
+from typing import Dict, Optional, List
 
-import numpy as np
 from jina import Executor, DocumentArray, requests, Document
 from jina.types.arrays.memmap import DocumentArrayMemmap
 from jina_commons import get_logger
@@ -15,12 +14,12 @@ class SimpleIndexer(Executor):
     """
 
     def __init__(
-        self,
-        index_file_name: str,
-        default_traversal_paths: Optional[List[str]] = None,
-        default_top_k: int = 5,
-        distance_metric: str = 'cosine',
-        **kwargs,
+            self,
+            index_file_name: str,
+            default_traversal_paths: Optional[List[str]] = None,
+            default_top_k: int = 5,
+            distance_metric: str = 'cosine',
+            **kwargs,
     ):
         """
         Initializer function for the simple indexer
@@ -30,28 +29,27 @@ class SimpleIndexer(Executor):
             This defaults to ['r'].
         :param default_top_k: default value for the top_k parameter
         :param distance_metric: The distance metric to be used for finding the
-            most similar embeddings. Either 'euclidean' or 'cosine'.
+            most similar embeddings. The distance metrics supported are the ones supported by `DocumentArray` match method.
         """
         super().__init__(**kwargs)
         self._docs = DocumentArrayMemmap(self.workspace + f'/{index_file_name}')
         self.default_traversal_paths = default_traversal_paths or ['r']
         self.default_top_k = default_top_k
-        if distance_metric == 'cosine':
-            self.distance = _cosine
-        elif distance_metric == 'euclidean':
-            self.distance = _euclidean
-        else:
-            raise ValueError('This distance metric is not available!')
+        self._distance = distance_metric
+        self._use_scipy = True
+        if distance_metric in ['cosine', 'euclidean', 'sqeuclidean']:
+            self._use_scipy = False
+
         self._flush = True
         self._docs_embeddings = None
         self.logger = get_logger(self)
 
     @requests(on='/index')
     def index(
-        self,
-        docs: Optional['DocumentArray'] = None,
-        parameters: Optional[Dict] = {},
-        **kwargs,
+            self,
+            docs: Optional['DocumentArray'] = None,
+            parameters: Optional[Dict] = {},
+            **kwargs,
     ):
         """All Documents to the DocumentArray
         :param docs: the docs to add
@@ -68,10 +66,10 @@ class SimpleIndexer(Executor):
 
     @requests(on='/search')
     def search(
-        self,
-        docs: Optional['DocumentArray'] = None,
-        parameters: Optional[Dict] = {},
-        **kwargs,
+            self,
+            docs: Optional['DocumentArray'] = None,
+            parameters: Optional[Dict] = {},
+            **kwargs,
     ):
         """Perform a vector similarity search and retrieve the full Document match
 
@@ -93,9 +91,8 @@ class SimpleIndexer(Executor):
         top_k = int(parameters.get('top_k', self.default_top_k))
         flat_docs.match(
             self._docs,
-            metric=lambda q_emb, d_emb, _: self.distance(
-                _ext_A(_norm(q_emb)), _ext_B(_norm(d_emb))
-            ),
+            metric=self._distance,
+            use_scipy=self._use_scipy,
             limit=top_k,
         )
         self._flush = False
@@ -110,33 +107,3 @@ class SimpleIndexer(Executor):
             return
         for doc in docs:
             doc.embedding = self._docs[doc.id].embedding
-
-
-def _ext_A(A):
-    nA, dim = A.shape
-    A_ext = np.ones((nA, dim * 3))
-    A_ext[:, dim : 2 * dim] = A
-    A_ext[:, 2 * dim :] = A ** 2
-    return A_ext
-
-
-def _ext_B(B):
-    nB, dim = B.shape
-    B_ext = np.ones((dim * 3, nB))
-    B_ext[:dim] = (B ** 2).T
-    B_ext[dim : 2 * dim] = -2.0 * B.T
-    del B
-    return B_ext
-
-
-def _euclidean(A_ext, B_ext):
-    sqdist = A_ext.dot(B_ext).clip(min=0)
-    return np.sqrt(sqdist)
-
-
-def _norm(A):
-    return A / np.linalg.norm(A, ord=2, axis=1, keepdims=True)
-
-
-def _cosine(A_norm_ext, B_norm_ext):
-    return A_norm_ext.dot(B_norm_ext).clip(min=0) / 2
