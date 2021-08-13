@@ -176,34 +176,38 @@ class LightGBMRanker(Executor):
         :param docs: :class:`DocumentArray` passed by the user or previous executor.
         :param kwargs: Additional key value arguments.
         """
-        if os.path.exists(self.model_path):
-            dataset = self._get_features_dataset(docs)
-            predictions = self.booster.predict(dataset.get_data())
-            for prediction, match in zip(predictions, docs.traverse_flat(['m'])):
-                match.scores[self.label] = prediction
-        else:
-            self.logger.warning(
-                f'model {self.model_path} does not exist. Please train your model first.'
-                'docs without changes will be passed to the next Executor!'
-            )
+        dataset = self._get_features_dataset(docs)
+        predictions = self.booster.predict(dataset.get_data())
+        matches = docs.traverse_flat(traversal_paths=['m'])
+        for prediction, match in zip(predictions, matches):
+            match.scores[self.label] = prediction
+        for doc in docs:
+            doc.matches.sort(key=lambda x: x.scores[self.label].value, reverse=True)
 
     @requests(on='/dump')
     def dump(self, parameters: Dict, **kwargs):
+        """Dump trained model to specified path
+
+        :param parameters: Parameters pass to this endpoint, expect :attr:`model_path` to be set.
+        """
         model_path = parameters.get('model_path', None)
         if model_path:
-            self.booster.save_model(model_path)
+            self._save_model(model_path)
         else:
-            self.booster.save_model('tmp/model.txt')
-            self.logger.info(
-                f'Model {model_path} does not exist. Model has been saved to tmp/model.txt.'
+            raise ValueError(
+                'Please specify the `model_path` inside parameters variable'
             )
 
     @requests(on='/load')
     def load(self, parameters: Dict, **kwargs):
-        model_path = parameters.get('model_path', None)
+        """Load trained model from specified path
+
+        :param parameters: Parameters pass to this endpoint, expect :attr:`model_path` to be set.
+        """
+        model_path = parameters.get('model_path', self.model_path)
         if model_path:
-            self.booster = lightgbm.Booster(model_file=model_path)
+            self._load_model(model_path)
         else:
-            self.logger.warning(
-                f'Model {model_path} does not exist. Please specify the correct model_path inside parameters.'
+            raise FileNotFoundError(
+                f'Model {model_path} does not exist. Please specify the model_path inside parameters.'
             )
