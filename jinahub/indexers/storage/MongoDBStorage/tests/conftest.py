@@ -5,7 +5,7 @@ import pytest
 import numpy as np
 from jina import Document, DocumentArray
 
-from .. import MongoDBStorage
+from ..mongo_storage import MongoDBStorage
 
 NUM_DOCS = 10
 

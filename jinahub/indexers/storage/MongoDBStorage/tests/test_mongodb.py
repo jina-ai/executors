@@ -6,7 +6,7 @@ import numpy as np
 from jina import Document, DocumentArray, Flow, Executor
 from jina_commons.indexers.dump import import_vectors, import_metas
 
-from .. import doc_without_embedding
+from ..mongo_storage import doc_without_embedding
 
 NUM_DOCS = 10
 cur_dir = os.path.dirname(os.path.abspath(__file__))
