@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, Optional, List
 
 import lightgbm
 import numpy as np
@@ -13,14 +13,14 @@ from jina import Executor, DocumentArray, requests
 class LightGBMRanker(Executor):
     """
     Computes a relevance score for each match using a pretrained Ltr model trained with LightGBM (https://lightgbm.readthedocs.io/en/latest/index.html)
-    :param model_path: path to the pretrained model previously trained using LightGBM.
-    :param params: Parameters used to train the LightGBM learning-to-rank model.
     :param query_features: name of the features to extract from query Documents and used to compute relevance scores by the model loaded
     from model_path
     :param match_features: name of the features to extract from match Documents and used to compute relevance scores by the model loaded
     from model_path
-    :param label: If call :meth:`train` endpoint, the label will be used as groundtruth for model training. If on :meth:`rank` endpoint, the
+    :param relevance_label: If call :meth:`train` endpoint, the label will be used as groundtruth for model training. If on :meth:`rank` endpoint, the
     label will be used to assign a score to :attr:`Document.scores` field.
+    :param model_path: path to the pretrained model previously trained using LightGBM.
+    :param params: Parameters used to train the LightGBM learning-to-rank model.
     :param categorical_query_features: name of features contained in `query_features` corresponding to categorical features.
     :param categorical_match_features: name of features contained in `match_features` corresponding to categorical features.
     :param query_features_before: True if `query_feature_names` must be placed before the `match` ones in the `dataset` used for prediction.
@@ -33,7 +33,10 @@ class LightGBMRanker(Executor):
 
     def __init__(
         self,
-        model_path: Optional[str] = 'tmp/model.txt',
+        query_features: List[str],
+        match_features: List[str],
+        relevance_label: str,
+        model_path: Optional[str] = None,
         params: Dict = {
             'task': 'train',
             'boosting_type': 'gbdt',
@@ -41,16 +44,6 @@ class LightGBMRanker(Executor):
             'min_data_in_leaf': 1,
             'feature_pre_filter': False,
         },
-        query_features: Tuple[str] = [
-            'query_length',
-            'query_language',
-        ],
-        match_features: Tuple[str] = [
-            'document_length',
-            'document_language',
-            'document_pagerank',
-        ],
-        label: str = 'relevance',
         categorical_query_features: Optional[List[str]] = None,
         categorical_match_features: Optional[List[str]] = None,
         query_features_before: bool = False,
@@ -65,7 +58,7 @@ class LightGBMRanker(Executor):
         self.categorical_query_features = categorical_query_features
         self.categorical_match_features = categorical_match_features
         self.query_features_before = query_features_before
-        self.label = label
+        self.label = relevance_label
         self.logger = JinaLogger(self.__class__.__name__)
         if self.model_path and os.path.exists(self.model_path):
             self.booster = self._load_model(self.model_path)
