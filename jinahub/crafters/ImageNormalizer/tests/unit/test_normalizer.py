@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import numpy as np
@@ -12,7 +13,7 @@ from ...normalizer import ImageNormalizer
 def numpy_image_uri(tmpdir):
     blob = np.random.randint(255, size=(96, 96, 3), dtype='uint8')
     im = fromarray(blob)
-    uri = str(Path(__file__).parent / 'tmp.png')
+    uri = os.path.join(tmpdir, 'tmp.png')
     im.save(uri)
     return uri
 
