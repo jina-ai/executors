@@ -1,8 +1,9 @@
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 import numpy as np
-from jina import Flow, Document, DocumentArray
+from jina import Document, DocumentArray, Executor, Flow
 
 from ..simple_indexer import SimpleIndexer
 
@@ -30,11 +31,16 @@ def docs():
     return DocumentArray([doc1, doc2])
 
 
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.default_top_k == 5
+
+
 def test_simple_indexer_flow(tmpdir):
     f = Flow().add(
         uses=SimpleIndexer,
         uses_with={'index_file_name': 'name'},
-        uses_meta={'workspace': str(tmpdir)},
+        uses_metas={'workspace': str(tmpdir)},
     )
 
     with f:

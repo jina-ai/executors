@@ -16,6 +16,7 @@ from jina_commons.indexers.dump import (
 
 METRIC = 'l2'
 
+
 @pytest.fixture()
 def docker_compose(request):
     os.system(
@@ -38,7 +39,9 @@ from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
 from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
     FaissPostgresSearcher,
 )
-from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+from jinahub.indexers.storage.PostgreSQLStorage.postgres_indexer import (
+    PostgreSQLStorage,
+)
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.join(cur_dir, 'docker-compose.yml')
@@ -202,7 +205,7 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
 
 
 def _in_docker():
-    """ Returns: True if running in a Docker container, else False """
+    """Returns: True if running in a Docker container, else False"""
     with open('/proc/1/cgroup', 'rt') as ifh:
         if 'docker' in ifh.read():
             print('in docker, skipping benchmark')

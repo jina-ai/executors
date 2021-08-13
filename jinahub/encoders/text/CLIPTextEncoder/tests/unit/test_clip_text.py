@@ -1,16 +1,23 @@
 import copy
+from pathlib import Path
 
 import clip
 import numpy as np
 import pytest
 import torch
-from jina import Document, DocumentArray
+from jina import Document, DocumentArray, Executor
+
 from ...clip_text import CLIPTextEncoder
 
 
 @pytest.fixture(scope="module")
 def encoder() -> CLIPTextEncoder:
     return CLIPTextEncoder()
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.pretrained_model_name_or_path == 'openai/clip-vit-base-patch32'
 
 
 def test_no_documents(encoder: CLIPTextEncoder):

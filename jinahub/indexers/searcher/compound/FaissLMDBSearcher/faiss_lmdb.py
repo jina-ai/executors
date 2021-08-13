@@ -6,8 +6,15 @@ from typing import Dict
 
 from jina import requests, DocumentArray, Executor
 
-from jinahub.indexers.searcher.FaissSearcher.faiss_searcher import FaissSearcher
-from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
+try:
+    from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
+except: # broken import paths in previous release
+    from jina_executors.indexers.searcher.FaissSearcher.faiss_searcher import FaissSearcher
+
+try:
+    from jinahub.indexers.storage.LMDBStorage import LMDBStorage
+except: # broken import paths in previous release
+    from jina_executors.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 
 
 class FaissLMDBSearcher(Executor):

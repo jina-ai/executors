@@ -1,15 +1,22 @@
+import os
 import shutil
+from pathlib import Path
 
 import pytest
-import os
 import numpy as np
 import PIL.Image as Image
 
-from jina import DocumentArray, Document
+from jina import DocumentArray, Document, Executor
 
 from ...big_transfer import BigTransferEncoder
 
 directory = os.path.dirname(os.path.realpath(__file__))
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.model_path == 'pretrained'
+    assert ex.model_name == 'R50x1'
 
 
 def test_initialization_and_model_download():
@@ -91,8 +98,7 @@ def test_encoding_override_chunks():
     encoder = BigTransferEncoder()
     assert encoder.default_traversal_paths == ['r']
 
-    encoder.encode(DocumentArray([doc]),
-                   parameters={'traversal_paths': ['c']})
+    encoder.encode(DocumentArray([doc]), parameters={'traversal_paths': ['c']})
     assert doc.embedding is None
     for i in range(3):
         assert doc.chunks[i].embedding.shape == (2048,)

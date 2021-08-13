@@ -1,7 +1,6 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-import os
 from pathlib import Path
 from typing import Tuple
 
@@ -9,12 +8,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from jina import Document, DocumentArray
-from jina.executors import BaseExecutor
+from jina import Document, DocumentArray, Executor
 from ...audioclip_image import AudioCLIPImageEncoder
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
-default_config = os.path.abspath(os.path.join(cur_dir, '..', '..', 'config.yml'))
 
 @pytest.fixture(scope="module")
 def basic_encoder() -> AudioCLIPImageEncoder:
@@ -44,10 +40,10 @@ def nested_docs() -> DocumentArray:
 
 
 def test_config():
-    encoder = BaseExecutor.load_config(default_config)
-    assert encoder.default_batch_size == 32
-    assert encoder.default_traversal_paths == ['r']
-    assert encoder.use_default_preprocessing == True
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.default_batch_size == 32
+    assert ex.default_traversal_paths == ['r']
+    assert ex.use_default_preprocessing == True
 
 
 def test_no_documents(basic_encoder):

@@ -1,12 +1,19 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 import torch
-from jina import DocumentArray, Document
+from jina import DocumentArray, Document, Executor
 
 from ...sentence_encoder import TransformerSentenceEncoder
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.default_batch_size == 32
 
 
 def test_encoding_cpu():
@@ -57,7 +64,11 @@ def test_encodes_semantic_meaning():
 @pytest.mark.parametrize(
     ['docs', 'docs_per_path', 'traversal_path'],
     [
-        (pytest.lazy_fixture('docs_with_text'), [[['r'], 10], [['c'], 0], [['cc'], 0]], ['r']),
+        (
+            pytest.lazy_fixture('docs_with_text'),
+            [[['r'], 10], [['c'], 0], [['cc'], 0]],
+            ['r'],
+        ),
         (
             pytest.lazy_fixture("docs_with_chunk_text"),
             [[['r'], 0], [['c'], 10], [['cc'], 0]],

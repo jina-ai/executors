@@ -1,9 +1,9 @@
+from pathlib import Path
 from typing import List
 
 import pytest
 import torch
-from jina import Document, DocumentArray
-from jina.executors import BaseExecutor
+from jina import Document, DocumentArray, Executor
 
 from ...dpr_text import DPRTextEncoder
 
@@ -23,7 +23,7 @@ def basic_encoder_ctx() -> DPRTextEncoder:
 
 
 def test_config():
-    encoder = BaseExecutor.load_config('../../config.yml')
+    encoder = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert encoder.default_batch_size == 32
     assert encoder.default_traversal_paths == ('r',)
     assert encoder.encoder_type == 'question'

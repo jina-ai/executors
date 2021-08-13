@@ -1,6 +1,6 @@
 import os
 import pickle
-from typing import Optional, Iterable, Any, List, Tuple
+from typing import Optional, Iterable, Tuple
 
 from jina import Executor, requests, DocumentArray
 from jina.excepts import PretrainedModelFileDoesNotExist

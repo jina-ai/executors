@@ -1,11 +1,15 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest as pytest
-from jina import Document, DocumentArray
+from jina import Document, DocumentArray, Executor
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
-compose_yml = os.path.abspath(os.path.join(cur_dir, 'docker-compose.yml'))
+compose_yml = Path(__file__).parent / 'docker-compose.yml'
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.port == 6379
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
@@ -103,7 +107,9 @@ def test_delete(indexer, docs, docker_compose):
     query = DocumentArray([Document(id=doc.id) for doc in docs])
     indexer.search(query, parameters={})
     assert all(query_doc.content is None for query_doc in query[:2])
-    assert all(query_doc.content == doc.content for query_doc, doc in zip(query[2:], docs[2:]))
+    assert all(
+        query_doc.content == doc.content for query_doc, doc in zip(query[2:], docs[2:])
+    )
 
     qh = indexer.get_query_handler()
     assert len(qh.keys()) == 3
