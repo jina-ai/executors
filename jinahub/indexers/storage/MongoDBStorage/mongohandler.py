@@ -42,6 +42,7 @@ class MongoHandler:
                 'id', unique=True
             )  # create index on doc.id field if index not exist.
             return self._collection
+        return self._collection
 
     def add(self, docs: DocumentArray, **kwargs):
         """Insert document from docs into mongodb instance."""
