@@ -23,7 +23,7 @@ class LightGBMRanker(Executor):
     :param params: Parameters used to train the LightGBM learning-to-rank model.
     :param categorical_query_features: name of features contained in `query_features` corresponding to categorical features.
     :param categorical_match_features: name of features contained in `match_features` corresponding to categorical features.
-    :param query_features_before: True if `query_feature_names` must be placed before the `match` ones in the `dataset` used for prediction.
+    :param query_features_before: True if `query_features` must be placed before the `match` ones in the `dataset` used for prediction.
     :param args: Additional positional arguments
     :param kwargs: Additional keyword arguments
     .. note::
@@ -170,6 +170,7 @@ class LightGBMRanker(Executor):
         :param kwargs: Additional key value arguments.
         """
         dataset = self._get_features_dataset(docs)
+
         predictions = self.booster.predict(dataset.get_data())
         matches = docs.traverse_flat(traversal_paths=['m'])
         for prediction, match in zip(predictions, matches):
