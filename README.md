@@ -1,6 +1,4 @@
-> ⚠️ Please do **not** commit your new Executor to this repository. This repository is **only** for Jina engineers to better manage in-house executors in a centralized way. You *may* submit PRs to fix bugs/add features to the existing ones.
-
-> 🧭 To develop your own Executor, please use the [Executor Cookiecutter](https://github.com/jina-ai/cookiecutter-jina-executor/) and create your own Executor repo.
+> 🧭 To develop your own Executor, please use [`jina hub new`](#create-new) and create your own Executor repo.
 
 # Jina Executors
 
@@ -72,16 +70,27 @@ f = Flow().add(uses='jinahub://ExecutorName')
 	f = Flow().add(uses='docker://executor-image:latest')
 	```
 
-</details>	
+</details>
+
+## Create new
+
+> ⚠️ Please do **not** commit your new Executor to this repository. This repository is **only** for Jina engineers to better manage in-house executors in a centralized way. You *may* submit PRs to fix bugs/add features to the existing ones.
+
+Use `jina hub new` to create a new Executor, following easy interactive prompts:
+
+![jina_hub_new](./.github/img/hub_new.png)
+
+Then follow the guide on [Executors](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Executor.md) and how to [push](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Hubble.md) it to the Jina Hub marketplace.
 	
 ## Contributing
 
 **For internal Jina enigneers only:**
 
 - add the new executor to the right subfolder.
-	- crafters
-	- [indexers](./jinahub/indexers) store and retrieve data
+	- [crafters](./jinahub/crafters) transform data
 	- [encoders](./jinahub/encoders) compute the vector representation of data
+	- [indexers](./jinahub/indexers) store and retrieve data
+	- [segmenters](./jinahub/segmenters) split data into chunks  
 	- rankers
 - push your initial version to Jina Hub. Use the guide [here](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Hubble.md#2-push-and-pull-cli)
 - add the UUID and secret to the secrets store. Make sure `(folder name) == (manifest alias) == (name in secrets store)` 

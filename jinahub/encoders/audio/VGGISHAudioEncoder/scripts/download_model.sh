@@ -9,8 +9,13 @@ if [ ! -f "${MODEL_DIR}/vggish_model.ckpt" ]; then
   echo "Downloading model"
   echo "------ Download Vggish model ------"
   curl https://storage.googleapis.com/audioset/vggish_model.ckpt --output ${MODEL_DIR}/vggish_model.ckpt
+else
+  echo "VGGish model already exists! Skipping."
+fi
+
+if [ ! -f "${MODEL_DIR}/vggish_pca_params.npz" ]; then
   echo "------ Download PCA model ------"
   curl https://storage.googleapis.com/audioset/vggish_pca_params.npz --output ${MODEL_DIR}/vggish_pca_params.npz
 else
-  echo "Model already exists! Skipping."
+  echo "PCA model already exists! Skipping."
 fi

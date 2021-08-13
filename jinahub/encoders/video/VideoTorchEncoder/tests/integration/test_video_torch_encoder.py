@@ -9,7 +9,7 @@ from jina import Document, Flow
 try:
     from video_torch_encoder import VideoTorchEncoder
 except:
-    from jinahub.encoder.video_torch_encoder import VideoTorchEncoder
+    from ...video_torch_encoder import VideoTorchEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

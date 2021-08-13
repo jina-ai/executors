@@ -5,7 +5,7 @@ RUN apt-get update && apt install -y git
 COPY . ./image_torch_encoder/
 WORKDIR ./image_torch_encoder
 
-RUN pip install .
+RUN pip install -r requirements.txt
 
 # setup the workspace
 COPY . /workspace

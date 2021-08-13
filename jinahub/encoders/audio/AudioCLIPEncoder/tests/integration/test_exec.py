@@ -5,6 +5,7 @@ import os
 import librosa
 
 from jina import Flow, Document, DocumentArray
+from ... import AudioCLIPEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

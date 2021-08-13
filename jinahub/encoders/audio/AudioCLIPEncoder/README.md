@@ -3,18 +3,17 @@
 
 **AudioCLIPEncoder** is a class that wraps the [AudioCLIP](https://github.com/AndreyGuzhov/AudioCLIP) model for generating embeddings for audio data. 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 ## 🌱 Prerequisites
+
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
 Run the provided bash script `scripts/download_model.sh` to download the pretrained model.
 
@@ -23,7 +22,7 @@ Run the provided bash script `scripts/download_model.sh` to download the pretrai
 ### 🚚 Via JinaHub
 
 #### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
+Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
 from jina import Flow
@@ -39,8 +38,8 @@ pods:
     uses: 'jinahub+docker://AudioCLIPEncoder'
 ```
 
-#### using source codes
-Use the source codes from JinaHub in your python codes,
+#### using source code
+Use the source code from JinaHub in your Python code:
 
 ```python
 from jina import Flow
@@ -57,42 +56,6 @@ pods:
     uses: 'jinahub://AudioCLIPEncoder'
 ```
 
-
-### 📦️ Via Pypi
-
-1. Install the `jinahub-AudioCLIPEncoder` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executor-audio-clip-encoder.git
-	```
-
-1. Use `jinahub-vggishaudio-encoder` in your code
-
-	```python
-	from jina import Flow
-	from jinahub.encoder.audioclip import AudioCLIPEncoder
-	
-	f = Flow().add(uses='jinahub+docker://AudioCLIPEncoder')
-	```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executor-audio-clip-encoder.git
-	cd executor-audio-clip-encoder
-	docker build -t executor-audio-clip-encoder .
-	```
-
-1. Use `executor-audio-clip-encoder` in your codes
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://executor-audio-clip-encoder:latest')
-	```
 
 ## 🎉️ Example 
 

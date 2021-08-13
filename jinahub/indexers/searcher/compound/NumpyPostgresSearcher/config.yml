@@ -1,9 +1,0 @@
-jtype: NumpyPostgresSearcher
-with:
-  {}
-metas:
-  py_modules:
-    - nppsql.py
-  workspace: workspace/
-  name: numpy_postgres_searcher
-

@@ -5,39 +5,36 @@
 **ImageTorchEncoder** encodes `Document` blobs of type a `ndarray` and shape Batch x Height x Width x Channel 
 into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of the `Document`.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 
-To install the dependencies locally run 
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+
+In case you want to install the dependencies locally run 
 ```
-pip install . 
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
+pip install -r requirements.txt
 ```
 
 ## 🚀 Usages
 
-### 🚚 Via JinaHub (WIP)
-Use the prebuilt images from JinaHub in your python codes.
+### 🚚 Via JinaHub
+
+#### using docker images
+
+Use the prebuilt images from JinaHub in your Python codes.
 With the `volumes` argument you can pass model from your local machine into the Docker container.
 ```python
 from jina import Flow
 
 flow = Flow().add(uses='jinahub+docker://ImageTorchEncoder',
-		  volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
+                  volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
 ```
 Alternatively, reference the docker image in the `yml` config
 ```yaml
@@ -48,42 +45,25 @@ pods:
     volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
 ```
 
-### 📦️ Via PyPi
-1. Install the `ImageTorchEncoder` 
-```bash
-pip install git+https://github.com/jina-ai/executor-image-torch-encoder.git
-```
-2. Use the `ImageTorchEncoder` in your code
-```python
-from jinahub.image.encoder.torch_encoder import ImageTorchEncoder
-from jina import Flow
+#### using source code
+Use the source code from JinaHub in your Python code:
 
-f = Flow().add(uses=ImageTorchEncoder)
-```
-
-### 🐳 Via Docker
-1. Clone the repo and build the docker image
-```bash
-git clone https://github.com/jina-ai/executor-image-torch-encoder/
-
-cd executor-image-torch-encoder 
-docker build -t jinahub-image-torch-encoder .
-```
-2. Use `jinahub-image-torch-encoder` in your codes
-````python
-from jina import Flow
-
-f = Flow().add(
-        uses='docker://jinahub-image-torch-encoder:latest',
-        volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
-````
-
-1. Use `executor-image-torch-encoder` in your codes
 ```python
 from jina import Flow
-f = Flow().add(uses='docker://executor-image-torch-encoder:latest')
-```
 	
+f = Flow().add(uses='jinahub://ImageTorchEncoder',
+               volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
+```
+
+or in the `.yml` config.
+
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub://ImageTorchEncoder'
+    volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
+```
 
 ## 🎉️ Example 
 

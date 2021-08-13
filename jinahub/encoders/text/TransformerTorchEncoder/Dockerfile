@@ -6,7 +6,7 @@ COPY . ./transformer-text-encoder/
 WORKDIR ./transformer-text-encoder
 
 # install requirements before copying the workspace
-RUN pip install .
+RUN pip install -r requirements.txt
 RUN pip install -r requirements.txt
 
 # setup the workspace

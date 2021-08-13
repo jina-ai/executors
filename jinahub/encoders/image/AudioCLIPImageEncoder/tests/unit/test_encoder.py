@@ -8,9 +8,8 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from jina import Document, DocumentArray
-from jina.executors import BaseExecutor
-from jinahub.encoder.audioclip_image import AudioCLIPImageEncoder
+from jina import Document, DocumentArray, Executor
+from ...audioclip_image import AudioCLIPImageEncoder
 
 
 @pytest.fixture(scope="module")
@@ -41,10 +40,10 @@ def nested_docs() -> DocumentArray:
 
 
 def test_config():
-    encoder = BaseExecutor.load_config('../../config.yml')
-    assert encoder.default_batch_size == 32
-    assert encoder.default_traversal_paths == ['r']
-    assert encoder.use_default_preprocessing == True
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.default_batch_size == 32
+    assert ex.default_traversal_paths == ['r']
+    assert ex.use_default_preprocessing == True
 
 
 def test_no_documents(basic_encoder):

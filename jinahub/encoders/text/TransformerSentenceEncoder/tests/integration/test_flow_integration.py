@@ -5,7 +5,7 @@ from typing import Callable, List
 import pytest
 
 from jina import Flow, DocumentArray
-from jinahub.text.encoders.sentence_encoder import TransformerSentenceEncoder
+from ...sentence_encoder import TransformerSentenceEncoder
 
 
 @pytest.mark.parametrize(

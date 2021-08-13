@@ -1,0 +1,4 @@
+jtype: MinRanker
+metas:
+  py_modules:
+    - minranker.py

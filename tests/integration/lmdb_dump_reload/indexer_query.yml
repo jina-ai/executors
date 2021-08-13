@@ -1,4 +1,4 @@
-jtype: NumpyLMDBSearcher
+jtype: FaissLMDBSearcher
 metas:
   name: compound_query_indexer
   workspace: $QUERY_WORKSPACE

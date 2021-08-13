@@ -3,18 +3,17 @@
 **RedisStorage** is Indexer wrapper around the redis server. Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache, and message broker. You can read more about it here: https://redis.io
 
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
 - [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
+
+> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
 - This Executor works on Python 3.7 and 3.8. 
 - Make sure to install the [requirements](requirements.txt)
@@ -26,6 +25,13 @@ You can start one in a Docker container, like so:
 ```bash
 docker run -p 127.0.0.1:6379:6379/tcp -d redis
 ```
+
+📕 **Note on docker network for macOS users**:  
+If you run both the database and the `RedisStorage` docker container on the same machine 
+localhost in the `RedisStorage` resolves to a separate network created by Docker which cannot see the database running on the host network.  
+Use `host.docker.internal` to access localhost on the host machine.  
+You can pass this parameter to the `RedisStorage` storage by using `override_with={'hostname': 'host.docker.internal''}` when
+calling the `flow.add(...)` function.
 
 ## 🚀 Usages
 
@@ -69,43 +75,6 @@ pods:
     uses: 'jinahub://RedisStorage'
 ```
 
-
-### 📦️ Via Pypi
-
-1. Install the `executors` package.
-
-	```bash
-	pip install git+https://github.com/jina-ai/executors.git
-	```
-
-1. Use `executors` in your code
-
-   ```python
-   from jina import Flow
-   from jinahub.indexers.storage.RedisStorage import RedisStorage
-   
-   f = Flow().add(uses=RedisStorage)
-   ```
-
-
-### 🐳 Via Docker
-
-1. Clone the repo and build the docker image
-
-	```shell
-	git clone https://github.com/jina-ai/executors
-	cd executors/jinahub/indexers/storage/RedisStorage
-	docker build -t redis-storage .
-	```
-
-1. Use `redis-storage` in your code
-
-	```python
-	from jina import Flow
-	
-	f = Flow().add(uses='docker://redis-storage:latest')
-	```
-	
 
 ## 🎉️ Example 
 

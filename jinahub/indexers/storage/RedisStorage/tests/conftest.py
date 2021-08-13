@@ -4,7 +4,7 @@ import time
 from jina import Document, DocumentArray
 import pytest
 
-from .. import RedisStorage
+from ..redis_storage import RedisStorage
 
 
 @pytest.fixture(scope='function')

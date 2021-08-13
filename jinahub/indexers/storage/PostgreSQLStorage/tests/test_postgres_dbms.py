@@ -1,13 +1,14 @@
 import os
 import time
+from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray, Flow
+from jina import Document, DocumentArray, Executor, Flow
 from jina.logging.profile import TimeContext
 from jina_commons.indexers.dump import import_vectors, import_metas
 
-from .. import PostgreSQLStorage
+from ..postgres_indexer import PostgreSQLStorage
 from ..postgreshandler import doc_without_embedding
 
 
@@ -51,33 +52,33 @@ def patched_random_port(mocker):
 def get_documents(chunks, same_content, nr=10, index_start=0, same_tag_content=None):
     next_chunk_id = nr + index_start
     for i in range(index_start, nr + index_start):
-        with Document() as d:
-            d.id = i
+        d = Document()
+        d.id = i
+        if same_content:
+            d.text = 'hello world'
+            d.embedding = np.random.random(d_embedding.shape)
+        else:
+            d.text = f'hello world {i}'
+            d.embedding = np.random.random(d_embedding.shape)
+        if same_tag_content:
+            d.tags['field'] = 'tag data'
+        elif same_tag_content is False:
+            d.tags['field'] = f'tag data {i}'
+        for j in range(chunks):
+            c = Document()
+            c.id = next_chunk_id
             if same_content:
-                d.text = 'hello world'
-                d.embedding = np.random.random(d_embedding.shape)
+                c.text = 'hello world from chunk'
+                c.embedding = np.random.random(c_embedding.shape)
             else:
-                d.text = f'hello world {i}'
-                d.embedding = np.random.random(d_embedding.shape)
+                c.text = f'hello world from chunk {j}'
+                c.embedding = np.random.random(c_embedding.shape)
             if same_tag_content:
-                d.tags['field'] = 'tag data'
+                c.tags['field'] = 'tag data'
             elif same_tag_content is False:
-                d.tags['field'] = f'tag data {i}'
-            for j in range(chunks):
-                with Document() as c:
-                    c.id = next_chunk_id
-                    if same_content:
-                        c.text = 'hello world from chunk'
-                        c.embedding = np.random.random(c_embedding.shape)
-                    else:
-                        c.text = f'hello world from chunk {j}'
-                        c.embedding = np.random.random(c_embedding.shape)
-                    if same_tag_content:
-                        c.tags['field'] = 'tag data'
-                    elif same_tag_content is False:
-                        c.tags['field'] = f'tag data {next_chunk_id}'
-                next_chunk_id += 1
-                d.chunks.append(c)
+                c.tags['field'] = f'tag data {next_chunk_id}'
+            next_chunk_id += 1
+            d.chunks.append(c)
         yield d
 
 
@@ -85,15 +86,18 @@ def validate_db_side(postgres_indexer, expected_data):
     ids, vecs, metas = zip(*expected_data)
     with postgres_indexer.handler as handler:
         cursor = handler.connection.cursor()
-        cursor.execute(
-            f'SELECT ID, DOC from {postgres_indexer.table} ORDER BY ID::int'
-        )
+        cursor.execute(f'SELECT ID, DOC from {postgres_indexer.table} ORDER BY ID::int')
         record = cursor.fetchall()
         for i in range(len(expected_data)):
             np.testing.assert_equal(ids[i], str(record[i][0]))
             doc = Document(bytes(record[i][1]))
             np.testing.assert_equal(vecs[i], doc.embedding)
             np.testing.assert_equal(metas[i], doc_without_embedding(doc))
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.username == 'postgres'
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
@@ -155,3 +159,19 @@ def test_mwu_empty_dump(tmpdir, docker_compose):
     ids, metas = import_metas(dump_path, pea_id='0')
     assert vecs is not None
     assert metas is not None
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_return_embeddings(docker_compose):
+    indexer = PostgreSQLStorage()
+    doc = Document(embedding=np.random.rand(1, 10))
+    da = DocumentArray([doc])
+    query1 = DocumentArray([Document(id=doc.id)])
+    indexer.add(da, parameters={})
+    indexer.search(query1, parameters={})
+    assert query1[0].embedding is not None
+    assert query1[0].embedding.shape == (1, 10)
+
+    query2 = DocumentArray([Document(id=doc.id)])
+    indexer.search(query2, parameters={"return_embeddings": False})
+    assert query2[0].embedding is None

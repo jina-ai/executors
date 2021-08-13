@@ -5,7 +5,7 @@ from typing import Callable, List
 
 import pytest
 from jina import DocumentArray, Flow
-from jinahub.encoder.transform_encoder import TransformerTorchEncoder
+from ...transform_encoder import TransformerTorchEncoder
 
 
 @pytest.mark.parametrize("request_size", [1, 10, 50, 100])
@@ -19,6 +19,10 @@ def test_integration(data_generator: Callable, request_size: int):
     for r in resp:
         for doc in r.docs:
             assert doc.embedding is not None
+
+
+def filter_none(elements):
+    return list(filter(lambda e: e is not None, elements))
 
 
 @pytest.mark.parametrize(
@@ -43,15 +47,13 @@ def test_traversal_path(
     def validate_traversal(expected_docs_per_path: List[List[str]]):
         def validate(res):
             for path, count in expected_docs_per_path:
-                return (
-                    len(
+                assert len(
+                    filter_none(
                         DocumentArray(res[0].docs)
                         .traverse_flat([path])
                         .get_attributes("embedding")
                     )
-                    == count
-                )
-
+                    ) == count
         return validate
 
     flow = Flow(return_results=True).add(uses=TransformerTorchEncoder)
@@ -60,4 +62,4 @@ def test_traversal_path(
             on="/test", inputs=docs, parameters={"traversal_paths": [traversal_path]}, return_results=True
         )
 
-    assert validate_traversal(docs_per_path)(resp)
+    validate_traversal(docs_per_path)(resp)

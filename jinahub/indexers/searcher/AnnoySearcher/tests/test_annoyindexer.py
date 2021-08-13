@@ -2,14 +2,15 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray
+from jina import Document, DocumentArray, Executor
 from jina.executors.metas import get_default_metas
 from jina_commons.indexers.dump import import_vectors
 
-from .. import AnnoySearcher
+from ..annoy_searcher import AnnoySearcher
 
 # fix the seed here
 np.random.seed(500)
@@ -29,6 +30,11 @@ def metas(tmpdir):
     del os.environ['TEST_WORKSPACE']
 
 
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.metric == 'euclidean'
+
+
 def test_simple_annoy():
     from annoy import AnnoyIndex
 
@@ -42,29 +48,60 @@ def test_simple_annoy():
     assert len(idx1) == 3
 
 
-@pytest.mark.parametrize(['metric', 'is_distance'],
-                         [('angular', True), ('euclidean', True), ('manhattan', True), ('hamming', True),
-                          ('dot', True), ('angular', False), ('euclidean', False), ('manhattan', False),
-                          ('hamming', False), ('dot', False)])
+@pytest.mark.parametrize(
+    ['metric', 'is_distance'],
+    [
+        ('angular', True),
+        ('euclidean', True),
+        ('manhattan', True),
+        ('hamming', True),
+        ('dot', True),
+        ('angular', False),
+        ('euclidean', False),
+        ('manhattan', False),
+        ('hamming', False),
+        ('dot', False),
+    ],
+)
 def test_metric(tmpdir, metric, is_distance):
-    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
+    metas = {
+        'workspace': str(tmpdir),
+        'name': 'searcher',
+    }
+    runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = AnnoySearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, metric=metric, is_distance=is_distance)
+    indexer = AnnoySearcher(
+        dump_path=DUMP_PATH,
+        default_top_k=TOP_K,
+        metas=metas,
+        metric=metric,
+        is_distance=is_distance,
+        runtime_args=runtime_args,
+    )
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
 
     assert len(docs[0].matches) == TOP_K
     for i in range(len(docs[0].matches) - 1):
         if not is_distance:
-            assert docs[0].matches[i].scores[metric].value >= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                >= docs[0].matches[i + 1].scores[metric].value
+            )
         else:
-            assert docs[0].matches[i].scores[metric].value <= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                <= docs[0].matches[i + 1].scores[metric].value
+            )
 
 
 def test_query_vector(tmpdir):
-    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
+    metas = {'workspace': str(tmpdir), 'name': 'searcher'}
+    runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = AnnoySearcher(dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas)
+    indexer = AnnoySearcher(
+        dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, runtime_args=runtime_args
+    )
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
 
@@ -85,9 +122,10 @@ def test_query_vector(tmpdir):
 
 
 def test_query_vector_empty(tmpdir):
-    metas = {'workspace': str(tmpdir), 'name': 'searcher', 'pea_id': 0, 'replica_id': 0}
+    metas = {'workspace': str(tmpdir), 'name': 'searcher'}
+    runtime_args = {'pea_id': 0, 'replica_id': 0}
 
-    indexer = AnnoySearcher(default_top_k=TOP_K, metas=metas)
+    indexer = AnnoySearcher(default_top_k=TOP_K, metas=metas, runtime_args=runtime_args)
     docs = DocumentArray([Document(embedding=np.random.random(7))])
     indexer.search(docs, {})
     assert len(docs[0].matches) == 0

@@ -21,7 +21,7 @@ See below figure for how this would look like:
 
 ![](./.github/img/replicas.png)
 
-In the above case, the Storage could be the [PostgreSQL](storage/PostgreSQLStorage)-based Storage, while the Query Flow could be based on [NumpyPostgresSearcher](searcher/compound/NumpyPostgresSearcher).
+In the above case, the Storage could be the [PostgreSQL](storage/PostgreSQLStorage)-based Storage, while the Query Flow could be based on [FaissPostgresSearcher](searcher/compound/FaissPostgresSearcher).
 
 For a showcase code, check our [integration tests](tests/integration/psql_dump_reload).
 

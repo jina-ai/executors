@@ -3,7 +3,6 @@ with:
   {}
 metas:
   py_modules:
-    # - you can put more dependencies here
-    - __init__.py
+    - annoy_searcher.py
   name: annoy_searcher
 

@@ -1,12 +1,13 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray, Flow
+from jina import Document, DocumentArray, Executor, Flow
 from jina.logging.profile import TimeContext
 
 from jina_commons.indexers.dump import import_metas, import_vectors
-from .. import LMDBStorage
+from ..lmdb_storage import LMDBStorage
 
 np.random.seed(0)
 d_embedding = np.array([1, 1, 1, 1, 1, 1, 1])
@@ -16,13 +17,18 @@ c_embedding = np.array([2, 2, 2, 2, 2, 2, 2])
 def get_documents(nr=10, index_start=0, emb_size=7, text='hello world'):
     docs = []
     for i in range(index_start, nr + index_start):
-        with Document() as d:
-            d.id = i
-            d.text = f'{text} {i}'
-            d.embedding = np.random.random(emb_size)
-            d.tags['field'] = f'tag data {i}'
+        d = Document()
+        d.id = i
+        d.text = f'{text} {i}'
+        d.embedding = np.random.random(emb_size)
+        d.tags['field'] = f'tag data {i}'
         docs.append(d)
     return DocumentArray(docs)
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.map_size == 1048576000
 
 
 def test_lmdb_crud(tmpdir, nr_docs=10):
@@ -110,7 +116,7 @@ def test_lmdb_crud_flow(tmpdir):
 
 
 def _in_docker():
-    """ Returns: True if running in a Docker container, else False """
+    """Returns: True if running in a Docker container, else False"""
     with open('/proc/1/cgroup', 'rt') as ifh:
         if 'docker' in ifh.read():
             print('in docker, skipping benchmark')
@@ -191,3 +197,19 @@ def test_dump(tmpdir, shards):
 
     for pea_id in range(shards):
         _assert_dump_data(dump_path, docs, shards, pea_id)
+
+
+def test_return_embeddings(tmpdir):
+    metas = {'workspace': str(tmpdir), 'name': 'storage', 'pea_id': 0}
+    indexer = LMDBStorage(metas=metas)
+    doc = Document(embedding=np.random.rand(1, 10))
+    da = DocumentArray([doc])
+    query1 = DocumentArray([Document(id=doc.id)])
+    indexer.index(da, parameters={})
+    indexer.search(query1, parameters={})
+    assert query1[0].embedding is not None
+    assert query1[0].embedding.shape == (1, 10)
+
+    query2 = DocumentArray([Document(id=doc.id)])
+    indexer.search(query2, parameters={"return_embeddings": False})
+    assert query2[0].embedding is None

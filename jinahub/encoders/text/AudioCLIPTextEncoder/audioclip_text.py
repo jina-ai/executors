@@ -7,7 +7,7 @@ import torch
 from jina import Executor, DocumentArray, requests
 from jina_commons.batching import get_docs_batch_generator
 
-from audio_clip.model import AudioCLIP
+from .audio_clip.model import AudioCLIP
 
 
 class AudioCLIPTextEncoder(Executor):

@@ -1,12 +1,20 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
-from jina import DocumentArray, Document
-from jinahub.encoder.flair_text import FlairTextEncoder
+from jina import DocumentArray, Document, Executor
+
+from ...flair_text import FlairTextEncoder
 
 
 @pytest.fixture()
 def docs_generator():
     return DocumentArray((Document(text='random text') for _ in range(30)))
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.default_batch_size == 32
 
 
 def test_flair_batch(docs_generator):
@@ -21,10 +29,11 @@ def test_flair_batch(docs_generator):
 def test_traversal_path():
     text = 'blah'
     docs = DocumentArray([Document(id='root1', text=text)])
-    docs[0].chunks = [Document(id='chunk11', text=text),
-                      Document(id='chunk12', text=text),
-                      Document(id='chunk13', text=text)
-                      ]
+    docs[0].chunks = [
+        Document(id='chunk11', text=text),
+        Document(id='chunk12', text=text),
+        Document(id='chunk13', text=text),
+    ]
     docs[0].chunks[0].chunks = [
         Document(id='chunk111', text=text),
         Document(id='chunk112', text=text),
@@ -36,13 +45,17 @@ def test_traversal_path():
     for path, count in [[['r'], 0], [['c'], 3], [['cc'], 0]]:
         assert len(docs.traverse_flat(path).get_attributes('embedding')) == count
         if count > 0:
-            assert docs.traverse_flat(path).get_attributes('embedding')[0].shape == (100,)
+            assert docs.traverse_flat(path).get_attributes('embedding')[0].shape == (
+                100,
+            )
 
     encoder.encode(docs, parameters={'batch_size': 10, 'traversal_paths': ['cc']})
     for path, count in [[['r'], 0], [['c'], 3], [['cc'], 2]]:
         assert len(docs.traverse_flat(path).get_attributes('embedding')) == count
         if count > 0:
-            assert docs.traverse_flat(path).get_attributes('embedding')[0].shape == (100,)
+            assert docs.traverse_flat(path).get_attributes('embedding')[0].shape == (
+                100,
+            )
 
 
 def test_no_documents():

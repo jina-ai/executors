@@ -14,6 +14,9 @@ from jina_commons.indexers.dump import (
 )
 
 
+METRIC = 'l2'
+
+
 @pytest.fixture()
 def docker_compose(request):
     os.system(
@@ -33,10 +36,12 @@ from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
 
 # required in order to be found by Flow creation
 # noinspection PyUnresolvedReferences
-from jinahub.indexers.searcher.compound.NumpyPostgresSearcher import (
-    NumpyPostgresSearcher,
+from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
+    FaissPostgresSearcher,
 )
-from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+from jinahub.indexers.storage.PostgreSQLStorage.postgres_indexer import (
+    PostgreSQLStorage,
+)
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.join(cur_dir, 'docker-compose.yml')
@@ -82,11 +87,11 @@ class MatchMerger(Executor):
 
 def get_documents(nr=10, index_start=0, emb_size=7):
     for i in range(index_start, nr + index_start):
-        with Document() as d:
-            d.id = f'aa{i}'  # to test it supports non-int ids
-            d.text = f'hello world {i}'
-            d.embedding = np.random.random(emb_size)
-            d.tags['field'] = f'tag data {i}'
+        d = Document()
+        d.id = f'aa{i}'  # to test it supports non-int ids
+        d.text = f'hello world {i}'
+        d.embedding = np.random.random(emb_size).astype(np.float32)
+        d.tags['field'] = f'tag data {i}'
         yield d
 
 
@@ -188,7 +193,8 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
                 return_results=True,
             )
             assert len(results[0].docs[0].matches) == top_k
-            assert results[0].docs[0].matches[0].scores['cosine'].value == 1.0
+            # TODO score is not deterministic
+            assert results[0].docs[0].matches[0].scores[METRIC].value > 0.0
 
     idx = PostgreSQLStorage()
     assert idx.size == nr_docs
@@ -199,7 +205,7 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
 
 
 def _in_docker():
-    """ Returns: True if running in a Docker container, else False """
+    """Returns: True if running in a Docker container, else False"""
     with open('/proc/1/cgroup', 'rt') as ifh:
         if 'docker' in ifh.read():
             print('in docker, skipping benchmark')

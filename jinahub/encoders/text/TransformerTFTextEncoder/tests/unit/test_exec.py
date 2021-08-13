@@ -1,10 +1,12 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+from pathlib import Path
+
 import numpy as np
 import pytest
-from jina import Document, DocumentArray
-from jinahub.encoder.transformer_tf_text_encode import TransformerTFTextEncoder
+from jina import Document, DocumentArray, Executor
+from ...transformer_tf_text_encode import TransformerTFTextEncoder
 
 target_dim = 768
 
@@ -12,6 +14,11 @@ target_dim = 768
 @pytest.fixture()
 def docs_generator():
     return DocumentArray((Document(text='random text') for _ in range(30)))
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.pretrained_model_name_or_path == 'distilbert-base-uncased'
 
 
 def test_tf_batch(docs_generator):
@@ -52,7 +59,11 @@ def test_encodes_semantic_meaning():
 @pytest.mark.parametrize(
     ['docs', 'docs_per_path', 'traversal_path'],
     [
-        (pytest.lazy_fixture('docs_with_text'), [[['r'], 10], [['c'], 0], [['cc'], 0]], ['r']),
+        (
+            pytest.lazy_fixture('docs_with_text'),
+            [[['r'], 10], [['c'], 0], [['cc'], 0]],
+            ['r'],
+        ),
         (
             pytest.lazy_fixture("docs_with_chunk_text"),
             [[['r'], 0], [['c'], 10], [['cc'], 0]],

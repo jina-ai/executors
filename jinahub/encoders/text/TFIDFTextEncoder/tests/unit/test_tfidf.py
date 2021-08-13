@@ -1,16 +1,15 @@
-import os
+from pathlib import Path
+
 import numpy as np
 import scipy
 
-from jina import Executor, Document, DocumentArray
-from jinahub.encoder.tfidf_text_executor import TFIDFTextEncoder
-
-cur_dir = os.path.dirname(os.path.abspath(__file__))
+from jina import Document, DocumentArray, Executor
+from ...tfidf_text_executor import TFIDFTextEncoder
 
 
-def test_tfidf():
-    encoder = Executor.load_config(os.path.join(cur_dir, '../../config.yml'))
-    assert encoder.path_vectorizer.endswith('tfidf_vectorizer.pickle')
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.path_vectorizer.endswith('tfidf_vectorizer.pickle')
 
 
 def test_tfidf_text_encoder():
@@ -22,7 +21,7 @@ def test_tfidf_text_encoder():
     encoder.encode(docarray, parameters={})
     embedding = doc.embedding
 
-    expected = scipy.sparse.load_npz(os.path.join(cur_dir, 'expected.npz'))
+    expected = scipy.sparse.load_npz(Path(__file__).parent / 'expected.npz')
     np.testing.assert_almost_equal(embedding.todense(), expected.todense(), decimal=4)
     assert expected.shape[0] == 1
 
@@ -41,7 +40,7 @@ def test_tfidf_text_encoder_batch():
     embeddeding_batch = scipy.sparse.vstack(docarray.get_attributes('embedding'))
 
     # Compare with ouptut
-    expected_batch = scipy.sparse.load_npz(os.path.join(cur_dir, 'expected_batch.npz'))
+    expected_batch = scipy.sparse.load_npz(Path(__file__).parent / 'expected_batch.npz')
     np.testing.assert_almost_equal(
         embeddeding_batch.todense(), expected_batch.todense(), decimal=2
     )

@@ -1,0 +1,9 @@
+jtype: FaissLMDBSearcher
+with:
+  {}
+metas:
+  py_modules:
+    - __init__.py
+  workspace: workspace/
+  name: faiss_lmdb_searcher
+

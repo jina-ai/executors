@@ -35,6 +35,7 @@ if [[ -d "tests/" ]]; then
 
   pytest -s -v tests/
   local_exit_code=$?
+
   deactivate
 else
   echo no tests or Dockerfile in $test_dir

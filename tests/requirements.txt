@@ -5,4 +5,5 @@ pytest
 lmdb==1.2.1
 pytest
 pytest-mock
-git+https://github.com/jina-ai/executor-indexers.git
+git+https://github.com/jina-ai/executors
+faiss-cpu==1.6.5
