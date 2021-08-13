@@ -1,7 +1,6 @@
 import random
 
 import pytest
-import numpy as np
 from jina import Document, DocumentArray
 
 from ..lightgbm_ranker import LightGBMRanker
@@ -13,46 +12,21 @@ NUM_MATCHES = 5
 @pytest.fixture
 def ranker():
     return LightGBMRanker(
-        query_features=['brand', 'price'],
-        match_features=['brand', 'price'],
+        query_features=['brand_query', 'price_query'],
+        match_features=['brand_match', 'price_match'],
         relevance_label='relevance',
     )
 
 
 @pytest.fixture
-def relevances():
-    return np.random.uniform(0, 1, [1, NUM_DOCS]).flatten()
-
-
-@pytest.fixture
-def documents_to_train_stub_model(relevances):
-    """features: color, brand, price. Label relevance"""
-    # initial stub model, relevance purely dependent on brand, not price.
-    # brand relevance 5 > 4 > 3 > 2 > 1.
-    da = DocumentArray()
-    bins = np.array([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
-    inds = np.digitize(relevances, bins)
-    for brand, relevance in zip(inds, relevances):
-        doc = Document(
-            tags={
-                'brand': int(brand),
-                'price': random.randint(50, 200),
-                'weight': random.uniform(0, 1),
-            }
-        )
-        for _ in range(NUM_MATCHES):
-            # each match has an extra relevance field indicates score.
-            doc.matches.append(
-                Document(
-                    tags={
-                        'brand': int(brand),
-                        'price': random.randint(50, 200),
-                        'relevance': float(relevance),
-                    }
-                )
-            )
-        da.append(doc)
-    return da
+def ranker_with_categorical_features():
+    return LightGBMRanker(
+        query_features=['price_query'],
+        match_features=['price_match'],
+        relevance_label='relevance',
+        categorical_query_features=['brand_query'],
+        categorical_match_features=['brand_match'],
+    )
 
 
 @pytest.fixture
@@ -67,14 +41,14 @@ def documents_to_train_price_sensitive_model():
             root.matches.extend(
                 [
                     Document(
-                        tags={'price': root_price - 100, 'brand': 3, 'relevance': 0.8}
+                        tags={'price': root_price - 100, 'brand': 3, 'relevance': 10}
                     ),
-                    Document(tags={'price': root_price, 'brand': 3, 'relevance': 0.6}),
+                    Document(tags={'price': root_price, 'brand': 3, 'relevance': 6}),
                     Document(
-                        tags={'price': root_price + 100, 'brand': 3, 'relevance': 0.4}
+                        tags={'price': root_price + 100, 'brand': 3, 'relevance': 4}
                     ),
                     Document(
-                        tags={'price': root_price + 200, 'brand': 3, 'relevance': 0.2}
+                        tags={'price': root_price + 200, 'brand': 3, 'relevance': 2}
                     ),
                 ]
             )

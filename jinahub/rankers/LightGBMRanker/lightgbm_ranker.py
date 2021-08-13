@@ -82,7 +82,7 @@ class LightGBMRanker(Executor):
 
     def _save_model(self, path):
         """Dump model into cbm."""
-        self.booster.save_model(model_file=path)
+        self.booster.save_model(path)
 
     def _get_features_dataset(self, docs: DocumentArray) -> 'lightgbm.Dataset':
         q_features, m_features, group, labels = [], [], [], []
