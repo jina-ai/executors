@@ -1,8 +1,9 @@
 import os
+from pathlib import Path
 
 import pytest
 import numpy as np
-from jina import Document, DocumentArray, Flow
+from jina import Document, DocumentArray, Flow, Executor
 from jina_commons.indexers.dump import import_vectors, import_metas
 
 from .. import doc_without_embedding
@@ -10,6 +11,12 @@ from .. import doc_without_embedding
 NUM_DOCS = 10
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.abspath(os.path.join(cur_dir, 'docker-compose.yml'))
+
+
+def test_config():
+    config_path = Path(__file__).parents[1] / 'config.yml'
+    storage = Executor.load_config(str(config_path))
+    assert storage._traversal_paths == ['r']
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
