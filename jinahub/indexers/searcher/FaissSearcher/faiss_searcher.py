@@ -27,7 +27,7 @@ class FaissSearcher(Executor):
         The data will only be loaded if `requires_training` is set to True.
     :param max_num_training_points: Optional argument to consider only a subset of training points to training data from `train_filepath`.
         The points will be selected randomly from the available points
-    :param prefech_size: the number of data to pre-load into RAM memory
+    :param prefetch_size: the number of data to pre-load into RAM
     :param requires_training: Boolean flag indicating if the index type requires training to be run before building index.
     :param metric: 'l2' or 'inner_product' accepted. Determines which distances to optimize by FAISS. l2...smaller is better, inner_product...larger is better
     :param normalize: whether or not to normalize the vectors e.g. for the cosine similarity https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how-can-i-index-vectors-for-cosine-similarity
@@ -63,7 +63,7 @@ class FaissSearcher(Executor):
         normalize: bool = False,
         nprobe: int = 1,
         dump_path: Optional[str] = None,
-        prefech_size: Optional[int] = None,
+        prefetch_size: Optional[int] = None,
         default_traversal_paths: List[str] = ['r'],
         is_distance: bool = False,
         default_top_k: int = 5,
@@ -76,7 +76,7 @@ class FaissSearcher(Executor):
         self.requires_training = requires_training
         self.train_filepath = train_filepath if self.requires_training else None
         self.max_num_training_points = max_num_training_points
-        self.prefech_size = prefech_size
+        self.prefetch_size = prefetch_size
         self.metric = metric
         self.normalize = normalize
         self.nprobe = nprobe
@@ -97,18 +97,18 @@ class FaissSearcher(Executor):
             self._ids = np.array(list(ids_iter))
             self._ext2int = {v: i for i, v in enumerate(self._ids)}
 
-            self._prefech_data = []
-            if self.prefech_size and self.prefech_size > 0:
-                for _ in range(prefech_size):
+            self._prefetch_data = []
+            if self.prefetch_size and self.prefetch_size > 0:
+                for _ in range(prefetch_size):
                     try:
-                        self._prefech_data.append(next(vecs_iter))
+                        self._prefetch_data.append(next(vecs_iter))
                     except StopIteration:
                         break
             else:
-                self._prefech_data = list(vecs_iter)
+                self._prefetch_data = list(vecs_iter)
 
-            self.num_dim = self._prefech_data[0].shape[0]
-            self.dtype = self._prefech_data[0].dtype
+            self.num_dim = self._prefetch_data[0].shape[0]
+            self.dtype = self._prefetch_data[0].dtype
             self.index = self._build_index(vecs_iter)
         else:
             self.logger.warning(
@@ -167,16 +167,15 @@ class FaissSearcher(Executor):
 
             else:
                 self.logger.info(f'Taking indexed data as training points')
-                # train_data = np.stack(self._prefech_data)
                 while (
                     self.max_num_training_points
-                    and len(self._prefech_data) < self.max_num_training_points
+                    and len(self._prefetch_data) < self.max_num_training_points
                 ):
                     try:
-                        self._prefech_data.append(next(vecs_iter))
+                        self._prefetch_data.append(next(vecs_iter))
                     except:
                         break
-                train_data = np.stack(self._prefech_data)
+                train_data = np.stack(self._prefetch_data)
 
             if train_data is None:
                 self.logger.warning(
@@ -207,12 +206,12 @@ class FaissSearcher(Executor):
         return index
 
     def _build_partial_index(self, vecs_iter: Iterable['np.ndarray'], index):
-        if len(self._prefech_data) > 0:
-            vecs = np.stack(self._prefech_data).astype(np.float32)
+        if len(self._prefetch_data) > 0:
+            vecs = np.stack(self._prefetch_data).astype(np.float32)
             self._index(vecs, index)
-            self._prefech_data.clear()
+            self._prefetch_data.clear()
 
-        for batch_data in batch_iterator(vecs_iter, self.prefech_size):
+        for batch_data in batch_iterator(vecs_iter, self.prefetch_size):
             batch_data = list(batch_data)
             if len(batch_data) == 0:
                 break
