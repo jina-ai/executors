@@ -20,7 +20,7 @@ class MinRanker(Executor):
 
     def __init__(
         self,
-        metric: str,
+        metric: str = 'cosine',
         default_traversal_paths: Iterable[str] = ('r',),
         *args,
         **kwargs

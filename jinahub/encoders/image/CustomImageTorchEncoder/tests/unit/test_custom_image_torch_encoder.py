@@ -1,20 +1,26 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray
+from jina import Document, DocumentArray, Executor
 
 from ...custom_image_torch_encoder import CustomImageTorchEncoder
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
-
 
 @pytest.fixture
-def encoder(tmpdir):
-    model_state_dict_path = os.path.join(cur_dir, '../model/model_state_dict.pth')
-    return CustomImageTorchEncoder(model_definition_file=os.path.join(cur_dir, '../model/external_model.py'),
-                                   model_state_dict_path=model_state_dict_path, layer_name='conv1',
-                                   model_class_name='ExternalModel')
+def encoder():
+    model_dir = Path(__file__).parents[1] / 'model'
+    return CustomImageTorchEncoder(
+        model_definition_file=str(model_dir / 'external_model.py'),
+        model_state_dict_path=str(model_dir / 'model_state_dict.pth'),
+        layer_name='conv1',
+        model_class_name='ExternalModel',
+    )
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.layer_name == 'conv1'
 
 
 def test_encoder(encoder):
@@ -32,8 +38,12 @@ def test_encoder_traversal_paths(encoder):
     output_dim = 10
     input_dim = 224
     test_img = np.random.rand(3, input_dim, input_dim)
-    docs = DocumentArray([Document(chunks=[Document(blob=test_img), Document(blob=test_img)]),
-                          Document(chunks=[Document(blob=test_img), Document(blob=test_img)])])
+    docs = DocumentArray(
+        [
+            Document(chunks=[Document(blob=test_img), Document(blob=test_img)]),
+            Document(chunks=[Document(blob=test_img), Document(blob=test_img)]),
+        ]
+    )
     encoder.encode(docs, {'traversal_paths': ['c']})
     assert len(docs) == 2
     assert len(docs.traverse_flat(['c'])) == 4

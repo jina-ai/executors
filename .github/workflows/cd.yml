@@ -5,8 +5,8 @@ on:
     branches:
       - main
   workflow_dispatch:
-  # comment out to test in a PR
-  # pull_request:
+  # comment this out to test in CI
+  #pull_request:
 
 
 jobs:

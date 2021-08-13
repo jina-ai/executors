@@ -12,8 +12,8 @@ import tensorflow as tf
 
 tf.compat.v1.disable_eager_execution()
 
-from vggish.vggish_postprocess import *
-from vggish.vggish_slim import *
+from .vggish.vggish_postprocess import *
+from .vggish.vggish_slim import *
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

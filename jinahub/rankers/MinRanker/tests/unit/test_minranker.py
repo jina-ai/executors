@@ -1,8 +1,17 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+from pathlib import Path
+
 import pytest
+from jina import Executor
+
 from ...minranker import MinRanker
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.metric == 'cosine'
 
 
 @pytest.mark.parametrize('default_traversal_paths', [['r'], ['c']])
