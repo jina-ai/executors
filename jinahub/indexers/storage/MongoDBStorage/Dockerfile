@@ -1,4 +1,4 @@
-FROM jinaai/jina:2.0.10 as base
+FROM jinaai/jina:2.0.18 as base
 
 # install git
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
