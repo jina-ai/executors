@@ -7,7 +7,7 @@ from ...minranker import MinRanker
 
 
 def test_integration(documents_chunk):
-    with Flow().add(uses=MinRanker, override_with={'metric': 'cosine'}) as flow:
+    with Flow().add(uses=MinRanker, uses_with={'metric': 'cosine'}) as flow:
         resp = flow.post(on='/search', inputs=documents_chunk, return_results=True)
 
     for r in resp:
@@ -18,5 +18,5 @@ def test_integration(documents_chunk):
                 assert match.tags
                 assert (
                     match.scores['cosine'].value
-                    >= doc.matches[i + 1].scores['cosine'].value
+                    <= doc.matches[i + 1].scores['cosine'].value
                 )
