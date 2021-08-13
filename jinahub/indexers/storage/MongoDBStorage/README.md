@@ -22,7 +22,6 @@ The class constructer receive the following parameters:
 - [🎉️ Example](#%EF%B8%8F-example)
 - [🔍️ Reference](#%EF%B8%8F-reference)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 🌱 Prerequisites
 
