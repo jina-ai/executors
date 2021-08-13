@@ -20,10 +20,14 @@ def test_mongo_add(docs_to_index, storage, docker_compose):
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_mongo_update(docs_to_index, storage, docker_compose):
+    storage.add(docs=docs_to_index, parameters={})
     doc_id_to_update = docs_to_index[0].id
     storage.update(
         docs=DocumentArray([Document(id=doc_id_to_update, text='hello test')])
     )
+    docs_to_search = DocumentArray([Document(id=doc_id_to_update)])
+    storage.search(docs=docs_to_search)
+    assert docs_to_search[0].text == 'hello test'
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
