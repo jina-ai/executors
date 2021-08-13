@@ -183,12 +183,6 @@ def test_faiss_indexer_known(metas, train_data, tmpdir):
     assert len(idx) == len(dist)
     assert len(idx) == len(docs) * TOP_K
 
-    docs = DocumentArray([Document(id=id) for id in ['7', '4']])
-    indexer.fill_embedding(docs)
-    embs = docs.traverse_flat(['r']).get_attributes('embedding')
-
-    np.testing.assert_equal(embs, vectors[[3, 0]])
-
 
 def test_faiss_indexer_known_big(metas, tmpdir):
     """Let's try to have some real test. We will have an index with 10k vectors of random values between 5 and 10.
@@ -256,15 +250,6 @@ def test_faiss_indexer_known_big(metas, tmpdir):
     assert len(idx) == len(dist)
     assert len(idx) == (10 * top_k)
 
-    docs = DocumentArray([Document(id=id) for id in ['10000', '15000']])
-    indexer.fill_embedding(docs)
-    embs = docs.traverse_flat(['r']).get_attributes('embedding')
-
-    np.testing.assert_equal(
-        embs,
-        vectors[[0, 5000]],
-    )
-
 
 @pytest.mark.parametrize('train_data', ['new', 'none'])
 @pytest.mark.parametrize('max_num_points', [None, 257, 500, 10000])
@@ -314,8 +299,8 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
     assert len(idx) == num_query * top_k
 
 
-@pytest.mark.parametrize('distance', ['l2', 'inner_product'])
-def test_faiss_normalization(metas, distance, tmpdir):
+@pytest.mark.parametrize('metric', ['l2', 'inner_product'])
+def test_faiss_normalization(metas, metric, tmpdir):
     num_data = 2
     num_dims = 64
 
@@ -334,7 +319,7 @@ def test_faiss_normalization(metas, distance, tmpdir):
 
     indexer = FaissSearcher(
         index_key='Flat',
-        metric=distance,
+        metric=metric,
         normalize=True,
         requires_training=True,
         metas=metas,
@@ -346,4 +331,4 @@ def test_faiss_normalization(metas, distance, tmpdir):
     docs = _get_docs_from_vecs(query.astype('float32'))
     indexer.search(docs, parameters={'top_k': 2})
     dist = docs.traverse_flat(['m']).get_attributes('scores')
-    assert dist[0][distance].value == 1
+    assert dist[0][metric].value == 1.0
