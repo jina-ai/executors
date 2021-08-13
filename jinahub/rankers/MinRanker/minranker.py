@@ -11,6 +11,8 @@ class MinRanker(Executor):
     """
     :class:`MinRanker` aggregates the score of the matched doc from the matched chunks.
     For each matched doc, the score is aggregated from all the matched chunks belonging to that doc.
+    The score of the document is the minimum score (min distance) among the chunks.
+    The aggregated matches are sorted by score (ascending).
 
     :param metric: the distance metric used in `scores`
     :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
@@ -45,8 +47,8 @@ class MinRanker(Executor):
             )
             for key, group in groups:
                 chunk_match_list = list(group)
-                chunk_match_list.sort(key=lambda m: -m.scores[self.metric].value)
+                chunk_match_list.sort(key=lambda m: m.scores[self.metric].value)
                 match = chunk_match_list[0]
                 match.id = chunk_match_list[0].parent_id
                 doc.matches.append(match)
-            doc.matches.sort(key=lambda d: -d.scores[self.metric].value)
+            doc.matches.sort(key=lambda d: d.scores[self.metric].value)
