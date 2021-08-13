@@ -68,20 +68,28 @@ class LightGBMRanker(Executor):
         self.label = label
         self.logger = JinaLogger(self.__class__.__name__)
         if self.model_path and os.path.exists(self.model_path):
-            self.booster = lightgbm.Booster(model_file=self.model_path)
-            model_num_features = self.booster.num_feature()
-            expected_num_features = len(self.query_features + self.match_features)
-            if categorical_query_features:
-                expected_num_features += len(categorical_query_features)
-            if categorical_match_features:
-                expected_num_features += len(categorical_match_features)
-            if model_num_features != expected_num_features:
-                raise ValueError(
-                    f'The number of features expected by the LightGBM model {model_num_features} is different'
-                    f'than the ones provided in input {expected_num_features}'
-                )
+            self.booster = self._load_model(self.model_path)
         else:
             self.booster = None
+
+    def _load_model(self, path):
+        """Load model from model path"""
+        self.booster = lightgbm.Booster(model_file=path)
+        model_num_features = self.booster.num_feature()
+        expected_num_features = len(self.query_features + self.match_features)
+        if self.categorical_query_features:
+            expected_num_features += len(self.categorical_query_features)
+        if self.categorical_match_features:
+            expected_num_features += len(self.categorical_match_features)
+        if model_num_features != expected_num_features:
+            raise ValueError(
+                f'The number of features expected by the LightGBM model {model_num_features} is different'
+                f'than the ones provided in input {expected_num_features}'
+            )
+
+    def _save_model(self, path):
+        """Dump model into cbm."""
+        self.booster.save_model(model_file=path)
 
     def _get_features_dataset(self, docs: DocumentArray) -> 'lightgbm.Dataset':
         q_features, m_features, group, labels = [], [], [], []
@@ -157,27 +165,6 @@ class LightGBMRanker(Executor):
             categorical_feature=categorical_feature,
         )
 
-    @requests(on='/dump')
-    def dump(self, parameters: Dict, **kwargs):
-        model_path = parameters.get('model_path', None)
-        if model_path:
-            self.booster.save_model(model_path)
-        else:
-            self.booster.save_model('tmp/model.txt')
-            self.logger.info(
-                f'Model {model_path} does not exist. Model has been saved to tmp/model.txt.'
-            )
-
-    @requests(on='/load')
-    def load(self, parameters: Dict, **kwargs):
-        model_path = parameters.get('model_path', None)
-        if model_path:
-            self.booster = lightgbm.Booster(model_file=model_path)
-        else:
-            self.logger.warning(
-                f'Model {model_path} does not exist. Please specify the correct model_path inside parameters.'
-            )
-
     @requests(on='/search')
     def rank(self, docs: DocumentArray, **kwargs):
         """The :meth:`rank` endpoint allows user to assign a score to their docs given by pre-trained
@@ -200,5 +187,23 @@ class LightGBMRanker(Executor):
                 'docs without changes will be passed to the next Executor!'
             )
 
-    def close(self):
-        self.booster.save_model(self.model_path)
+    @requests(on='/dump')
+    def dump(self, parameters: Dict, **kwargs):
+        model_path = parameters.get('model_path', None)
+        if model_path:
+            self.booster.save_model(model_path)
+        else:
+            self.booster.save_model('tmp/model.txt')
+            self.logger.info(
+                f'Model {model_path} does not exist. Model has been saved to tmp/model.txt.'
+            )
+
+    @requests(on='/load')
+    def load(self, parameters: Dict, **kwargs):
+        model_path = parameters.get('model_path', None)
+        if model_path:
+            self.booster = lightgbm.Booster(model_file=model_path)
+        else:
+            self.logger.warning(
+                f'Model {model_path} does not exist. Please specify the correct model_path inside parameters.'
+            )
