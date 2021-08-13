@@ -89,14 +89,15 @@ def test_faiss_indexer(metas, tmpdir_dump):
     assert len(query_docs[0].matches) == 4
     for d in query_docs:
         assert (
-                d.matches[0].scores[indexer.metric].value
-                >= d.matches[1].scores[indexer.metric].value
+            d.matches[0].scores[indexer.metric].value
+            <= d.matches[1].scores[indexer.metric].value
         )
 
 
-@pytest.mark.parametrize(['metric', 'is_distance'],
-                         [('l2', True), ('inner_product', True),
-                          ('l2', False), ('inner_product', False)])
+@pytest.mark.parametrize(
+    ['metric', 'is_distance'],
+    [('l2', True), ('inner_product', True), ('l2', False), ('inner_product', False)],
+)
 def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
     train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
@@ -119,9 +120,15 @@ def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
 
     for i in range(len(docs[0].matches) - 1):
         if not is_distance:
-            assert docs[0].matches[i].scores[metric].value >= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                >= docs[0].matches[i + 1].scores[metric].value
+            )
         else:
-            assert docs[0].matches[i].scores[metric].value <= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                <= docs[0].matches[i + 1].scores[metric].value
+            )
 
 
 @pytest.mark.parametrize('train_data', ['new', 'none', 'index'])
@@ -169,12 +176,6 @@ def test_faiss_indexer_known(metas, train_data, tmpdir):
     )
     assert len(idx) == len(dist)
     assert len(idx) == len(docs) * TOP_K
-
-    docs = DocumentArray([Document(id=id) for id in ['7', '4']])
-    indexer.fill_embedding(docs)
-    embs = docs.traverse_flat(['r']).get_attributes('embedding')
-
-    np.testing.assert_equal(embs, vectors[[3, 0]])
 
 
 def test_faiss_indexer_known_big(metas, tmpdir):
@@ -242,15 +243,6 @@ def test_faiss_indexer_known_big(metas, tmpdir):
     dist = docs.traverse_flat(['m']).get_attributes('scores')
     assert len(idx) == len(dist)
     assert len(idx) == (10 * top_k)
-
-    docs = DocumentArray([Document(id=id) for id in ['10000', '15000']])
-    indexer.fill_embedding(docs)
-    embs = docs.traverse_flat(['r']).get_attributes('embedding')
-
-    np.testing.assert_equal(
-        embs,
-        vectors[[0, 5000]],
-    )
 
 
 @pytest.mark.parametrize('train_data', ['new', 'none'])

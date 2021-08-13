@@ -2,11 +2,11 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import gzip
-from typing import Optional, Dict, List
+from typing import Iterable, Optional, Dict, List
 
 import numpy as np
 from jina import Executor, DocumentArray, requests, Document
-
+from jina.helper import batch_iterator
 from jina_commons import get_logger
 from jina_commons.indexers.dump import import_vectors
 
@@ -27,6 +27,7 @@ class FaissSearcher(Executor):
         The data will only be loaded if `requires_training` is set to True.
     :param max_num_training_points: Optional argument to consider only a subset of training points to training data from `train_filepath`.
         The points will be selected randomly from the available points
+    :param prefech_size: the number of data to pre-load into RAM memory
     :param requires_training: Boolean flag indicating if the index type requires training to be run before building index.
     :param metric: 'l2' or 'inner_product' accepted. Determines which distances to optimize by FAISS. l2...smaller is better, inner_product...larger is better
     :param normalize: whether or not to normalize the vectors e.g. for the cosine similarity https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how-can-i-index-vectors-for-cosine-similarity
@@ -62,8 +63,9 @@ class FaissSearcher(Executor):
         normalize: bool = False,
         nprobe: int = 1,
         dump_path: Optional[str] = None,
+        prefech_size: Optional[int] = None,
         default_traversal_paths: List[str] = ['r'],
-        is_distance: bool = False,
+        is_distance: bool = True,
         default_top_k: int = 5,
         on_gpu: bool = False,
         *args,
@@ -74,6 +76,7 @@ class FaissSearcher(Executor):
         self.requires_training = requires_training
         self.train_filepath = train_filepath if self.requires_training else None
         self.max_num_training_points = max_num_training_points
+        self.prefech_size = prefech_size
         self.metric = metric
         self.normalize = normalize
         self.nprobe = nprobe
@@ -88,13 +91,25 @@ class FaissSearcher(Executor):
         dump_path = dump_path or kwargs.get('runtime_args').get('dump_path')
         if dump_path is not None:
             self.logger.info('Start building "FaissIndexer" from dump data')
-            ids, vecs = import_vectors(dump_path, str(self.runtime_args.pea_id))
-            self._ids = np.array(list(ids))
+            ids_iter, vecs_iter = import_vectors(
+                dump_path, str(self.runtime_args.pea_id)
+            )
+            self._ids = np.array(list(ids_iter))
             self._ext2int = {v: i for i, v in enumerate(self._ids)}
-            self._vecs = np.array(list(vecs))
-            self.num_dim = self._vecs.shape[1]
-            self.dtype = self._vecs.dtype
-            self.index = self._build_index(self._vecs)
+
+            self._prefech_data = []
+            if self.prefech_size and self.prefech_size > 0:
+                for _ in range(prefech_size):
+                    try:
+                        self._prefech_data.append(next(vecs_iter))
+                    except StopIteration:
+                        break
+            else:
+                self._prefech_data = list(vecs_iter)
+
+            self.num_dim = self._prefech_data[0].shape[0]
+            self.dtype = self._prefech_data[0].dtype
+            self.index = self._build_index(vecs_iter)
         else:
             self.logger.warning(
                 'No data loaded in "FaissIndexer". Use .rolling_update() to re-initialize it...'
@@ -124,10 +139,10 @@ class FaissSearcher(Executor):
             else index
         )
 
-    def _build_index(self, vecs: 'np.ndarray'):
+    def _build_index(self, vecs_iter: Iterable['np.ndarray']):
         """Build an advanced index structure from a numpy array.
 
-        :param vecs: numpy array containing the vectors to index
+        :param vecs_iter: iterator of numpy array containing the vectors to index
         """
         import faiss
 
@@ -149,15 +164,29 @@ class FaissSearcher(Executor):
         if self.requires_training:
             if self.train_filepath:
                 train_data = self._load_training_data(self.train_filepath)
+
             else:
                 self.logger.info(f'Taking indexed data as training points')
-                train_data = vecs
+                # train_data = np.stack(self._prefech_data)
+                while (
+                    self.max_num_training_points
+                    and len(self._prefech_data) < self.max_num_training_points
+                ):
+                    try:
+                        self._prefech_data.append(next(vecs_iter))
+                    except:
+                        break
+                train_data = np.stack(self._prefech_data)
+
             if train_data is None:
                 self.logger.warning(
                     'Loading training data failed. some faiss indexes require previous training.'
                 )
             else:
-                if self.max_num_training_points:
+                if (
+                    self.max_num_training_points
+                    and self.max_num_training_points < train_data.shape[0]
+                ):
                     self.logger.warning(
                         f'From train_data with num_points {train_data.shape[0]}, '
                         f'sample {self.max_num_training_points} points'
@@ -173,19 +202,31 @@ class FaissSearcher(Executor):
                     faiss.normalize_L2(train_data)
                 self._train(index, train_data)
 
-        self._build_partial_index(vecs, index)
+        self._build_partial_index(vecs_iter, index)
         index.nprobe = self.nprobe
         return index
 
-    def _build_partial_index(self, vecs: 'np.ndarray', index):
-        vecs = vecs.astype(np.float32)
+    def _build_partial_index(self, vecs_iter: Iterable['np.ndarray'], index):
+        if len(self._prefech_data) > 0:
+            vecs = np.stack(self._prefech_data).astype(np.float32)
+            self._index(vecs, index)
+            self._prefech_data.clear()
+
+        for batch_data in batch_iterator(vecs_iter, self.prefech_size):
+            batch_data = list(batch_data)
+            if len(batch_data) == 0:
+                break
+            vecs = np.stack(batch_data).astype(np.float32)
+            self._index(vecs, index)
+
+        return
+
+    def _index(self, vecs: 'np.ndarray', index):
         if self.normalize:
             from faiss import normalize_L2
 
             normalize_L2(vecs)
         index.add(vecs)
-
-        return
 
     @requests(on='/search')
     def search(
@@ -196,7 +237,9 @@ class FaissSearcher(Executor):
         :param docs: the DocumentArray containing the documents to search with
         :param parameters: the parameters for the request
         """
-        self.logger.warning(f'searching on Faiss pea id {self.runtime_args.pea_id} with size {self.size}')
+        self.logger.warning(
+            f'searching on Faiss pea id {self.runtime_args.pea_id} with size {self.size}'
+        )
         if not hasattr(self, 'index'):
             self.logger.warning('Querying against an empty Index')
             return
@@ -223,7 +266,7 @@ class FaissSearcher(Executor):
         for doc_idx, matches in enumerate(zip(ids, dists)):
             for m_info in zip(*matches):
                 idx, dist = m_info
-                match = Document(id=self._ids[idx], embedding=self._vecs[idx])
+                match = Document(id=self._ids[idx])
                 if self.is_distance:
                     match.scores[self.metric] = dist
                 else:
@@ -309,17 +352,3 @@ class FaissSearcher(Executor):
             return len(self._ids)
         else:
             return 0
-
-    @requests(on='/fill_embedding')
-    def fill_embedding(self, docs: DocumentArray, **kwargs):
-        """Retrieve the embeddings of the documents (if they are in the index)
-
-        :param docs: the DocumentArray containing the documents to search with
-        """
-        for doc in docs:
-            try:
-                doc.embedding = self._vecs[self._ext2int[doc.id]]
-            except Exception as e:
-                self.logger.warning(
-                    f'Document with id {doc.id} could not be processed. Error: {e}'
-                )
