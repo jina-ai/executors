@@ -1,6 +1,6 @@
 jtype: MongoDBStorage
 metas:
   py_modules:
-    - mongo_storage.py
+    - __init__.py
   workspace: workspace/
   name: mongodb
