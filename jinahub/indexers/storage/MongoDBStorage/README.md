@@ -13,8 +13,6 @@ The class constructer receive the following parameters:
 5. `database`: the database name.
 6. `collection`: the collection name.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [🌱 Prerequisites](#-prerequisites)
