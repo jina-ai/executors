@@ -23,7 +23,7 @@ def basic_encoder_ctx() -> DPRTextEncoder:
 
 
 def test_config():
-    encoder = Executor.load_config('../../config.yml')
+    encoder = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert encoder.default_batch_size == 32
     assert encoder.default_traversal_paths == ('r',)
     assert encoder.encoder_type == 'question'
