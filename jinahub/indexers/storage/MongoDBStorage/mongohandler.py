@@ -4,6 +4,7 @@ __license__ = "Apache-2.0"
 from typing import Optional
 
 from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
 from jina.logging.logger import JinaLogger
 from jina import Document, DocumentArray
 
@@ -51,10 +52,13 @@ class MongoHandler:
             if doc.embedding is not None:
                 item['embedding'] = list(doc.embedding.flatten())
             dict_docs.append(item)
-        self.collection.insert_many(
-            documents=dict_docs,
-            ordered=True,  # all document inserts will be attempted.
-        )
+        try:
+            self.collection.insert_many(
+                documents=dict_docs,
+                ordered=True,  # all document inserts will be attempted.
+            )
+        except BulkWriteError:
+            raise
 
     def update(self, docs: DocumentArray, **kwargs):
         """Update item from docs based on doc id."""
