@@ -65,7 +65,7 @@ class FaissSearcher(Executor):
         dump_path: Optional[str] = None,
         prefech_size: Optional[int] = None,
         default_traversal_paths: List[str] = ['r'],
-        is_distance: bool = True,
+        is_distance: bool = False,
         default_top_k: int = 5,
         on_gpu: bool = False,
         *args,
@@ -261,7 +261,10 @@ class FaissSearcher(Executor):
 
             normalize_L2(vecs)
         dists, ids = self.index.search(vecs, top_k)
-        
+
+        if self.metric == 'inner_product':
+            dists = 1 - dists
+
         for doc_idx, matches in enumerate(zip(ids, dists)):
             for m_info in zip(*matches):
                 idx, dist = m_info
