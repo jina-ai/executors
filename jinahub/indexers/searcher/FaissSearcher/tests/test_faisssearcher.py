@@ -96,7 +96,7 @@ def test_faiss_indexer(metas, tmpdir_dump):
 
 @pytest.mark.parametrize(
     ['metric', 'is_distance'],
-    [('l2', True), ('inner_product', True), ('l2', False), ('inner_product', False)],
+    [('l2', True), ('inner_product', False), ('l2', True), ('inner_product', False)],
 )
 def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
     train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
@@ -119,16 +119,10 @@ def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
     assert len(docs[0].matches) == 4
 
     for i in range(len(docs[0].matches) - 1):
-        if not is_distance:
-            assert (
-                docs[0].matches[i].scores[metric].value
-                >= docs[0].matches[i + 1].scores[metric].value
-            )
-        else:
-            assert (
-                docs[0].matches[i].scores[metric].value
-                <= docs[0].matches[i + 1].scores[metric].value
-            )
+        assert (
+            docs[0].matches[i].scores[metric].value
+            <= docs[0].matches[i + 1].scores[metric].value
+        )
 
 
 @pytest.mark.parametrize('train_data', ['new', 'none', 'index'])
