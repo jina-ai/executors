@@ -1,4 +1,4 @@
-jtype: YoloV5Segmenter
+jtype: YoloV5SegmenterXXX
 metas:
   py_modules:
     - yolov5_segmenter.py
