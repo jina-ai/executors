@@ -261,8 +261,7 @@ class FaissSearcher(Executor):
 
             normalize_L2(vecs)
         dists, ids = self.index.search(vecs, top_k)
-        if self.metric == 'inner_product':
-            dists = 1 - dists
+        
         for doc_idx, matches in enumerate(zip(ids, dists)):
             for m_info in zip(*matches):
                 idx, dist = m_info
