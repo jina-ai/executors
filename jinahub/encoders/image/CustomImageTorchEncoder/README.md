@@ -107,7 +107,7 @@ import numpy as np
 from jina import Flow, Document
 
 f = Flow().add(uses='jinahub+docker://CustomImageTorchEncoder', 
-                override_with={'model_state_dict_path': 'model_state_dict.pth',
+                uses_with={'model_state_dict_path': 'model_state_dict.pth',
                                'layer_name': 'conv1',
                                'model_definition_file': 'model.py',
                                'model_class_name': 'CustomModel'},
