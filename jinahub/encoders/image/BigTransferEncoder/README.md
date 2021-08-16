@@ -62,7 +62,7 @@ pods:
   - name: encoder
     uses: 'jinahub+docker://BigTransferEncoder'
     volumes: '/your_pretrained/path:/big_transfer/pretrained'
-    override_with: 
+    uses_with: 
       model_path: '/big_transfer/pretrained'
 ```
 
@@ -73,7 +73,7 @@ jtype: Flow
 pods:
   - name: encoder
     uses: 'jinahub+docker://BigTransferEncoder'
-    override_with: 
+    uses_with: 
       model_name: 'R50x1'
 ```
 
@@ -102,7 +102,7 @@ jtype: Flow
 pods:
   - name: encoder
     uses: 'jinahub://BigTransferEncoder'
-    override_with:
+    use_with:
       on_gpu: true
 ```
 
