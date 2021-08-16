@@ -2,12 +2,12 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import pytest
-from ...minranker import MinRanker
+from ...simpleranker import SimpleRanker
 
 
 @pytest.mark.parametrize('default_traversal_paths', [['r'], ['c']])
 def test_ranker(documents_chunk, documents_chunk_chunk, default_traversal_paths):
-    ranker = MinRanker(metric='cosine', default_traversal_paths=default_traversal_paths)
+    ranker = SimpleRanker(metric='cosine', default_traversal_paths=default_traversal_paths)
     if default_traversal_paths == ['r']:
         ranking_docs = documents_chunk
     else:
