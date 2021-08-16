@@ -1,6 +1,6 @@
-# ✨ MinRanker
+# ✨ SimpleRanker
 
-**MinRanker** is a class aggregates the score of the matched doc from the matched chunks.
+**SimpleRanker** is a class aggregates the score of the matched doc from the matched chunks.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -29,7 +29,7 @@ Use the prebuilt images from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub+docker://MinRanker')
+f = Flow().add(uses='jinahub+docker://SimpleRanker')
 ```
 
 or in the `.yml` config.
@@ -38,7 +38,10 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: encoder
-    uses: 'jinahub+docker://MinRanker'
+    uses: 'jinahub+docker://SimpleRanker'
+    uses_with:
+      metric: 'cosine'
+      ranking: 'min'    # Other options are 'max', 'mean_max', 'mean_min'
 ```
 
 #### using source code
@@ -47,7 +50,7 @@ Use the source code from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub://MinRanker')
+f = Flow().add(uses='jinahub://SimpleRanker')
 ```
 
 or in the `.yml` config.
@@ -56,7 +59,7 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: encoder
-    uses: 'jinahub://MinRanker'
+    uses: 'jinahub://SimpleRanker'
 ```
 	
 
@@ -83,7 +86,7 @@ for i in range(0, 10):
 
 document_array.extend([document])
 
-f = Flow().add(uses='jinahub://MinRanker', uses_with={'metric': 'cosine'})
+f = Flow().add(uses='jinahub://SimpleRanker', uses_with={'metric': 'cosine'})
 
 with f:
     resp = f.post(on='/search', inputs=document_array, return_results=True)
