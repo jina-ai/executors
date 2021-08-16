@@ -30,7 +30,7 @@ docker run -p 127.0.0.1:6379:6379/tcp -d redis
 If you run both the database and the `RedisStorage` docker container on the same machine 
 localhost in the `RedisStorage` resolves to a separate network created by Docker which cannot see the database running on the host network.  
 Use `host.docker.internal` to access localhost on the host machine.  
-You can pass this parameter to the `RedisStorage` storage by using `override_with={'hostname': 'host.docker.internal''}` when
+You can pass this parameter to the `RedisStorage` storage by using `uses_with={'hostname': 'host.docker.internal''}` when
 calling the `flow.add(...)` function.
 
 ## 🚀 Usages

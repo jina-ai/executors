@@ -55,7 +55,7 @@ pods:
   - name: encoder
     uses: 'jinahub+docker://TransformerTorchEncoder'
     volumes: '/your_user/.cache/huggingface:/root/.cache/huggingface'
-    overwrite_with: 
+    uses_with: 
       target_size: 42
 ``` 
 This does not support GPU at the moment.

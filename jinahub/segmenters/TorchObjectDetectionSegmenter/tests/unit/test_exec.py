@@ -3,12 +3,13 @@ __license__ = "Apache-2.0"
 
 
 import os
+from pathlib import Path
 
 import numpy as np
 from PIL import Image
 from unittest.mock import patch
 
-from jina import Document, DocumentArray
+from jina import Document, DocumentArray, Executor
 from ...torch_object_detection_segmenter import TorchObjectDetectionSegmenter
 
 
@@ -60,6 +61,11 @@ class MockModel:
         return self
 
 
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.default_batch_size == 32
+
+
 def test_encoding_mock_model_results():
     import torchvision.models.detection as detection_models
 
@@ -90,9 +96,7 @@ def test_encoding_mock_model_results():
 def test_encoding_fasterrcnn_results():
     img_array = create_random_img_array(128, 64)
     img_array = img_array / 255
-    segmenter = TorchObjectDetectionSegmenter(
-        confidence_threshold=0.98
-    )
+    segmenter = TorchObjectDetectionSegmenter(confidence_threshold=0.98)
     test_docs = DocumentArray([Document(blob=img_array), Document(blob=img_array)])
     segmenter.segment(test_docs, {})
     docs_chunks = test_docs.get_attributes("chunks")

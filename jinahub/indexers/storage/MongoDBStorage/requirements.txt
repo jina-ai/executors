@@ -1,0 +1,3 @@
+pymongo==3.11.4
+numpy==1.21.0
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons

@@ -1,12 +1,18 @@
+from pathlib import Path
 from typing import List
 
 import numpy as np
 import pytest
 import torch
-from jina import Document, DocumentArray
+from jina import Document, DocumentArray, Executor
 from ...audioclip_text import AudioCLIPTextEncoder
 
 _EMBEDDING_DIM = 1024
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    assert ex.default_batch_size == 32
 
 
 def test_encoding_cpu():

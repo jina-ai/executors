@@ -1,8 +1,9 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray, Flow
+from jina import Document, DocumentArray, Executor, Flow
 from jina.logging.profile import TimeContext
 
 from jina_commons.indexers.dump import import_metas, import_vectors
@@ -23,6 +24,11 @@ def get_documents(nr=10, index_start=0, emb_size=7, text='hello world'):
         d.tags['field'] = f'tag data {i}'
         docs.append(d)
     return DocumentArray(docs)
+
+
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.map_size == 1048576000
 
 
 def test_lmdb_crud(tmpdir, nr_docs=10):
@@ -110,7 +116,7 @@ def test_lmdb_crud_flow(tmpdir):
 
 
 def _in_docker():
-    """ Returns: True if running in a Docker container, else False """
+    """Returns: True if running in a Docker container, else False"""
     with open('/proc/1/cgroup', 'rt') as ifh:
         if 'docker' in ifh.read():
             print('in docker, skipping benchmark')

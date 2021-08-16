@@ -81,10 +81,11 @@ class AnnoySearcher(Executor):
         traversal_paths = parameters.get(
             'traversal_paths', self.default_traversal_paths
         )
+        top_k = parameters.get('top_k', self.default_top_k)
 
         for doc in docs.traverse_flat(traversal_paths):
             indices, dists = self._indexer.get_nns_by_vector(
-                doc.embedding, self.default_top_k, include_distances=True
+                doc.embedding, top_k, include_distances=True
             )
             for idx, dist in zip(indices, dists):
                 match = Document(id=self._ids[idx], embedding=self._vecs[idx])

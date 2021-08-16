@@ -22,7 +22,7 @@ class SimpleRanker(Executor):
 
     def __init__(
         self,
-        metric: str,
+        metric: str = 'cosine',
         ranking: str = 'min',
         default_traversal_paths: Iterable[str] = ('r',),
         *args,

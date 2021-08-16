@@ -3,10 +3,11 @@ __license__ = "Apache-2.0"
 
 import gzip
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import DocumentArray, Document
+from jina import DocumentArray, Document, Executor
 from jina.executors.metas import get_default_metas
 
 from jina_commons.indexers.dump import export_dump_streaming
@@ -56,6 +57,11 @@ def tmpdir_dump(tmpdir):
     return os.path.join(tmpdir, 'dump')
 
 
+def test_config():
+    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    assert ex.index_key == 'IVF10,PQ4'
+
+
 def test_faiss_indexer_empty(metas, tmpdir_dump):
     train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
@@ -89,14 +95,15 @@ def test_faiss_indexer(metas, tmpdir_dump):
     assert len(query_docs[0].matches) == 4
     for d in query_docs:
         assert (
-                d.matches[0].scores[indexer.metric].value
-                >= d.matches[1].scores[indexer.metric].value
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
         )
 
 
-@pytest.mark.parametrize(['metric', 'is_distance'],
-                         [('l2', True), ('inner_product', True),
-                          ('l2', False), ('inner_product', False)])
+@pytest.mark.parametrize(
+    ['metric', 'is_distance'],
+    [('l2', True), ('inner_product', True), ('l2', False), ('inner_product', False)],
+)
 def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
     train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
@@ -119,9 +126,15 @@ def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
 
     for i in range(len(docs[0].matches) - 1):
         if not is_distance:
-            assert docs[0].matches[i].scores[metric].value >= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                >= docs[0].matches[i + 1].scores[metric].value
+            )
         else:
-            assert docs[0].matches[i].scores[metric].value <= docs[0].matches[i + 1].scores[metric].value
+            assert (
+                docs[0].matches[i].scores[metric].value
+                <= docs[0].matches[i + 1].scores[metric].value
+            )
 
 
 @pytest.mark.parametrize('train_data', ['new', 'none', 'index'])
@@ -169,12 +182,6 @@ def test_faiss_indexer_known(metas, train_data, tmpdir):
     )
     assert len(idx) == len(dist)
     assert len(idx) == len(docs) * TOP_K
-
-    docs = DocumentArray([Document(id=id) for id in ['7', '4']])
-    indexer.fill_embedding(docs)
-    embs = docs.traverse_flat(['r']).get_attributes('embedding')
-
-    np.testing.assert_equal(embs, vectors[[3, 0]])
 
 
 def test_faiss_indexer_known_big(metas, tmpdir):
@@ -243,15 +250,6 @@ def test_faiss_indexer_known_big(metas, tmpdir):
     assert len(idx) == len(dist)
     assert len(idx) == (10 * top_k)
 
-    docs = DocumentArray([Document(id=id) for id in ['10000', '15000']])
-    indexer.fill_embedding(docs)
-    embs = docs.traverse_flat(['r']).get_attributes('embedding')
-
-    np.testing.assert_equal(
-        embs,
-        vectors[[0, 5000]],
-    )
-
 
 @pytest.mark.parametrize('train_data', ['new', 'none'])
 @pytest.mark.parametrize('max_num_points', [None, 257, 500, 10000])
@@ -301,8 +299,8 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
     assert len(idx) == num_query * top_k
 
 
-@pytest.mark.parametrize('distance', ['l2', 'inner_product'])
-def test_faiss_normalization(metas, distance, tmpdir):
+@pytest.mark.parametrize('metric', ['l2', 'inner_product'])
+def test_faiss_normalization(metas, metric, tmpdir):
     num_data = 2
     num_dims = 64
 
@@ -321,7 +319,7 @@ def test_faiss_normalization(metas, distance, tmpdir):
 
     indexer = FaissSearcher(
         index_key='Flat',
-        metric=distance,
+        metric=metric,
         normalize=True,
         requires_training=True,
         metas=metas,
@@ -333,4 +331,4 @@ def test_faiss_normalization(metas, distance, tmpdir):
     docs = _get_docs_from_vecs(query.astype('float32'))
     indexer.search(docs, parameters={'top_k': 2})
     dist = docs.traverse_flat(['m']).get_attributes('scores')
-    assert dist[0][distance].value == 1
+    assert dist[0][metric].value == 1.0
