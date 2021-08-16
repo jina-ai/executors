@@ -30,7 +30,7 @@ class SimpleRanker(Executor):
     ):
         super().__init__(*args, **kwargs)
         self.metric = metric
-        assert ranking in ['min', 'max', 'mean']
+        assert ranking in ['min', 'max', 'mean_min', 'mean_max']
         self.ranking = ranking
         self.default_traversal_paths = default_traversal_paths
 
@@ -56,12 +56,11 @@ class SimpleRanker(Executor):
                     chunk_match_list.sort(key=lambda m: -m.scores[self.metric].value)
                 match = chunk_match_list[0]
                 match.id = chunk_match_list[0].parent_id
-                if self.ranking == 'mean':
-                    match = match.copy()
-                    scores = [el.scores[self.metric] for el in chunk_match_list]
+                if self.ranking in ['mean_min', 'mean_max']:
+                    scores = [el.scores[self.metric].value for el in chunk_match_list]
                     match.scores[self.metric] = sum(scores)/len(scores)
                 doc.matches.append(match)
-            if self.ranking == 'min':
+            if self.ranking in ['min', 'mean_min']:
                 doc.matches.sort(key=lambda d: d.scores[self.metric].value)
-            elif self.ranking == 'max':
+            elif self.ranking in ['max', 'mean_max']:
                 doc.matches.sort(key=lambda d: -d.scores[self.metric].value)
