@@ -83,7 +83,7 @@ for i in range(0, 10):
 
 document_array.extend([document])
 
-f = Flow().add(uses='jinahub://MinRanker', override_with={'metric': 'cosine'})
+f = Flow().add(uses='jinahub://MinRanker', uses_with={'metric': 'cosine'})
 
 with f:
     resp = f.post(on='/search', inputs=document_array, return_results=True)

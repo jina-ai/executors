@@ -17,10 +17,16 @@ The following parameters can be used:
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [✨ Image Normalizer](#-image-normalizer)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [using docker images](#using-docker-images)
+      - [using source code](#using-source-code)
+  - [🎉️ Example](#️-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 ## 🌱 Prerequisites
 
@@ -52,7 +58,7 @@ jtype: Flow
 pods:
   - name: crafter
     uses: 'jinahub+docker://ImageNormalizer'
-    override_with: 
+    uses_with: 
       target_size: 42
 ``` 
 
