@@ -52,7 +52,7 @@ jtype: Flow
 pods:
   - name: crafter
     uses: 'jinahub+docker://ImageNormalizer'
-    override_with: 
+    uses_with: 
       target_size: 42
 ``` 
 
