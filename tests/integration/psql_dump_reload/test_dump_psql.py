@@ -181,7 +181,7 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose, benchmar
             assert dir_size > 0
             print(f'### dump path size: {dir_size} MBs')
 
-            with TimeContext(f'### rolling update {len(docs)} docs'):
+            with TimeContext(f'### rolling update {nr_docs} docs'):
                 flow_query.rolling_update(pod_name='indexer_query', dump_path=dump_path)
             results = flow_query.post(
                 on='/search',

@@ -72,8 +72,8 @@ class PostgreSQLStorage(Executor):
             # always order the dump by id as integer
             cursor = handler.connection.cursor()
             cursor.execute(f'SELECT * from {handler.table} ORDER BY ID')
-            records = cursor.fetchall()
-            for rec in records:
+            rec = cursor.fetchone()
+            while rec:
                 doc = Document(bytes(rec[1]))
                 vec = doc.embedding
                 doc.ClearField('embedding')
