@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from collections import OrderedDict
-from typing import List
+from typing import List, Tuple
 
 from jina import Executor, requests, DocumentArray
 
@@ -16,7 +16,7 @@ class SimpleMerger(Executor):
     :param kwargs: additional key value arguments
     """
 
-    def __init__(self, default_traversal_paths: List[str] = ('r',), **kwargs):
+    def __init__(self, default_traversal_paths: Tuple[str] = ('r',), **kwargs):
 
         self.default_traversal_paths = default_traversal_paths
         super().__init__(**kwargs)
