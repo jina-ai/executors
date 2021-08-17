@@ -236,9 +236,6 @@ class FaissSearcher(Executor):
         :param docs: the DocumentArray containing the documents to search with
         :param parameters: the parameters for the request
         """
-        self.logger.warning(
-            f'searching on Faiss pea id {self.runtime_args.pea_id} with size {self.size}'
-        )
         if not hasattr(self, 'index'):
             self.logger.warning('Querying against an empty Index')
             return
