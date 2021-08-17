@@ -45,13 +45,13 @@ def test_dump_load(ranker, documents_to_train_price_sensitive_model, tmpdir):
 def test_rank_price_sensitive_model(
     ranker,
     documents_to_train_price_sensitive_model,
-    documents_without_label_random_brand,
+    documents_random_brand,
 ):
     """train the model using price sensitive data, assure higher price get lower relevance score."""
     ranker.train(docs=documents_to_train_price_sensitive_model)
     assert ranker.booster
-    ranker.rank(documents_without_label_random_brand)
-    for doc in documents_without_label_random_brand:
+    ranker.rank(documents_random_brand)
+    for doc in documents_random_brand:
         predicted_relevances = []
         predicted_ids = []
         expected_ids = ['3', '4', '2', '1']  # Price smaller to large.

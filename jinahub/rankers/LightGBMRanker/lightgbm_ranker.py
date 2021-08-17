@@ -170,13 +170,15 @@ class LightGBMRanker(Executor):
         :param kwargs: Additional key value arguments.
         """
         dataset = self._get_features_dataset(docs)
-
-        predictions = self.booster.predict(dataset.get_data())
-        matches = docs.traverse_flat(traversal_paths=['m'])
-        for prediction, match in zip(predictions, matches):
-            match.scores[self.label] = prediction
-        for doc in docs:
-            doc.matches.sort(key=lambda x: x.scores[self.label].value, reverse=True)
+        if self.booster:
+            predictions = self.booster.predict(dataset.get_data())
+            matches = docs.traverse_flat(traversal_paths=['m'])
+            for prediction, match in zip(predictions, matches):
+                match.scores[self.label] = prediction
+            for doc in docs:
+                doc.matches.sort(key=lambda x: x.scores[self.label].value, reverse=True)
+        else:
+            self.logger.warning('Model not trained, will return initial docs.')
 
     @requests(on='/dump')
     def dump(self, parameters: Dict, **kwargs):

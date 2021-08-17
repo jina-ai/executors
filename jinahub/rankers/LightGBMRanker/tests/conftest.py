@@ -77,34 +77,22 @@ def documents_to_train_price_sensitive_model():
 
 
 @pytest.fixture
-def documents_without_label_random_price():
-    """features: color, brand, price. Label relevance"""
-    # expect 5 > 3 > 1
-    # expect price
-    da = DocumentArray()
-    d1 = Document(tags={'brand_query': random.randint(0, 5), 'price_query': 200})
-    d1.matches.append(
-        Document(tags={'brand_match': random.randint(0, 5), 'price_match': 196})
-    )
-    d1.matches.append(
-        Document(tags={'brand_match': random.randint(0, 5), 'price_match': 100})
-    )
-    d1.matches.append(
-        Document(tags={'brand_match': random.randint(0, 5), 'price_match': 50})
-    )
-    da.append(d1)
-    return da
-
-
-@pytest.fixture
-def documents_without_label_random_brand():
+def documents_random_brand():
     """features: color, brand, price. Label relevance"""
     # expect price
     da = DocumentArray()
     d1 = Document(tags={'brand_query': 2, 'price_query': 200})
-    d1.matches.append(Document(id=1, tags={'brand_match': 2, 'price_match': 405}))
-    d1.matches.append(Document(id=2, tags={'brand_match': 2, 'price_match': 305}))
-    d1.matches.append(Document(id=3, tags={'brand_match': 2, 'price_match': 96}))
-    d1.matches.append(Document(id=4, tags={'brand_match': 2, 'price_match': 200}))
+    d1.matches.append(
+        Document(id=1, tags={'brand_match': 2, 'price_match': 405, 'relevance': 3})
+    )
+    d1.matches.append(
+        Document(id=2, tags={'brand_match': 2, 'price_match': 305, 'relevance': 3})
+    )
+    d1.matches.append(
+        Document(id=3, tags={'brand_match': 2, 'price_match': 96, 'relevance': 3})
+    )
+    d1.matches.append(
+        Document(id=4, tags={'brand_match': 2, 'price_match': 200, 'relevance': 3})
+    )
     da.append(d1)
     return da
