@@ -147,9 +147,7 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
     # for psql to start
     time.sleep(2)
     top_k = 5
-    docs = DocumentArray(
-        list(get_documents(nr=nr_docs, index_start=0, emb_size=emb_size))
-    )
+    docs = get_documents(nr=nr_docs, index_start=0, emb_size=emb_size)
     # make sure to delete any overlapping docs
     # PostgreSQLStorage().delete(docs, {})
     # assert len(docs) == nr_docs
