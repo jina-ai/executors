@@ -12,6 +12,4 @@ pods:
         model_path: model.txt
         query_features: ['price_query', 'brand_query']
         match_features: ['price_match', 'brand_match']
-#        categorical_query_features: ['brand_query']
-#        categorical_match_features: ['brand_match']
         relevance_label: 'relevance'
