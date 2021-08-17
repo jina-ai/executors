@@ -30,7 +30,7 @@ docker run -e POSTGRES_PASSWORD=123456  -p 127.0.0.1:5432:5432/tcp postgres:13.2
 If you run both the database and the `PostgresSQLStorage` docker container on the same machine 
 localhost in the `PostgresSQLStorage` resolves to a separate network created by Docker which cannot see the database running on the host network.  
 Use `host.docker.internal` to access localhost on the host machine. You can pass this parameter 
-to the `PostgresSQLStorage` storage by using `override_with={'hostname': 'host.docker.internal''}` when
+to the `PostgresSQLStorage` storage by using `uses_with={'hostname': 'host.docker.internal''}` when
 calling the `flow.add(...)` function.
 
 ## 🚀 Usages

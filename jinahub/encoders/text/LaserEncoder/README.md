@@ -36,7 +36,7 @@ Use the prebuilt images from JinaHub in your Python code. The input language can
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub+docker://laser-encoder', override_with={'language': 'en'})
+f = Flow().add(uses='jinahub+docker://laser-encoder', uses_with={'language': 'en'})
 ```
 
 or in the `.yml` config.

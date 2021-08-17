@@ -7,7 +7,7 @@ from jina import Executor
 def test_config():
     ex = Executor.load_config(
         str(Path(__file__).parents[2] / 'config.yml'),
-        override_with={
+        uses_with={
             'query_features': ['query'],
             'match_features': ['match'],
             'relevance_label': 'rel',
