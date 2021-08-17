@@ -5,7 +5,7 @@ import pytest
 from jina import Flow, Document, requests, DocumentArray
 from jina.executors import BaseExecutor
 
-from jinahub.indexers.merger.SimpleMerger.simple_merger import SimpleMerger
+from jinahub.indexers.merger.MatchMerger.match_merger import MatchMerger
 
 
 class MockShard(BaseExecutor):
@@ -19,7 +19,7 @@ def docs():
     return [Document(text=f'sample text {i}') for i in range(2)]
 
 @pytest.mark.parametrize('shards', (1, 3, 5))
-def test_simple_merger(docs, shards):
+def test_match_merger(docs, shards):
     def callback(resp):
         assert len(resp.docs) == 2
         for doc in resp.docs:
@@ -27,7 +27,7 @@ def test_simple_merger(docs, shards):
 
     with Flow().add(
             uses=MockShard,
-            uses_after=SimpleMerger,
+            uses_after=MatchMerger,
             shards=shards,
             polling='all'
     ) as f:

@@ -6,9 +6,9 @@ from typing import List, Tuple
 from jina import Executor, requests, DocumentArray
 
 
-class SimpleMerger(Executor):
+class MatchMerger(Executor):
     """
-    The SimpleMerger merges the results of shards by appending all matches..
+    The MatchMerger merges the results of shards by appending all matches..
 
     :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
     :param args: additional arguments

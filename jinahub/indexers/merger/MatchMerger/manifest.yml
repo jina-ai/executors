@@ -1,6 +1,6 @@
 manifest_version: 1
-name: SimpleMerger
-alias: SimpleMerger
+name: MatchMerger
+alias: MatchMerger
 description: Merges the results of shards by appending all matches.
 author: Jina AI Dev-Team (dev-team@jina.ai)
 url: https://jina.ai

@@ -4,7 +4,7 @@ __license__ = "Apache-2.0"
 import pytest
 from jina import Document, DocumentArray
 
-from jinahub.indexers.merger.SimpleMerger.simple_merger import SimpleMerger
+from jinahub.indexers.merger.MatchMerger.match_merger import MatchMerger
 
 
 @pytest.fixture
@@ -38,7 +38,7 @@ def docs_matrix():
 
 
 def test_root_traversal(docs_matrix):
-    executor = SimpleMerger()
+    executor = MatchMerger()
     document_array = executor.merge(docs_matrix=docs_matrix, parameters={})
     assert len(document_array) == 2
     for d in document_array:
@@ -46,7 +46,7 @@ def test_root_traversal(docs_matrix):
 
 
 def test_chunk_traversal(docs_matrix):
-    executor = SimpleMerger(default_traversal_paths=('c',))
+    executor = MatchMerger(default_traversal_paths=('c',))
     document_array = executor.merge(docs_matrix=docs_matrix, parameters={})
     assert len(document_array) == 6
     for d in document_array:
