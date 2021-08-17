@@ -151,8 +151,8 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
         list(get_documents(nr=nr_docs, index_start=0, emb_size=emb_size))
     )
     # make sure to delete any overlapping docs
-    PostgreSQLStorage().delete(docs, {})
-    assert len(docs) == nr_docs
+    # PostgreSQLStorage().delete(docs, {})
+    # assert len(docs) == nr_docs
 
     dump_path = os.path.join(str(tmpdir), 'dump_dir')
     os.environ['STORAGE_WORKSPACE'] = os.path.join(str(tmpdir), 'index_ws')
@@ -188,7 +188,7 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
             flow_query.rolling_update(pod_name='indexer_query', dump_path=dump_path)
             results = flow_query.post(
                 on='/search',
-                inputs=docs,
+                inputs=get_documents(nr=3, index_start=0, emb_size=emb_size),
                 parameters={'top_k': top_k},
                 return_results=True,
             )
