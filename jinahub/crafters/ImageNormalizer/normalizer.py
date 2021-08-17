@@ -51,22 +51,22 @@ class ImageNormalizer(Executor):
     def craft(self, docs: DocumentArray, parameters: dict, **kwargs) -> DocumentArray:
         if docs is None:
             return
-        ...
-            traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
 
-            filtered_docs = DocumentArray(
-                list(filter(lambda d: 'image/' in d.mime_type, docs.traverse_flat(traversal_paths)))
-            )
+        traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
 
-            for doc in filtered_docs:
-                self._convert_image_to_blob(doc)
-                raw_img = self._load_image(doc.blob)
-                _img = self._normalize(raw_img)
-                # move the channel_axis to target_channel_axis to better fit
-                # different models
-                img = self._move_channel_axis(_img, -1, self.target_channel_axis)
-                doc.blob = img.astype(self.target_dtype)
-            return docs
+        filtered_docs = DocumentArray(
+            list(filter(lambda d: 'image/' in d.mime_type, docs.traverse_flat(traversal_paths)))
+        )
+
+        for doc in filtered_docs:
+            self._convert_image_to_blob(doc)
+            raw_img = self._load_image(doc.blob)
+            _img = self._normalize(raw_img)
+            # move the channel_axis to target_channel_axis to better fit
+            # different models
+            img = self._move_channel_axis(_img, -1, self.target_channel_axis)
+            doc.blob = img.astype(self.target_dtype)
+        return docs
 
     def _convert_image_to_blob(self, doc):
         if doc.uri:
