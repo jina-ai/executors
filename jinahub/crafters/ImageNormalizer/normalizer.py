@@ -20,7 +20,7 @@ class ImageNormalizer(Executor):
         channel_axis: int = -1,
         target_channel_axis: int = -1,
         target_dtype: Union[str, np.dtype] = np.float32,
-        default_traversal_paths: Iterable[str] = ('r',),
+        default_traversal_paths: Tuple[str] = ('r',),
         *args,
         **kwargs,
     ):
