@@ -2,6 +2,7 @@ __copyright__ = 'Copyright (c) 2020-2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
 from pathlib import Path
+from typing import Optional, Dict
 
 import torch
 import librosa as lr
@@ -18,22 +19,25 @@ class VADSpeechSegmenter(Executor):
      by the sample rate
     :param dump: a bool to specify whether to dump the segmented audio
     :param repo: default repo name of silero-vad
-    :param model: device model of silero-vad
+    :param model: default model name of silero-vad
 
     """
 
     def __init__(
         self,
-        normalize: Optional[bool] = False,
-        dump: Optional[bool] = False,
-        repo: Optional[str] = 'snakers4/silero-vad',
-        model: Optional[str] = 'silero_vad',
+        normalize: bool = False,
+        dump: bool = False,
+        repo: str = 'snakers4/silero-vad',
+        model: str = 'silero_vad',
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        if model is None or repo is None:
+            raise ValueError('model and repo cannot be None')
+
         # TODO: remove the following temporary fix for torch hub
-        torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
+        torch.hub._validate_not_a_forked_repo = lambda *args: True
         self.model, utils = torch.hub.load(
             repo_or_dir=repo, model=model, force_reload=True
         )
@@ -42,7 +46,7 @@ class VADSpeechSegmenter(Executor):
         self.normalize = self._normalize if normalize else lambda audio, _: audio
         self.dump = dump
 
-    @requests(on=['/index', '/search'])
+    @requests
     def segment(
         self,
         docs: Optional['DocumentArray'] = None,
