@@ -86,12 +86,11 @@ class MatchMerger(Executor):
 
 
 def get_documents(nr=10, index_start=0, emb_size=7):
+    random_batch = np.random.random([nr, emb_size]).astype(np.float32)
     for i in range(index_start, nr + index_start):
         d = Document()
         d.id = f'aa{i}'  # to test it supports non-int ids
-        d.text = f'hello world {i}'
-        d.embedding = np.random.random(emb_size).astype(np.float32)
-        d.tags['field'] = f'tag data {i}'
+        d.embedding = random_batch[i - index_start]
         yield d
 
 
@@ -185,7 +184,8 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
             assert dir_size > 0
             print(f'### dump path size: {dir_size} MBs')
 
-            flow_query.rolling_update(pod_name='indexer_query', dump_path=dump_path)
+            with TimeContext(f'### rolling update {len(docs)} docs'):
+                flow_query.rolling_update(pod_name='indexer_query', dump_path=dump_path)
             results = flow_query.post(
                 on='/search',
                 inputs=docs,

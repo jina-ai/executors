@@ -76,8 +76,8 @@ class PostgreSQLStorage(Executor):
             for rec in records:
                 doc = Document(bytes(rec[1]))
                 vec = doc.embedding
-                metas = doc_without_embedding(doc)
-                yield rec[0], vec, metas
+                doc.ClearField('embedding')
+                yield rec[0], vec, doc.SerializeToString()
 
     @property
     def size(self):
@@ -173,5 +173,7 @@ class PostgreSQLStorage(Executor):
         with self.handler as postgres_handler:
             postgres_handler.search(
                 docs.traverse_flat(traversal_paths),
-                return_embeddings=parameters.get('return_embeddings', self.default_return_embeddings)
+                return_embeddings=parameters.get(
+                    'return_embeddings', self.default_return_embeddings
+                ),
             )

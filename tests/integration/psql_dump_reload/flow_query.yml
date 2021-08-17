@@ -4,7 +4,9 @@ with:
   return_results: true
 pods:
   - name: indexer_query
-    uses: indexer_query.yml
+    uses: FaissPostgresSearcher
+    metas:
+      name: compound_query_indexer
     shards: $SHARDS
     replicas: 2
     polling: all

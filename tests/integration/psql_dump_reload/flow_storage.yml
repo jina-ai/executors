@@ -2,4 +2,7 @@ jtype: Flow
 version: '1'
 pods:
   - name: indexer_storage
-    uses: indexer_storage.yml
+    uses: PostgreSQLStorage
+    metas:
+      workspace: $STORAGE_WORKSPACE
+      name: psql
