@@ -48,7 +48,7 @@ class ImageNormalizer(Executor):
             self.target_dtype = target_dtype
 
     @requests
-    def craft(self, docs: DocumentArray, parameters, **kwargs) -> DocumentArray:
+    def craft(self, docs: DocumentArray, parameters: dict, **kwargs) -> DocumentArray:
         if docs:
             traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
 
