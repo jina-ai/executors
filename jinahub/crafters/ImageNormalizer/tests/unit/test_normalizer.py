@@ -139,7 +139,7 @@ def test_crafting_image(test_image_uri_doc, manual_convert, dtype_conversion):
         docs = DocumentArray([doc])
     else:
         docs = DocumentArray([test_image_uri_doc])
-    processed_docs = norm.craft(docs)
+    processed_docs = norm.craft(docs, parameters={})
     assert np.array_equal(processed_docs[0].blob, img.astype(dtype_conversion))
 
     for doc in processed_docs:
@@ -157,5 +157,5 @@ def test_move_channel_axis(test_image_uri_doc):
     channel0_img = norm._move_channel_axis(doc.blob, 2, 0)
     assert channel0_img.shape == (3, 96, 96)
 
-    processed_docs = norm.craft(DocumentArray([doc]))
+    processed_docs = norm.craft(DocumentArray([doc]), parameters={})
     assert processed_docs[0].blob.shape == (3, 224, 224)

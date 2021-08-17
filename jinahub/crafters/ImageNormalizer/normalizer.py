@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from pydoc import locate
-from typing import Tuple, Union, Iterable
+from typing import Tuple, Union, Iterable, List
 import numpy as np
 import PIL.Image as Image
 
@@ -19,7 +19,8 @@ class ImageNormalizer(Executor):
         resize_dim: Union[Iterable[int], int] = 256,
         channel_axis: int = -1,
         target_channel_axis: int = -1,
-        target_dtype: Union[str,np.dtype] = np.float32,
+        target_dtype: Union[str, np.dtype] = np.float32,
+        default_traversal_paths: Iterable[str] = ('r',),
         *args,
         **kwargs,
     ):
@@ -32,6 +33,7 @@ class ImageNormalizer(Executor):
         self.channel_axis = channel_axis
         self.target_channel_axis = target_channel_axis
         self.logger = get_logger(self)
+        self.default_traversal_paths = default_traversal_paths
 
         # when passed from yaml it is string
         if isinstance(target_dtype, str):
@@ -45,22 +47,24 @@ class ImageNormalizer(Executor):
         else:
             self.target_dtype = target_dtype
 
-
     @requests
-    def craft(self, docs: DocumentArray, **kwargs) -> DocumentArray:
-        filtered_docs = DocumentArray(
-            list(filter(lambda d: 'image/' in d.mime_type, docs))
-        )
+    def craft(self, docs: DocumentArray, parameters, **kwargs) -> DocumentArray:
+        if docs:
+            traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
 
-        for doc in filtered_docs:
-            self._convert_image_to_blob(doc)
-            raw_img = self._load_image(doc.blob)
-            _img = self._normalize(raw_img)
-            # move the channel_axis to target_channel_axis to better fit
-            # different models
-            img = self._move_channel_axis(_img, -1, self.target_channel_axis)
-            doc.blob = img.astype(self.target_dtype)
-        return filtered_docs
+            filtered_docs = DocumentArray(
+                list(filter(lambda d: 'image/' in d.mime_type, docs.traverse_flat(traversal_paths)))
+            )
+
+            for doc in filtered_docs:
+                self._convert_image_to_blob(doc)
+                raw_img = self._load_image(doc.blob)
+                _img = self._normalize(raw_img)
+                # move the channel_axis to target_channel_axis to better fit
+                # different models
+                img = self._move_channel_axis(_img, -1, self.target_channel_axis)
+                doc.blob = img.astype(self.target_dtype)
+            return docs
 
     def _convert_image_to_blob(self, doc):
         if doc.uri:
@@ -85,7 +89,7 @@ class ImageNormalizer(Executor):
 
     @staticmethod
     def _move_channel_axis(
-        img: 'np.ndarray', channel_axis_to_move: int, target_channel_axis: int = -1
+            img: 'np.ndarray', channel_axis_to_move: int, target_channel_axis: int = -1
     ) -> 'np.ndarray':
         """
         Ensure the color channel axis is the default axis.
@@ -131,10 +135,10 @@ class ImageNormalizer(Executor):
         elif how == 'precise':
             assert w_beg is not None and h_beg is not None
             assert (
-                0 <= w_beg <= (img_w - target_w)
+                    0 <= w_beg <= (img_w - target_w)
             ), f'left must be within [0, {img_w - target_w}]: {w_beg}'
             assert (
-                0 <= h_beg <= (img_h - target_h)
+                    0 <= h_beg <= (img_h - target_h)
             ), f'top must be within [0, {img_h - target_h}]: {h_beg}'
         else:
             raise ValueError(f'unknown input how: {how}')
