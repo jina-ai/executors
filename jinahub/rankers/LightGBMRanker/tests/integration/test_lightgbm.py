@@ -57,4 +57,3 @@ def test_train_offline(
                 scores.append(match.scores['relevance'].value)
         assert len(scores) == 4
         assert scores[0] >= scores[1] >= scores[2]
-        assert scores[0] >= scores[1] >= scores[2] >= scores[-2] >= scores[-1]
