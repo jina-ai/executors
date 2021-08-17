@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from pydoc import locate
-from typing import Tuple, Union, Iterable, List
+from typing import Tuple, Union, Iterable
 import numpy as np
 import PIL.Image as Image
 
