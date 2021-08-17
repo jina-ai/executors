@@ -143,14 +143,13 @@ def path_size(dump_path):
 @pytest.mark.parametrize('nr_docs', [100])
 @pytest.mark.parametrize('emb_size', [10])
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
-def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
+def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose, benchmark=False):
     # for psql to start
     time.sleep(2)
     top_k = 5
     docs = get_documents(nr=nr_docs, index_start=0, emb_size=emb_size)
-    # make sure to delete any overlapping docs
-    # PostgreSQLStorage().delete(docs, {})
-    # assert len(docs) == nr_docs
+    if not benchmark:
+        docs = DocumentArray(list(docs))
 
     dump_path = os.path.join(str(tmpdir), 'dump_dir')
     os.environ['STORAGE_WORKSPACE'] = os.path.join(str(tmpdir), 'index_ws')
@@ -162,13 +161,13 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
 
     with Flow.load_config(storage_flow_yml) as flow_storage:
         with Flow.load_config(query_flow_yml) as flow_query:
-            with TimeContext(f'### indexing {len(docs)} docs'):
+            with TimeContext(f'### indexing {nr_docs} docs'):
                 flow_storage.post(on='/index', inputs=docs)
 
-            results = flow_query.post(on='/search', inputs=docs, return_results=True)
+            results = flow_query.post(on='/search', inputs=get_documents(nr=1, index_start=0, emb_size=emb_size), return_results=True)
             assert len(results[0].docs[0].matches) == 0
 
-            with TimeContext(f'### dumping {len(docs)} docs'):
+            with TimeContext(f'### dumping {nr_docs} docs'):
                 flow_storage.post(
                     on='/dump',
                     target_peapod='indexer_storage',
@@ -198,8 +197,9 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
     assert idx.size == nr_docs
 
     # assert data dumped is correct
-    for pea_id in range(shards):
-        assert_dump_data(dump_path, docs, shards, pea_id)
+    if not benchmark:
+        for pea_id in range(shards):
+            assert_dump_data(dump_path, docs, shards, pea_id)
 
 
 def _in_docker():
@@ -218,7 +218,7 @@ def _in_docker():
 )
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_benchmark(tmpdir, docker_compose):
-    nr_docs = 1000
+    nr_docs = 10000
     return test_dump_reload(
-        tmpdir, nr_docs=nr_docs, emb_size=128, shards=3, docker_compose=compose_yml
+        tmpdir, nr_docs=nr_docs, emb_size=128, shards=3, docker_compose=compose_yml, benchmark=True
     )
