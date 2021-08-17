@@ -49,7 +49,9 @@ class ImageNormalizer(Executor):
 
     @requests
     def craft(self, docs: DocumentArray, parameters: dict, **kwargs) -> DocumentArray:
-        if docs:
+        if docs is None:
+            return
+        ...
             traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
 
             filtered_docs = DocumentArray(
