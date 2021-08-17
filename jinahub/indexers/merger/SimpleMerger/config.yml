@@ -1,0 +1,7 @@
+jtype: SimpleMerger
+with:
+  {}
+metas:
+  py_modules:
+    - simple_merger.py
+  name: simple_merger
