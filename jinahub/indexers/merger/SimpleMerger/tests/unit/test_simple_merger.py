@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import pytest
-from jina import Flow, Document, DocumentArray
+from jina import Document, DocumentArray
 
 from jinahub.indexers.merger.SimpleMerger.simple_merger import SimpleMerger
 
@@ -46,7 +46,7 @@ def test_root_traversal(docs_matrix):
 
 
 def test_chunk_traversal(docs_matrix):
-    executor = SimpleMerger(default_traversal_paths=('c', ))
+    executor = SimpleMerger(default_traversal_paths=('c',))
     document_array = executor.merge(docs_matrix=docs_matrix, parameters={})
     assert len(document_array) == 6
     for d in document_array:

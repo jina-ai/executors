@@ -15,9 +15,9 @@ class SimpleMerger(Executor):
     :param kwargs: additional key value arguments
     """
 
-    def __init__(self, default_traversal_paths: Tuple[str, ...] = ('r', ), **kwargs):
-        self.default_traversal_paths = default_traversal_paths
+    def __init__(self, default_traversal_paths: Tuple[str, ...] = ('r',), **kwargs):
         super().__init__(**kwargs)
+        self.default_traversal_paths = default_traversal_paths
 
     @requests
     def merge(self, docs_matrix: List[DocumentArray], parameters: dict, **kwargs):
@@ -33,4 +33,3 @@ class SimpleMerger(Executor):
                 results[doc.id].matches.extend(doc.matches)
             else:
                 results[doc.id] = doc
-
