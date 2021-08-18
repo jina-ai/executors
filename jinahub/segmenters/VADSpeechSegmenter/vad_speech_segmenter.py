@@ -5,9 +5,10 @@ from pathlib import Path
 from typing import Optional, Dict
 
 import torch
+import torchaudio
+import numpy as np
 import librosa as lr
-import soundfile as sf
-from jina import Executor, DocumentArray, requests
+from jina import Executor, Document, DocumentArray, requests
 from jina.excepts import BadDocType
 
 
@@ -22,6 +23,8 @@ class VADSpeechSegmenter(Executor):
     :param model: default model name of silero-vad
 
     """
+
+    TARGET_SAMPLE_RATE = 16000
 
     def __init__(
         self,
@@ -42,7 +45,7 @@ class VADSpeechSegmenter(Executor):
             repo_or_dir=repo, model=model, force_reload=True
         )
 
-        (_, self.get_speech_ts_adaptive, self.save_audio, _, _, _, _) = utils
+        (_, self.get_speech_ts_adaptive, self.save_audio, *_) = utils
         self.normalize = self._normalize if normalize else lambda audio, _: audio
         self.dump = dump
 
@@ -61,7 +64,7 @@ class VADSpeechSegmenter(Executor):
         """
 
         for doc in docs:
-            unnormalized_audio, sample_rate = self._load_audio(doc)
+            unnormalized_audio, sample_rate = self._resample(*self._load_raw_audio(doc))
             audio = self.normalize(unnormalized_audio, sample_rate)
             speech_timestamps = self.get_speech_ts_adaptive(audio, self.model)
             doc.blob, doc.tags['sample_rate'] = (
@@ -73,7 +76,7 @@ class VADSpeechSegmenter(Executor):
             if dump_dir:
                 dump_dir.mkdir(exist_ok=True)
                 self.save_audio(
-                    str(dump_dir / f'doc_{doc.id}.wav'),
+                    str(dump_dir / f'doc_{doc.id}_original.wav'),
                     unnormalized_audio,
                     int(sample_rate),
                 )
@@ -95,9 +98,11 @@ class VADSpeechSegmenter(Executor):
                         int(sample_rate),
                     )
 
-    def _load_audio(self, doc):
-        if doc.blob is not None:
-            return torch.Tensor(doc.blob), doc.tags.get('sample_rate')
+    def _load_raw_audio(self, doc):
+        if doc.blob is not None and doc.tags.get('sample_rate') is None:
+            raise BadDocType('data is blob but sample rate is not provided')
+        elif doc.blob is not None:
+            return torch.Tensor(doc.blob), doc.tags['sample_rate']
         elif doc.uri is not None and doc.uri.endswith('.mp3'):
             audio, sample_rate = self._read_mp3(doc.uri)
             return torch.Tensor(audio), sample_rate
@@ -108,9 +113,8 @@ class VADSpeechSegmenter(Executor):
             raise BadDocType('doc needs to have either a blob or a wav/mp3 uri')
 
     def _read_wav(self, file_path):
-        data, sample_rate = sf.read(file_path, dtype='int16')
-        if len(wav_data.shape) > 1:
-            data = np.mean(wav_data, axis=1)
+        data, sample_rate = torchaudio.load(file_path)
+        data = np.mean(data.detach().cpu().numpy(), axis=0)
         return data, sample_rate
 
     def _read_mp3(self, file_path):
@@ -120,3 +124,12 @@ class VADSpeechSegmenter(Executor):
         if not sample_rate:
             return
         return data / sample_rate
+
+    def _resample(self, data, orig_sample_rate, target_sample_rate=TARGET_SAMPLE_RATE):
+        if orig_sample_rate == target_sample_rate:
+            return data, orig_sample_rate
+
+        transform = torchaudio.transforms.Resample(
+            orig_freq=orig_sample_rate, new_freq=target_sample_rate
+        )
+        return transform(data), target_sample_rate

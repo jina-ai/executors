@@ -1,7 +1,7 @@
 FROM jinaai/jina:latest-perf
 
 # install git
-RUN apt-get -y update && apt-get install -y git && apt-get install -y libsndfile1
+RUN apt-get -y update && apt-get install -y libsndfile1
 
 # install requirements before copying the workspace
 COPY requirements.txt /requirements.txt
@@ -11,5 +11,4 @@ RUN pip install -r requirements.txt
 COPY . /workspace
 WORKDIR /workspace
 
-# ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
