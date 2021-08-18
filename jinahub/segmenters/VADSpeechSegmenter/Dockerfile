@@ -1,6 +1,5 @@
 FROM jinaai/jina:latest-perf
 
-# install git
 RUN apt-get -y update && apt-get install -y libsndfile1
 
 # install requirements before copying the workspace
