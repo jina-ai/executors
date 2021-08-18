@@ -2,7 +2,7 @@ jtype: Flow
 version: '1'
 with:
   return_results: true
-pods:
+executors:
   - name: indexer_query
     uses: FaissPostgresSearcher
     metas:
