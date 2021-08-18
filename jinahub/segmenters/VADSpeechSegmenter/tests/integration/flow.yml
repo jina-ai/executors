@@ -1,0 +1,10 @@
+jtype: Flow
+version: '1'
+with:
+  py_modules:
+    - vad_speech_segmenter.py
+  return_results: true
+executors:
+  - name: segmenter
+    uses:
+      jtype: VADSpeechSegmenter
