@@ -40,13 +40,14 @@ class PostgreSQLHandler:
         database: str = 'postgres',
         table: Optional[str] = 'default_table',
         max_connections: int = 5,
+        dump_dtype: type = np.float64,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger('psq_handler')
         self.table = table
-        self.dump_type = np.float64
+        self.dump_dtype = dump_dtype
 
         try:
             self.postgreSQL_pool = psycopg2.pool.SimpleConnectionPool(
@@ -117,7 +118,7 @@ class PostgreSQLHandler:
                 [
                     (
                         doc.id,
-                        doc.embedding.astype(self.dump_type).tobytes(),
+                        doc.embedding.astype(self.dump_dtype).tobytes(),
                         doc_without_embedding(doc),
                     )
                     for doc in docs
@@ -141,10 +142,11 @@ class PostgreSQLHandler:
         cursor = self.connection.cursor()
         psycopg2.extras.execute_batch(
             cursor,
-            f'UPDATE {self.table} SET DOC = %s WHERE ID = %s',
+            f'UPDATE {self.table} SET EMBEDDING = %s, DOC = %s WHERE ID = %s',
             [
                 (
-                    doc.SerializeToString(),
+                    doc.embedding.astype(self.dump_dtype).tobytes(),
+                    doc_without_embedding(doc),
                     doc.id,
                 )
                 for doc in docs
@@ -174,15 +176,23 @@ class PostgreSQLHandler:
 
     def search(self, docs: DocumentArray, return_embeddings: bool = True, **kwargs):
         """Use the Postgres db as a key-value engine, returning the metadata of a document id"""
+        if return_embeddings:
+            embeddings_field = ', EMBEDDING '
+        else:
+            embeddings_field = ''
         cursor = self.connection.cursor()
         for doc in docs:
             # retrieve metadata
-            cursor.execute(f'SELECT DOC FROM {self.table} WHERE ID = %s;', (doc.id,))
+            cursor.execute(
+                f'SELECT DOC {embeddings_field} FROM {self.table} WHERE ID = %s;',
+                (doc.id,),
+            )
             result = cursor.fetchone()
             data = bytes(result[0])
             retrieved_doc = Document(data)
-            if not return_embeddings:
-                retrieved_doc.pop('embedding')
+            if return_embeddings:
+                embedding = np.frombuffer(result[1], dtype=self.dump_dtype)
+                retrieved_doc.embedding = embedding
             doc.MergeFrom(retrieved_doc)
 
     def _close_connection(self, connection):

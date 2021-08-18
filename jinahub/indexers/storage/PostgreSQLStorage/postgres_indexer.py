@@ -77,6 +77,10 @@ class PostgreSQLStorage(Executor):
                 yield rec[0], rec[1], rec[2]
 
     @property
+    def dump_dtype(self):
+        return self.handler.dump_dtype
+
+    @property
     def size(self):
         """Obtain the size of the table
 
