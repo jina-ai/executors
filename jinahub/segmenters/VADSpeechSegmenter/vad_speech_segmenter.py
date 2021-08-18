@@ -62,8 +62,6 @@ class VADSpeechSegmenter(Executor):
             return
 
         for doc in docs:
-            if not doc:
-                continue
             unnormalized_audio, sample_rate = self._resample(*self._load_raw_audio(doc))
             audio = self.normalize(unnormalized_audio, sample_rate)
             speech_timestamps = self.get_speech_ts_adaptive(audio, self.model)
