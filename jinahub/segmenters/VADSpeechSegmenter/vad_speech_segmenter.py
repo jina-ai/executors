@@ -2,7 +2,7 @@ __copyright__ = 'Copyright (c) 2020-2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
 from pathlib import Path
-from typing import Optional, Dict, Tuple
+from typing import Optional, Tuple
 
 import torch
 import torchaudio
@@ -30,20 +30,16 @@ class VADSpeechSegmenter(Executor):
         self,
         normalize: bool = False,
         dump: bool = False,
-        repo: str = 'snakers4/silero-vad',
-        model: str = 'silero_vad',
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        if model is None or repo is None:
-            raise ValueError('model and repo cannot be None')
-
         # TODO: remove the following temporary fix for torch hub
         torch.hub._validate_not_a_forked_repo = lambda *args: True
         self.model, utils = torch.hub.load(
-            repo_or_dir=repo, model=model, force_reload=True
+            repo_or_dir='snakers4/silero-vad', model='silero_vad', force_reload=True
         )
+        self.model.eval()  # set model to eval mode
 
         (_, self.get_speech_ts_adaptive, self.save_audio, *_) = utils
         self.normalize = self._normalize if normalize else lambda audio, _: audio
@@ -52,8 +48,8 @@ class VADSpeechSegmenter(Executor):
     @requests
     def segment(
         self,
-        docs: Optional['DocumentArray'] = None,
-        parameters: Optional[Dict] = {},
+        docs: Optional[DocumentArray] = None,
+        parameters: dict = {},
         **kwargs,
     ):
         """
@@ -102,7 +98,7 @@ class VADSpeechSegmenter(Executor):
                         sample_rate,
                     )
 
-    def _load_raw_audio(self, doc: 'Document') -> Tuple['torch.Tensor', int]:
+    def _load_raw_audio(self, doc: Document) -> Tuple[torch.Tensor, int]:
         if doc.blob is not None and doc.tags.get('sample_rate', None) is None:
             raise BadDocType('data is blob but sample rate is not provided')
         elif doc.blob is not None:
@@ -116,25 +112,25 @@ class VADSpeechSegmenter(Executor):
         else:
             raise BadDocType('doc needs to have either a blob or a wav/mp3 uri')
 
-    def _read_wav(self, file_path: str) -> Tuple['np.ndarray', int]:
+    def _read_wav(self, file_path: str) -> Tuple[np.ndarray, int]:
         data, sample_rate = torchaudio.load(file_path)
         data = np.mean(data.cpu().numpy(), axis=0)
         return data, sample_rate
 
-    def _read_mp3(self, file_path: str) -> Tuple['np.ndarray', int]:
+    def _read_mp3(self, file_path: str) -> Tuple[np.ndarray, int]:
         return lr.load(file_path)
 
-    def _normalize(self, data: 'torch.Tensor', sample_rate: int) -> 'torch.Tensor':
+    def _normalize(self, data: torch.Tensor, sample_rate: int) -> torch.Tensor:
         if orig_sample_rate == 0:
             raise BadDocType('sample rate cannot be 0')
         return data / sample_rate
 
     def _resample(
         self,
-        data: 'torch.Tensor',
+        data: torch.Tensor,
         orig_sample_rate: int,
         target_sample_rate: int = TARGET_SAMPLE_RATE,
-    ) -> Tuple['torch.Tensor', int]:
+    ) -> Tuple[torch.Tensor, int]:
 
         if orig_sample_rate == 0:
             raise BadDocType('sample rate cannot be 0')

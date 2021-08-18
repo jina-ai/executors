@@ -12,17 +12,6 @@ def test_load():
     assert type(segmenter).__name__ == 'VADSpeechSegmenter'
 
 
-def test_init():
-    with pytest.raises(ValueError, match='model and repo cannot be None'):
-        segmenter = VADSpeechSegmenter(model=None)
-
-    with pytest.raises(ValueError, match='model and repo cannot be None'):
-        segmenter = VADSpeechSegmenter(repo=None)
-
-    # default case
-    segmenter = VADSpeechSegmenter()
-
-
 @pytest.mark.parametrize('_type', ['wav', 'mp3', 'blob', '', None])
 def test_segment(build_da, segmenter, _type):
 
