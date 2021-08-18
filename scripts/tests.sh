@@ -31,6 +31,8 @@ if [[ -d "tests/" ]]; then
 
   if [[ $test_dir = "jinahub/encoders/text/LaserEncoder" ]]; then
     python -m laserembeddings download-models
+  elif [[ $test_dir = "jinahub/segmenters/VADSpeechSegmenter" ]]; then
+    sudo apt-get update && sudo apt-get install libsndfile1 ffmpeg
   fi
 
   pytest -s -v tests/
