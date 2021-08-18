@@ -1,18 +1,19 @@
+import collections
 import os
-import time
 from collections import OrderedDict
 from pathlib import Path
 from typing import Dict
 
 import numpy as np
 import pytest
+import time
 from jina import Flow, Document, Executor, DocumentArray, requests
 from jina.logging.profile import TimeContext
+
 from jina_commons.indexers.dump import (
     import_vectors,
     import_metas,
 )
-
 
 METRIC = 'l2'
 
@@ -94,6 +95,13 @@ def get_documents(nr=10, index_start=0, emb_size=7):
         yield d
 
 
+def get_batch_iterator(batches, batch_size, emb_size=7):
+    index_start = 0
+    for batch in range(batches):
+        yield from get_documents(batch_size, index_start, emb_size)
+        index_start += batch_size
+
+
 def assert_dump_data(dump_path, docs, shards, pea_id):
     docs = sorted(
         docs, key=lambda doc: doc.id
@@ -106,10 +114,10 @@ def assert_dump_data(dump_path, docs, shards, pea_id):
     )
     if pea_id == shards - 1:
         docs_expected = docs[
-            (pea_id) * size_shard : (pea_id + 1) * size_shard + size_shard_modulus
-        ]
+                        (pea_id) * size_shard: (pea_id + 1) * size_shard + size_shard_modulus
+                        ]
     else:
-        docs_expected = docs[(pea_id) * size_shard : (pea_id + 1) * size_shard]
+        docs_expected = docs[(pea_id) * size_shard: (pea_id + 1) * size_shard]
     print(f'### pea {pea_id} has {len(docs_expected)} docs')
 
     # TODO these might fail if we implement any ordering of elements on dumping / reloading
@@ -131,14 +139,23 @@ def assert_dump_data(dump_path, docs, shards, pea_id):
 
 def path_size(dump_path):
     dir_size = (
-        sum(f.stat().st_size for f in Path(dump_path).glob('**/*') if f.is_file()) / 1e6
+            sum(f.stat().st_size for f in Path(dump_path).glob('**/*') if f.is_file()) / 1e6
     )
     return dir_size
 
 
+def flatten(it):
+    for x in it:
+        if (isinstance(x, collections.Iterable) and
+                not isinstance(x, str)):
+            yield from flatten(x)
+        else:
+            yield x
+
+
 # replicas w 1 shard doesn't work
 # @pytest.mark.parametrize('shards', [1, 3, 7])
-@pytest.mark.parametrize('shards', [3, 7])
+@pytest.mark.parametrize('shards', [3, ])
 @pytest.mark.parametrize('nr_docs', [100])
 @pytest.mark.parametrize('emb_size', [10])
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
@@ -146,9 +163,11 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose, benchmar
     # for psql to start
     time.sleep(2)
     top_k = 5
-    docs = get_documents(nr=nr_docs, index_start=0, emb_size=emb_size)
+    batch_size = min(1000, nr_docs)
+    docs = get_batch_iterator(batches=nr_docs // batch_size, batch_size=batch_size, emb_size=emb_size)
     if not benchmark:
-        docs = DocumentArray(list(docs))
+        docs = DocumentArray(flatten(docs))
+        assert len(docs) == nr_docs
 
     dump_path = os.path.join(str(tmpdir), 'dump_dir')
     os.environ['STORAGE_WORKSPACE'] = os.path.join(str(tmpdir), 'index_ws')
@@ -163,7 +182,8 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose, benchmar
             with TimeContext(f'### indexing {nr_docs} docs'):
                 flow_storage.post(on='/index', inputs=docs)
 
-            results = flow_query.post(on='/search', inputs=get_documents(nr=1, index_start=0, emb_size=emb_size), return_results=True)
+            results = flow_query.post(on='/search', inputs=get_documents(nr=1, index_start=0, emb_size=emb_size),
+                                      return_results=True)
             assert len(results[0].docs[0].matches) == 0
 
             with TimeContext(f'### dumping {nr_docs} docs'):
@@ -218,7 +238,7 @@ def _in_docker():
 )
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_benchmark(tmpdir, docker_compose):
-    nr_docs = 10000
+    nr_docs = 500000
     return test_dump_reload(
         tmpdir, nr_docs=nr_docs, emb_size=128, shards=3, docker_compose=compose_yml, benchmark=True
     )

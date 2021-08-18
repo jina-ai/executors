@@ -79,6 +79,7 @@ class PostgreSQLStorage(Executor):
                 vec = doc.embedding
                 doc.ClearField('embedding')
                 yield rec[0], vec, doc.SerializeToString()
+                rec = cursor.fetchone()
 
     @property
     def size(self):
