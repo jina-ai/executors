@@ -109,8 +109,7 @@ class SimpleIndexer(Executor):
         traversal_paths = parameters.get(
             'traversal_paths', self.default_traversal_paths
         )
-        flat_docs = docs.traverse_flat(traversal_paths)
-        delete_docs_ids = flat_docs.get_attributes('id')
+        delete_docs_ids = docs.traverse_flat(traversal_paths).get_attributes('id')
         for idx in delete_docs_ids:
             if idx in self._docs:
                 del self._docs[idx]
