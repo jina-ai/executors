@@ -1,6 +1,6 @@
 git+https://github.com/jina-ai/jina.git@master#egg=jina[hub]
 psycopg2-binary==2.8.6
-jina_commons @ git+https://github.com/jina-ai/jina-commons
+jina_commons @ git+https://github.com/jina-ai/jina-commons@feat-optional-metas
 lmdb==1.2.1
 pytest
 pytest-mock
