@@ -19,12 +19,12 @@ def assert_document_arrays_equal(arr1, arr2):
 
 @pytest.fixture
 def docs():
-    doc1 = Document(id='doc1', embedding=np.array([0, 0, 0, 0]))
+    doc1 = Document(id='doc1', embedding=np.array([0, 0, 0, 1]))
     doc1.chunks.append(Document(id='doc1-chunk1', embedding=np.array([1, 0, 0, 0])))
     doc1.chunks.append(Document(id='doc1-chunk2', embedding=np.array([0, 1, 0, 0])))
     doc1.chunks.append(Document(id='doc1-chunk3', embedding=np.array([0, 1, 0, 1])))
 
-    doc2 = Document(id='doc2', embedding=np.array([1, 1, 1, 1]))
+    doc2 = Document(id='doc2', embedding=np.array([0, 1, 1, 1]))
     doc2.chunks.append(Document(id='doc2-chunk1', embedding=np.array([0, 0, 1, 0])))
     doc2.chunks.append(Document(id='doc2-chunk2', embedding=np.array([0, 0, 0, 1])))
     doc2.chunks.append(Document(id='doc2-chunk3', embedding=np.array([0, 1, 0, 1])))
@@ -33,7 +33,7 @@ def docs():
 
 @pytest.fixture
 def delete_docs():
-    doc1 = Document(id='doc1', embedding=np.array([0, 0, 0, 0]))
+    doc1 = Document(id='doc1', embedding=np.array([0, 0, 0, 1]))
     doc1.chunks.append(Document(id='doc1-chunk1', embedding=np.array([1, 0, 0, 0])))
     doc1.chunks.append(Document(id='doc1-chunk2', embedding=np.array([0, 1, 0, 0])))
     doc1.chunks.append(Document(id='doc1-chunk3', embedding=np.array([0, 1, 0, 1])))
@@ -42,7 +42,7 @@ def delete_docs():
 
 @pytest.fixture
 def remain_docs():
-    doc2 = Document(id='doc2', embedding=np.array([1, 1, 1, 1]))
+    doc2 = Document(id='doc2', embedding=np.array([0, 1, 1, 1]))
     doc2.chunks.append(Document(id='doc2-chunk1', embedding=np.array([0, 0, 1, 0])))
     doc2.chunks.append(Document(id='doc2-chunk2', embedding=np.array([0, 0, 0, 1])))
     doc2.chunks.append(Document(id='doc2-chunk3', embedding=np.array([0, 1, 0, 1])))
@@ -51,7 +51,7 @@ def remain_docs():
 
 @pytest.fixture
 def update_docs():
-    doc1 = Document(id='doc1', embedding=np.array([1, 1, 1, 1]))
+    doc1 = Document(id='doc1', embedding=np.array([0, 0, 1, 1]))
     doc1.chunks.append(Document(id='doc1-chunk1', embedding=np.array([0, 0, 0, 1])))
     doc1.chunks.append(Document(id='doc1-chunk2', embedding=np.array([0, 0, 1, 0])))
     doc1.chunks.append(Document(id='doc1-chunk3', embedding=np.array([0, 0, 1, 1])))
@@ -60,12 +60,12 @@ def update_docs():
 
 @pytest.fixture
 def new_docs():
-    doc1 = Document(id='doc1', embedding=np.array([1, 1, 1, 1]))
+    doc1 = Document(id='doc1', embedding=np.array([0, 0, 1, 1]))
     doc1.chunks.append(Document(id='doc1-chunk1', embedding=np.array([0, 0, 0, 1])))
     doc1.chunks.append(Document(id='doc1-chunk2', embedding=np.array([0, 0, 1, 0])))
     doc1.chunks.append(Document(id='doc1-chunk3', embedding=np.array([0, 0, 1, 1])))
 
-    doc2 = Document(id='doc2', embedding=np.array([1, 1, 1, 1]))
+    doc2 = Document(id='doc2', embedding=np.array([0, 1, 1, 1]))
     doc2.chunks.append(Document(id='doc2-chunk1', embedding=np.array([0, 0, 1, 0])))
     doc2.chunks.append(Document(id='doc2-chunk2', embedding=np.array([0, 0, 0, 1])))
     doc2.chunks.append(Document(id='doc2-chunk3', embedding=np.array([0, 1, 0, 1])))
