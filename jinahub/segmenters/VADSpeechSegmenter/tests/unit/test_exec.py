@@ -1,19 +1,42 @@
 from pathlib import Path
 
 import pytest
-from jina import Executor
+from jina import Executor, DocumentArray, Document
 from jina.excepts import BadDocType
 
 from ...vad_speech_segmenter import VADSpeechSegmenter
 
 
-def test_load(test_dir):
-    segmenter = Executor.load_config(str(Path(test_dir).parents[0] / 'config.yml'))
+def test_load():
+    segmenter = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert type(segmenter).__name__ == 'VADSpeechSegmenter'
 
 
-@pytest.mark.parametrize('_type', ['wav', 'mp3', 'blob'])
+def test_init():
+    with pytest.raises(ValueError, match='model and repo cannot be None'):
+        segmenter = VADSpeechSegmenter(model=None)
+
+    with pytest.raises(ValueError, match='model and repo cannot be None'):
+        segmenter = VADSpeechSegmenter(repo=None)
+
+    # default case
+    segmenter = VADSpeechSegmenter()
+
+
+@pytest.mark.parametrize('_type', ['wav', 'mp3', 'blob', '', None])
 def test_segment(build_da, segmenter, _type):
+
+    if _type == '':
+        with pytest.raises(
+            BadDocType, match='doc needs to have either a blob or a wav/mp3 uri'
+        ):
+            segmenter.segment(DocumentArray(Document()))
+        return
+
+    elif _type is None:
+        segmenter.segment(DocumentArray())
+        return
+
     docs = build_da(_type)
     segmenter.segment(docs)
 
@@ -36,6 +59,11 @@ def test_segment(build_da, segmenter, _type):
     # assert exception is raised when doc blob is provided by sample rate is not
     if _type == 'blob':
         docs[0].tags.pop('sample_rate')
-        with pytest.raises(BadDocType) as e:
+        with pytest.raises(
+            BadDocType, match='data is blob but sample rate is not provided'
+        ):
             segmenter.segment(docs)
-        assert str(e.value) == 'data is blob but sample rate is not provided'
+
+        docs[0].tags['sample_rate'] = 0
+        with pytest.raises(BadDocType, match='sample rate cannot be 0'):
+            segmenter.segment(docs)
