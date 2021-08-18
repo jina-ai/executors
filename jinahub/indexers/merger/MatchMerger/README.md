@@ -30,7 +30,7 @@ Use the prebuilt images from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub+docker://AnnoySearcher')
+f = Flow().add(uses='jinahub+docker://MatchMerger')
 ```
 
 or in the `.yml` config.
@@ -39,7 +39,7 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: indexer
-    uses: 'jinahub+docker://AnnoySearcher'
+    uses: 'jinahub+docker://MatchMerger'
 ```
 
 #### using source code
@@ -48,7 +48,7 @@ Use the source code from JinaHub in your code
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub://AnnoySearcher')
+f = Flow().add(uses='jinahub://MatchMerger')
 ```
 
 or in the `.yml` config.
@@ -57,7 +57,7 @@ or in the `.yml` config.
 jtype: Flow
 pods:
   - name: indexer
-    uses: 'jinahub://AnnoySearcher'
+    uses: 'jinahub://MatchMerger'
 ```
 
 
@@ -66,7 +66,11 @@ pods:
 ```python
 from jina import Flow, Document
 
-f = Flow().add(uses='jinahub+docker://AnnoySearcher')
+f = Flow().add(
+    uses='jinahub+docker://SimpleIndexer', 
+    shards=10,
+    uses_after='jinahub+docker://MatchMerger'
+)
 
 with f:
     resp = f.post(on='/search', inputs=Document(), return_results=True)

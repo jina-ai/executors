@@ -5,7 +5,7 @@ import pytest
 from jina import Flow, Document, requests, DocumentArray
 from jina.executors import BaseExecutor
 
-from jinahub.indexers.merger.MatchMerger.match_merger import MatchMerger
+from ...match_merger import MatchMerger
 
 
 class MockShard(BaseExecutor):

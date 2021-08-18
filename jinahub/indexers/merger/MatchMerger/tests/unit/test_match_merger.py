@@ -4,7 +4,7 @@ __license__ = "Apache-2.0"
 import pytest
 from jina import Document, DocumentArray
 
-from jinahub.indexers.merger.MatchMerger.match_merger import MatchMerger
+from ...match_merger import MatchMerger
 
 
 @pytest.fixture
