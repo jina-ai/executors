@@ -20,15 +20,13 @@ def docs():
 
 @pytest.mark.parametrize('shards', (1, 3, 5))
 def test_match_merger(docs, shards):
-    def callback(resp):
-        assert len(resp.docs) == 2
-        for doc in resp.docs:
-            assert {d.tags['shard_id'] for d in doc.matches} == {float(i) for i in range(shards)}
-
     with Flow().add(
             uses=MockShard,
             uses_after=MatchMerger,
             shards=shards,
             polling='all'
     ) as f:
-        f.search(docs, on_done=callback)
+        resp = f.search(docs, return_results=True)[0].docs
+        assert len(resp) == 2
+        for doc in resp:
+            assert {d.tags['shard_id'] for d in doc.matches} == {float(i) for i in range(shards)}
