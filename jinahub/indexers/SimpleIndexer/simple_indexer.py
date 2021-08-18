@@ -110,9 +110,9 @@ class SimpleIndexer(Executor):
             'traversal_paths', self.default_traversal_paths
         )
         flat_docs = docs.traverse_flat(traversal_paths)
-        delete_docs_ids = set(flat_docs.get_attributes('id'))
-        for idx in reversed(range(len(self._docs))):
-            if self._docs[idx].id in delete_docs_ids:
+        delete_docs_ids = flat_docs.get_attributes('id')
+        for idx in delete_docs_ids:
+            if idx in self._docs:
                 del self._docs[idx]
 
     @requests(on='/update')
