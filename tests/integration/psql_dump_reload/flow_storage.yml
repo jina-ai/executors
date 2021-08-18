@@ -3,7 +3,7 @@ version: '1'
 executors:
   - name: indexer_storage
     uses: PostgreSQLStorage
-    shards: 3
+    shards: $SHARDS
     polling: any
     metas:
       workspace: $STORAGE_WORKSPACE
