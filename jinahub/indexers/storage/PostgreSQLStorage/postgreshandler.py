@@ -1,14 +1,14 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-import psycopg2
-from psycopg2 import pool
-import psycopg2.extras
-import numpy as np
+from typing import Optional, Generator, Tuple
 
+import numpy as np
+import psycopg2
+import psycopg2.extras
 from jina import DocumentArray, Document
 from jina.logging.logger import JinaLogger
-from typing import Optional
+from psycopg2 import pool
 
 
 def doc_without_embedding(d: Document):
@@ -212,3 +212,21 @@ class PostgreSQLHandler:
         cursor.execute(f'SELECT COUNT(*) from {self.table}')
         records = cursor.fetchall()
         return records[0][0]
+
+    def get_generator(
+        self, include_metas=True
+    ) -> Generator[Tuple[str, bytes, Optional[bytes]], None, None]:
+        connection = self._get_connection()
+        # always order the dump by id as integer
+        cursor = connection.cursor('generator')  # server-side cursor
+        cursor.itersize = 10000
+        if include_metas:
+            cursor.execute(f'SELECT ID, EMBEDDING, DOC from {self.table} ORDER BY ID')
+            for rec in cursor:
+                yield rec[0], rec[1], rec[2]
+        else:
+            print(f'### NO METAS', flush=True)
+            cursor.execute(f'SELECT ID, EMBEDDING from {self.table} ORDER BY ID')
+            for rec in cursor:
+                yield rec[0], rec[1], None
+        self._close_connection(connection)

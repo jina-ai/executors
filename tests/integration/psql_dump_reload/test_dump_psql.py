@@ -154,7 +154,7 @@ def flatten(it):
 
 # replicas w 1 shard doesn't work
 # @pytest.mark.parametrize('shards', [1, 3, 7])
-@pytest.mark.parametrize('shards', [3])
+@pytest.mark.parametrize('shards', [3, 7])
 @pytest.mark.parametrize('nr_docs', [100])
 @pytest.mark.parametrize('emb_size', [10])
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
@@ -199,6 +199,7 @@ def test_dump_reload(
                     parameters={
                         'dump_path': dump_path,
                         'shards': shards,
+                        'include_metas': not benchmark,
                         'timeout': -1,
                     },
                 )
@@ -244,7 +245,7 @@ def _in_docker():
 )
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_benchmark(tmpdir, docker_compose):
-    nr_docs = 500000
+    nr_docs = 100000
     return test_dump_reload(
         tmpdir,
         nr_docs=nr_docs,

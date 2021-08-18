@@ -1,9 +1,8 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Tuple, Generator, Dict, List
+from typing import Dict, List
 
-import numpy as np
 from jina import Executor, requests, DocumentArray, Document
 
 from jina_commons import get_logger
@@ -66,15 +65,6 @@ class PostgreSQLStorage(Executor):
             max_connections=max_connections,
         )
         self.default_return_embeddings = default_return_embeddings
-
-    def _get_generator(self) -> Generator[Tuple[str, np.array, bytes], None, None]:
-        with self.handler as handler:
-            # always order the dump by id as integer
-            cursor = handler.connection.cursor('generator')  # server-side cursor
-            cursor.itersize = 10000
-            cursor.execute(f'SELECT * from {handler.table} ORDER BY ID')
-            for rec in cursor:
-                yield rec[0], rec[1], rec[2]
 
     @property
     def dump_dtype(self):
@@ -148,9 +138,16 @@ class PostgreSQLStorage(Executor):
         if shards is None:
             self.logger.error(f'No "shards" provided for {self}')
 
-        export_dump_streaming(
-            path, shards=shards, size=self.size, data=self._get_generator()
-        )
+        include_metas = parameters.get('include_metas', True)
+        self.logger.warning(f'include_metas: {include_metas}')
+
+        with self.handler as postgres_handler:
+            export_dump_streaming(
+                path,
+                shards=shards,
+                size=self.size,
+                data=postgres_handler.get_generator(include_metas=include_metas),
+            )
 
     def close(self) -> None:
         """
