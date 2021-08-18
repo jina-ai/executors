@@ -26,7 +26,7 @@ def test_match_merger(docs, shards):
             shards=shards,
             polling='all'
     ) as f:
-        resp = f.search(docs, return_results=True)[0].docs
-        assert len(resp) == 2
-        for doc in resp:
+        documents = f.search(docs, return_results=True)[0].docs
+        assert len(documents) == 2
+        for doc in documents:
             assert {d.tags['shard_id'] for d in doc.matches} == {float(i) for i in range(shards)}
