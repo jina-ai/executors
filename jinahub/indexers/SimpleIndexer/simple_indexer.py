@@ -128,13 +128,11 @@ class SimpleIndexer(Executor):
             'traversal_paths', self.default_traversal_paths
         )
         flat_docs = docs.traverse_flat(traversal_paths)
-
-        update_docs_ids = set(flat_docs.get_attributes('id'))
-        for idx in reversed(range(len(self._docs))):
-            if self._docs[idx].id in update_docs_ids:
-                update_doc = flat_docs.get_attributes_with_docs(self._docs[idx].id)[1][0]
-                del self._docs[idx]
-                self._docs.append(update_doc)
+        for doc in flat_docs:
+            if doc.id is not None:
+                self._docs[doc.id] = doc
+            else:
+                self._docs.append(doc)
 
     @requests(on='/fill_embedding')
     def fill_embedding(self, docs: DocumentArray, **kwargs):

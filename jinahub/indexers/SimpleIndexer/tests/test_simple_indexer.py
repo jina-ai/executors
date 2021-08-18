@@ -17,19 +17,6 @@ def assert_document_arrays_equal(arr1, arr2):
         assert d1.matches == d2.matches
 
 
-def assert_updated_document_arrays_equal(arr1, arr2):
-    da1 = DocumentArray(arr1)
-    da1.sort(key=lambda d: d.id, reverse=False)
-    da2 = DocumentArray(arr2)
-    da2.sort(key=lambda d: d.id, reverse=False)
-    assert len(arr1) == len(arr2)
-    for d1, d2 in zip(da1, da2):
-        assert d1.id == d2.id
-        assert d1.content == d2.content
-        assert d1.chunks == d2.chunks
-        assert d1.matches == d2.matches
-
-
 @pytest.fixture
 def docs():
     doc1 = Document(id='doc1', embedding=np.array([0, 0, 0, 0]))
@@ -208,7 +195,7 @@ def test_simple_indexer_update(tmpdir, docs, update_docs, new_docs):
 
     # update doc1
     docs_indexer.update(update_docs)
-    assert_updated_document_arrays_equal(docs_indexer._docs, new_docs)
+    assert_document_arrays_equal(docs_indexer._docs, new_docs)
 
 
 @pytest.mark.parametrize('distance_metric', ['euclidean', 'cosine', 'sqeuclidean', 'hamming'])
