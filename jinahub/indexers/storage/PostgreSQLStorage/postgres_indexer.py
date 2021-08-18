@@ -70,7 +70,8 @@ class PostgreSQLStorage(Executor):
     def _get_generator(self) -> Generator[Tuple[str, np.array, bytes], None, None]:
         with self.handler as handler:
             # always order the dump by id as integer
-            cursor = handler.connection.cursor()
+            cursor = handler.connection.cursor('generator')  # server-side cursor
+            cursor.itersize = 10000
             cursor.execute(f'SELECT * from {handler.table} ORDER BY ID')
             rec = cursor.fetchone()
             while rec:
