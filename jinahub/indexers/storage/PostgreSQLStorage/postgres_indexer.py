@@ -73,13 +73,11 @@ class PostgreSQLStorage(Executor):
             cursor = handler.connection.cursor('generator')  # server-side cursor
             cursor.itersize = 10000
             cursor.execute(f'SELECT * from {handler.table} ORDER BY ID')
-            rec = cursor.fetchone()
-            while rec:
+            for rec in cursor:
                 doc = Document(bytes(rec[1]))
                 vec = doc.embedding
                 doc.ClearField('embedding')
                 yield rec[0], vec, doc.SerializeToString()
-                rec = cursor.fetchone()
 
     @property
     def size(self):
