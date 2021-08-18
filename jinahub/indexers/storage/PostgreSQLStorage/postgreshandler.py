@@ -87,7 +87,8 @@ class PostgreSQLHandler:
                 cursor.execute(
                     f'CREATE TABLE {self.table} ( \
                     ID VARCHAR PRIMARY KEY,  \
-                    DOC BYTEA);'
+                    DOC BYTEA,  \
+                    EMBEDDING BYTEA);'
                 )
                 self.logger.info('Successfully created table')
             except (Exception, psycopg2.Error) as error:
@@ -109,11 +110,12 @@ class PostgreSQLHandler:
         try:
             psycopg2.extras.execute_batch(
                 cursor,
-                f'INSERT INTO {self.table} (ID, DOC) VALUES (%s, %s)',
+                f'INSERT INTO {self.table} (ID, DOC, EMBEDDING) VALUES (%s, %s, %s)',
                 [
                     (
                         doc.id,
-                        doc.SerializeToString(),
+                        doc_without_embedding(doc),
+                        doc.embedding.tobytes(),
                     )
                     for doc in docs
                 ],
