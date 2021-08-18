@@ -84,14 +84,18 @@ def test_convert_image_to_blob(
 
 @pytest.mark.parametrize('dtype_conversion', [np.uint8, np.float32, np.float64])
 @pytest.mark.parametrize('manual_convert', [True, False])
-def test_crafting_image(test_image_uri_doc, manual_convert, dtype_conversion):
+@pytest.mark.parametrize('default_traversal_paths', [(('r'),), (('c'),)])
+def test_crafting_image(test_image_uri_doc, manual_convert, dtype_conversion, default_traversal_paths):
     doc = Document(test_image_uri_doc, copy=True)
+    doc.chunks.append(Document(test_image_uri_doc, copy=True))
     doc.convert_image_uri_to_blob()
+    doc.chunks[0].convert_image_uri_to_blob()
     norm = ImageNormalizer(
         resize_dim=123,
         img_mean=(0.1, 0.1, 0.1),
         img_std=(0.5, 0.5, 0.5),
         target_dtype=dtype_conversion,
+        default_traversal_paths=default_traversal_paths
     )
     assert norm.target_dtype == dtype_conversion
     img = norm._load_image(doc.blob)
@@ -139,7 +143,8 @@ def test_crafting_image(test_image_uri_doc, manual_convert, dtype_conversion):
         docs = DocumentArray([doc])
     else:
         docs = DocumentArray([test_image_uri_doc])
-    processed_docs = norm.craft(docs)
+        docs[0].chunks.extend(DocumentArray([test_image_uri_doc]))
+    processed_docs = norm.craft(docs, parameters={}).traverse_flat(default_traversal_paths)
     assert np.array_equal(processed_docs[0].blob, img.astype(dtype_conversion))
 
     for doc in processed_docs:
@@ -157,5 +162,5 @@ def test_move_channel_axis(test_image_uri_doc):
     channel0_img = norm._move_channel_axis(doc.blob, 2, 0)
     assert channel0_img.shape == (3, 96, 96)
 
-    processed_docs = norm.craft(DocumentArray([doc]))
+    processed_docs = norm.craft(DocumentArray([doc]), parameters={})
     assert processed_docs[0].blob.shape == (3, 224, 224)
