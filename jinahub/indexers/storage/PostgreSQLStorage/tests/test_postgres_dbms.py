@@ -86,13 +86,15 @@ def validate_db_side(postgres_indexer, expected_data):
     ids, vecs, metas = zip(*expected_data)
     with postgres_indexer.handler as handler:
         cursor = handler.connection.cursor()
-        cursor.execute(f'SELECT ID, DOC from {postgres_indexer.table} ORDER BY ID::int')
+        cursor.execute(
+            f'SELECT ID, EMBEDDING, DOC from {postgres_indexer.table} ORDER BY ID::int'
+        )
         record = cursor.fetchall()
         for i in range(len(expected_data)):
             np.testing.assert_equal(ids[i], str(record[i][0]))
-            doc = Document(bytes(record[i][1]))
-            np.testing.assert_equal(vecs[i], doc.embedding)
-            np.testing.assert_equal(metas[i], doc_without_embedding(doc))
+            embedding = np.frombuffer(record[i][1], dtype=postgres_indexer.dump_dtype)
+            np.testing.assert_equal(vecs[i], embedding)
+            np.testing.assert_equal(metas[i], bytes(record[i][2]))
 
 
 def test_config():
@@ -164,13 +166,13 @@ def test_mwu_empty_dump(tmpdir, docker_compose):
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_return_embeddings(docker_compose):
     indexer = PostgreSQLStorage()
-    doc = Document(embedding=np.random.rand(1, 10))
+    doc = Document(embedding=np.random.random(10))
     da = DocumentArray([doc])
     query1 = DocumentArray([Document(id=doc.id)])
     indexer.add(da, parameters={})
     indexer.search(query1, parameters={})
     assert query1[0].embedding is not None
-    assert query1[0].embedding.shape == (1, 10)
+    assert query1[0].embedding.shape == (10,)
 
     query2 = DocumentArray([Document(id=doc.id)])
     indexer.search(query2, parameters={"return_embeddings": False})
