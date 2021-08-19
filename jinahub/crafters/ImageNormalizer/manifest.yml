@@ -1,9 +1,5 @@
 manifest_version: 1
 name: ImageNormalizer
-alias: ImageNormalizer
 description: '`ImageNormalizer` resizes and normalizes images'
-author: Jina AI Dev-Team (dev-team@jina.ai)
-url: https://jina.ai
-documentation: https://github.com/jina-ai/jina-hub
-license: apache-2.0
+url: https://github.com/jina-ai/executors/tree/main/jinahub/crafters/ImageNormalizer
 keywords: [image, normalization, reader, resize]

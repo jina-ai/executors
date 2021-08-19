@@ -1,9 +1,5 @@
 manifest_version: 1
 name: SimpleIndexer
-alias: SimpleIndexer
 description: A simple indexer that leverages the DocumentArrayMemmap
-author: Jina AI Dev-Team (dev-team@jina.ai)
-documentation: https://github.com/jina-ai/executors/blob/main/jinahub/indexers/SimpleIndexer/README.md
-license: apache-2.0
-url: https://jina.ai
+url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/SimpleIndexer
 keywords: [indexer]

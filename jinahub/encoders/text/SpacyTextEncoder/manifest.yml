@@ -1,8 +1,5 @@
 manifest_version: 1
 name: SpacyTextEncoder
-alias: SpacyTextEncoder
 description: This is a text encoder using models from Spacy
-author: Jina AI Dev-Team (dev-team@jina.ai)
-url: https://github.com/jina-ai/executor-text-spacy-encoder
-avatar: https://avatars.githubusercontent.com/u/60539444?s=200&v=4
+url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/SpacyTextEncoder
 keywords: [encoder, text, spaCy]
