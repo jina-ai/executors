@@ -1,7 +1,7 @@
 FROM jinaai/jina:2.0.18-perf
 
 # install git
-RUN apt-get -y update && apt-get install -y git \
+RUN apt-get -y update && apt-get install -y git && apt-get install libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 # install requirements before copying the workspace
