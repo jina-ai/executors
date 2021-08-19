@@ -15,7 +15,7 @@
 ## 🌱 Prerequisites
 
 - This Executor works on Python 3.7, 3.8 and 3.9. 
-- WHile developing locally, make sure to install the [requirements](requirements.txt)
+- While developing locally, make sure to install the [requirements](requirements.txt)
 - Refer to LightGBM [documentation](https://github.com/microsoft/LightGBM/tree/master/examples/lambdarank) to learn how to use LightGBM to train a ranker.
 
 ## 🚀 Usages
