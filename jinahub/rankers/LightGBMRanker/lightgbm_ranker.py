@@ -33,9 +33,9 @@ class LightGBMRanker(Executor):
 
     def __init__(
         self,
-        query_features: List[str],
-        match_features: List[str],
-        relevance_label: str,
+        query_features: List[str] = ['query_price', 'query_size'],
+        match_features: List[str] = ['match_price', 'match_size'],
+        relevance_label: str = 'relevance',
         model_path: Optional[str] = None,
         params: Dict = {
             'task': 'train',
