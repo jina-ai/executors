@@ -1,6 +1,5 @@
 manifest_version: 1
 name: VADSpeechSegmenter
 description: VADSpeechSegmenter segments speech audio using Silero VAD (voice activity detector)
-author: Jina AI Dev-Team (dev-team@jina.ai)
 url: https://jina.ai
 keywords: [segmenter, audio, silero-vad]
