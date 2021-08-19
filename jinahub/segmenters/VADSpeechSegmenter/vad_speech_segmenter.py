@@ -117,7 +117,7 @@ class VADSpeechSegmenter(Executor):
         return lr.load(file_path)
 
     def _normalize(self, data: torch.Tensor, sample_rate: int) -> torch.Tensor:
-        if orig_sample_rate == 0:
+        if sample_rate == 0:
             raise BadDocType('sample rate cannot be 0')
         return data / sample_rate
 
