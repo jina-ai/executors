@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+import pytest
+
 from jina import Executor
 
 
@@ -15,6 +17,12 @@ def test_config():
     )
     assert ranker.query_features == ['query']
     assert ranker.match_features == ['match']
+
+
+def test_dump_load_path_not_exist(ranker):
+    with pytest.raises(ValueError):
+        ranker.dump(parameters={})
+        ranker.load(parameters={})
 
 
 def test_train(ranker, documents_to_train_price_sensitive_model):
