@@ -24,12 +24,11 @@ class BigTransferEncoder(Executor):
 
     :param model_path: the path of the model in the `SavedModel` format.
         The pretrained model can be downloaded at
-        wget https://storage.googleapis.com/bit_models/[dataset]/[model_name]/feature_vectors/saved_model.pb
-        wget https://storage.googleapis.com/bit_models/[dataset]/[model_name]/feature_vectors/variables/variables.data-00000-of-00001
-        wget https://storage.googleapis.com/bit_models/[dataset]/[model_name]/feature_vectors/variables/variables.index
-        The [dataset] can be either `Imagenet1k` or `Imagenet21k`.
+        wget https://storage.googleapis.com/bit_models/[model_name]/feature_vectors/saved_model.pb
+        wget https://storage.googleapis.com/bit_models/[model_name]/feature_vectors/variables/variables.data-00000-of-00001
+        wget https://storage.googleapis.com/bit_models/[model_name]/feature_vectors/variables/variables.index
 
-    :param model_name: includes `R50x1`, `R101x1`, `R50x3`, `R101x3`, `R152x4`
+    :param model_name: includes ``Imagenet1k/R50x1``, ``Imagenet1k/R101x1``, ``Imagenet1k/R50x3``, ``Imagenet1k/R101x3``, ``Imagenet1k/R152x4``, ``Imagenet21k/R50x1``, ``Imagenet21k/R101x1``, ``Imagenet21k/R50x3``, ``Imagenet21k/R101x3``, ``Imagenet21k/R152x4``
 
     This encoder checks if the specified model_path exists.
     If it does exist, the model in this folder is used.
@@ -56,7 +55,7 @@ class BigTransferEncoder(Executor):
 
     def __init__(self,
                  model_path: Optional[str] = 'pretrained',
-                 model_name: Optional[str] = 'R50x1',
+                 model_name: Optional[str] = 'Imagenet21k/R50x1',
                  on_gpu: bool = False,
                  target_dim: Optional[Tuple[int, int, int]] = None,
                  default_traversal_paths: List[str] = None,
@@ -90,7 +89,9 @@ class BigTransferEncoder(Executor):
         self._get_input = tf.convert_to_tensor
 
     def download_model(self):
-        available_models = ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
+        dataset = ['Imagenet1k', 'Imagenet21k']
+        _available_models = ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
+        available_models = [f'{d}/{m}' for m in _available_models for d in dataset]
         if self.model_name not in available_models:
             raise AttributeError(f'{self.model_name} model does not exists. '
                                  f'Choose one from {available_models}!')
@@ -100,13 +101,13 @@ class BigTransferEncoder(Executor):
         os.makedirs(self.model_path)
         os.makedirs((os.path.join(self.model_path, 'variables')))
         response = requests.get(
-            f'https://storage.googleapis.com/bit_models/Imagenet21k/'
+            f'https://storage.googleapis.com/bit_models/'
             f'{self.model_name}/feature_vectors/saved_model.pb')
         with open(os.path.join(self.model_path, 'saved_model.pb'),
                   'wb') as file:
             file.write(response.content)
         response = requests.get(
-            f'https://storage.googleapis.com/bit_models/Imagenet21k/'
+            f'https://storage.googleapis.com/bit_models/'
             f'{self.model_name}/feature_vectors/variables/'
             f'variables.data-00000-of-00001')
         with open(os.path.join(self.model_path,
@@ -114,7 +115,7 @@ class BigTransferEncoder(Executor):
                   'wb') as file:
             file.write(response.content)
         response = requests.get(
-            f'https://storage.googleapis.com/bit_models/Imagenet21k/'
+            f'https://storage.googleapis.com/bit_models/'
             f'{self.model_name}/feature_vectors/variables/'
             f'variables.index')
         with open(os.path.join(self.model_path,
