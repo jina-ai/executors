@@ -19,8 +19,6 @@ class VADSpeechSegmenter(Executor):
     :param normalize: a bool to specify whether to normalize the audio
      by the sample rate
     :param dump: a bool to specify whether to dump the segmented audio
-    :param repo: default repo name of silero-vad
-    :param model: default model name of silero-vad
 
     """
 
