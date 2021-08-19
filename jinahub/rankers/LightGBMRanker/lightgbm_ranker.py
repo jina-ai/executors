@@ -12,7 +12,7 @@ from jina import Executor, DocumentArray, requests
 
 class LightGBMRanker(Executor):
     """
-    Computes a relevance score for each match using a pretrained Ltr model trained with LightGBM (https://lightgbm.readthedocs.io/en/latest/index.html)
+    Computes a relevance score for each match using a pretrained learning-to-rank model trained with LightGBM (https://lightgbm.readthedocs.io/en/latest/index.html)
     :param query_features: name of the features to extract from query Documents and used to compute relevance scores by the model loaded
     from model_path
     :param match_features: name of the features to extract from match Documents and used to compute relevance scores by the model loaded
