@@ -225,7 +225,6 @@ class PostgreSQLHandler:
             for rec in cursor:
                 yield rec[0], rec[1], rec[2]
         else:
-            print(f'### NO METAS', flush=True)
             cursor.execute(f'SELECT ID, EMBEDDING from {self.table} ORDER BY ID')
             for rec in cursor:
                 yield rec[0], rec[1], None

@@ -139,7 +139,6 @@ class PostgreSQLStorage(Executor):
             self.logger.error(f'No "shards" provided for {self}')
 
         include_metas = parameters.get('include_metas', True)
-        self.logger.warning(f'include_metas: {include_metas}')
 
         with self.handler as postgres_handler:
             export_dump_streaming(
