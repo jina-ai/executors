@@ -1,7 +1,5 @@
 manifest_version: 1
 name: FlairTextEncoder
-alias: FlairTextEncoder
 description: ImagePaddlehubEncoder encodes text data.
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/FlairTextEncoder
 keywords: [flair, text, encoder, PyTorch]
-license: apache-2.0

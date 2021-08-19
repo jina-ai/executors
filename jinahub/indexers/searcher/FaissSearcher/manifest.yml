@@ -1,7 +1,5 @@
 manifest_version: 1
 name: FaissSearcher
-alias: FaissSearcher
 description: Faiss powered vector indexer
 url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/searcher/FaissSearcher
 keywords: [vector, faiss, searcher, Executor, ann]
-license: apache-2.0

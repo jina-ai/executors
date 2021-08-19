@@ -1,7 +1,5 @@
 manifest_version: 1
 name: SpacyTextEncoder
-alias: SpacyTextEncoder
 description: This is a text encoder using models from Spacy
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/SpacyTextEncoder
 keywords: [encoder, text, spaCy]
-license: apache-2.0

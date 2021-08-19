@@ -1,7 +1,5 @@
 manifest_version: 1
 name: BigTransferEncoder
-alias: BigTransferEncoder
 description: '`BigTransferEncoder` encodes images using a Big Transfer Model'
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/BigTransferEncoder
 keywords: [image, encoder, Tensorflow, BiT, big_transfer, resnet]
-license: apache-2.0

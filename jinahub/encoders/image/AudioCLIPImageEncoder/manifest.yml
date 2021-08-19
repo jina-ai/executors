@@ -1,7 +1,5 @@
 manifest_version: 1
 name: AudioCLIPImageEncoder
-alias: AudioCLIPImageEncoder
 description: Executor that encodes images with the AudioCLIP model
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/AudioCLIPImageEncoder
 keywords: [clip, audioclip, image, crossmodal, encoder, PyTorch, en]
-license: apache-2.0

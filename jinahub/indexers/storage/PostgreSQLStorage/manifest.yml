@@ -1,7 +1,5 @@
 manifest_version: 1
 name: PostgreSQLStorage
-alias: PostgreSQLStorage
 description: An indexer wrapper around the PostgreSQL database system
 url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/storage/PostgreSQLStorage
 keywords: [PostgreSQL, indexer]
-license: apache-2.0

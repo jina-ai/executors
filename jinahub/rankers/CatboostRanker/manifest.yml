@@ -1,7 +1,5 @@
 manifest_version: 1
 name: CatboostRanker
-alias: CatboostRanker
 description: Learning to rank with CatBoost
 url: https://github.com/jina-ai/executors/tree/main/jinahub/rankers/CatboostRanker
 keywords: [ranker, learning-to-rank, catboost]
-license: apache-2.0

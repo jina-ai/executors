@@ -1,7 +1,5 @@
 manifest_version: 1
 name: TransformerSentenceEncoder
-alias: TransformerSentenceEncoder
 description: Executor wraps the sentence_encoder library and computes sentence embeddings.
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/TransformerSentenceEncoder
 keywords: [encoder, Numpy, sentence, nlp, huggingface]
-license: apache-2.0

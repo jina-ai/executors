@@ -1,7 +1,5 @@
 manifest_version: 1
 name: HnswlibSearcher
-alias: HnswlibSearcher
 description: Hnswlib powered vector indexer
 url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/searcher/HnswlibSearcher
 keywords: [hnswlib, searcher, indexer]
-license: apache-2.0

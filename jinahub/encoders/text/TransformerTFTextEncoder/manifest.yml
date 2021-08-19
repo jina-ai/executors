@@ -1,7 +1,5 @@
 manifest_version: 1
-name: transformer_tf_text_encoder
-alias: TransformerTFTextEncoder
+name: TransformerTFTextEncoder
 description: Transformer TensorFlow Text Encoder
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/TransformerTFTextEncoder
 keywords: [encoder, text, TensorFlow, Transformers]
-license: apache-2.0

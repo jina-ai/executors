@@ -1,7 +1,5 @@
 manifest_version: 1
 name: TextPaddleEncoder
-alias: TextPaddleEncoder
 description: Text encoder based on the PaddleHub.
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/TextPaddleEncoder
 keywords: [PaddlePaddle, PaddleHub, text, encoder]
-license: apache-2.0

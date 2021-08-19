@@ -1,7 +1,5 @@
 manifest_version: 1
 name: CLIPImageEncoder
-alias: CLIPImageEncoder
 description: Encoder based on the Clip model proposed in https://cdn.openai.com/papers/Learning_Transferable_Visual_Models_From_Natural_Language_Supervision.pdf
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/CLIPImageEncoder
 keywords: [clip, image, crossmodal, encoder, PyTorch, en]
-license: apache-2.0

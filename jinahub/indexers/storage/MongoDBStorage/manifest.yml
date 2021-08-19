@@ -1,7 +1,5 @@
 manifest_version: 1
 name: MongoDBStorage
-alias: MongoDBStorage
 description: Storage-type indexer powered by MongoDB
 url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/storage/MongoDBStorage
 keywords: [storage, crud, indexer, mongodb]
-license: apache-2.0

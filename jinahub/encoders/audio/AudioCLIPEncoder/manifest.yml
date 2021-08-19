@@ -1,7 +1,5 @@
 manifest_version: 1
 name: AudioCLIPEncoder
-alias: AudioCLIPEncoder
 description: AudioCLIP encoder based on https://github.com/AndreyGuzhov/AudioCLIP
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/audio/AudioCLIPEncoder
 keywords: [encoder, audio, PyTorch]
-license: apache-2.0

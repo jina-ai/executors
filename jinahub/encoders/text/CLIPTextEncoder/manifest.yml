@@ -1,7 +1,5 @@
 manifest_version: 1
 name: CLIPTextEncoder
-alias: CLIPTextEncoder
 description: Encoder based on the CLIP model
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/CLIPTextEncoder
 keywords: [clip, text, crossmodal, encoder, PyTorch, en]
-license: apache-2.0

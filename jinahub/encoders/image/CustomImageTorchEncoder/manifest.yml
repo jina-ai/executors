@@ -1,7 +1,5 @@
 manifest_version: 1
 name: CustomImageTorchEncoder
-alias: CustomImageTorchEncoder
 description: An encoder that encodes images using custom pretrained models
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/CustomImageTorchEncoder
 keywords: [encoder, torch, CV, computer vision]
-license: apache-2.0
