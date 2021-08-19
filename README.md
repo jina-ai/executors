@@ -100,3 +100,17 @@ Then follow the guide on [Executors](https://github.com/jina-ai/jina/blob/master
 Some Executors might require a large model. During CI/tests, it is advisable to download it as part of a fixture and store it to disk, to be re-used by the Executor.
 
 In production, it is recommended to set up your workspace, model, and class to load from disk. If the Executor is served with Docker, make sure to also map the directory, as the Docker runtime does not get persisted.
+
+## Using this repository as a package
+
+Notice that we have a `setup.py` in this repository. 
+This is **NOT recommended** practice for **external developers** of Executors. 
+We added this in order to ease local development for **internal developers**.
+
+## CompoundExecutor
+
+If you want to develop a `CompoundExecutor`-type Executor based on one of the classes provided in this package, you can either:
+
+- fork this repo and add it as a separate folder. Base on `jina hub new`, and then follow the design patterns we have established in [here](jinahub/indexers/searcher/compound).
+- copy-paste the class you want to have a component of your `CompoundExecutor`, and add it as a class in your Executor's package
+
