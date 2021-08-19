@@ -17,7 +17,8 @@ class ImageTFEncoder(Executor):
     Where `B` is the batch size and `D` is the Dimension.
 
     The :class:`ImageTFEncoder` wraps the models from
-    `tensorflow.keras.applications`. <https://keras.io/applications/>`_.
+    `tensorflow.keras.applications`.
+    <https://www.tensorflow.org/api_docs/python/tf/keras/applications>`_
 
     :param model_name: the name of the model. Supported models include
         ``DenseNet121``, ``DenseNet169``, ``DenseNet201``,
@@ -25,7 +26,8 @@ class ImageTFEncoder(Executor):
         ``MobileNetV2``, ``NASNetLarge``, ``NASNetMobile``,
         ``ResNet101``, ``ResNet152``, ``ResNet50``, ``ResNet101V2``,
         ``ResNet152V2``, ``ResNet50V2``, ``VGG16``, ``VGG19``,
-        ``Xception``,
+        ``Xception`` and etc. A full list can be find at
+        <https://www.tensorflow.org/api_docs/python/tf/keras/applications#functions>`_
     :param img_shape: The shape of the image to be encoded.
     :param pool_strategy: the pooling strategy. Options are:
         - `None`: Means that the output of the model will be the 4D tensor
