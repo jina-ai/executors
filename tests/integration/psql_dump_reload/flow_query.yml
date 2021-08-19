@@ -1,7 +1,5 @@
 jtype: Flow
 version: '1'
-with:
-  return_results: true
 executors:
   - name: indexer_query
     uses: FaissPostgresSearcher
