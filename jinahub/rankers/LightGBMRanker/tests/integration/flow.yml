@@ -1,11 +1,11 @@
 jtype: Flow
 version: '1'
-with:
-  workspace: $RANKER_WORKDIR
-  py_modules:
-    - lightgbm_ranker.py
 pods:
   - name: trainer
+    with:
+      workspace: $RANKER_WORKDIR
+      py_modules:
+        - lightgbm_ranker.py
     uses:
       jtype: LightGBMRanker
       with:
