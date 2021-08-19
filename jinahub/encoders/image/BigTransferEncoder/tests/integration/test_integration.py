@@ -26,9 +26,12 @@ def data_generator(num_docs):
 @pytest.mark.parametrize(
     'model_name', ['R50x1', 'R101x1', 'R50x3', 'R101x3']  #, 'R152x4']
 )
-def test_all_models(model_name: str):
+@pytest.mark.parametrize(
+    'dataset', ['Imagenet1k', 'Imagenet21k']
+)
+def test_all_models(model_name: str, dataset: str):
     shutil.rmtree('pretrained', ignore_errors=True)
-    os.environ['TRANSFER_MODEL_NAME'] = model_name
+    os.environ['TRANSFER_MODEL_NAME'] = f'{dataset}/{model_name}'
     with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as flow:
         data = flow.post(on='/index', inputs=data_generator(100),
                          request_size=10, return_results=True)
