@@ -59,11 +59,12 @@ Use the source code from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub://LightGBMRanker',
-               overwride_with={
-                'query_features': ['query_price', 'query_size'],
-                'match_features': ['match_price', 'match_size'],
-                'relevance_level': 'relevance'
+f = Flow().add(
+    uses='jinahub://LightGBMRanker',
+    overwride_with={
+        'query_features': ['query_price', 'query_size'],
+        'match_features': ['match_price', 'match_size'],
+        'relevance_level': 'relevance'
     }
 )
 ```
