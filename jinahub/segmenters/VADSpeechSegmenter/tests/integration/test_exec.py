@@ -10,7 +10,7 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 @pytest.mark.parametrize('_type', ['wav', 'mp3', 'blob'])
-def test_chunks_exists(build_da, _type):
+def test_chunks_exist(build_da, _type):
     da = build_da(_type)
     with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as f:
         responses = f.post(on='segment', inputs=da, return_results=True)
