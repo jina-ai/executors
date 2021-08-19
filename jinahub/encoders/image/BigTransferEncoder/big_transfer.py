@@ -24,9 +24,10 @@ class BigTransferEncoder(Executor):
 
     :param model_path: the path of the model in the `SavedModel` format.
         The pretrained model can be downloaded at
-        wget https://storage.googleapis.com/bit_models/Imagenet21k/[model_name]/feature_vectors/saved_model.pb
-        wget https://storage.googleapis.com/bit_models/Imagenet21k/[model_name]/feature_vectors/variables/variables.data-00000-of-00001
-        wget https://storage.googleapis.com/bit_models/Imagenet21k/[model_name]/feature_vectors/variables/variables.index
+        wget https://storage.googleapis.com/bit_models/[dataset]/[model_name]/feature_vectors/saved_model.pb
+        wget https://storage.googleapis.com/bit_models/[dataset]/[model_name]/feature_vectors/variables/variables.data-00000-of-00001
+        wget https://storage.googleapis.com/bit_models/[dataset]/[model_name]/feature_vectors/variables/variables.index
+        The [dataset] can be either `Imagenet1k` or `Imagenet21k`.
 
     :param model_name: includes `R50x1`, `R101x1`, `R50x3`, `R101x3`, `R152x4`
 
