@@ -97,6 +97,42 @@ class SimpleIndexer(Executor):
         )
         self._flush = False
 
+    @requests(on='/delete')
+    def delete(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
+        """Delete entries from the index by id
+
+        :param docs: the documents to delete
+        :param parameters: parameters to the request
+        """
+        if docs is None:
+            return
+        traversal_paths = parameters.get(
+            'traversal_paths', self.default_traversal_paths
+        )
+        delete_docs_ids = docs.traverse_flat(traversal_paths).get_attributes('id')
+        for idx in delete_docs_ids:
+            if idx in self._docs:
+                del self._docs[idx]
+
+    @requests(on='/update')
+    def update(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
+        """Update doc with the same id
+
+        :param docs: the documents to update
+        :param parameters: parameters to the request
+        """
+        if docs is None:
+            return
+        traversal_paths = parameters.get(
+            'traversal_paths', self.default_traversal_paths
+        )
+        flat_docs = docs.traverse_flat(traversal_paths)
+        for doc in flat_docs:
+            if doc.id is not None:
+                self._docs[doc.id] = doc
+            else:
+                self._docs.append(doc)
+
     @requests(on='/fill_embedding')
     def fill_embedding(self, docs: DocumentArray, **kwargs):
         """retrieve embedding of Documents by id

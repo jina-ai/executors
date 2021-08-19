@@ -19,12 +19,53 @@ def assert_document_arrays_equal(arr1, arr2):
 
 @pytest.fixture
 def docs():
-    doc1 = Document(id='doc1', embedding=np.array([0, 0, 0, 0]))
+    doc1 = Document(id='doc1', embedding=np.array([0, 0, 0, 1]))
     doc1.chunks.append(Document(id='doc1-chunk1', embedding=np.array([1, 0, 0, 0])))
     doc1.chunks.append(Document(id='doc1-chunk2', embedding=np.array([0, 1, 0, 0])))
     doc1.chunks.append(Document(id='doc1-chunk3', embedding=np.array([0, 1, 0, 1])))
 
-    doc2 = Document(id='doc2', embedding=np.array([1, 1, 1, 1]))
+    doc2 = Document(id='doc2', embedding=np.array([0, 1, 1, 1]))
+    doc2.chunks.append(Document(id='doc2-chunk1', embedding=np.array([0, 0, 1, 0])))
+    doc2.chunks.append(Document(id='doc2-chunk2', embedding=np.array([0, 0, 0, 1])))
+    doc2.chunks.append(Document(id='doc2-chunk3', embedding=np.array([0, 1, 0, 1])))
+    return DocumentArray([doc1, doc2])
+
+
+@pytest.fixture
+def delete_docs():
+    doc1 = Document(id='doc1', embedding=np.array([0, 0, 0, 1]))
+    doc1.chunks.append(Document(id='doc1-chunk1', embedding=np.array([1, 0, 0, 0])))
+    doc1.chunks.append(Document(id='doc1-chunk2', embedding=np.array([0, 1, 0, 0])))
+    doc1.chunks.append(Document(id='doc1-chunk3', embedding=np.array([0, 1, 0, 1])))
+    return DocumentArray([doc1])
+
+
+@pytest.fixture
+def remain_docs():
+    doc2 = Document(id='doc2', embedding=np.array([0, 1, 1, 1]))
+    doc2.chunks.append(Document(id='doc2-chunk1', embedding=np.array([0, 0, 1, 0])))
+    doc2.chunks.append(Document(id='doc2-chunk2', embedding=np.array([0, 0, 0, 1])))
+    doc2.chunks.append(Document(id='doc2-chunk3', embedding=np.array([0, 1, 0, 1])))
+    return DocumentArray([doc2])
+
+
+@pytest.fixture
+def update_docs():
+    doc1 = Document(id='doc1', embedding=np.array([0, 0, 1, 1]))
+    doc1.chunks.append(Document(id='doc1-chunk1', embedding=np.array([0, 0, 0, 1])))
+    doc1.chunks.append(Document(id='doc1-chunk2', embedding=np.array([0, 0, 1, 0])))
+    doc1.chunks.append(Document(id='doc1-chunk3', embedding=np.array([0, 0, 1, 1])))
+    return DocumentArray([doc1])
+
+
+@pytest.fixture
+def new_docs():
+    doc1 = Document(id='doc1', embedding=np.array([0, 0, 1, 1]))
+    doc1.chunks.append(Document(id='doc1-chunk1', embedding=np.array([0, 0, 0, 1])))
+    doc1.chunks.append(Document(id='doc1-chunk2', embedding=np.array([0, 0, 1, 0])))
+    doc1.chunks.append(Document(id='doc1-chunk3', embedding=np.array([0, 0, 1, 1])))
+
+    doc2 = Document(id='doc2', embedding=np.array([0, 1, 1, 1]))
     doc2.chunks.append(Document(id='doc2-chunk1', embedding=np.array([0, 0, 1, 0])))
     doc2.chunks.append(Document(id='doc2-chunk2', embedding=np.array([0, 0, 0, 1])))
     doc2.chunks.append(Document(id='doc2-chunk3', embedding=np.array([0, 1, 0, 1])))
@@ -121,6 +162,40 @@ def test_simple_indexer_index(tmpdir, docs):
     docs_indexer = SimpleIndexer(index_file_name='params_traversal_paths', metas=metas)
     docs_indexer.index(docs, parameters={'traversal_paths': ['c']})
     assert_document_arrays_equal(docs_indexer._docs, docs.traverse_flat(['c']))
+
+
+def test_simple_indexer_delete(tmpdir, docs, delete_docs, remain_docs):
+    metas = {'workspace': str(tmpdir)}
+
+    # test general/normal case
+    docs_indexer = SimpleIndexer(index_file_name='normal', metas=metas)
+    docs_indexer.index(docs)
+    assert_document_arrays_equal(docs_indexer._docs, docs)
+
+    # delete empty docs
+    docs_indexer.delete(DocumentArray())
+    assert_document_arrays_equal(docs_indexer._docs, docs)
+
+    # delete doc1
+    docs_indexer.delete(delete_docs)
+    assert_document_arrays_equal(docs_indexer._docs, remain_docs)
+
+
+def test_simple_indexer_update(tmpdir, docs, update_docs, new_docs):
+    metas = {'workspace': str(tmpdir)}
+
+    # test general/normal case
+    docs_indexer = SimpleIndexer(index_file_name='normal', metas=metas)
+    docs_indexer.index(docs)
+    assert_document_arrays_equal(docs_indexer._docs, docs)
+
+    # update empty docs
+    docs_indexer.update(DocumentArray())
+    assert_document_arrays_equal(docs_indexer._docs, docs)
+
+    # update doc1
+    docs_indexer.update(update_docs)
+    assert_document_arrays_equal(docs_indexer._docs, new_docs)
 
 
 @pytest.mark.parametrize('distance_metric', ['euclidean', 'cosine', 'sqeuclidean', 'hamming'])
