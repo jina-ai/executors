@@ -29,7 +29,14 @@ Use the prebuilt images from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub+docker://LightGBMRanker')
+f = Flow().add(
+    uses='jinahub+docker://LightGBMRanker',
+    overwride_with={
+        'query_features': ['query_price', 'query_size'],
+        'match_features': ['match_price', 'match_size'],
+        'relevance_level': 'relevance'
+    }
+)
 ```
 
 or in the `.yml` config.
@@ -39,6 +46,11 @@ jtype: Flow
 pods:
   - name: ranker
     uses: 'jinahub+docker://LightGBMRanker'
+    with:
+      model_path: model.txt
+      query_features: ['query_price', 'query_brand']
+      match_features: ['match_price', 'match_brand']
+      relevance_label: 'relevance'
 ```
 
 #### using source code
@@ -47,8 +59,18 @@ Use the source code from JinaHub in your Python code:
 ```python
 from jina import Flow
 	
-f = Flow().add(uses='jinahub://LightGBMRanker')
+f = Flow().add(uses='jinahub://LightGBMRanker',
+               overwride_with={
+                'query_features': ['query_price', 'query_size'],
+                'match_features': ['match_price', 'match_size'],
+                'relevance_level': 'relevance'
+    }
+)
 ```
+
+The above code make use of the `tags` stored in `Document` and it's `matches`,
+and create a feature value list for each query-match pair.
+All features will be combined into a `np.ndarray` as training data.
 
 or in the `.yml` config.
 
