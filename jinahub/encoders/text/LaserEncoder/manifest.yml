@@ -2,7 +2,6 @@ manifest_version: 1
 name: LaserEncoder
 alias: LaserEncoder
 description: encodes data from an 1d array of string in size `B` into an ndarray in size `B x D`.
-author: Jina AI Dev-Team (dev-team@jina.ai)
-url: https://github.com/jina-ai/executor-text-laser-encoder
-avatar: https://avatars.githubusercontent.com/u/60539444?s=200&v=4
+url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/LaserEncoder
 keywords: [text, encoder, laser, multilingual]
+license: apache-2.0

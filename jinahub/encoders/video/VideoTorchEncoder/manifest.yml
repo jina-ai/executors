@@ -2,7 +2,6 @@ manifest_version: 1
 name: VideoTorchEncoder
 alias: VideoTorchEncoder
 description: An encoder that encodes video clips into a dense embedding using pretrained models
-author: Jina AI Dev-Team (dev-team@jina.ai)
-url: https://github.com/jina-ai/executor-video-torch-encoder
-avatar: https://avatars.githubusercontent.com/u/60539444?s=200&v=4
+url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/video/VideoTorchEncoder
 keywords: [encoder, torch, video, CV, computer vision]
+license: apache-2.0

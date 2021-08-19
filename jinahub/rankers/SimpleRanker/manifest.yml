@@ -2,7 +2,6 @@ manifest_version: 1
 name: SimpleRanker
 alias: SimpleRanker
 description: SimpleRanker aggregrates the matches according to scores
-author: Jina AI Dev-Team (dev-team@jina.ai)
-url: https://github.com/jina-ai/executors
-avatar: https://avatars.githubusercontent.com/u/60539444?s=200&v=4
+url: https://github.com/jina-ai/executors/tree/main/jinahub/rankers/SimpleRanker
 keywords: [ranker, aggregation]
+license: apache-2.0
