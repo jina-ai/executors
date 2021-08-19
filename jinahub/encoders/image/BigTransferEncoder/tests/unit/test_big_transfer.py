@@ -16,7 +16,7 @@ directory = os.path.dirname(os.path.realpath(__file__))
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.model_path == 'pretrained'
-    assert ex.model_name == 'R50x1'
+    assert ex.model_name == 'Imagenet21k/R50x1'
 
 
 def test_initialization_and_model_download():
@@ -24,7 +24,7 @@ def test_initialization_and_model_download():
     # This call will download the model
     encoder = BigTransferEncoder()
     assert encoder.model_path == 'pretrained'
-    assert encoder.model_name == 'R50x1'
+    assert encoder.model_name == 'Imagenet21k/R50x1'
     assert not encoder.on_gpu
     assert os.path.exists('pretrained')
     assert os.path.exists(os.path.join('pretrained', 'saved_model.pb'))
