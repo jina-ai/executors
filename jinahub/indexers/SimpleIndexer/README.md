@@ -23,9 +23,11 @@
 
 ### 🚚 Via JinaHub
 
-#### using docker images
+#### using docker images (not recommended)
 
-Use the prebuilt images from JinaHub in your Python code: 
+> This method is currently not recommended for the SimpleIndexer because there is a bug corrupting the indexed data. We recommend using this executor from source code instead! See 'using source code' section below)
+
+Use the prebuilt images from JinaHub in your Python code:
 
 ```python
 from jina import Flow
