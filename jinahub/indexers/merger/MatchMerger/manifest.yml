@@ -2,6 +2,5 @@ manifest_version: 1
 name: MatchMerger
 description: Merges the results of shards by appending all matches.
 url: https://jina.ai
-documentation: https://github.com/jina-ai/jina-hub
 license: apache-2.0
 keywords: [merger, sharding, search]
