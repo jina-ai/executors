@@ -1,0 +1,4 @@
+jtype: VADSpeechSegmenter
+metas:
+  py_modules:
+    - vad_speech_segmenter.py
