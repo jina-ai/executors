@@ -64,6 +64,9 @@ class LightGBMRanker(Executor):
             self.booster = self._load_model(self.model_path)
         else:
             self.booster = None
+            self.logger.warning(
+                f'The model path {self.model_path} does not exist, initialize a untrained model.'
+            )
 
     def _load_model(self, path):
         """Load model from model path"""
