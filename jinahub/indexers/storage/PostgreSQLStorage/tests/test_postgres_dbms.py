@@ -87,7 +87,7 @@ def validate_db_side(postgres_indexer, expected_data):
     with postgres_indexer.handler as handler:
         cursor = handler.connection.cursor()
         cursor.execute(
-            f'SELECT ID, EMBEDDING, DOC from {postgres_indexer.table} ORDER BY ID::int'
+            f'SELECT doc_id, embedding, doc from {postgres_indexer.table} ORDER BY doc_id::int'
         )
         record = cursor.fetchall()
         for i in range(len(expected_data)):
