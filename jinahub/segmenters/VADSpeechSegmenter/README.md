@@ -27,7 +27,7 @@ sudo apt-get update && sudo apt-get install libsndfile1 ffmpeg
 pip install -r requirements.txt
 ```
 
-## 🚀 Usage
+## 🚀 Usages
 
 #### via Docker image (recommended)
 
