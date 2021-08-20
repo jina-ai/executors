@@ -2,9 +2,10 @@ jtype: Flow
 version: '1'
 executors:
   - name: indexer_storage
-    uses: PostgreSQLStorage
+    uses:
+      jtype: PostgreSQLStorage
+      metas:
+        workspace: $STORAGE_WORKSPACE
+        name: psql
     shards: $SHARDS
     polling: any
-    metas:
-      workspace: $STORAGE_WORKSPACE
-      name: psql

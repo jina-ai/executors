@@ -2,9 +2,10 @@ jtype: Flow
 version: '1'
 executors:
   - name: indexer_query
-    uses: FaissPostgresSearcher
-    metas:
-      name: compound_query_indexer
+    uses:
+      jtype: FaissPostgresSearcher
+      metas:
+        name: compound_query_indexer
     shards: $SHARDS
     replicas: 2
     polling: all
