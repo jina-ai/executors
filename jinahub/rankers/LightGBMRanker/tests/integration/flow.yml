@@ -1,0 +1,15 @@
+jtype: Flow
+version: '1'
+pods:
+  - name: trainer
+    with:
+      workspace: $RANKER_WORKDIR
+      py_modules:
+        - lightgbm_ranker.py
+    uses:
+      jtype: LightGBMRanker
+      with:
+        model_path: model.txt
+        query_features: ['price_query', 'brand_query']
+        match_features: ['price_match', 'brand_match']
+        relevance_label: 'relevance'

@@ -1,0 +1,4 @@
+jtype: LightGBMRanker
+metas:
+  py_modules:
+    - lightgbm_ranker.py
