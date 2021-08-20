@@ -1,18 +1,16 @@
 __copyright__ = 'Copyright (c) 2020-2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
-import os
+from pathlib import Path
 
 import pytest
 from jina import Flow, Document, DocumentArray
-
-cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 @pytest.mark.parametrize('_type', ['wav', 'mp3', 'blob'])
 def test_chunks_exist(build_da, _type):
     da = build_da(_type)
-    with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as f:
+    with Flow.load_config(str(Path(__file__).parent / 'flow.yml')) as f:
         responses = f.post(on='segment', inputs=da, return_results=True)
 
     locations = [

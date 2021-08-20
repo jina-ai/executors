@@ -23,6 +23,7 @@ This VAD is similar to WebRTC but instead of differentiating voice from silence,
 
 In case you want to install the dependencies locally run
 ```
+sudo apt-get update && sudo apt-get install libsndfile1 ffmpeg
 pip install -r requirements.txt
 ```
 

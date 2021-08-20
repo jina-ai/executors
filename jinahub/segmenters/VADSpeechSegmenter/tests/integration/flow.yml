@@ -1,8 +1,5 @@
 jtype: Flow
 version: '1'
-with:
-  py_modules:
-    - vad_speech_segmenter.py
 executors:
   - name: segmenter
     uses:
