@@ -1,18 +1,19 @@
+import collections
 import os
-import time
 from collections import OrderedDict
 from pathlib import Path
 from typing import Dict
 
 import numpy as np
 import pytest
+import time
 from jina import Flow, Document, Executor, DocumentArray, requests
 from jina.logging.profile import TimeContext
+
 from jina_commons.indexers.dump import (
     import_vectors,
     import_metas,
 )
-
 
 METRIC = 'l2'
 
@@ -86,13 +87,19 @@ class MatchMerger(Executor):
 
 
 def get_documents(nr=10, index_start=0, emb_size=7):
+    random_batch = np.random.random([nr, emb_size]).astype(np.float32)
     for i in range(index_start, nr + index_start):
         d = Document()
         d.id = f'aa{i}'  # to test it supports non-int ids
-        d.text = f'hello world {i}'
-        d.embedding = np.random.random(emb_size).astype(np.float32)
-        d.tags['field'] = f'tag data {i}'
+        d.embedding = random_batch[i - index_start]
         yield d
+
+
+def get_batch_iterator(batches, batch_size, emb_size=7):
+    index_start = 0
+    for batch in range(batches):
+        yield from get_documents(batch_size, index_start, emb_size)
+        index_start += batch_size
 
 
 def assert_dump_data(dump_path, docs, shards, pea_id):
@@ -137,22 +144,33 @@ def path_size(dump_path):
     return dir_size
 
 
+def flatten(it):
+    for x in it:
+        if isinstance(x, collections.Iterable) and not isinstance(x, str):
+            yield from flatten(x)
+        else:
+            yield x
+
+
 # replicas w 1 shard doesn't work
 # @pytest.mark.parametrize('shards', [1, 3, 7])
 @pytest.mark.parametrize('shards', [3, 7])
 @pytest.mark.parametrize('nr_docs', [100])
 @pytest.mark.parametrize('emb_size', [10])
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
-def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
+def test_dump_reload(
+    tmpdir, nr_docs, emb_size, shards, docker_compose, benchmark=False
+):
     # for psql to start
     time.sleep(2)
     top_k = 5
-    docs = DocumentArray(
-        list(get_documents(nr=nr_docs, index_start=0, emb_size=emb_size))
+    batch_size = min(1000, nr_docs)
+    docs = get_batch_iterator(
+        batches=nr_docs // batch_size, batch_size=batch_size, emb_size=emb_size
     )
-    # make sure to delete any overlapping docs
-    PostgreSQLStorage().delete(docs, {})
-    assert len(docs) == nr_docs
+    if not benchmark:
+        docs = DocumentArray(flatten(docs))
+        assert len(docs) == nr_docs
 
     dump_path = os.path.join(str(tmpdir), 'dump_dir')
     os.environ['STORAGE_WORKSPACE'] = os.path.join(str(tmpdir), 'index_ws')
@@ -164,19 +182,24 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
 
     with Flow.load_config(storage_flow_yml) as flow_storage:
         with Flow.load_config(query_flow_yml) as flow_query:
-            with TimeContext(f'### indexing {len(docs)} docs'):
+            with TimeContext(f'### indexing {nr_docs} docs'):
                 flow_storage.post(on='/index', inputs=docs)
 
-            results = flow_query.post(on='/search', inputs=docs, return_results=True)
+            results = flow_query.post(
+                on='/search',
+                inputs=get_documents(nr=1, index_start=0, emb_size=emb_size),
+                return_results=True,
+            )
             assert len(results[0].docs[0].matches) == 0
 
-            with TimeContext(f'### dumping {len(docs)} docs'):
+            with TimeContext(f'### dumping {nr_docs} docs'):
                 flow_storage.post(
                     on='/dump',
                     target_peapod='indexer_storage',
                     parameters={
                         'dump_path': dump_path,
                         'shards': shards,
+                        'include_metas': not benchmark,
                         'timeout': -1,
                     },
                 )
@@ -185,10 +208,11 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
             assert dir_size > 0
             print(f'### dump path size: {dir_size} MBs')
 
-            flow_query.rolling_update(pod_name='indexer_query', dump_path=dump_path)
+            with TimeContext(f'### rolling update {nr_docs} docs'):
+                flow_query.rolling_update(pod_name='indexer_query', dump_path=dump_path)
             results = flow_query.post(
                 on='/search',
-                inputs=docs,
+                inputs=get_documents(nr=3, index_start=0, emb_size=emb_size),
                 parameters={'top_k': top_k},
                 return_results=True,
             )
@@ -200,8 +224,9 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards, docker_compose):
     assert idx.size == nr_docs
 
     # assert data dumped is correct
-    for pea_id in range(shards):
-        assert_dump_data(dump_path, docs, shards, pea_id)
+    if not benchmark:
+        for pea_id in range(shards):
+            assert_dump_data(dump_path, docs, shards, pea_id)
 
 
 def _in_docker():
@@ -220,7 +245,12 @@ def _in_docker():
 )
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_benchmark(tmpdir, docker_compose):
-    nr_docs = 1000
+    nr_docs = 100000
     return test_dump_reload(
-        tmpdir, nr_docs=nr_docs, emb_size=128, shards=3, docker_compose=compose_yml
+        tmpdir,
+        nr_docs=nr_docs,
+        emb_size=128,
+        shards=3,
+        docker_compose=compose_yml,
+        benchmark=True,
     )

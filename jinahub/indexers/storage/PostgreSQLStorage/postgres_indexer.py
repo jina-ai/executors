@@ -1,9 +1,8 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Tuple, Generator, Dict, List
+from typing import Dict, List
 
-import numpy as np
 from jina import Executor, requests, DocumentArray, Document
 
 from jina_commons import get_logger
@@ -67,17 +66,9 @@ class PostgreSQLStorage(Executor):
         )
         self.default_return_embeddings = default_return_embeddings
 
-    def _get_generator(self) -> Generator[Tuple[str, np.array, bytes], None, None]:
-        with self.handler as handler:
-            # always order the dump by id as integer
-            cursor = handler.connection.cursor()
-            cursor.execute(f'SELECT * from {handler.table} ORDER BY ID')
-            records = cursor.fetchall()
-            for rec in records:
-                doc = Document(bytes(rec[1]))
-                vec = doc.embedding
-                metas = doc_without_embedding(doc)
-                yield rec[0], vec, metas
+    @property
+    def dump_dtype(self):
+        return self.handler.dump_dtype
 
     @property
     def size(self):
@@ -147,9 +138,15 @@ class PostgreSQLStorage(Executor):
         if shards is None:
             self.logger.error(f'No "shards" provided for {self}')
 
-        export_dump_streaming(
-            path, shards=shards, size=self.size, data=self._get_generator()
-        )
+        include_metas = parameters.get('include_metas', True)
+
+        with self.handler as postgres_handler:
+            export_dump_streaming(
+                path,
+                shards=shards,
+                size=self.size,
+                data=postgres_handler.get_generator(include_metas=include_metas),
+            )
 
     def close(self) -> None:
         """
@@ -173,5 +170,7 @@ class PostgreSQLStorage(Executor):
         with self.handler as postgres_handler:
             postgres_handler.search(
                 docs.traverse_flat(traversal_paths),
-                return_embeddings=parameters.get('return_embeddings', self.default_return_embeddings)
+                return_embeddings=parameters.get(
+                    'return_embeddings', self.default_return_embeddings
+                ),
             )

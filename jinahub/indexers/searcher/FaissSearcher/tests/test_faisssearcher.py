@@ -73,6 +73,7 @@ def test_faiss_indexer_empty(metas, tmpdir_dump):
         train_filepath=train_filepath,
         metas=metas,
         runtime_args={'pea_id': 0},
+        prefetch_size=256,
     )
     indexer.search(query_docs, parameters={'top_k': 4})
     assert len(query_docs[0].matches) == 0
@@ -85,6 +86,7 @@ def test_faiss_indexer(metas, tmpdir_dump):
         f.write(train_data.tobytes())
 
     indexer = FaissSearcher(
+        prefetch_size=256,
         index_key='IVF10,PQ2',
         train_filepath=train_filepath,
         dump_path=tmpdir_dump,
@@ -111,6 +113,7 @@ def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
         f.write(train_data.tobytes())
 
     indexer = FaissSearcher(
+        prefetch_size=256,
         index_key='IVF10,PQ2',
         train_filepath=train_filepath,
         metric=metric,
@@ -161,6 +164,7 @@ def test_faiss_indexer_known(metas, train_data, tmpdir):
         train_filepath = os.path.join(metas['workspace'], 'faiss.test.gz')
 
     indexer = FaissSearcher(
+        prefetch_size=256,
         index_key='Flat',
         train_filepath=train_filepath,
         metas=metas,
@@ -215,6 +219,7 @@ def test_faiss_indexer_known_big(metas, tmpdir):
         zip(keys, vectors, [b'' for _ in range(len(vectors))]),
     )
     indexer = FaissSearcher(
+        prefetch_size=256,
         index_key='Flat',
         requires_training=True,
         train_filepath=train_filepath,
@@ -279,6 +284,7 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
         zip(vec_idx, vec, [b'' for _ in range(len(vec))]),
     )
     indexer = FaissSearcher(
+        prefetch_size=256,
         index_key='IVF10,PQ4',
         train_filepath=train_filepath,
         max_num_training_points=max_num_points,
@@ -318,6 +324,7 @@ def test_faiss_normalization(metas, metric, tmpdir):
     )
 
     indexer = FaissSearcher(
+        prefetch_size=256,
         index_key='Flat',
         metric=metric,
         normalize=True,

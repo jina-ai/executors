@@ -63,7 +63,7 @@ class FaissSearcher(Executor):
         normalize: bool = False,
         nprobe: int = 1,
         dump_path: Optional[str] = None,
-        prefetch_size: Optional[int] = None,
+        prefetch_size: Optional[int] = 10,
         default_traversal_paths: List[str] = ['r'],
         is_distance: bool = False,
         default_top_k: int = 5,

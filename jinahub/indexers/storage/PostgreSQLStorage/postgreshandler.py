@@ -1,13 +1,14 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-import psycopg2
-from psycopg2 import pool
-import psycopg2.extras
+from typing import Optional, Generator, Tuple
 
+import numpy as np
+import psycopg2
+import psycopg2.extras
 from jina import DocumentArray, Document
 from jina.logging.logger import JinaLogger
-from typing import Optional
+from psycopg2 import pool
 
 
 def doc_without_embedding(d: Document):
@@ -39,12 +40,14 @@ class PostgreSQLHandler:
         database: str = 'postgres',
         table: Optional[str] = 'default_table',
         max_connections: int = 5,
+        dump_dtype: type = np.float64,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger('psq_handler')
         self.table = table
+        self.dump_dtype = dump_dtype
 
         try:
             self.postgreSQL_pool = psycopg2.pool.SimpleConnectionPool(
@@ -86,8 +89,10 @@ class PostgreSQLHandler:
             try:
                 cursor.execute(
                     f'CREATE TABLE {self.table} ( \
-                    ID VARCHAR PRIMARY KEY,  \
-                    DOC BYTEA);'
+                    ID VARCHAR PRIMARY KEY  \
+                    , EMBEDDING BYTEA  \
+                    , DOC BYTEA  \
+                    );'
                 )
                 self.logger.info('Successfully created table')
             except (Exception, psycopg2.Error) as error:
@@ -109,11 +114,12 @@ class PostgreSQLHandler:
         try:
             psycopg2.extras.execute_batch(
                 cursor,
-                f'INSERT INTO {self.table} (ID, DOC) VALUES (%s, %s)',
+                f'INSERT INTO {self.table} (ID, EMBEDDING, DOC) VALUES (%s, %s, %s)',
                 [
                     (
                         doc.id,
-                        doc.SerializeToString(),
+                        doc.embedding.astype(self.dump_dtype).tobytes(),
+                        doc_without_embedding(doc),
                     )
                     for doc in docs
                 ],
@@ -136,10 +142,11 @@ class PostgreSQLHandler:
         cursor = self.connection.cursor()
         psycopg2.extras.execute_batch(
             cursor,
-            f'UPDATE {self.table} SET DOC = %s WHERE ID = %s',
+            f'UPDATE {self.table} SET EMBEDDING = %s, DOC = %s WHERE ID = %s',
             [
                 (
-                    doc.SerializeToString(),
+                    doc.embedding.astype(self.dump_dtype).tobytes(),
+                    doc_without_embedding(doc),
                     doc.id,
                 )
                 for doc in docs
@@ -169,15 +176,23 @@ class PostgreSQLHandler:
 
     def search(self, docs: DocumentArray, return_embeddings: bool = True, **kwargs):
         """Use the Postgres db as a key-value engine, returning the metadata of a document id"""
+        if return_embeddings:
+            embeddings_field = ', EMBEDDING '
+        else:
+            embeddings_field = ''
         cursor = self.connection.cursor()
         for doc in docs:
             # retrieve metadata
-            cursor.execute(f'SELECT DOC FROM {self.table} WHERE ID = %s;', (doc.id,))
+            cursor.execute(
+                f'SELECT DOC {embeddings_field} FROM {self.table} WHERE ID = %s;',
+                (doc.id,),
+            )
             result = cursor.fetchone()
             data = bytes(result[0])
             retrieved_doc = Document(data)
-            if not return_embeddings:
-                retrieved_doc.pop('embedding')
+            if return_embeddings:
+                embedding = np.frombuffer(result[1], dtype=self.dump_dtype)
+                retrieved_doc.embedding = embedding
             doc.MergeFrom(retrieved_doc)
 
     def _close_connection(self, connection):
@@ -197,3 +212,20 @@ class PostgreSQLHandler:
         cursor.execute(f'SELECT COUNT(*) from {self.table}')
         records = cursor.fetchall()
         return records[0][0]
+
+    def get_generator(
+        self, include_metas=True
+    ) -> Generator[Tuple[str, bytes, Optional[bytes]], None, None]:
+        connection = self._get_connection()
+        # always order the dump by id as integer
+        cursor = connection.cursor('generator')  # server-side cursor
+        cursor.itersize = 10000
+        if include_metas:
+            cursor.execute(f'SELECT ID, EMBEDDING, DOC from {self.table} ORDER BY ID')
+            for rec in cursor:
+                yield rec[0], rec[1], rec[2]
+        else:
+            cursor.execute(f'SELECT ID, EMBEDDING from {self.table} ORDER BY ID')
+            for rec in cursor:
+                yield rec[0], rec[1], None
+        self._close_connection(connection)
