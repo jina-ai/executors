@@ -27,7 +27,7 @@ sudo apt-get update && sudo apt-get install libsndfile1 ffmpeg
 pip install -r requirements.txt
 ```
 
-## Usage
+## 🚀 Usage
 
 #### via Docker image (recommended)
 
@@ -49,7 +49,7 @@ f = Flow().add(uses='jinahub://VADSpeechSegmenter')
 - To override class metas, use `.add(..., uses_metas: {'key': 'value})`
 
 
-## Example
+## 🎉️ Example
 
 ```python
 import os
