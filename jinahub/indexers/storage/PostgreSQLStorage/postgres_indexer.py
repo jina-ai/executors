@@ -28,6 +28,7 @@ class PostgreSQLStorage(Executor):
     :param database: the database name
     :param table: the table name to use
     :param default_return_embeddings: whether to return embeddings on search or not
+    :param dry_run: If True, no database connection will be build.
     :param args: other arguments
     :param kwargs: other keyword arguments
     """

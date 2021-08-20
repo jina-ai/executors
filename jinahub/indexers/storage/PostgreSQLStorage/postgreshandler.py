@@ -31,6 +31,7 @@ class PostgreSQLHandler:
     :param password: the password to authenticate
     :param database: the database name
     :param collection: the collection name
+    :param dry_run: If True, no database connection will be build
     :param args: other arguments
     :param kwargs: other keyword arguments
     """
