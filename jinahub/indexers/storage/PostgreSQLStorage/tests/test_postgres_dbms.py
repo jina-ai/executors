@@ -98,7 +98,9 @@ def validate_db_side(postgres_indexer, expected_data):
 
 
 def test_config():
-    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    ex = Executor.load_config(
+        str(Path(__file__).parents[1] / 'config.yml'), override_with={'dry_run': True}
+    )
     assert ex.username == 'postgres'
 
 

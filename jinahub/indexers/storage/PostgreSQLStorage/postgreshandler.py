@@ -45,6 +45,7 @@ class PostgreSQLHandler:
         table: Optional[str] = 'default_table',
         max_connections: int = 5,
         dump_dtype: type = np.float64,
+        dry_run: bool = False,
         *args,
         **kwargs,
     ):
@@ -53,16 +54,17 @@ class PostgreSQLHandler:
         self.table = table
         self.dump_dtype = dump_dtype
 
-        self.postgreSQL_pool = psycopg2.pool.SimpleConnectionPool(
-            1,
-            max_connections,
-            user=username,
-            password=password,
-            database=database,
-            host=hostname,
-            port=port,
-        )
-        self._use_table()
+        if not dry_run:
+            self.postgreSQL_pool = psycopg2.pool.SimpleConnectionPool(
+                1,
+                max_connections,
+                user=username,
+                password=password,
+                database=database,
+                host=hostname,
+                port=port,
+            )
+            self._init_table()
 
     def __enter__(self):
         self.connection = self._get_connection()
@@ -72,7 +74,7 @@ class PostgreSQLHandler:
         if self.connection:
             self._close_connection(self.connection)
 
-    def _use_table(self):
+    def _init_table(self):
         """
         Use table if exists or create one if it doesn't.
 

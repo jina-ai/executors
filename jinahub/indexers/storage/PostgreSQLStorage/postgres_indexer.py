@@ -43,6 +43,7 @@ class PostgreSQLStorage(Executor):
         max_connections=5,
         default_traversal_paths: List[str] = ['r'],
         default_return_embeddings: bool = True,
+        dry_run: bool = False,
         *args,
         **kwargs,
     ):
@@ -63,6 +64,7 @@ class PostgreSQLStorage(Executor):
             database=self.database,
             table=self.table,
             max_connections=max_connections,
+            dry_run=dry_run,
         )
         self.default_return_embeddings = default_return_embeddings
 
