@@ -165,7 +165,7 @@ Please migrate your data to the latest version.'
                 [
                     (
                         doc.id,
-                        doc.embedding.astype(self.dump_dtype).tobytes(),
+                        doc.embedding.astype(self.dump_dtype).tobytes() if doc.embedding is not None else None,
                         doc_without_embedding(doc),
                     )
                     for doc in docs
@@ -237,7 +237,7 @@ Please migrate your data to the latest version.'
             result = cursor.fetchone()
             data = bytes(result[0])
             retrieved_doc = Document(data)
-            if return_embeddings:
+            if return_embeddings and result[1] is not None:
                 embedding = np.frombuffer(result[1], dtype=self.dump_dtype)
                 retrieved_doc.embedding = embedding
             doc.MergeFrom(retrieved_doc)
@@ -272,11 +272,11 @@ Please migrate your data to the latest version.'
                 f'SELECT doc_id, embedding, doc FROM {self.table} ORDER BY doc_id'
             )
             for rec in cursor:
-                yield rec[0], rec[1], rec[2]
+                yield rec[0], np.frombuffer(rec[1]) if rec[1] is not None else None, rec[2]
         else:
             cursor.execute(
                 f'SELECT doc_id, embedding FROM {self.table} ORDER BY doc_id'
             )
             for rec in cursor:
-                yield rec[0], rec[1], None
+                yield rec[0], np.frombuffer(rec[1]) if rec[1] is not None else None, None
         self._close_connection(connection)
