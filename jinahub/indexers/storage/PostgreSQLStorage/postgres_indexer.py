@@ -28,6 +28,7 @@ class PostgreSQLStorage(Executor):
     :param database: the database name
     :param table: the table name to use
     :param default_return_embeddings: whether to return embeddings on search or not
+    :param dry_run: If True, no database connection will be build.
     :param args: other arguments
     :param kwargs: other keyword arguments
     """
@@ -43,6 +44,7 @@ class PostgreSQLStorage(Executor):
         max_connections=5,
         default_traversal_paths: List[str] = ['r'],
         default_return_embeddings: bool = True,
+        dry_run: bool = False,
         *args,
         **kwargs,
     ):
@@ -63,6 +65,7 @@ class PostgreSQLStorage(Executor):
             database=self.database,
             table=self.table,
             max_connections=max_connections,
+            dry_run=dry_run,
         )
         self.default_return_embeddings = default_return_embeddings
 
