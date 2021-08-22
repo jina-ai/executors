@@ -31,7 +31,7 @@ class CustomImageTorchEncoder(Executor):
     to extract the embeddings
     :param device: The device where to load the model.
     :param default_batch_size: fallback batch size in case there is not batch size sent in the request
-    :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+    :param default_traversal_paths: fallback traversal path in case there is no traversal path sent in the request
     :param args:  Additional positional arguments.
     :param kwargs: Additional keyword arguments.
     """
