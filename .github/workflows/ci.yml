@@ -29,6 +29,9 @@ jobs:
       fail-fast: false
       matrix:
         executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+    defaults:
+      run:
+        working-directory: ${{ matrix.executor-path }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -36,15 +39,15 @@ jobs:
           python-version: '3.7'
       - name: Pre-test script
         run: |
-          if [[ -f "${{ matrix.executor-path }}/scripts/pre_test.sh" ]]; then
-            bash ${{ matrix.executor-path }}/scripts/pre_test.sh
+          if [[ -f "scripts/pre_test.sh" ]]; then
+            bash scripts/pre_test.sh
           fi
       - name: Python requirements
-        run: pip install -r ${{ matrix.executor-path }}/requirements.txt
+        run: pip install -r requirements.txt
       - name: Test requirements
-        run: pip install -r ${{ matrix.executor-path }}/tests/requirements.txt
+        run: pip install -r tests/requirements.txt
       - name: Run unit tests
-        run: cd ${{ matrix.executor-path }} && pytest -s -v -m "not gpu"
+        run: pytest -s -v -m "not gpu"
 
   docker-tests:
     needs: [prep-testbed]
