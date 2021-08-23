@@ -168,7 +168,7 @@ class FaissSearcher(Executor):
                 'Invalid distance metric for Faiss index construction. Defaulting to l2 distance'
             )
 
-        if self.trained_index_file:
+        if self.trained_index_file and os.path.exists(self.trained_index_file):
             index = faiss.read_index(str(self.trained_index_file))
             assert index.metric_type == metric
             assert index.ntotal == 0
