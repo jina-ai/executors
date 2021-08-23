@@ -44,7 +44,7 @@ jobs:
       - name: Test requirements
         run: pip install -r ${{ matrix.executor-path }}/tests/requirements.txt
       - name: Run unit tests
-        run: pytest -s -v ${{ matrix.executor-path }}
+        run: cd ${{ matrix.executor-path }} && pytest -s -v -m "not gpu"
 
   docker-tests:
     needs: [prep-testbed]
