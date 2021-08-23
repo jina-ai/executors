@@ -135,8 +135,8 @@ class FaissSearcher(Executor):
         if self.on_gpu and ('PQ64' in self.index_key):
             co = faiss.GpuClonerOptions()
 
-            # here we are using a 64-byte PQ, so we must set the lookup tables to
-            # 16 bit float (this is due to the limited temporary memory).
+            # Due to the limited temporary memory, we must set the lookup tables to
+            # 16 bit float while using 64-byte PQ
             co.useFloat16 = True
         else:
             co = None
