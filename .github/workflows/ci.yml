@@ -36,12 +36,11 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.7'
+          python-version: "3.7"
       - name: Pre-test script
         run: |
           if [[ -f "scripts/pre_test.sh" ]]; then
-            bash scripts/pre_test.sh
-          fi
+            bash scripts/pre_test.sh; fi
       - name: Python requirements
         run: pip install -r requirements.txt
       - name: Test requirements
@@ -56,14 +55,30 @@ jobs:
       fail-fast: false
       matrix:
         test-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+    defaults:
+      run:
+        working-directory: ${{ matrix.executor-path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: debug
-        run: echo ${{ matrix.test-path }}
-      - name: run docker tests
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      - name: Install jina
+        run: pip install jina
+      - name: Pre-docker script
         run: |
-          bash ./scripts/test_docker.sh ${{ matrix.test-path }}
+          if [[ -f "scripts/pre_docker.sh" ]]; then
+            bash scripts/pre_docker.sh; fi
+      - name: Build Image
+        run: docker build -t foo .
+      - name: Test dockerized executor
+        run: |
+          ARGS=$(cat tests/docker_args.txt 2> /dev/null)
+          jina pea --uses docker://foo $ARGS &
+          PID = !$
+          sleep 10
+          ps -p $PID
 
   # always run
   integration-tests:
