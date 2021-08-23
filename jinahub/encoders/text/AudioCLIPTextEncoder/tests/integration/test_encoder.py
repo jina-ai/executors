@@ -5,7 +5,7 @@ from typing import Callable
 
 import pytest
 from jina import Flow
-from executor import AudioCLIPTextEncoder
+from ...audioclip_text import AudioCLIPTextEncoder
 
 
 @pytest.mark.parametrize("request_size", [1, 10, 50, 100])
