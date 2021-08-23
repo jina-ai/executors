@@ -63,7 +63,7 @@ class FaissSearcher(Executor):
         normalize: bool = False,
         nprobe: int = 1,
         dump_path: Optional[str] = None,
-        prefetch_size: Optional[int] = None,
+        prefetch_size: Optional[int] = 10,
         default_traversal_paths: List[str] = ['r'],
         is_distance: bool = False,
         default_top_k: int = 5,
@@ -132,9 +132,18 @@ class FaissSearcher(Executor):
         """Load the model to device."""
         import faiss
 
+        if self.on_gpu and ('PQ64' in self.index_key):
+            co = faiss.GpuClonerOptions()
+
+            # Due to the limited temporary memory, we must set the lookup tables to
+            # 16 bit float while using 64-byte PQ
+            co.useFloat16 = True
+        else:
+            co = None
+
         device = self.device()
         return (
-            faiss.index_cpu_to_gpu(device, 0, index, None)
+            faiss.index_cpu_to_gpu(device, 0, index, co)
             if device is not None
             else index
         )
@@ -201,6 +210,7 @@ class FaissSearcher(Executor):
                     faiss.normalize_L2(train_data)
                 self._train(index, train_data)
 
+        self.logger.info(f'Building the faiss {self.index_key} index...')
         self._build_partial_index(vecs_iter, index)
         index.nprobe = self.nprobe
         return index

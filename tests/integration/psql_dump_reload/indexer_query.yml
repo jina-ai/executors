@@ -1,3 +1,0 @@
-jtype: FaissPostgresSearcher
-metas:
-  name: compound_query_indexer

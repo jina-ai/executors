@@ -1,0 +1,6 @@
+jtype: Flow
+version: '1'
+executors:
+  - name: segmenter
+    uses:
+      jtype: VADSpeechSegmenter

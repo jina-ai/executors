@@ -1,10 +1,11 @@
 jtype: Flow
 version: '1'
-with:
-  return_results: true
-pods:
+executors:
   - name: indexer_query
-    uses: indexer_query.yml
+    uses:
+      jtype: FaissPostgresSearcher
+      metas:
+        name: compound_query_indexer
     shards: $SHARDS
     replicas: 2
     polling: all

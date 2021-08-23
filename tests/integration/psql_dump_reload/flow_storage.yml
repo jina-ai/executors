@@ -1,5 +1,11 @@
 jtype: Flow
 version: '1'
-pods:
+executors:
   - name: indexer_storage
-    uses: indexer_storage.yml
+    uses:
+      jtype: PostgreSQLStorage
+      metas:
+        workspace: $STORAGE_WORKSPACE
+        name: psql
+    shards: $SHARDS
+    polling: any
