@@ -1,0 +1,22 @@
+venv
+.venv
+.github
+__pycache__/
+build
+dist
+*.egg-info/
+.idea
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
