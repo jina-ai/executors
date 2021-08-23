@@ -70,7 +70,6 @@ def test_faiss_indexer_empty(metas):
 
     indexer = FaissSearcher(
         index_key='IVF10,PQ2',
-        train_filepath=train_filepath,
         metas=metas,
         runtime_args={'pea_id': 0},
         prefetch_size=256,
@@ -80,15 +79,17 @@ def test_faiss_indexer_empty(metas):
 
 
 def test_faiss_indexer(metas, tmpdir_dump):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
+    import faiss
+    trained_index_file = os.path.join(os.environ['TEST_WORKSPACE'], 'faiss.index')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
+    faiss_index = faiss.index_factory(10, 'IVF10,PQ2')
+    faiss_index.train(train_data)
+    faiss.write_index(faiss_index, trained_index_file)
+    
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='IVF10,PQ2',
-        train_filepath=train_filepath,
+        trained_index_file=trained_index_file,
         dump_path=tmpdir_dump,
         metas=metas,
         runtime_args={'pea_id': 0},
@@ -153,15 +154,9 @@ def test_fill_embeddings_fail(index_key, metas, tmpdir_dump):
     [('l2', True), ('inner_product', True), ('l2', False), ('inner_product', False)],
 )
 def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='IVF10,PQ2',
-        train_filepath=train_filepath,
         metric=metric,
         is_distance=is_distance,
         dump_path=tmpdir_dump,
@@ -185,9 +180,7 @@ def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
                     <= docs[0].matches[i + 1].scores[metric].value
             )
 
-
-@pytest.mark.parametrize('train_data', ['new', 'none', 'index'])
-def test_faiss_indexer_known(metas, train_data, tmpdir):
+def test_faiss_indexer_known(metas, tmpdir):    
     vectors = np.array(
         [[1, 1, 1], [10, 10, 10], [100, 100, 100], [1000, 1000, 1000]], dtype=np.float32
     )
@@ -199,20 +192,9 @@ def test_faiss_indexer_known(metas, train_data, tmpdir):
         zip(keys, vectors, [b'' for _ in range(len(vectors))]),
     )
 
-    if train_data == 'new':
-        train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-        train_data = vectors
-        with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-            f.write(train_data.tobytes())
-    elif train_data == 'none':
-        train_filepath = None
-    elif train_data == 'index':
-        train_filepath = os.path.join(metas['workspace'], 'faiss.test.gz')
-
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='Flat',
-        train_filepath=train_filepath,
         metas=metas,
         dump_path=os.path.join(tmpdir, 'dump'),
         runtime_args={'pea_id': 0},
@@ -250,11 +232,6 @@ def test_faiss_indexer_known_big(metas, tmpdir):
         queries[int(idx / 1000)] = array
         vectors[idx] = array
 
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = vectors
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     keys = np.arange(10000, 20000).astype(str)
 
     dump_path = os.path.join(tmpdir, 'dump')
@@ -268,7 +245,6 @@ def test_faiss_indexer_known_big(metas, tmpdir):
         prefetch_size=256,
         index_key='Flat',
         requires_training=True,
-        train_filepath=train_filepath,
         metas=metas,
         dump_path=dump_path,
         runtime_args={'pea_id': 0},
@@ -313,15 +289,6 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
     vec_idx = np.random.randint(0, high=num_data, size=[num_data]).astype(str)
     vec = np.random.random([num_data, num_dim])
 
-    train_filepath = os.path.join(metas['workspace'], 'faiss.test.gz')
-    if train_data == 'new':
-        train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-        train_data = vec
-        with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-            f.write(train_data.tobytes())
-    elif train_data == 'none':
-        train_filepath = None
-
     dump_path = os.path.join(tmpdir, 'dump')
     export_dump_streaming(
         dump_path,
@@ -332,7 +299,6 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='IVF10,PQ4',
-        train_filepath=train_filepath,
         max_num_training_points=max_num_points,
         requires_training=True,
         metas=metas,
