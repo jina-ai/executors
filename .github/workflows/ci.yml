@@ -63,6 +63,41 @@ jobs:
       - name: run integration tests
         run: ./scripts/integration.sh
 
+  gpu-containers:
+    needs: [prep-testbed]
+    runs-on: [ self-hosted, gpu ]
+    container:
+      image: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          sudo apt-get install jq
+          echo "::set-output name=matrix::$(bash scripts/get-gpu-containers.sh)"
+        env:
+          CHANGED_FOLDERS: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+  gpu-tests:
+    needs: [ prep-testbed ]
+    runs-on: [ self-hosted, gpu ]
+    strategy:
+      fail-fast: false
+      matrix:
+        container: ${{fromJson(needs.gpu-containers.outputs.matrix)}}
+    container:
+      image: ${{ matrix.container }}
+      options: --gpus all
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: debug
+        run: echo ${{ matrix.container }}
+      - name: tests
+        run: pytest -s -v -m gpu tests/
+
   success-all-test:
     needs: [integration-tests, unit-tests, docker-tests]
     if: always()
