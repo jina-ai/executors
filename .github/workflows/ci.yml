@@ -33,20 +33,18 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.7"
-      - name: Go to executor
-        run: cd ${{ matrix.executor-path }}
+          python-version: '3.7'
       - name: Pre-test script
         run: |
-          if [[ -f "scripts/pre_test.sh" ]]; then
-            bash scripts/pre_test.sh
+          if [[ -f "${{ matrix.executor-path }}/scripts/pre_test.sh" ]]; then
+            bash ${{ matrix.executor-path }}/scripts/pre_test.sh
           fi
       - name: Python requirements
-        run: pip install -r requirements.txt
+        run: pip install -r ${{ matrix.executor-path }}/requirements.txt
       - name: Test requirements
-        run: pip install -r tests/requirements.txt
+        run: pip install -r ${{ matrix.executor-path }}/tests/requirements.txt
       - name: Run unit tests
-        run: pytest -s -v -m "not gpu"
+        run: cd ${{ matrix.executor-path }} && pytest -s -v -m "not gpu"
 
   docker-tests:
     needs: [prep-testbed]
