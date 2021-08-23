@@ -21,4 +21,5 @@ def test_integration(data_generator: Callable, request_size: int):
     assert min(len(resp) * request_size, 50) == 50
     for r in resp:
         for doc in r.docs:
+            assert doc.embedding is not None
             assert doc.embedding.shape == (1024,)

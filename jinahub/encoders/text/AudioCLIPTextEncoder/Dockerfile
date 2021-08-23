@@ -12,4 +12,5 @@ RUN pip install -r requirements.txt --no-cache-dir
 COPY . /workspace
 WORKDIR /workspace
 
+ENV PYTHONPATH=/workspace
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
