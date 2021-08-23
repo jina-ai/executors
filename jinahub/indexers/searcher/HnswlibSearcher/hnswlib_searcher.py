@@ -111,6 +111,9 @@ class HnswlibSearcher(Executor):
         if docs is None:
             return
         for doc in docs:
-            doc.embedding = np.array(
-                self._indexer.get_items([int(self._doc_id_to_offset[str(doc.id)])])[0]
-            )
+            if doc.id in self._doc_id_to_offset:
+                doc.embedding = np.array(
+                    self._indexer.get_items([int(self._doc_id_to_offset[doc.id])])[0]
+                )
+            else:
+                self.logger.debug(f'Document {doc.id} not found in index')

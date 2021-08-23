@@ -85,6 +85,7 @@ class FaissSearcher(Executor):
         self.default_top_k = default_top_k
         self.default_traversal_paths = default_traversal_paths
         self.is_distance = is_distance
+        self._doc_id_to_offset = {}
 
         self.logger = get_logger(self)
 
@@ -95,7 +96,7 @@ class FaissSearcher(Executor):
                 dump_path, str(self.runtime_args.pea_id)
             )
             self._ids = np.array(list(ids_iter))
-            self._ext2int = {v: i for i, v in enumerate(self._ids)}
+            self._doc_id_to_offset = {v: i for i, v in enumerate(self._ids)}
 
             self._prefetch_data = []
             if self.prefetch_size and self.prefetch_size > 0:
@@ -353,10 +354,19 @@ class FaissSearcher(Executor):
                 f'{abspath} is broken/incomplete, perhaps forgot to ".close()" in the last usage?'
             )
 
+    @requests(on='/fill_embedding')
+    def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
+        if docs is None:
+            return
+        for doc in docs:
+            if doc.id in self._doc_id_to_offset:
+                doc.embedding = np.array(
+                    self._indexer.get_items([int(self._doc_id_to_offset[doc.id])])[0]
+                )
+            else:
+                self.logger.debug(f'Document {doc.id} not found in index')
+
     @property
     def size(self):
         """Return the nr of elements in the index"""
-        if hasattr(self, '_ids'):
-            return len(self._ids)
-        else:
-            return 0
+        return len(self._doc_id_to_offset)

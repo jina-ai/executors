@@ -123,6 +123,20 @@ def test_simple_indexer(tmpdir):
     assert search_docs_id[0].embedding is not None
 
 
+def test_fill_embeddings(tmpdir):
+    metas = {'workspace': str(tmpdir)}
+    indexer = SimpleIndexer(index_file_name='name', metas=metas)
+
+    assert indexer._flush
+    index_docs = DocumentArray([Document(id='a', embedding=np.array([1]))])
+    indexer.index(index_docs, {})
+    assert indexer._flush
+    da = DocumentArray([Document(id='a'), Document(id='b')])
+    indexer.fill_embedding(da)
+    assert da['a'].embedding is not None
+    assert da['b'].embedding is None
+
+
 def test_simple_indexer_loading(tmpdir, docs):
     metas = {'workspace': str(tmpdir)}
     docs_indexer1 = SimpleIndexer(index_file_name='docs_indexer', metas=metas)

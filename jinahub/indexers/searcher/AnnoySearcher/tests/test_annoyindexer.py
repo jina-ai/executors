@@ -85,13 +85,13 @@ def test_metric(tmpdir, metric, is_distance):
     for i in range(len(docs[0].matches) - 1):
         if not is_distance:
             assert (
-                docs[0].matches[i].scores[metric].value
-                >= docs[0].matches[i + 1].scores[metric].value
+                    docs[0].matches[i].scores[metric].value
+                    >= docs[0].matches[i + 1].scores[metric].value
             )
         else:
             assert (
-                docs[0].matches[i].scores[metric].value
-                <= docs[0].matches[i + 1].scores[metric].value
+                    docs[0].matches[i].scores[metric].value
+                    <= docs[0].matches[i + 1].scores[metric].value
             )
 
 
@@ -119,6 +119,20 @@ def test_query_vector(tmpdir):
     indexer.fill_embedding(da)
     for i, doc in enumerate(da):
         assert list(doc.embedding)
+
+
+def test_fill_embeddings(tmpdir):
+    metas = {'workspace': str(tmpdir), 'name': 'searcher'}
+    runtime_args = {'pea_id': 0, 'replica_id': 0}
+
+    indexer = AnnoySearcher(
+        dump_path=DUMP_PATH, default_top_k=TOP_K, metas=metas, runtime_args=runtime_args
+    )
+    da = DocumentArray([Document(id=0), Document(id=1), Document(id=20)])
+    indexer.fill_embedding(da)
+    assert da['0'].embedding is not None
+    assert da['1'].embedding is not None
+    assert da['20'].embedding is None
 
 
 def test_query_vector_empty(tmpdir):

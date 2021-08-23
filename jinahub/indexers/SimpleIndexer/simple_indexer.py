@@ -142,4 +142,7 @@ class SimpleIndexer(Executor):
         if not docs:
             return
         for doc in docs:
-            doc.embedding = self._docs[doc.id].embedding
+            if doc.id in self._docs:
+                doc.embedding = self._docs[doc.id].embedding
+            else:
+                self.logger.debug(f'Document {doc.id} not found in index')
