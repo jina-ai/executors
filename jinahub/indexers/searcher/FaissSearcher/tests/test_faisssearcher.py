@@ -25,8 +25,8 @@ def _get_docs_from_vecs(queries):
 # fix the seed here
 np.random.seed(500)
 retr_idx = None
-vec_idx = np.random.randint(0, high=100, size=[10]).astype(str)
-vec = np.array(np.random.random([10, 10]), dtype=np.float32)
+vec_idx = np.random.randint(0, high=512, size=[512]).astype(str)
+vec = np.array(np.random.random([512, 10]), dtype=np.float32)
 
 query = np.array(np.random.random([10, 10]), dtype=np.float32)
 query_docs = _get_docs_from_vecs(query)
