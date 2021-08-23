@@ -1,6 +1,6 @@
 FROM jinaai/jina:2.0.17
 # install the third-party requirements
-RUN apt-get update && apt-get install -y python3.7 python3.7-dev python3-pip git
+RUN apt-get update && apt-get install -y git
 
 # setup the workspace
 COPY . /workspace
