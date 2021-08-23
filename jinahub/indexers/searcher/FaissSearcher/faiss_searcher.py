@@ -169,7 +169,7 @@ class FaissSearcher(Executor):
             )
 
         if self.trained_index_file and os.path.exists(self.trained_index_file):
-            index = faiss.read_index(str(self.trained_index_file))
+            index = faiss.read_index(self.trained_index_file)
             assert index.metric_type == metric
             assert index.ntotal == 0
             assert index.d == self.num_dim
@@ -217,7 +217,19 @@ class FaissSearcher(Executor):
             )
             if self.on_gpu:
                 index = faiss.index_gpu_to_cpu(index)
-            faiss.write_index(index, self.trained_index_file)
+            if self.trained_index_file:
+                if os.path.exists(self.trained_index_file):
+                    self.logger.warning(
+                        f'We are going to overwrite the index file located at {self.trained_index_file}'
+                    )
+                faiss.write_index(index, self.trained_index_file)
+
+        if 'IVF' in self.index_key:
+            # Support for searching several inverted lists in parallel (parallel_mode != 0)
+            self.logger.info(
+                'We will setting `parallel_mode=1` to supporting searching several inverted lists in parallel'
+            )
+            index.parallel_mode = 1
 
         self.logger.info(f'Building the faiss {self.index_key} index...')
         self._build_partial_index(vecs_iter, index)
