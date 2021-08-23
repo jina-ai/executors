@@ -54,7 +54,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+        executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
     defaults:
       run:
         working-directory: ${{ matrix.executor-path }}
