@@ -1,8 +1,8 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-import os
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -11,9 +11,11 @@ from jina import Document, DocumentArray
 
 @pytest.fixture(scope="session", autouse=True)
 def download_cache():
-    os.system('scripts/download_full.sh')
+    subprocess.run(
+        'scripts/download_full.sh', cwd=Path(__file__).parents[1], check=True
+    )
     yield
-    shutil.rmtree('.cache') 
+    shutil.rmtree('.cache')
 
 
 @pytest.fixture()
