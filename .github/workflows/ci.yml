@@ -28,15 +28,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+        executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: debug
-        run: echo ${{ matrix.test-path }}
-      - name: run unit tests
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Pre-test script
         run: |
-          bash ./scripts/tests.sh ${{ matrix.test-path }}
+          if [[ -f "${{ matrix.executor-path }}/scripts/pre_test.sh" ]]; then
+            bash ${{ matrix.executor-path }}/scripts/pre_test.sh
+          fi
+      - name: Python requirements
+        run: pip install -r ${{ matrix.executor-path }}/requirements.txt
+      - name: Test requirements
+        run: pip install -r ${{ matrix.executor-path }}/tests/requirements.txt
+      - name: Run unit tests
+        run: pytest -s -v ${{ matrix.executor-path }}
 
   docker-tests:
     needs: [prep-testbed]

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import torch
 from jina import Document, DocumentArray, Executor
-from ...audioclip_text import AudioCLIPTextEncoder
+from executor import AudioCLIPTextEncoder
 
 _EMBEDDING_DIM = 1024
 
@@ -24,7 +24,7 @@ def test_encoding_cpu():
     assert input_data[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='GPU is needed for this test')
+@pytest.mark.gpu
 def test_encoding_gpu():
     enc = AudioCLIPTextEncoder(device='cuda')
     input_data = DocumentArray([Document(text='hello world')])

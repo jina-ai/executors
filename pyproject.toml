@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+markers = [
+    "gpu: tests that can only be run on a machine with a GPU",
+]

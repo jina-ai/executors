@@ -5,7 +5,7 @@ from typing import Callable
 
 import pytest
 from jina import Flow
-from ...audioclip_text import AudioCLIPTextEncoder
+from executor import AudioCLIPTextEncoder
 
 
 @pytest.mark.parametrize("request_size", [1, 10, 50, 100])
@@ -18,8 +18,7 @@ def test_integration(data_generator: Callable, request_size: int):
             return_results=True,
         )
 
-    assert min(len(resp) * request_size, 50) == 50
+    assert sum(len(resp_batch.docs) for resp_batch in resp) == 50
     for r in resp:
         for doc in r.docs:
-            assert doc.embedding is not None
             assert doc.embedding.shape == (1024,)

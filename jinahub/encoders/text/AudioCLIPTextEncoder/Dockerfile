@@ -1,4 +1,4 @@
-FROM jinaai/jina:2.0.10-perf
+FROM jinaai/jina:2-py37-perf
 
 # install git
 RUN apt-get -y update && apt-get install -y git \
@@ -12,5 +12,4 @@ RUN pip install -r requirements.txt --no-cache-dir
 COPY . /workspace
 WORKDIR /workspace
 
-ENV PYTHONPATH=/workspace
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

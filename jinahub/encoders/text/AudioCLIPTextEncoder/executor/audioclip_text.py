@@ -14,7 +14,7 @@ class AudioCLIPTextEncoder(Executor):
     """
     Encode text data with the AudioCLIP model
 
-    :param model_path: path of the pre-trained AudioCLIP model.
+    :param model_path: path ot the pre-trained AudioCLIP model.
     :param default_traversal_paths: default traversal path (used if not specified in
         request's parameters)
     :param default_batch_size: default batch size (used if not specified in
