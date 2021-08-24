@@ -106,10 +106,9 @@ class AnnoySearcher(Executor):
     @requests(on='/fill_embedding')
     def fill_embedding(self, query_da: DocumentArray, **kwargs):
         for doc in query_da:
-            if doc.id in self._doc_id_to_offset:
-                doc.embedding = np.array(
-                    self._indexer.get_item_vector(int(self._doc_id_to_offset[doc.id]))
-                )
+            doc_idx = self._doc_id_to_offset.get(doc.id)
+            if doc_idx is not None:
+                doc.embedding = np.array(self._indexer.get_item_vector(int(doc_idx)))
             else:
-                self.logger.debug(f'Document {doc.id} not found in index')
+                self.logger.warning(f'Document {doc.id} not found in index')
 
