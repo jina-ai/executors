@@ -70,7 +70,6 @@ class FaissSearcher(Executor):
         is_distance: bool = False,
         default_top_k: int = 5,
         on_gpu: bool = False,
-        make_direct_map: bool = False,
         *args,
         **kwargs,
     ):
@@ -114,9 +113,6 @@ class FaissSearcher(Executor):
             self.num_dim = self._prefetch_data[0].shape[0]
             self.dtype = self._prefetch_data[0].dtype
             self.index = self._build_index(vecs_iter)
-            if make_direct_map:
-                if hasattr(self.index, 'make_direct_map'):
-                    self.index.make_direct_map()
         else:
             self.logger.warning(
                 'No data loaded in "FaissIndexer". Use .rolling_update() to re-initialize it...'
