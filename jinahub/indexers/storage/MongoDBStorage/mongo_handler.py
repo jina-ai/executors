@@ -50,7 +50,7 @@ class MongoHandler:
         for doc in docs:
             item = doc.dict()
             if doc.embedding is not None:
-                item['embedding'] = list(doc.embedding.flatten())
+                item['embedding'] = doc.embedding.flatten().tolist()
             dict_docs.append(item)
         try:
             self.collection.insert_many(
@@ -66,7 +66,7 @@ class MongoHandler:
             item = doc.dict()
             item['embedding'] = []
             if doc.embedding is not None:
-                item['embedding'] = list(doc.embedding.flatten())
+                item['embedding'] = doc.embedding.flatten().tolist()
             self.collection.replace_one(
                 filter={'id': {'$eq': doc.id}},
                 replacement=item,
