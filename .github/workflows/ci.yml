@@ -68,8 +68,8 @@ jobs:
         run: pip install jina
       - name: Pre-docker script
         run: |
-          if [[ -f "scripts/pre_docker.sh" ]]; then
-            bash scripts/pre_docker.sh; fi
+          if [[ -f "tests/pre_docker.sh" ]]; then
+            bash tests/pre_docker.sh; fi
       - name: Build Image
         run: docker build -t foo .
       - name: Test dockerized executor
