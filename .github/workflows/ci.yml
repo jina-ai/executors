@@ -75,10 +75,7 @@ jobs:
       - name: Test dockerized executor
         run: |
           ARGS=$(cat tests/docker_args.txt 2> /dev/null)
-          jina pea --uses docker://foo $ARGS &
-          PID = !$
-          sleep 10
-          ps -p $PID
+          jina pea --uses docker://foo $ARGS
 
   # always run
   integration-tests:
