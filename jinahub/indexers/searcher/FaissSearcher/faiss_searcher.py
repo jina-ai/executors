@@ -185,9 +185,9 @@ class FaissSearcher(Executor):
         :param vecs_iter: iterator of numpy array containing the vectors to index
         """
 
-        index = self._init_index()
+        self._init_index()
 
-        if self.requires_training and (not index.is_trained):
+        if self.requires_training and (not self.index.is_trained):
             self.logger.info(f'Taking indexed data as training points')
             if self.max_num_training_points is None:
                 self._prefetch_data.extend(list(vecs_iter))
@@ -199,6 +199,7 @@ class FaissSearcher(Executor):
                         break
 
             train_data = np.stack(self._prefetch_data)
+            train_data = train_data.astype(np.float32)
 
             if (
                 self.max_num_training_points
@@ -216,7 +217,7 @@ class FaissSearcher(Executor):
                 train_data = train_data[random_indices, :]
 
             self.logger.info(f'Training Faiss {self.index_key} indexer...')
-            train_data = train_data.astype(np.float32)
+            
             if self.normalize:
                 faiss.normalize_L2(train_data)
             self._train(train_data)
@@ -323,7 +324,7 @@ class FaissSearcher(Executor):
         )
         if not trained_index_file:
             raise ValueError(
-                'the trained index file path is not provided to dump trained index'
+                'The trained index file path is not provided to dump trained index'
             )
 
         train_data = self._load_training_data(train_filepath)
