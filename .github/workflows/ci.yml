@@ -86,8 +86,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: run integration tests
-        run: ./scripts/integration.sh
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      - name: Install requirements
+        run: |
+          pip install -r tests/requirements.txt
+          export PYTHONPATH=.
+      - name: Run integration tests
+        run: pytest -s -v tests/integration
 
   success-all-test:
     needs: [integration-tests, unit-tests, docker-tests]
