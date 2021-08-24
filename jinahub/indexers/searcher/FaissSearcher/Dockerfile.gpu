@@ -6,7 +6,7 @@ RUN apt update && apt install -y git python3.7 python3-pip \
     && ln -nsf /usr/bin/python3.7 python \
     && python -m pip install --no-cache-dir --upgrade pip
 
-RUN pip install jina==2.0.20
+RUN JINA_PIP_INSTALL_PERF=1 pip install jina==2.0.20
 
 # setup the workspace
 COPY . /workspace

@@ -4,8 +4,9 @@ __license__ = "Apache-2.0"
 import os
 import gzip
 from typing import Iterable, Optional, Dict, List
-
 import numpy as np
+import faiss
+
 from jina import Executor, DocumentArray, requests, Document
 from jina.helper import batch_iterator
 from jina_commons import get_logger
@@ -125,14 +126,12 @@ class FaissSearcher(Executor):
             In the case of using GPUs, we only use the first gpu from the visible gpus. To specify which gpu to use,
             please use the environment variable `CUDA_VISIBLE_DEVICES`.
         """
-        import faiss
 
         # For now, consider only one GPU, do not distribute the index
         return faiss.StandardGpuResources() if self.on_gpu else None
 
     def to_device(self, index, *args, **kwargs):
         """Load the model to device."""
-        import faiss
 
         if self.on_gpu and ('PQ64' in self.index_key):
             co = faiss.GpuClonerOptions()
@@ -150,12 +149,7 @@ class FaissSearcher(Executor):
             else index
         )
 
-    def _build_index(self, vecs_iter: Iterable['np.ndarray']):
-        """Build an advanced index structure from a numpy array.
-
-        :param vecs_iter: iterator of numpy array containing the vectors to index
-        """
-        import faiss
+    def _init_index(self):
 
         metric = faiss.METRIC_L2
         if self.metric == 'inner_product':
@@ -177,7 +171,20 @@ class FaissSearcher(Executor):
         else:
             index = faiss.index_factory(self.num_dim, self.index_key, metric)
 
-        index = self.to_device(index=index)
+        index.nprobe = self.nprobe
+
+        index = self.to_device(index)
+
+        return index
+
+    def _build_index(self, vecs_iter: Iterable['np.ndarray']):
+        """Build an advanced index structure from a numpy array.
+
+        :param vecs_iter: iterator of numpy array containing the vectors to index
+        """
+
+        index = self._init_index()
+
         if self.requires_training and (not index.is_trained):
             self.logger.info(f'Taking indexed data as training points')
             if self.max_num_training_points is None:
@@ -224,16 +231,17 @@ class FaissSearcher(Executor):
                     )
                 faiss.write_index(index, self.trained_index_file)
 
-        if 'IVF' in self.index_key:
-            # Support for searching several inverted lists in parallel (parallel_mode != 0)
-            self.logger.info(
-                'We will setting `parallel_mode=1` to supporting searching several inverted lists in parallel'
-            )
-            index.parallel_mode = 1
+        # TODO: Experimental features
+        # if 'IVF' in self.index_key:
+        #     # Support for searching several inverted lists in parallel (parallel_mode != 0)
+        #     self.logger.info(
+        #         'We will setting `parallel_mode=1` to supporting searching several inverted lists in parallel'
+        #     )
+        #     index.parallel_mode = 1
 
         self.logger.info(f'Building the faiss {self.index_key} index...')
         self._build_partial_index(vecs_iter, index)
-        index.nprobe = self.nprobe
+
         return index
 
     def _build_partial_index(self, vecs_iter: Iterable['np.ndarray'], index):
@@ -305,6 +313,66 @@ class FaissSearcher(Executor):
                         match.scores[self.metric] = 1 / (1 + dist)
 
                 query_docs[doc_idx].matches.append(match)
+
+    @requests(on='/train')
+    def train(self, parameters: Dict, **kwargs):
+        """Train the index
+
+        :param parameters: a dictionary containing the parameters for the training
+        """
+
+        index = self._init_index()
+
+        train_filepath = parameters.get('train_filepath')
+        if train_filepath is None:
+            raise ValueError(f'No "train_filepath" provided for {self}')
+
+        max_num_training_points = parameters.get(
+            'max_num_training_points', self.max_num_training_points
+        )
+        trained_index_file = parameters.get(
+            'trained_index_file', self.trained_index_file
+        )
+        if not trained_index_file:
+            raise ValueError(
+                'the trained index file path is not provided to dump trained index'
+            )
+
+        train_data = self._load_training_data(self.train_filepath)
+
+        if train_data is None:
+            self.logger.warning(
+                'Loading training data failed. some faiss indexes require previous training.'
+            )
+        else:
+            train_data = train_data.astype(np.float32)
+            if (
+                max_num_training_points
+                and max_num_training_points < train_data.shape[0]
+            ):
+                self.logger.warning(
+                    f'From train_data with num_points {train_data.shape[0]}, '
+                    f'sample {max_num_training_points} points'
+                )
+                random_indices = np.random.choice(
+                    train_data.shape[0],
+                    size=min(self.max_num_training_points, train_data.shape[0]),
+                    replace=False,
+                )
+                train_data = train_data[random_indices, :]
+
+            if self.normalize:
+                faiss.normalize_L2(train_data)
+            self._train(index, train_data)
+
+            self.logger.info(f'Dumping the trained Faiss index to {trained_index_file}')
+
+            if trained_index_file:
+                if os.path.exists(trained_index_file):
+                    self.logger.warning(
+                        f'We are going to overwrite the index file located at {trained_index_file}'
+                    )
+                faiss.write_index(index, trained_index_file)
 
     def _train(self, index, data: 'np.ndarray', *args, **kwargs) -> None:
         _num_samples, _num_dim = data.shape
