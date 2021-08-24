@@ -80,12 +80,13 @@ def test_faiss_indexer_empty(metas):
 
 def test_faiss_indexer(metas, tmpdir_dump):
     import faiss
+
     trained_index_file = os.path.join(os.environ['TEST_WORKSPACE'], 'faiss.index')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
     faiss_index = faiss.index_factory(10, 'IVF10,PQ2')
     faiss_index.train(train_data)
     faiss.write_index(faiss_index, trained_index_file)
-    
+
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='IVF10,PQ2',
@@ -180,7 +181,8 @@ def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
                     <= docs[0].matches[i + 1].scores[metric].value
             )
 
-def test_faiss_indexer_known(metas, tmpdir):    
+
+def test_faiss_indexer_known(metas, tmpdir):
     vectors = np.array(
         [[1, 1, 1], [10, 10, 10], [100, 100, 100], [1000, 1000, 1000]], dtype=np.float32
     )
@@ -351,3 +353,28 @@ def test_faiss_normalization(metas, metric, tmpdir):
     indexer.search(docs, parameters={'top_k': 2})
     dist = docs.traverse_flat(['m']).get_attributes('scores')
     assert dist[0][metric].value == 1.0
+
+
+@pytest.mark.parametrize('max_num_points', [257, 500, None])
+def test_faiss_indexer_train(metas, tmpdir, max_num_points):
+    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
+    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
+    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
+        f.write(train_data.tobytes())
+
+    trained_index_file = os.path.join(tmpdir, 'faiss.index')
+    indexer = FaissSearcher(
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+        prefetch_size=256,
+    )
+    assert not indexer.index.is_trained
+    indexer.train(
+        parameters={
+            'train_filepath': train_filepath,
+            'max_num_training_points': max_num_points,
+        }
+    )
+    assert indexer.index.is_trained
