@@ -74,7 +74,7 @@ jobs:
         run: docker build -t foo .
       - name: Test dockerized executor
         run: |
-          ARGS=$(cat tests/docker_args.txt 2> /dev/null)
+          ARGS=$(cat tests/docker_args.txt || true)
           jina pea --uses docker://foo $ARGS
 
   # always run
