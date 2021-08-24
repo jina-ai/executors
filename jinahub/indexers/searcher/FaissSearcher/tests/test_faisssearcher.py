@@ -369,7 +369,6 @@ def test_faiss_indexer_train(metas, tmpdir, max_num_points):
         runtime_args={'pea_id': 0},
         prefetch_size=256,
     )
-    assert not indexer.index.is_trained
     indexer.train(
         parameters={
             'train_filepath': train_filepath,
