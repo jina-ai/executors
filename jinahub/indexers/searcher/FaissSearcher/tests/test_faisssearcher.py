@@ -138,8 +138,7 @@ def test_fill_embeddings_fail(index_key, metas, tmpdir_dump):
         train_filepath=train_filepath,
         dump_path=tmpdir_dump,
         metas=metas,
-        runtime_args={'pea_id': 0},
-        make_direct_map=make_direct_map
+        runtime_args={'pea_id': 0}
     )
     indexer.search(query_docs, parameters={'top_k': 4})
     da = DocumentArray([Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)])
