@@ -1,0 +1,11 @@
+FROM nvidia/cuda:11.3.1-cudnn8-runtime
+
+RUN apt update && apt install -y python3.8 python3-pip
+
+COPY . ./transformer-text-encoder/
+WORKDIR ./transformer-text-encoder
+
+RUN pip install jina[perf]>=2.0
+RUN pip install -r requirements.txt
+
+ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
