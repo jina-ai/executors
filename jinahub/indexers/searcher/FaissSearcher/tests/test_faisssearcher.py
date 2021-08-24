@@ -375,4 +375,4 @@ def test_faiss_indexer_train(metas, tmpdir, max_num_points):
             'max_num_training_points': max_num_points,
         }
     )
-    assert indexer.index.is_trained
+    assert os.path.exists(trained_index_file)
