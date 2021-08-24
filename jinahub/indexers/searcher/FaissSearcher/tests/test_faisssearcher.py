@@ -357,10 +357,9 @@ def test_faiss_normalization(metas, metric, tmpdir):
 
 @pytest.mark.parametrize('max_num_points', [257, 500, None])
 def test_faiss_indexer_train(metas, tmpdir, max_num_points):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
+    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
+    np.save(train_filepath, train_data)
 
     trained_index_file = os.path.join(tmpdir, 'faiss.index')
     indexer = FaissSearcher(

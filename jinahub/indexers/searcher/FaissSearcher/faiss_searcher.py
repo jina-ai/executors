@@ -2,7 +2,6 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-import gzip
 from typing import Iterable, Optional, Dict, List
 import numpy as np
 import faiss
@@ -321,8 +320,6 @@ class FaissSearcher(Executor):
         :param parameters: a dictionary containing the parameters for the training
         """
 
-        index = self._init_index()
-
         train_filepath = parameters.get('train_filepath')
         if train_filepath is None:
             raise ValueError(f'No "train_filepath" provided for {self}')
@@ -338,7 +335,12 @@ class FaissSearcher(Executor):
                 'the trained index file path is not provided to dump trained index'
             )
 
-        train_data = self._load_training_data(self.train_filepath)
+        train_data = self._load_training_data(train_filepath)
+
+        self.num_dim = train_data.shape[1]
+        self.dtype = train_data.dtype
+
+        index = self._init_index()
 
         if train_data is None:
             self.logger.warning(
@@ -373,7 +375,7 @@ class FaissSearcher(Executor):
                         f'We are going to overwrite the index file located at {trained_index_file}'
                     )
                 faiss.write_index(index, trained_index_file)
-            
+
             self.indexer = index
 
     def _train(self, index, data: 'np.ndarray', *args, **kwargs) -> None:
@@ -395,29 +397,20 @@ class FaissSearcher(Executor):
     def _load_training_data(self, train_filepath: str) -> 'np.ndarray':
         self.logger.info(f'Loading training data from {train_filepath}')
         result = None
+
         try:
-            result = self._load_gzip(train_filepath)
+            result = np.load(train_filepath)
+            if isinstance(result, np.lib.npyio.NpzFile):
+                self.logger.warning(
+                    '.npz format is not supported. Please save the array in .npy format.'
+                )
+                result = None
         except Exception as e:
             self.logger.error(
-                'Loading training data from gzip failed, filepath={}, {}'.format(
+                'Loading training data with np.load failed, filepath={}, {}'.format(
                     train_filepath, e
                 )
             )
-
-        if result is None:
-            try:
-                result = np.load(train_filepath)
-                if isinstance(result, np.lib.npyio.NpzFile):
-                    self.logger.warning(
-                        '.npz format is not supported. Please save the array in .npy format.'
-                    )
-                    result = None
-            except Exception as e:
-                self.logger.error(
-                    'Loading training data with np.load failed, filepath={}, {}'.format(
-                        train_filepath, e
-                    )
-                )
 
         if result is None:
             try:
