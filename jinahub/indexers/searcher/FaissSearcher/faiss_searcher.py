@@ -373,6 +373,8 @@ class FaissSearcher(Executor):
                         f'We are going to overwrite the index file located at {trained_index_file}'
                     )
                 faiss.write_index(index, trained_index_file)
+            
+            self.indexer = index
 
     def _train(self, index, data: 'np.ndarray', *args, **kwargs) -> None:
         _num_samples, _num_dim = data.shape
