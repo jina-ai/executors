@@ -115,7 +115,7 @@ class FaissSearcher(Executor):
             if self.trained_index_file and not os.path.exists(self.trained_index_file):
                 raise ValueError(f'The trained index file {self.trained_index_file} does not exist')
 
-            self.index = self._build_index(vecs_iter)
+            self._build_index(vecs_iter)
         else:
             self.logger.warning(
                 'No data loaded in "FaissIndexer". Use .rolling_update() to re-initialize it...'
@@ -233,7 +233,6 @@ class FaissSearcher(Executor):
         self.logger.info(f'Building the faiss {self.index_key} index...')
         self._build_partial_index(vecs_iter)
 
-        return index
 
     def _build_partial_index(self, vecs_iter: Iterable['np.ndarray']):
         if len(self._prefetch_data) > 0:
