@@ -1,4 +1,4 @@
-FROM jinaai/jina:2.0.17
+FROM jinaai/jina:master-py37-perf
 # install the third-party requirements
 RUN apt-get update && apt-get install -y git
 
