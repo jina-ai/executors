@@ -339,6 +339,7 @@ class FaissSearcher(Executor):
             )
         else:
             train_data = train_data.astype(np.float32)
+
             if (
                 max_num_training_points
                 and max_num_training_points < train_data.shape[0]
@@ -349,7 +350,7 @@ class FaissSearcher(Executor):
                 )
                 random_indices = np.random.choice(
                     train_data.shape[0],
-                    size=min(self.max_num_training_points, train_data.shape[0]),
+                    size=min(max_num_training_points, train_data.shape[0]),
                     replace=False,
                 )
                 train_data = train_data[random_indices, :]
