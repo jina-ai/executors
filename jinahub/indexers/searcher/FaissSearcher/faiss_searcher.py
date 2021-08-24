@@ -111,6 +111,10 @@ class FaissSearcher(Executor):
 
             self.num_dim = self._prefetch_data[0].shape[0]
             self.dtype = self._prefetch_data[0].dtype
+
+            if self.trained_index_file and not os.path.exists(self.trained_index_file):
+                raise ValueError(f'The trained index file {self.trained_index_file} does not exist')
+
             self.index = self._build_index(vecs_iter)
         else:
             self.logger.warning(
@@ -172,9 +176,8 @@ class FaissSearcher(Executor):
 
         index.nprobe = self.nprobe
 
-        index = self.to_device(index)
+        self.index = self.to_device(index)
 
-        return index
 
     def _build_index(self, vecs_iter: Iterable['np.ndarray']):
         """Build an advanced index structure from a numpy array.
@@ -216,19 +219,7 @@ class FaissSearcher(Executor):
             train_data = train_data.astype(np.float32)
             if self.normalize:
                 faiss.normalize_L2(train_data)
-            self._train(index, train_data)
-
-            self.logger.info(
-                f'Dumping the trained Faiss index to {self.trained_index_file}'
-            )
-            if self.on_gpu:
-                index = faiss.index_gpu_to_cpu(index)
-            if self.trained_index_file:
-                if os.path.exists(self.trained_index_file):
-                    self.logger.warning(
-                        f'We are going to overwrite the index file located at {self.trained_index_file}'
-                    )
-                faiss.write_index(index, self.trained_index_file)
+            self._train(train_data)
 
         # TODO: Experimental features
         # if 'IVF' in self.index_key:
@@ -239,14 +230,14 @@ class FaissSearcher(Executor):
         #     index.parallel_mode = 1
 
         self.logger.info(f'Building the faiss {self.index_key} index...')
-        self._build_partial_index(vecs_iter, index)
+        self._build_partial_index(vecs_iter)
 
         return index
 
-    def _build_partial_index(self, vecs_iter: Iterable['np.ndarray'], index):
+    def _build_partial_index(self, vecs_iter: Iterable['np.ndarray']):
         if len(self._prefetch_data) > 0:
             vecs = np.stack(self._prefetch_data).astype(np.float32)
-            self._index(vecs, index)
+            self._index(vecs)
             self._prefetch_data.clear()
 
         for batch_data in batch_iterator(vecs_iter, self.prefetch_size):
@@ -254,16 +245,16 @@ class FaissSearcher(Executor):
             if len(batch_data) == 0:
                 break
             vecs = np.stack(batch_data).astype(np.float32)
-            self._index(vecs, index)
+            self._index(vecs)
 
         return
 
-    def _index(self, vecs: 'np.ndarray', index):
+    def _index(self, vecs: 'np.ndarray'):
         if self.normalize:
             from faiss import normalize_L2
 
             normalize_L2(vecs)
-        index.add(vecs)
+        self.index.add(vecs)
 
     @requests(on='/search')
     def search(
@@ -340,7 +331,7 @@ class FaissSearcher(Executor):
         self.num_dim = train_data.shape[1]
         self.dtype = train_data.dtype
 
-        index = self._init_index()
+        self._init_index()
 
         if train_data is None:
             self.logger.warning(
@@ -365,20 +356,19 @@ class FaissSearcher(Executor):
 
             if self.normalize:
                 faiss.normalize_L2(train_data)
-            self._train(index, train_data)
+            self._train(train_data)
 
             self.logger.info(f'Dumping the trained Faiss index to {trained_index_file}')
 
-            if trained_index_file:
-                if os.path.exists(trained_index_file):
-                    self.logger.warning(
-                        f'We are going to overwrite the index file located at {trained_index_file}'
-                    )
-                faiss.write_index(index, trained_index_file)
+            if os.path.exists(trained_index_file):
+                self.logger.warning(
+                    f'We are going to overwrite the index file located at {trained_index_file}'
+                )
+            faiss.write_index(self.index, trained_index_file)
 
             
 
-    def _train(self, index, data: 'np.ndarray', *args, **kwargs) -> None:
+    def _train(self, data: 'np.ndarray', *args, **kwargs) -> None:
         _num_samples, _num_dim = data.shape
         if not self.num_dim:
             self.num_dim = _num_dim
@@ -392,7 +382,7 @@ class FaissSearcher(Executor):
             f'Training faiss Indexer with {_num_samples} points of {self.num_dim}'
         )
 
-        index.train(data)
+        self.index.train(data)
 
     def _load_training_data(self, train_filepath: str) -> 'np.ndarray':
         self.logger.info(f'Loading training data from {train_filepath}')
