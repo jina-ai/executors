@@ -242,3 +242,17 @@ def test_simple_indexer_search(tmpdir, distance_metric, docs):
     assert search_docs[0].chunks[1].matches[0].id == 'doc1-chunk2'
     assert search_docs[1].chunks[0].matches[0].id == 'doc2-chunk1'
     assert search_docs[1].chunks[1].matches[0].id == 'doc2-chunk2'
+
+
+@pytest.mark.parametrize('key_length, expected', [(2, 1), (3, 2)])
+def test_simple_indexer_key_length(key_length, expected, tmpdir):
+    metas = {'workspace': str(tmpdir)}
+
+    indexer = SimpleIndexer(index_file_name='search_normal', key_length=key_length, metas=metas)
+    with indexer:
+        docs = DocumentArray([Document(id='aab'), Document(id='aac')])
+        indexer.index(docs)
+        assert len(indexer._docs) == 2
+    indexer2 = SimpleIndexer(index_file_name='search_normal', key_length=key_length, metas=metas)
+    assert len(indexer2._docs) == expected
+

@@ -19,6 +19,7 @@ class SimpleIndexer(Executor):
             default_traversal_paths: Optional[List[str]] = None,
             default_top_k: int = 5,
             distance_metric: str = 'cosine',
+            key_length: Optional[int] = None,
             **kwargs,
     ):
         """
@@ -30,9 +31,12 @@ class SimpleIndexer(Executor):
         :param default_top_k: default value for the top_k parameter
         :param distance_metric: The distance metric to be used for finding the
             most similar embeddings. The distance metrics supported are the ones supported by `DocumentArray` match method.
+        :param key_length: The length of the keys to be stored inside the `DocumentArrayMemmap` when indexing. To be considered according to the length
+        of the `Document` ids expected to be indexed.
         """
         super().__init__(**kwargs)
-        self._docs = DocumentArrayMemmap(self.workspace + f'/{index_file_name}')
+        extra_kwargs = {'key_length': key_length} if key_length is not None else {}
+        self._docs = DocumentArrayMemmap(self.workspace + f'/{index_file_name}', **extra_kwargs)
         self.default_traversal_paths = default_traversal_paths or ['r']
         self.default_top_k = default_top_k
         self._distance = distance_metric
