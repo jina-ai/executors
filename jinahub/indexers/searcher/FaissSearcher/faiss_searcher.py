@@ -359,6 +359,8 @@ class FaissSearcher(Executor):
             self._train(train_data)
 
             self.logger.info(f'Dumping the trained Faiss index to {trained_index_file}')
+            if self.on_gpu:
+                self.index = faiss.index_gpu_to_cpu(self.index)
 
             if os.path.exists(trained_index_file):
                 self.logger.warning(
