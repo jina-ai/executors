@@ -33,6 +33,8 @@ class FaissSearcher(Executor):
     :param normalize: whether or not to normalize the vectors e.g. for the cosine similarity https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how-can-i-index-vectors-for-cosine-similarity
     :param nprobe: Number of clusters to consider at search time.
     :param is_distance: Boolean flag that describes if distance metric need to be reinterpreted as similarities.
+    :param make_direct_map: Boolean flag that describes if direct map has to be computed after building the index. Useful if you need to call `fill_embedding` endpoint and reconstruct vectors
+        by id
 
     .. highlight:: python
     .. code-block:: python
@@ -68,6 +70,7 @@ class FaissSearcher(Executor):
         is_distance: bool = False,
         default_top_k: int = 5,
         on_gpu: bool = False,
+        make_direct_map: bool = False,
         *args,
         **kwargs,
     ):
@@ -111,6 +114,9 @@ class FaissSearcher(Executor):
             self.num_dim = self._prefetch_data[0].shape[0]
             self.dtype = self._prefetch_data[0].dtype
             self.index = self._build_index(vecs_iter)
+            if make_direct_map:
+                if hasattr(self.index, 'make_direct_map'):
+                    self.index.make_direct_map()
         else:
             self.logger.warning(
                 'No data loaded in "FaissIndexer". Use .rolling_update() to re-initialize it...'
@@ -360,9 +366,14 @@ class FaissSearcher(Executor):
             return
         for doc in docs:
             if doc.id in self._doc_id_to_offset:
-                doc.embedding = np.array(
-                    self.index.reconstruct([self._doc_id_to_offset[doc.id]])
-                )
+                try:
+                    reconstruct_embedding = self.index.reconstruct(self._doc_id_to_offset[doc.id])
+                    doc.embedding = np.array(
+                        reconstruct_embedding
+                    )
+                except RuntimeError as exception:
+                    self.logger.warning(f'Trying to reconstruct from document id failed. Most likely the index built '
+                                        f'from index key {self.index_key} does not support this operation. {repr(exception)}')
             else:
                 self.logger.debug(f'Document {doc.id} not found in index')
 

@@ -102,7 +102,8 @@ def test_faiss_indexer(metas, tmpdir_dump):
         )
 
 
-def test_fill_embeddings(metas, tmpdir_dump):
+@pytest.mark.parametrize('index_key, make_direct_map', [('IVF10,PQ2', True), ('Flat', True), ('Flat', False)])
+def test_fill_embeddings(index_key, make_direct_map, metas, tmpdir_dump):
     train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
     with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
@@ -110,17 +111,42 @@ def test_fill_embeddings(metas, tmpdir_dump):
 
     indexer = FaissSearcher(
         prefetch_size=256,
-        index_key='IVF10,PQ2',
+        index_key=index_key,
         train_filepath=train_filepath,
         dump_path=tmpdir_dump,
         metas=metas,
         runtime_args={'pea_id': 0},
+        make_direct_map=make_direct_map
     )
     indexer.search(query_docs, parameters={'top_k': 4})
     da = DocumentArray([Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)])
     indexer.fill_embedding(da)
     assert da[str(vec_idx[0])].embedding is not None
     assert da[str(vec_idx[0])].embedding is not None
+    assert da['99999999'].embedding is None
+
+
+@pytest.mark.parametrize('index_key, make_direct_map', [('IVF10,PQ2', False), ('LSH', True), ('LSH', False)])
+def test_fill_embeddings_fail(index_key, make_direct_map, metas, tmpdir_dump):
+    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
+    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
+    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
+        f.write(train_data.tobytes())
+
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key=index_key,
+        train_filepath=train_filepath,
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+        make_direct_map=make_direct_map
+    )
+    indexer.search(query_docs, parameters={'top_k': 4})
+    da = DocumentArray([Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)])
+    indexer.fill_embedding(da)
+    assert da[str(vec_idx[0])].embedding is None
+    assert da[str(vec_idx[0])].embedding is None
     assert da['99999999'].embedding is None
 
 
