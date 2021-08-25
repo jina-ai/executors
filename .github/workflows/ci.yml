@@ -92,10 +92,8 @@ jobs:
         uses: actions/checkout@v2
       - name: debug
         run: echo ${{ matrix.folder }}
-      - name: move to folder
-        run: cd ${{ matrix.folder }}
       - name: build docker image
-        run: docker build -t ${PWD##*/} -f Dockerfile.gpu .
+        run: docker build -t ${PWD##*/}:gpu -f ${{ matrix.folder }}/Dockerfile.gpu .
       - name: start container
         run: |
           docker run \
@@ -104,7 +102,7 @@ jobs:
             --workdir /test_workspace \
             --name ${PWD##*/} \
             --gpus all \
-            -d foo tail -F /dev/null
+            -d ${PWD##*/}:gpu tail -F /dev/null
           export DOCKER_EXEC="docker exec ${PWD##*/}"
       - name: run tests in container
         run: |
