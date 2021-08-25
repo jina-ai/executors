@@ -69,9 +69,7 @@ jobs:
       - name: Install image normalizer
         run: pip install git+https://github.com/jina-ai/executor-normalizer
       - name: Python requirements
-        run: pip install -r requirements.txt
-      - name: Test requirements
-        run: pip install -r tests/requirements.txt
+        run: pip install -r requirements.txt -r tests/requirements.txt
       - name: Create Dockerfile, if needed
         run: |
           if [[ ! -f "Dockerfile" ]]; then
