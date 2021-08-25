@@ -93,7 +93,7 @@ jobs:
       - name: debug
         run: echo ${{ matrix.folder }}
       - name: build docker image
-        run: docker build -t $(basename "${{ matrix.folder }}"):gpu -f ${{ matrix.folder }}/Dockerfile.gpu ${{ matrix.folder }}
+        run: docker build -t $(echo "$(basename "${{ matrix.folder }}"):gpu" | tr '[:lower:]') -f ${{ matrix.folder }}/Dockerfile.gpu ${{ matrix.folder }}
       - name: start container
         run: |
           docker run \
@@ -102,7 +102,7 @@ jobs:
             --workdir /test_workspace \
             --name $(basename ${{ matrix.folder }}) \
             --gpus all \
-            -d $(basename "${{ matrix.folder }}"):gpu tail -F /dev/null
+            -d $(echo "$(basename "${{ matrix.folder }}"):gpu" | tr '[:lower:]') tail -F /dev/null
           export DOCKER_EXEC="docker exec $(basename "${{ matrix.folder }}")"
       - name: run tests in container
         run: |
