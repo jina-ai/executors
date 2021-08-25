@@ -1,0 +1,6 @@
+manifest_version: 1
+name: PointNetEncoder
+alias: PointNetEncoder
+description: PointNetEncoder embeds point cloud 3 models into vectors
+url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/model3d/PointNetEncoder
+keywords: 3d embedding

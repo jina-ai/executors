@@ -1,0 +1,4 @@
+jtype: PointNetEncoder
+metas:
+  py_modules:
+    - executor.py
