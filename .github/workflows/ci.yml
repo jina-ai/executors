@@ -87,29 +87,32 @@ jobs:
       fail-fast: false
       matrix:
         folder: ${{fromJson(needs.gpu-folders.outputs.matrix)}}
+    defaults:
+      run:
+        working-directory: ${{ matrix.folder }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: debug
         run: echo ${{ matrix.folder }}
       - name: build docker image
-        run: docker build -t $(echo "$(basename "${{ matrix.folder }}"):gpu" | tr '[:upper:]' '[:lower:]') -f ${{ matrix.folder }}/Dockerfile.gpu ${{ matrix.folder }}
+        run: docker build -t $(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]') -f Dockerfile.gpu .
       - name: start container
         run: |
           docker run \
             --entrypoint "" \
-            --name $(basename ${{ matrix.folder }}) \
+            --name ${PWD##*/} \
             --gpus all \
-            -d $(echo "$(basename "${{ matrix.folder }}"):gpu" | tr '[:upper:]' '[:lower:]') tail -F /dev/null
+            -d $(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]') tail -F /dev/null
       - name: run tests in container
         run: |
-          export DOCKER_EXEC="docker exec $(basename "${{ matrix.folder }}")"
+          export DOCKER_EXEC="docker exec ${PWD##*/}"
           $DOCKER_EXEC ls
           $DOCKER_EXEC pip install -r tests/requirements.txt
           $DOCKER_EXEC pytest -s -v -m gpu tests/
       - name: stop container
         if: ${{ always() }}
-        run: docker stop $(docker ps -a -q --filter="name=$(basename "${{ matrix.folder }}")") && docker rm $(basename "${{ matrix.folder }}")
+        run: docker stop $(docker ps -a -q) && docker rm ${PWD##*/}
 
   success-all-test:
     needs: [integration-tests, unit-tests, docker-tests, gpu-tests]
