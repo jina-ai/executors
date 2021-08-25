@@ -114,12 +114,12 @@ jobs:
             --gpus all \
             -d $IMAGE_NAME tail -F /dev/null
           echo "DOCKER_EXEC=docker exec ${PWD##*/}" >> $GITHUB_ENV
-      - name: Run GPU tests in container
-        run: |
-          $DOCKER_EXEC pip install -r tests/requirements.txt
-          $DOCKER_EXEC pytest -s -v -m "gpu and not docker" tests/
-      # - name: Run test of GPU image
-      #   run: pytest -s -v -m "gpu and docker"
+      # - name: Run GPU tests in container
+      #   run: |
+      #     $DOCKER_EXEC pip install -r tests/requirements.txt
+      #     $DOCKER_EXEC pytest -s -v -m "gpu and not docker" tests/
+      - name: Run test of GPU image
+        run: pytest -s -v -m "gpu and docker"
       - name: stop container
         if: ${{ always() }}
         run: docker stop $(docker ps -a -q) && docker rm ${PWD##*/}
