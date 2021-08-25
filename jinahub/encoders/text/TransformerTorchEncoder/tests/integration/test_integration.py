@@ -1,6 +1,7 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+import subprocess
 from typing import Callable, List
 
 import pytest
@@ -74,3 +75,13 @@ def test_traversal_path(
         )
 
     validate_traversal(docs_per_path)(resp)
+
+
+@pytest.mark.docker
+def test_docker_runtime():
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            ['jina', 'pea', '--uses=docker://transformertorchencoder'],
+            timeout=30,
+            check=True,
+        )
