@@ -103,11 +103,11 @@ jobs:
         run: |
           docker run \
             --entrypoint "" \
-            --name $IMAGE_NAME \
+            --name ${PWD##*/} \
             --gpus all \
             --volume /var/run/docker.sock:/var/run/docker.sock \
             -d $IMAGE_NAME tail -F /dev/null
-          export DOCKER_EXEC="docker exec $IMAGE_NAME"
+          export DOCKER_EXEC="docker exec ${PWD##*/}"
       - name: Install Docker CLI in container
         run: |
           $DOCKER_EXEC apt update
@@ -121,7 +121,7 @@ jobs:
           $DOCKER_EXEC pytest -s -v -m gpu tests/
       - name: stop container
         if: ${{ always() }}
-        run: docker stop $(docker ps -a -q) && docker rm $IMAGE_NAME
+        run: docker stop $(docker ps -a -q) && docker rm ${PWD##*/}
 
   success-all-test:
     needs: [integration-tests, unit-tests, docker-tests, gpu-tests]
