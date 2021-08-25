@@ -81,7 +81,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
   gpu-tests:
-    needs: [ gpu-containers ]
+    needs: [ gpu-folders ]
     runs-on: [ self-hosted, gpu ]
     strategy:
       fail-fast: false
