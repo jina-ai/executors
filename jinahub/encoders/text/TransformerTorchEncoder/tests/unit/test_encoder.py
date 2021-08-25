@@ -6,8 +6,8 @@ import pytest
 import torch
 from jina import Document, DocumentArray, Executor
 
-from ..integration.test_integration import filter_none
 from ...transform_encoder import TransformerTorchEncoder
+from ..integration.test_integration import filter_none
 
 
 def test_config():
