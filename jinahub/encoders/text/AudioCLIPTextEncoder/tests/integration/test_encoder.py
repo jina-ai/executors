@@ -29,6 +29,9 @@ def test_integration(data_generator: Callable, request_size: int):
 
 @pytest.mark.docker
 def test_docker_runtime():
+    import os
+    print(os.getcwd())
+    print(os.listdir())
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
             [
