@@ -63,7 +63,7 @@ class FaissSearcher(Executor):
         normalize: bool = False,
         nprobe: int = 1,
         dump_path: Optional[str] = None,
-        prefetch_size: Optional[int] = 1000,
+        prefetch_size: Optional[int] = 512,
         default_traversal_paths: List[str] = ['r'],
         is_distance: bool = False,
         default_top_k: int = 5,
@@ -113,7 +113,13 @@ class FaissSearcher(Executor):
             self.dtype = self._prefetch_data[0].dtype
 
             if self.trained_index_file and not os.path.exists(self.trained_index_file):
-                raise ValueError(f'The trained index file {self.trained_index_file} does not exist')
+                raise ValueError(
+                    f'The trained index file {self.trained_index_file} does not exist'
+                )
+
+            self._init_faiss_index(
+                self.num_dim, trained_index_file=self.trained_index_file
+            )
 
             self._build_index(vecs_iter)
         else:
@@ -152,32 +158,32 @@ class FaissSearcher(Executor):
             else index
         )
 
-    def _init_index(self):
+    def _init_faiss_index(self, num_dim: int, trained_index_file: Optional[str] = None):
+        """Initialize a Faiss indexer instance"""
 
-        metric = faiss.METRIC_L2
+        metric_type = faiss.METRIC_L2
         if self.metric == 'inner_product':
             self.logger.warning(
                 'inner_product will be output as distance instead of similarity.'
             )
-            metric = faiss.METRIC_INNER_PRODUCT
+            metric_type = faiss.METRIC_INNER_PRODUCT
         if self.metric not in {'inner_product', 'l2'}:
             self.logger.warning(
                 'Invalid distance metric for Faiss index construction. Defaulting to l2 distance'
             )
 
-        if self.trained_index_file and os.path.exists(self.trained_index_file):
-            index = faiss.read_index(self.trained_index_file)
-            assert index.metric_type == metric
+        if trained_index_file and os.path.exists(trained_index_file):
+            index = faiss.read_index(trained_index_file)
+            assert index.metric_type == metric_type
             assert index.ntotal == 0
             assert index.d == self.num_dim
             assert index.is_trained
         else:
-            index = faiss.index_factory(self.num_dim, self.index_key, metric)
+            print(f'num_dim: {num_dim}, key: {self.index_key}, metric: {self.metric}')
+            index = faiss.index_factory(num_dim, self.index_key, metric_type)
 
-        index.nprobe = self.nprobe
-
-        self.index = self.to_device(index)
-
+        self._faiss_index = self.to_device(index)
+        self._faiss_index.nprobe = self.nprobe
 
     def _build_index(self, vecs_iter: Iterable['np.ndarray']):
         """Build an advanced index structure from a numpy array.
@@ -185,9 +191,7 @@ class FaissSearcher(Executor):
         :param vecs_iter: iterator of numpy array containing the vectors to index
         """
 
-        self._init_index()
-
-        if self.requires_training and (not self.index.is_trained):
+        if self.requires_training and (not self._faiss_index.is_trained):
             self.logger.info(f'Taking indexed data as training points')
             if self.max_num_training_points is None:
                 self._prefetch_data.extend(list(vecs_iter))
@@ -216,8 +220,8 @@ class FaissSearcher(Executor):
                 )
                 train_data = train_data[random_indices, :]
 
-            self.logger.info(f'Training Faiss {self.index_key} indexer...')
-            
+            self.logger.info(f'Training Faiss indexer...')
+
             if self.normalize:
                 faiss.normalize_L2(train_data)
             self._train(train_data)
@@ -230,9 +234,8 @@ class FaissSearcher(Executor):
         #     )
         #     index.parallel_mode = 1
 
-        self.logger.info(f'Building the faiss {self.index_key} index...')
+        self.logger.info(f'Building the Faiss index...')
         self._build_partial_index(vecs_iter)
-
 
     def _build_partial_index(self, vecs_iter: Iterable['np.ndarray']):
         if len(self._prefetch_data) > 0:
@@ -254,7 +257,7 @@ class FaissSearcher(Executor):
             from faiss import normalize_L2
 
             normalize_L2(vecs)
-        self.index.add(vecs)
+        self._faiss_index.add(vecs)
 
     @requests(on='/search')
     def search(
@@ -265,7 +268,7 @@ class FaissSearcher(Executor):
         :param docs: the DocumentArray containing the documents to search with
         :param parameters: the parameters for the request
         """
-        if not hasattr(self, 'index'):
+        if not hasattr(self, '_faiss_index'):
             self.logger.warning('Querying against an empty Index')
             return
 
@@ -285,7 +288,8 @@ class FaissSearcher(Executor):
             from faiss import normalize_L2
 
             normalize_L2(vecs)
-        dists, ids = self.index.search(vecs, top_k)
+
+        dists, ids = self._faiss_index.search(vecs, top_k)
 
         if self.metric == 'inner_product':
             dists = 1 - dists
@@ -313,7 +317,7 @@ class FaissSearcher(Executor):
 
         train_filepath = parameters.get('train_filepath')
         if train_filepath is None:
-            raise ValueError(f'No "train_filepath" provided for {self}')
+            raise ValueError(f'No "train_filepath" provided for training {self}')
 
         max_num_training_points = parameters.get(
             'max_num_training_points', self.max_num_training_points
@@ -322,54 +326,46 @@ class FaissSearcher(Executor):
             'trained_index_file', self.trained_index_file
         )
         if not trained_index_file:
-            raise ValueError(
-                'The trained index file path is not provided to dump trained index'
-            )
+            raise ValueError('No "trained_index_file" provided for training {self}')
 
         train_data = self._load_training_data(train_filepath)
+        if train_data is None:
+            raise ValueError(
+                'Loading training data failed. some faiss indexes require previous training.'
+            )
 
         self.num_dim = train_data.shape[1]
         self.dtype = train_data.dtype
 
-        self._init_index()
+        train_data = train_data.astype(np.float32)
 
-        if train_data is None:
+        self._init_faiss_index(self.num_dim)
+
+        if max_num_training_points and max_num_training_points < train_data.shape[0]:
             self.logger.warning(
-                'Loading training data failed. some faiss indexes require previous training.'
+                f'From train_data with num_points {train_data.shape[0]}, '
+                f'sample {max_num_training_points} points'
             )
-        else:
-            train_data = train_data.astype(np.float32)
+            random_indices = np.random.choice(
+                train_data.shape[0],
+                size=min(max_num_training_points, train_data.shape[0]),
+                replace=False,
+            )
+            train_data = train_data[random_indices, :]
 
-            if (
-                max_num_training_points
-                and max_num_training_points < train_data.shape[0]
-            ):
-                self.logger.warning(
-                    f'From train_data with num_points {train_data.shape[0]}, '
-                    f'sample {max_num_training_points} points'
-                )
-                random_indices = np.random.choice(
-                    train_data.shape[0],
-                    size=min(max_num_training_points, train_data.shape[0]),
-                    replace=False,
-                )
-                train_data = train_data[random_indices, :]
+        if self.normalize:
+            faiss.normalize_L2(train_data)
+        self._train(train_data)
 
-            if self.normalize:
-                faiss.normalize_L2(train_data)
-            self._train(train_data)
+        self.logger.info(f'Dumping the trained Faiss index to {trained_index_file}')
+        if self.on_gpu:
+            self._faiss_index = faiss.index_gpu_to_cpu(self._faiss_index)
 
-            self.logger.info(f'Dumping the trained Faiss index to {trained_index_file}')
-            if self.on_gpu:
-                self.index = faiss.index_gpu_to_cpu(self.index)
-
-            if os.path.exists(trained_index_file):
-                self.logger.warning(
-                    f'We are going to overwrite the index file located at {trained_index_file}'
-                )
-            faiss.write_index(self.index, trained_index_file)
-
-            
+        if os.path.exists(trained_index_file):
+            self.logger.warning(
+                f'We are going to overwrite the index file located at {trained_index_file}'
+            )
+        faiss.write_index(self._faiss_index, trained_index_file)
 
     def _train(self, data: 'np.ndarray', *args, **kwargs) -> None:
         _num_samples, _num_dim = data.shape
@@ -385,7 +381,7 @@ class FaissSearcher(Executor):
             f'Training faiss Indexer with {_num_samples} points of {self.num_dim}'
         )
 
-        self.index.train(data)
+        self._faiss_index.train(data)
 
     def _load_training_data(self, train_filepath: str) -> 'np.ndarray':
         self.logger.info(f'Loading training data from {train_filepath}')
@@ -418,18 +414,6 @@ class FaissSearcher(Executor):
                 )
         return result
 
-    def _load_gzip(self, abspath: str, mode='rb') -> Optional['np.ndarray']:
-        try:
-            self.logger.info(f'loading index from {abspath}...')
-            with gzip.open(abspath, mode) as fp:
-                return np.frombuffer(fp.read(), dtype=self.dtype).reshape(
-                    [-1, self.num_dim]
-                )
-        except EOFError:
-            self.logger.error(
-                f'{abspath} is broken/incomplete, perhaps forgot to ".close()" in the last usage?'
-            )
-
     @requests(on='/fill_embedding')
     def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
         if docs is None:
@@ -437,13 +421,15 @@ class FaissSearcher(Executor):
         for doc in docs:
             if doc.id in self._doc_id_to_offset:
                 try:
-                    reconstruct_embedding = self.index.reconstruct(self._doc_id_to_offset[doc.id])
-                    doc.embedding = np.array(
-                        reconstruct_embedding
+                    reconstruct_embedding = self._faiss_index.reconstruct(
+                        self._doc_id_to_offset[doc.id]
                     )
+                    doc.embedding = np.array(reconstruct_embedding)
                 except RuntimeError as exception:
-                    self.logger.warning(f'Trying to reconstruct from document id failed. Most likely the index built '
-                                        f'from index key {self.index_key} does not support this operation. {repr(exception)}')
+                    self.logger.warning(
+                        f'Trying to reconstruct from document id failed. Most likely the index built '
+                        f'from index key {self.index_key} does not support this operation. {repr(exception)}'
+                    )
             else:
                 self.logger.debug(f'Document {doc.id} not found in index')
 

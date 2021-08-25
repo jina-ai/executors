@@ -99,28 +99,24 @@ def test_faiss_indexer(metas, tmpdir_dump):
     assert len(query_docs[0].matches) == 4
     for d in query_docs:
         assert (
-                d.matches[0].scores[indexer.metric].value
-                >= d.matches[1].scores[indexer.metric].value
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
         )
 
 
 @pytest.mark.parametrize('index_key', ['Flat'])
 def test_fill_embeddings(index_key, metas, tmpdir_dump):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key=index_key,
-        train_filepath=train_filepath,
         dump_path=tmpdir_dump,
         metas=metas,
         runtime_args={'pea_id': 0},
     )
     indexer.search(query_docs, parameters={'top_k': 4})
-    da = DocumentArray([Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)])
+    da = DocumentArray(
+        [Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)]
+    )
     indexer.fill_embedding(da)
     assert da[str(vec_idx[0])].embedding is not None
     assert da[str(vec_idx[0])].embedding is not None
@@ -129,21 +125,17 @@ def test_fill_embeddings(index_key, metas, tmpdir_dump):
 
 @pytest.mark.parametrize('index_key', ['IVF10,PQ2', 'LSH'])
 def test_fill_embeddings_fail(index_key, metas, tmpdir_dump):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key=index_key,
-        train_filepath=train_filepath,
         dump_path=tmpdir_dump,
         metas=metas,
-        runtime_args={'pea_id': 0}
+        runtime_args={'pea_id': 0},
     )
     indexer.search(query_docs, parameters={'top_k': 4})
-    da = DocumentArray([Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)])
+    da = DocumentArray(
+        [Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)]
+    )
     indexer.fill_embedding(da)
     assert da[str(vec_idx[0])].embedding is None
     assert da[str(vec_idx[0])].embedding is None
@@ -172,13 +164,13 @@ def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
     for i in range(len(docs[0].matches) - 1):
         if not is_distance:
             assert (
-                    docs[0].matches[i].scores[metric].value
-                    >= docs[0].matches[i + 1].scores[metric].value
+                docs[0].matches[i].scores[metric].value
+                >= docs[0].matches[i + 1].scores[metric].value
             )
         else:
             assert (
-                    docs[0].matches[i].scores[metric].value
-                    <= docs[0].matches[i + 1].scores[metric].value
+                docs[0].matches[i].scores[metric].value
+                <= docs[0].matches[i + 1].scores[metric].value
             )
 
 
@@ -375,4 +367,4 @@ def test_faiss_indexer_train(metas, tmpdir, max_num_points):
             'max_num_training_points': max_num_points,
         }
     )
-    assert indexer.index.is_trained
+    assert indexer._faiss_index.is_trained
