@@ -44,7 +44,6 @@ class SimpleIndexer(Executor):
         if distance_metric in ['cosine', 'euclidean', 'sqeuclidean']:
             self._use_scipy = False
 
-        self._flush = True
         self._docs_embeddings = None
         self.logger = get_logger(self)
 
@@ -66,7 +65,6 @@ class SimpleIndexer(Executor):
         )
         flat_docs = docs.traverse_flat(traversal_paths)
         self._docs.extend(flat_docs)
-        self._flush = True
 
     @requests(on='/search')
     def search(
@@ -99,7 +97,6 @@ class SimpleIndexer(Executor):
             use_scipy=self._use_scipy,
             limit=top_k,
         )
-        self._flush = False
 
     @requests(on='/delete')
     def delete(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
