@@ -121,6 +121,8 @@ jtype: Flow
 pods:
   - name: encoder
     uses: 'jinahub+docker://BigTransferEncoder/gpu'
+    docker-kwargs: 
+      runtime: 'nvidia'
     uses_with:
       device: 'cuda'
 ```
