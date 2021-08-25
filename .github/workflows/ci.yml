@@ -103,7 +103,6 @@ jobs:
             --entrypoint "" \
             --name ${PWD##*/} \
             --gpus all \
-            --volume /var/run/docker.sock:/var/run/docker.sock \
             -d $IMAGE_NAME tail -F /dev/null
           echo "DOCKER_EXEC=docker exec ${PWD##*/}" >> $GITHUB_ENV
       - name: run tests in container
