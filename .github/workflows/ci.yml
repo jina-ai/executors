@@ -101,16 +101,3 @@ jobs:
           export PYTHONPATH=.
       - name: Run integration tests
         run: pytest -s -v tests/integration
-
-  success-all-test:
-    needs: [integration-tests, unit-tests, docker-tests]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: technote-space/workflow-conclusion-action@v2
-      - name: Check Failure
-        if: env.WORKFLOW_CONCLUSION == 'failure'
-        run: exit 1
-      - name: Success
-        if: ${{ success() }}
-        run: echo "All Done"
