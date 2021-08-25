@@ -20,7 +20,7 @@ for changed_file in $CHANGED_FILES; do
       if [[ -f "Dockerfile" ]]
         echo "GPU executor found in " $file_base_dir
         gpu_folders+=(${file_base_dir})
-      }
+      fi
     fi
   fi
   cd $root
