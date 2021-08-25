@@ -64,7 +64,7 @@ jobs:
         run: ./scripts/integration.sh
 
   gpu-folders:
-    runs-on: [ self-hosted, gpu ]
+    runs-on: [self-hosted, gpu]
     steps:
       - name: Change dir owner to working user
         run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
@@ -81,8 +81,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
   gpu-tests:
-    needs: [ gpu-folders ]
-    runs-on: [ self-hosted, gpu ]
+    needs: [gpu-folders]
+    runs-on: [self-hosted, gpu]
     strategy:
       fail-fast: false
       matrix:
@@ -103,11 +103,18 @@ jobs:
             --entrypoint "" \
             --name ${PWD##*/} \
             --gpus all \
+            --volumes /var/run/docker.sock:/var/run/docker.sock
             -d $(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]') tail -F /dev/null
+          export DOCKER_EXEC="docker exec ${PWD##*/}"
+      - name: Install Docker CLI in container
+        run: |
+          $DOCKER_EXEC apt update
+          $DOCKER_EXEC apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+          $DOCKER_EXEC curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          $DOCKER_EXEC add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          $DOCKER_EXEC apt update && apt install docker-ce-cli
       - name: run tests in container
         run: |
-          export DOCKER_EXEC="docker exec ${PWD##*/}"
-          $DOCKER_EXEC ls
           $DOCKER_EXEC pip install -r tests/requirements.txt
           $DOCKER_EXEC pytest -s -v -m gpu tests/
       - name: stop container
