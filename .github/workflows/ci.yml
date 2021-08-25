@@ -109,10 +109,10 @@ jobs:
       - name: Install Docker CLI in container
         run: |
           $DOCKER_EXEC sudo apt update
-          $DOCKER_EXEC sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+          $DOCKER_EXEC sudo apt install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
           $DOCKER_EXEC curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
           $DOCKER_EXEC sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-          $DOCKER_EXEC sudo apt update && sudo apt install docker-ce-cli
+          $DOCKER_EXEC sudo apt update && sudo apt install -y docker-ce-cli
       - name: run tests in container
         run: |
           $DOCKER_EXEC pip install -r tests/requirements.txt
