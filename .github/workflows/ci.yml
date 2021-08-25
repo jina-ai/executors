@@ -57,7 +57,7 @@ jobs:
           if [[ ! -f "Dockerfile" ]]; then
             normalizer . --jina-version=2-py37-perf; fi
       - name: Build docker image
-        run: docker build -t foo .
+        run: docker build -t ${PWD##*/} .
       - name: Flake8 linting
         run: flake8 ${{ matrix.executor-path }}
         working-directory: ${{ env.GITHUB_WORKSPACE }}
