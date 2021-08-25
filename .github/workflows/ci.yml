@@ -100,17 +100,18 @@ jobs:
             -v "$(pwd):/test_workspace" \
             --entrypoint "" \
             --workdir /test_workspace \
-            --name ${PWD##*/} \
+            --name ${${{ matrix.folder }}##*/} \
             --gpus all \
             -d ${PWD##*/}:gpu tail -F /dev/null
-          export DOCKER_EXEC="docker exec ${PWD##*/}"
+          export DOCKER_EXEC="docker exec ${${{ matrix.folder }}##*/}"
       - name: run tests in container
         run: |
           $DOCKER_EXEC ls
           $DOCKER_EXEC pip install -r tests/requirements.txt
           $DOCKER_EXEC pytest -s -v -m gpu tests/
       - name: stop container
-        run: docker ps -a -q --filter="name=${PWD##*/}"
+        if: ${{ always() }}
+        run: docker ps -a -q --filter="name=${${{ matrix.folder }}##*/}"
 
   success-all-test:
     needs: [integration-tests, unit-tests, docker-tests, gpu-tests]
