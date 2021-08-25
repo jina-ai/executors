@@ -67,7 +67,7 @@ jobs:
       - name: Install jina
         run: pip install git+https://github.com/jina-ai/jina/
       - name: Install image normalizer
-        run: pip install git+https://${{ secrets.GH_TOKEN }}@github.com/jina-ai/executor-normalizer
+        run: pip install git+https://github.com/jina-ai/executor-normalizer
       - name: Python requirements
         run: pip install -r requirements.txt
       - name: Test requirements
