@@ -95,7 +95,7 @@ jobs:
       - name: move to folder
         run: cd ${{ matrix.folder }}
       - name: build docker image
-        run: docker build -t ${PWD##*/} .
+        run: docker build -t ${PWD##*/} -f Dockerfile.gpu .
       - name: start container
         run: |
           docker run \
