@@ -57,7 +57,8 @@ jobs:
         run: isort --check-only ${{ matrix.executor-path }}
         working-directory: ${{ env.GITHUB_WORKSPACE }}
       - name: Black check formatting
-        run: black -S 
+        run: black --check ${{ matrix.executor-path }}
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
       - name: Run unit tests
         run: pytest -s -v -m "not gpu"
 
