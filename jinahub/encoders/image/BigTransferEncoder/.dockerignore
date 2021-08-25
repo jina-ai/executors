@@ -7,7 +7,6 @@ build
 dist
 *.egg-info/
 .idea
-tests
 
 # Unit test / coverage reports
 htmlcov/

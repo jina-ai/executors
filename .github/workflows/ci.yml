@@ -97,9 +97,7 @@ jobs:
       - name: start container
         run: |
           docker run \
-            -v "$(pwd):/test_workspace" \
             --entrypoint "" \
-            --workdir /test_workspace \
             --name $(basename ${{ matrix.folder }}) \
             --gpus all \
             -d $(echo "$(basename "${{ matrix.folder }}"):gpu" | tr '[:upper:]' '[:lower:]') tail -F /dev/null
@@ -111,7 +109,7 @@ jobs:
           $DOCKER_EXEC pytest -s -v -m gpu tests/
       - name: stop container
         if: ${{ always() }}
-        run: docker stop $(docker ps -a -q --filter="name=$(basename "${{ matrix.folder }}")")
+        run: docker stop $(docker ps -a -q --filter="name=$(basename "${{ matrix.folder }}")") && docker rm $(basename "${{ matrix.folder }}")
 
   success-all-test:
     needs: [integration-tests, unit-tests, docker-tests, gpu-tests]
