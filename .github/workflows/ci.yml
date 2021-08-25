@@ -83,7 +83,9 @@ jobs:
           if [[ ! -f "Dockerfile" ]]; then
             normalizer . --jina-version=2; fi
       - name: Build docker image
-        run: docker build -t ${PWD##*/} .
+        run: |
+          IMG_NAME=$(echo ${PWD##*/} | tr '[:upper:]' '[:lower:]')
+          docker build -t $IMG_NAME .
       - name: Run unit tests
         run: pytest -s -v -m "not gpu"
 
