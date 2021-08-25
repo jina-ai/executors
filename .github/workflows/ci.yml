@@ -22,6 +22,34 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
+  linting:
+    needs: [prep-testbed]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+    defaults:
+      run:
+        working-directory: ${{ matrix.executor-path }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      - name: Install requirements
+        run: pip install black flake8 isort
+      - name: Flake8 linting
+        run: flake8 ${{ matrix.executor-path }}
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
+      - name: Check imports using isort
+        run: isort --check-only ${{ matrix.executor-path }}
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
+      - name: Black check formatting
+        run: black --check ${{ matrix.executor-path }}
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
+
   unit-tests:
     needs: [prep-testbed]
     runs-on: ubuntu-latest
@@ -42,8 +70,6 @@ jobs:
         run: |
           if [[ -f "scripts/pre_test.sh" ]]; then
             bash scripts/pre_test.sh; fi
-      - name: CI requirements
-        run: pip install black flake8 isort
       - name: Install jina
         run: pip install git+https://github.com/jina-ai/jina/
       - name: Install image normalizer
@@ -58,18 +84,8 @@ jobs:
             normalizer . --jina-version=2; fi
       - name: Build docker image
         run: docker build -t ${PWD##*/} .
-      - name: Flake8 linting
-        run: flake8 ${{ matrix.executor-path }}
-        working-directory: ${{ env.GITHUB_WORKSPACE }}
-      - name: Check imports using isort
-        run: isort --check-only ${{ matrix.executor-path }}
-        working-directory: ${{ env.GITHUB_WORKSPACE }}
-      - name: Black check formatting
-        run: black --check ${{ matrix.executor-path }}
-        working-directory: ${{ env.GITHUB_WORKSPACE }}
       - name: Run unit tests
         run: pytest -s -v -m "not gpu"
-
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   # @@@@@@@ ⚠️ DEPRECATED ⚠️ @@@@@@@@@
