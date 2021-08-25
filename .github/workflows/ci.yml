@@ -93,17 +93,17 @@ jobs:
       - name: debug
         run: echo ${{ matrix.folder }}
       - name: build docker image
-        run: docker build -t ${$(basename ${{ matrix.folder }})##*/}:gpu -f ${{ matrix.folder }}/Dockerfile.gpu ${{ matrix.folder }}
+        run: docker build -t $(basename "${{ matrix.folder }}"):gpu -f ${{ matrix.folder }}/Dockerfile.gpu ${{ matrix.folder }}
       - name: start container
         run: |
           docker run \
             -v "$(pwd):/test_workspace" \
             --entrypoint "" \
             --workdir /test_workspace \
-            --name ${$(basename ${{ matrix.folder }})##*/} \
+            --name $(basename ${{ matrix.folder }}) \
             --gpus all \
-            -d ${$(basename ${{ matrix.folder }})##*/}:gpu tail -F /dev/null
-          export DOCKER_EXEC="docker exec ${$(basename ${{ matrix.folder }})##*/}"
+            -d $(basename "${{ matrix.folder }}"):gpu tail -F /dev/null
+          export DOCKER_EXEC="docker exec $(basename "${{ matrix.folder }}")"
       - name: run tests in container
         run: |
           $DOCKER_EXEC ls
@@ -111,7 +111,7 @@ jobs:
           $DOCKER_EXEC pytest -s -v -m gpu tests/
       - name: stop container
         if: ${{ always() }}
-        run: docker stop $(docker ps -a -q --filter="name=${$(basename ${{ matrix.folder }})##*/}")
+        run: docker stop $(docker ps -a -q --filter="name=$(basename "${{ matrix.folder }}")")
 
   success-all-test:
     needs: [integration-tests, unit-tests, docker-tests, gpu-tests]
