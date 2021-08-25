@@ -15,9 +15,9 @@ for changed_file in $CHANGED_FILES; do
   fi
   cd $file_base_dir
 
-  if [[ ! " ${changed_folders[@]} " =~ " ${file_base_dir} " ]]; then
+  if [[ ! " ${gpu_folders[@]} " =~ " ${file_base_dir} " ]]; then
     if [[ $file_base_dir != "." ]]; then
-      if [[ -f "Dockerfile" ]]
+      if [[ -f "Dockerfile" ]]; then
         echo "GPU executor found in " $file_base_dir
         gpu_folders+=(${file_base_dir})
       fi
