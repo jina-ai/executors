@@ -10,6 +10,9 @@ While this repository is primarily developed and maintained by the Jina engineer
     - [📖 Documentation](#-documentation)
     - [💾 Downloading large artifacts](#-downloading-large-artifacts)
     - [🛠️ Writing tests](#️-writing-tests)
+      - [Test-time dependencies](#test-time-dependencies)
+      - [Integration tests](#integration-tests)
+      - [Unit tests](#unit-tests)
     - [📦 Uploading to JinaHub](#-uploading-to-jinahub)
 
 ## 📄 General guidelines
@@ -93,14 +96,14 @@ The solution in this case is to instruct users how to download the file **before
 
 ### 🛠️ Writing tests
 
-To make sure your executor is working as it should, we need tests. We aim for 100% test coverage - that is, for all the code to be covered by tests. Tests should live inside the `tests/` folder, and should be written for the [pytest](https://docs.pytest.org/en/6.2.x/) test suite.
+To make sure your executor is working as it should, we need tests. We aim for 100% test coverage - that is, for all the code to be covered by tests. Tests should live inside the `tests/` folder, and should be written for the [pytest](https://docs.pytest.org/en/6.2.x/) test suite. There are two kinds of tests that you need: **integration** and **unit**.
+
+#### Test-time dependencies
 
 To make sure that all the dependencies needed by the executor and any test time dependencies are properly installed, you need to create these files:
 
 - `tests/requirements.txt` (required): Put any python requirements needed for testing, but not covered in `requirements.txt`, in this file. As with normal requirements, do not put the `jina` package here. At minimum, this file should include `pytest`
 - `tests/pre_test.sh` (optional): If you need any system dependencies installed before performing the tests, put it in this script. This will be run before any dependencies are installed.
-- `tests/pre_docker.sh` (optional): These are the actions to perform before testing the use of the executor as a docker image with `jina pea --uses://docker`. This is used to download any large files that you need.
-- `tests/docker_args.txt` (optional): The extra arguments to the `jina pea` command (apart form `--uses://docker...`). The main usage of this is to mount large files in the container using `--volumes=...`
 
 If your executors requires downloading large files (see [below](#-downloading-large-artifacts)), do this with a pytest fixture. Here's an example
 
@@ -112,7 +115,7 @@ def download_files():
     cleanup()  # Not strictly required
 ```
 
-There are two kinds of tests that you need: **integration** and **unit**.
+#### Integration tests
 
 Integration tests will test the use of the executor in a jina Flow. These tests should be simple (and not many, one will suffice in most situations): you send some documents through the flow which contains the executor, and check that the results are what you expect. Here's an example for a text encoder:
 
@@ -134,8 +137,29 @@ def test_integration(data_generator: Callable, request_size: int):
             assert doc.embedding.shape == (1024,)
 ```
 
+#### Unit tests
+
 Unit tests test the functioning of your executor. These tests need to be detailed - you want to test everything here, including possible edge cases and errors. Here's a list of things that you need to do:
 - Test that the executor can be loaded from `config.yaml` using `Executor.load_config`
+- Test that the executor can be run from a docker container, when running it with `jina pea --uses=docker://...`. This test will look like this
+
+  ```python
+  import subprocess
+
+  import pytest
+
+  def test_docker_runtime():
+      with pytest.raises(subprocess.TimeoutExpired):
+          subprocess.run(
+              ['jina', 'pea', '--uses=docker://MyExecutor'], 
+              timeout=30,
+              check=True
+          )
+  ```
+  Here replace `MyExecutor` with the name of your executor (the image with its name is built in CI before the test is run). You can also add additional arguments to the main command - if you need to download large files for your model (which should have been done in a fixture at test time), you would add `'--volumes=/path/to/file:/path/to/file/in/container/'`.
+
+  What this test does is to launch the executor in a docker container, and if no other errors occur, timeout after 30 seconds (more than enough time for the executor to initialize), which means that it was launched succesfully. On error you will see the full printout of the output in the container, so that you can debug the issue.
+
 - Test that requests work with **all** allowed inputs: this includes `None`, an empty `DocumentArray`, and allowed inputs (a `DocumentArray` with `Document` elements). For the last one, check also what happens when (some) documents do not have the required attribute, e.g. `text` or `blob`.
 - Test that warnings and errors are raised (or logged) when they should be.
 - Test that the values that can be passed to `parameters` in requests have the desired effect 
