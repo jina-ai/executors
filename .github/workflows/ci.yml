@@ -29,9 +29,6 @@ jobs:
       fail-fast: false
       matrix:
         executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
-    defaults:
-      run:
-        working-directory: ${{ matrix.executor-path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -42,13 +39,10 @@ jobs:
         run: pip install black flake8 isort
       - name: Flake8 linting
         run: flake8 ${{ matrix.executor-path }}
-        working-directory: ${{ env.GITHUB_WORKSPACE }}
       - name: Check imports using isort
         run: isort --check-only ${{ matrix.executor-path }}
-        working-directory: ${{ env.GITHUB_WORKSPACE }}
       - name: Black check formatting
         run: black --check ${{ matrix.executor-path }}
-        working-directory: ${{ env.GITHUB_WORKSPACE }}
 
   unit-tests:
     needs: [prep-testbed]
