@@ -74,7 +74,7 @@ def test_docker_runtime_gpu():
             [
                 'jina',
                 'pea',
-                '--uses=docker://transformertorchencoder',
+                '--uses=docker://transformertorchencoder:gpu',
                 '--gpus',
                 'all',
                 '--uses-with',
