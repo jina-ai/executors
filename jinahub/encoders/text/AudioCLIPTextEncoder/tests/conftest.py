@@ -12,10 +12,7 @@ from jina import Document, DocumentArray
 @pytest.fixture(scope="session", autouse=True)
 def download_cache():
     subprocess.run(
-        'scripts/download_full.sh',
-        cwd=Path(__file__).parents[1],
-        check=True,
-        stdout=subprocess.DEVNULL,
+        'scripts/download_full.sh', cwd=Path(__file__).parents[1], check=True
     )
     yield
     shutil.rmtree('.cache')
