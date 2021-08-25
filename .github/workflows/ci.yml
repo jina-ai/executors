@@ -101,9 +101,9 @@ jobs:
             --name $(basename ${{ matrix.folder }}) \
             --gpus all \
             -d $(echo "$(basename "${{ matrix.folder }}"):gpu" | tr '[:upper:]' '[:lower:]') tail -F /dev/null
-          export DOCKER_EXEC="docker exec $(basename "${{ matrix.folder }}")"
       - name: run tests in container
         run: |
+          export DOCKER_EXEC="docker exec $(basename "${{ matrix.folder }}")"
           $DOCKER_EXEC ls
           $DOCKER_EXEC pip install -r tests/requirements.txt
           $DOCKER_EXEC pytest -s -v -m gpu tests/
