@@ -13,6 +13,7 @@ While this repository is primarily developed and maintained by the Jina engineer
       - [Test-time dependencies](#test-time-dependencies)
       - [Integration tests](#integration-tests)
       - [Unit tests](#unit-tests)
+      - [GPU tests (🚧 WIP)](#gpu-tests--wip)
     - [📦 Uploading to JinaHub](#-uploading-to-jinahub)
 
 ## 📄 General guidelines
@@ -162,6 +163,9 @@ Unit tests test the functioning of your executor. These tests need to be detaile
 - Test that warnings and errors are raised (or logged) when they should be.
 - Test that the values that can be passed to `parameters` in requests have the desired effect 
 - For encoders: check that the resulting embeddings have the desired **semantic similarity** properties. This means, for example, that for an image encoder embeddings of the images of a cat and dog should be closer to each other than to an image of an airplane. Here you can look at other encoders of the same modality and copy this test from them. 
+
+
+### GPU tests (🚧 WIP)
 
 ### 📦 Uploading to JinaHub
 
