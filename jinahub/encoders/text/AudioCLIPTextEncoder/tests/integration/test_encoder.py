@@ -34,7 +34,7 @@ def test_docker_runtime():
                 'jina',
                 'pea',
                 '--uses=docker://audiocliptextencoder',
-                '--volumes=.cache:/workdir/cache',
+                '--volumes=.cache:/workspace/cache',
             ],
             timeout=30,
             check=True,
