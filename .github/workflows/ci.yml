@@ -64,10 +64,8 @@ jobs:
         run: ./scripts/integration.sh
 
   gpu-folders:
-    runs-on: [self-hosted, gpu]
+    runs-on: ubuntu-latest
     steps:
-      - name: Change dir owner to working user
-        run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
       - name: Checkout
         uses: actions/checkout@v2
       - id: changed-files
