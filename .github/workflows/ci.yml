@@ -44,10 +44,18 @@ jobs:
             bash scripts/pre_test.sh; fi
       - name: CI requirements
         run: pip install black flake8 isort
+      - name: Install jina
+        run: pip install git+https://github.com/jina-ai/jina/
+      - name: Install image normalizer
+        run: pip install git+https://${{ secrets.GH_TOKEN }}github.com/jina-ai/executor-normalizer
       - name: Python requirements
         run: pip install -r requirements.txt
       - name: Test requirements
         run: pip install -r tests/requirements.txt
+      - name: Create Dockerfile, if needed
+        run: |
+          if [[ ! -f "Dockerfile" ]]; then
+            normalizer .; fi
       - name: Build docker image
         run: docker build -t foo .
       - name: Flake8 linting
@@ -77,7 +85,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+        executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -85,7 +93,8 @@ jobs:
         run: echo ${{ matrix.test-path }}
       - name: run docker tests
         run: |
-          bash ./scripts/test_docker.sh ${{ matrix.test-path }}
+          if [[ -f "${{ matrix.executor-path }}/Dockerfile" ]]; then
+            bash ./scripts/test_docker.sh ${{ matrix.executor-path }}; fi
 
   # always run
   integration-tests:
