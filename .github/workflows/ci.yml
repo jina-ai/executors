@@ -55,7 +55,7 @@ jobs:
       - name: Create Dockerfile, if needed
         run: |
           if [[ ! -f "Dockerfile" ]]; then
-            normalizer . --jina-version=2-py37-perf; fi
+            normalizer . --jina-version=2; fi
       - name: Build docker image
         run: docker build -t ${PWD##*/} .
       - name: Flake8 linting
