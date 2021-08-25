@@ -96,16 +96,18 @@ jobs:
       - name: debug
         run: echo ${{ matrix.folder }}
       - name: build docker image
-        run: docker build -t $(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]') -f Dockerfile.gpu .
+        run: |
+          export IMAGE_NAME=$(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]')
+          docker build -t $IMAGE_NAME -f Dockerfile.gpu .
       - name: start container
         run: |
           docker run \
             --entrypoint "" \
-            --name ${PWD##*/} \
+            --name $IMAGE_NAME \
             --gpus all \
-            --volumes /var/run/docker.sock:/var/run/docker.sock
-            -d $(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]') tail -F /dev/null
-          export DOCKER_EXEC="docker exec ${PWD##*/}"
+            --volume /var/run/docker.sock:/var/run/docker.sock
+            -d $IMAGE_NAME tail -F /dev/null
+          export DOCKER_EXEC="docker exec $IMAGE_NAME"
       - name: Install Docker CLI in container
         run: |
           $DOCKER_EXEC apt update
@@ -119,7 +121,7 @@ jobs:
           $DOCKER_EXEC pytest -s -v -m gpu tests/
       - name: stop container
         if: ${{ always() }}
-        run: docker stop $(docker ps -a -q) && docker rm ${PWD##*/}
+        run: docker stop $(docker ps -a -q) && docker rm $IMAGE_NAME
 
   success-all-test:
     needs: [integration-tests, unit-tests, docker-tests, gpu-tests]
