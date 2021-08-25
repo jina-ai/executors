@@ -15,4 +15,5 @@ extend_exclude = '''
 [tool.pytest.ini_options]
 markers = [
     "gpu: test that can only be executed on a machine with a GPU",
+    "docker: tests that test the docker image of the executor"
 ]

@@ -27,6 +27,7 @@ def test_integration(data_generator: Callable, request_size: int):
             assert doc.embedding.shape == (1024,)
 
 
+@pytest.mark.docker
 def test_docker_runtime():
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
