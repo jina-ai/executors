@@ -93,7 +93,7 @@ jobs:
       - name: debug
         run: echo ${{ matrix.folder }}
       - name: build docker image
-        run: docker build -t ${PWD##*/}:gpu -f ${{ matrix.folder }}/Dockerfile.gpu .
+        run: docker build -t ${PWD##*/}:gpu -f ${{ matrix.folder }}/Dockerfile.gpu ${{ matrix.folder }}
       - name: start container
         run: |
           docker run \
