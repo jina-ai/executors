@@ -45,8 +45,7 @@ class BigTransferEncoder(Executor):
         └── variables
             ├── variables.data-00000-of-00001
             └── variables.index
-    :param: on_gpu: If true, the GPU will be used. Make sure to have
-        tensorflow-gpu==2.5 installed
+    :param: device: Device to be used, e.g. 'cpu', 'cuda', 'cuda:2'
     :param target_dim: preprocess the data image into shape of `target_dim`, (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
     :param default_traversal_paths: Traversal path through the docs
     :param default_batch_size: Batch size to be used in the encoder model
@@ -56,7 +55,7 @@ class BigTransferEncoder(Executor):
     def __init__(self,
                  model_path: Optional[str] = 'pretrained',
                  model_name: Optional[str] = 'Imagenet21k/R50x1',
-                 on_gpu: bool = False,
+                 device: str = 'cpu',
                  target_dim: Optional[Tuple[int, int, int]] = None,
                  default_traversal_paths: List[str] = None,
                  default_batch_size: int = 32,
@@ -64,7 +63,7 @@ class BigTransferEncoder(Executor):
         super().__init__(*args, **kwargs)
         self.model_path = model_path
         self.model_name = model_name
-        self.on_gpu = on_gpu
+        self.device = device
         self.target_dim = target_dim
         self.logger = JinaLogger(self.__class__.__name__)
         self.default_batch_size = default_batch_size
@@ -77,9 +76,11 @@ class BigTransferEncoder(Executor):
             device_type='CPU')
         gpus = tf.config.experimental.list_physical_devices(
             device_type='GPU')
-        if self.on_gpu and len(gpus) > 0:
-            cpus.append(gpus[0])
-        if self.on_gpu and len(gpus) == 0:
+        if 'cuda' in device and len(gpus) > 0:
+            gpu_index = 0 if not 'cuda:' in device else \
+                int(device.split(':')[1])
+            cpus.append(gpus[gpu_index])
+        if 'cuda' in self.device and len(gpus) == 0:
             self.logger.warning('You tried to use a GPU but no GPU was found on'
                                 ' your system. Defaulting to CPU!')
         tf.config.experimental.set_visible_devices(devices=cpus)
