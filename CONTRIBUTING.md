@@ -81,7 +81,6 @@ On top of that, you should also fill in the `README.md`. A standard structure of
 - A short pure-python example, using `jinahub+docker://` - should be self contained and runnable. Also meaningful, if possible.
 -  A References section, with links to relevant references (papers, blog posts, etc.)
 
-
 ### 💾 Downloading large artifacts
 
 Often you will find that for the executor to work, a large file needs to be downloaded first - usually this would be a file with pre-trained model weights. If this is done at the start of the executor, it will lead to really long startup times, or even timeouts, which will frustrate users. 
@@ -92,7 +91,6 @@ The solution in this case is to instruct users how to download the file **before
 - Add simple copy-pastable instructions on how to download the large files to the readme
 - Add instructions on how to specify the path to the file at executor initialization (if needed) and how to mount the file to a Docker container in the readme
 - If the file path is not provided, or the file doesn't exist, add an error telling the user that file needs to be downloaded, and pointing them to the readme for further instructions.
-
 
 ### 🛠️ Writing tests
 
@@ -174,5 +172,3 @@ When the executor is complete, it is time to publish it to Jina hub (do this bef
 Before pushing anything, make sure that the `name` field in `manifest.yml` matches the name of the executor's folder. To push the executor to JinaHub, follow [these instructions](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Hub.md#2-push-executor-to-jinahub) from the Hub cookbook. Once you do that, add the UUID and secret to the executors secrets storage.
 
 And that's it. Once this is done, the executor will automatically be pushed to JinaHub each time its PR is merged.
-
-
