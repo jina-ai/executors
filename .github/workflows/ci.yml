@@ -41,10 +41,20 @@ jobs:
         run: |
           if [[ -f "scripts/pre_test.sh" ]]; then
             bash scripts/pre_test.sh; fi
+      - name: CI requirements
+        run: pip install black flake8 isort
       - name: Python requirements
         run: pip install -r requirements.txt
       - name: Test requirements
         run: pip install -r tests/requirements.txt
+      - name: Flake8 linting
+        run: flake8 ${{ matrix.executor-path }}
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
+      - name: Check imports using isort
+        run: isort --check-only ${{ matrix.executor-path }}
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
+      - name: Black check formatting
+        run: black -S 
       - name: Run unit tests
         run: pytest -s -v -m "not gpu"
 
