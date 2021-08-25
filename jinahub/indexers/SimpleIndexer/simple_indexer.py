@@ -99,7 +99,7 @@ class SimpleIndexer(Executor):
         )
 
     @requests(on='/delete')
-    def delete(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
+    def delete(self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs):
         """Delete entries from the index by id
 
         :param docs: the documents to delete
@@ -116,7 +116,7 @@ class SimpleIndexer(Executor):
                 del self._docs[idx]
 
     @requests(on='/update')
-    def update(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
+    def update(self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs):
         """Update doc with the same id
 
         :param docs: the documents to update
@@ -135,7 +135,7 @@ class SimpleIndexer(Executor):
                 self._docs.append(doc)
 
     @requests(on='/fill_embedding')
-    def fill_embedding(self, docs: DocumentArray, **kwargs):
+    def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
         """retrieve embedding of Documents by id
 
         :param docs: DocumentArray to search with
