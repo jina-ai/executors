@@ -1,5 +1,5 @@
 manifest_version: 1
-name: SimpleIndexer
-description: A simple indexer that leverages the DocumentArrayMemmap
-url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/SimpleIndexer
-keywords: [indexer]
+name: SimpleInvertedIndexer
+description: A simple inverted indexer
+url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/SimpleInvertedIndexer
+keywords: [indexer, inverted index, TF-IDF, BM25]

@@ -1,9 +1,9 @@
-jtype: SimpleIndexer
+jtype: SimpleInvertedIndexer
 with:
-  index_file_name: indexer
+  inverted_index_file_name: indexer.pkl
 metas:
   py_modules:
-    - simple_indexer.py
+    - simple_inverted_indexer.py
   workspace: workspace/
-  name: indexer
+  name: inverted_indexer
 

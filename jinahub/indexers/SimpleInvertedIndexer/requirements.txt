@@ -1,2 +1,4 @@
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
 scipy==1.6.1
+sklearn
+spacy

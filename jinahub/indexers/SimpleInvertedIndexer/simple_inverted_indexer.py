@@ -1,9 +1,11 @@
 import os
-from typing import List, Optional, Dict
+import operator
+from typing import Optional, Dict, Tuple, List
 from collections import defaultdict
 import pickle
+from sklearn.feature_extraction.text import CountVectorizer
+from scipy.sparse import csr_matrix
 
-import scipy
 import numpy as np
 
 from jina import Executor, DocumentArray, requests, Document
@@ -26,8 +28,8 @@ class InvertedIndex:
             self.idfs[term_idx] = np.log(num / den)
 
     def add(self, document_id, document_vector):
-        def _add(term_id, document_id, value):
-            self.inverted_index[term_id].add(document_id)
+        def _add(term_id, doc_id, value):
+            self.inverted_index[term_id].add(doc_id)
             self.document_frequencies[term_id] += value
 
         for term_id, term_value in zip(document_vector.indices, document_vector.data):
@@ -48,13 +50,19 @@ class InvertedIndex:
         for candidate in candidates:
             scores.append(self._relevance(query, candidate))
 
-        results = sorted(zip(scores, candidates), reverse=True)
         if top_k:
+            scores_arr = np.array(scores)
+            print(f' scores_arr {scores_arr} and top_k {top_k}')
+            top_indices = np.argpartition(scores_arr, top_k)
+            top_candidates = operator.itemgetter(*top_indices.tolist())(candidates)
+            top_scores = np.take_along_axis(scores_arr, top_indices, axis=0).tolist()
             if return_scores:
-                return results[: top_k]
+                return zip(top_scores, top_candidates)
             else:
-                return [element for _, element in results[: top_k]]
+                return top_candidates
         else:
+            results = sorted(zip(scores, candidates), reverse=True)
+
             if return_scores:
                 return results
             else:
@@ -83,13 +91,42 @@ class SimpleInvertedIndexer(Executor):
     A simple inverted indexer that stores Document Lists in buckets given their sparse embedding input
     """
 
+    @staticmethod
+    def load_from_file(base_path):
+        inverted_index_path = os.path.join(base_path, 'inverted_index.pickle')
+        with open(inverted_index_path, 'rb') as f:
+            return pickle.load(f)
+
+    @staticmethod
+    def store_to_file(base_path, inverted_idx):
+        if not os.path.exists(base_path):
+            os.makedirs(base_path)
+        inverted_index_path = os.path.join(base_path, 'inverted_index.pickle')
+        with open(inverted_index_path, 'wb') as f:
+            pickle.dump(inverted_idx, f)
+
     def __init__(
             self,
+            inverted_index_file_name: str,
+            # maybe better provide a link to a trained vectorizer
+            corpus: List[str] = ['hello', 'he', 'she', 'ball', 'ski', 'sport', 'football'],
+            default_traversal_paths: Tuple[str] = ['r'],
+            default_top_k: int = 2,
             *args,
             **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.vectorizer = CountVectorizer(stop_words='english')
+        self.vectorizer.fit(corpus)
+        self.inverted_index_file_name = inverted_index_file_name
+        self.default_traversal_paths = default_traversal_paths
+        self.default_top_k = default_top_k
+        self.inverted_index = InvertedIndex()
+        self.inverted_index_full_path = os.path.join(self.workspace, inverted_index_file_name)
+        self._docs = DocumentArrayMemmap(self.workspace + f'/index_file_name')
 
+        if os.path.exists(self.inverted_index_full_path):
+            self.inverted_index = self.load_from_file(self.inverted_index_full_path)
         self.logger = get_logger(self)
 
     @requests(on='/index')
@@ -99,7 +136,7 @@ class SimpleInvertedIndexer(Executor):
             parameters: Optional[Dict] = {},
             **kwargs,
     ):
-        """All Documents to the DocumentArray
+        """Add documents to the inverted index
         :param docs: the docs to add
         :param parameters: the parameters dictionary
         """
@@ -109,6 +146,12 @@ class SimpleInvertedIndexer(Executor):
             'traversal_paths', self.default_traversal_paths
         )
         flat_docs = docs.traverse_flat(traversal_paths)
+        texts = flat_docs.get_attributes('text')
+        embeddings = self.vectorizer.transform(texts).toarray()
+        for doc, dense_embedding in zip(flat_docs, embeddings):
+            sparse_embedding = csr_matrix(dense_embedding)
+            self.inverted_index.add(doc.id, sparse_embedding)
+            self._docs.append(doc)
 
     @requests(on='/search')
     def search(
@@ -117,7 +160,7 @@ class SimpleInvertedIndexer(Executor):
             parameters: Optional[Dict] = {},
             **kwargs,
     ):
-        """Perform a vector similarity search and retrieve the full Document match
+        """Retrieve results from the inverted index
 
         :param docs: the Documents to search with
         :param parameters: the parameters for the search"""
@@ -132,56 +175,34 @@ class SimpleInvertedIndexer(Executor):
             'traversal_paths', self.default_traversal_paths
         )
         flat_docs = docs.traverse_flat(traversal_paths)
-        if not flat_docs:
-            return
+        texts = flat_docs.get_attributes('text')
+        embeddings = self.vectorizer.transform(texts).toarray()
         top_k = int(parameters.get('top_k', self.default_top_k))
+        for doc, embedding in zip(flat_docs, embeddings):
+            sparse_embedding = csr_matrix(embedding)
+            scores_matches = self.inverted_index.match(sparse_embedding, top_k, return_scores=True)
+            for score, match_id in scores_matches:
+                doc.matches.append(self._docs[match_id])
+                doc.matches[-1].scores['tfidf'] = score
 
-    @requests(on='/delete')
-    def delete(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
-        """Delete entries from the index by id
+    @requests(on='/dump')
+    def dump(
+        self,
+        **kwargs,
+    ):
+        self._dump()
 
-        :param docs: the documents to delete
-        :param parameters: parameters to the request
-        """
-        if docs is None:
-            return
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
-        delete_docs_ids = docs.traverse_flat(traversal_paths).get_attributes('id')
-        for idx in delete_docs_ids:
-            if idx in self._docs:
-                del self._docs[idx]
+    @requests(on='/cache_idfs')
+    def cache_idfs(
+        self,
+        **kwargs,
+    ):
+        self.inverted_index.cache_idfs()
 
-    @requests(on='/update')
-    def update(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
-        """Update doc with the same id
+    def _dump(self):
+        self.inverted_index.cache_idfs()
+        self.store_to_file(self.inverted_index_full_path, self.inverted_index)
 
-        :param docs: the documents to update
-        :param parameters: parameters to the request
-        """
-        if docs is None:
-            return
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
-        flat_docs = docs.traverse_flat(traversal_paths)
-        for doc in flat_docs:
-            if doc.id is not None:
-                self._docs[doc.id] = doc
-            else:
-                self._docs.append(doc)
-
-    @requests(on='/fill_embedding')
-    def fill_embedding(self, docs: DocumentArray, **kwargs):
-        """retrieve embedding of Documents by id
-
-        :param docs: DocumentArray to search with
-        """
-        if not docs:
-            return
-        for doc in docs:
-            if doc.id in self._docs:
-                doc.embedding = self._docs[doc.id].embedding
-            else:
-                self.logger.warning(f'Document {doc.id} not found in index')
+    def close(self):
+        self._dump()
+        super().close()
