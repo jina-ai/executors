@@ -63,7 +63,7 @@ jobs:
       - name: run integration tests
         run: ./scripts/integration.sh
 
-  gpu-containers:
+  gpu-folders:
     runs-on: [ self-hosted, gpu ]
     steps:
       - name: Change dir owner to working user
@@ -74,7 +74,7 @@ jobs:
         uses: jitterbit/get-changed-files@v1
         continue-on-error: true
       - id: set-matrix
-        run: bash scripts/get-gpu-containers.sh
+        run: bash scripts/get-gpu-executors.sh
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.all }}
     outputs:
@@ -86,22 +86,36 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        container: ${{fromJson(needs.gpu-containers.outputs.matrix)}}
-    container:
-      image: ${{ matrix.container }}
-      options: --gpus all
+        folder: ${{fromJson(needs.gpu-folders.outputs.matrix)}}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: debug
-        run: echo ${{ matrix.container }}
-      - name: pytest
-        run: pip install -r tests/requirements.txt
-      - name: tests
-        run: pytest -s -v -m gpu tests/
+        run: echo ${{ matrix.folder }}
+      - name: move to folder
+        run: cd ${{ matrix.folder }}
+      - name: build docker image
+        run: docker build -t ${PWD##*/} .
+      - name: start container
+        run: |
+          docker run \
+            -v "$(pwd):/test_workspace" \
+            --entrypoint "" \
+            --workdir /test_workspace \
+            --name ${PWD##*/} \
+            --gpus all \
+            -d foo tail -F /dev/null
+          export DOCKER_EXEC="docker exec ${PWD##*/}"
+      - name: run tests in container
+        run: |
+          $DOCKER_EXEC ls
+          $DOCKER_EXEC pip install -r tests/requirements.txt
+          $DOCKER_EXEC pytest -s -v -m gpu tests/
+      - name: stop container
+        run: docker ps -a -q --filter="name=${PWD##*/}"
 
   success-all-test:
-    needs: [integration-tests, unit-tests, docker-tests, gpu-containers, gpu-tests]
+    needs: [integration-tests, unit-tests, docker-tests, gpu-tests]
     if: always()
     runs-on: ubuntu-latest
     steps:
