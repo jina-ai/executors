@@ -105,7 +105,7 @@ jobs:
             --entrypoint "" \
             --name $IMAGE_NAME \
             --gpus all \
-            --volume /var/run/docker.sock:/var/run/docker.sock
+            --volume /var/run/docker.sock:/var/run/docker.sock \
             -d $IMAGE_NAME tail -F /dev/null
           export DOCKER_EXEC="docker exec $IMAGE_NAME"
       - name: Install Docker CLI in container
