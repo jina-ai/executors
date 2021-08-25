@@ -93,12 +93,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: debug
-        run: echo ${{ matrix.folder }}
+      - name: Image name
+        run: echo "IMAGE_NAME=$(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - name: build docker image
-        run: |
-          docker build -t $(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]') -f Dockerfile.gpu .
-          echo "IMAGE_NAME=$(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        run: docker build -t $IMAGE_NAME -f Dockerfile.gpu .
       - name: start container
         run: |
           docker run \
@@ -108,17 +106,10 @@ jobs:
             --volume /var/run/docker.sock:/var/run/docker.sock \
             -d $IMAGE_NAME tail -F /dev/null
           echo "DOCKER_EXEC=docker exec ${PWD##*/}" >> $GITHUB_ENV
-      - name: Install Docker CLI in container
-        run: |
-          $DOCKER_EXEC apt update
-          $DOCKER_EXEC apt install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
-          $DOCKER_EXEC curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-          $DOCKER_EXEC add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-          $DOCKER_EXEC apt update && apt install -y docker-ce-cli
       - name: run tests in container
         run: |
           $DOCKER_EXEC pip install -r tests/requirements.txt
-          $DOCKER_EXEC pytest -s -v -m gpu tests/
+          $DOCKER_EXEC pytest -s -v -m "gpu and not docker" tests/
       - name: stop container
         if: ${{ always() }}
         run: docker stop $(docker ps -a -q) && docker rm ${PWD##*/}
