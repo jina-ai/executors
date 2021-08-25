@@ -1,6 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+import subprocess
 from typing import Callable
 
 import pytest
@@ -24,3 +25,17 @@ def test_integration(data_generator: Callable, request_size: int):
         for doc in r.docs:
             assert doc.embedding is not None
             assert doc.embedding.shape == (1024,)
+
+
+def test_docker_runtime():
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                '--uses=docker://audiocliptextencoder',
+                '--volumes=.cache:/workdir/cache',
+            ],
+            timeout=30,
+            check=True,
+        )

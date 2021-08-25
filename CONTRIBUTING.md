@@ -116,7 +116,7 @@ def download_files():
 
 #### Integration tests
 
-Integration tests will test the use of the executor in a jina Flow. These tests should be simple (and not many, one will suffice in most situations): you send some documents through the flow which contains the executor, and check that the results are what you expect. Here's an example for a text encoder:
+In integration tests you need to test the use of the executor in a jina Flow. These tests should be simple (and not many, one will suffice in most situations): you send some documents through the flow which contains the executor, and check that the results are what you expect. Here's an example for a text encoder:
 
 ```python
 @pytest.mark.parametrize("request_size", [1, 10, 50, 100])
@@ -136,29 +136,30 @@ def test_integration(data_generator: Callable, request_size: int):
             assert doc.embedding.shape == (1024,)
 ```
 
+Also, test that the executor can be run from a docker container, when running it with `jina pea --uses=docker://...`. This test will look like this
+
+```python
+import subprocess
+
+import pytest
+
+def test_docker_runtime():
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            ['jina', 'pea', '--uses=docker://myexecutor'], 
+            timeout=30,
+            check=True
+        )
+```
+
+Here replace `myexecutor` with the *lower case* name of your executor (the image with its name is built in CI before the test is run). You can also add additional arguments to the main command - if you need to download large files for your model (which should have been done in a fixture at test time), you would add `'--volumes=/path/to/file:/path/to/file/in/container/'`.
+
+What this test does is to launch the executor in a docker container, and if no other errors occur, timeout after 30 seconds (more than enough time for the executor to initialize), which means that it was launched succesfully. On error you will see the full printout of the output in the container, so that you can debug the issue.
+
 #### Unit tests
 
 Unit tests test the functioning of your executor. These tests need to be detailed - you want to test everything here, including possible edge cases and errors. Here's a list of things that you need to do:
 - Test that the executor can be loaded from `config.yaml` using `Executor.load_config`
-- Test that the executor can be run from a docker container, when running it with `jina pea --uses=docker://...`. This test will look like this
-
-  ```python
-  import subprocess
-
-  import pytest
-
-  def test_docker_runtime():
-      with pytest.raises(subprocess.TimeoutExpired):
-          subprocess.run(
-              ['jina', 'pea', '--uses=docker://myexecutor'], 
-              timeout=30,
-              check=True
-          )
-  ```
-  Here replace `myexecutor` with the *lower case* name of your executor (the image with its name is built in CI before the test is run). You can also add additional arguments to the main command - if you need to download large files for your model (which should have been done in a fixture at test time), you would add `'--volumes=/path/to/file:/path/to/file/in/container/'`.
-
-  What this test does is to launch the executor in a docker container, and if no other errors occur, timeout after 30 seconds (more than enough time for the executor to initialize), which means that it was launched succesfully. On error you will see the full printout of the output in the container, so that you can debug the issue.
-
 - Test that requests work with **all** allowed inputs: this includes `None`, an empty `DocumentArray`, and allowed inputs (a `DocumentArray` with `Document` elements). For the last one, check also what happens when (some) documents do not have the required attribute, e.g. `text` or `blob`.
 - Test that warnings and errors are raised (or logged) when they should be.
 - Test that the values that can be passed to `parameters` in requests have the desired effect 
