@@ -54,15 +54,15 @@ If there are any other requirements (such as installing system packages using `a
 ### ✨ Coding standards
 
 To ensure the readability of our code, we stick to a few conventions:
-- We format python files using `black`, with the exception that we using single `'quotes'`, instead of double `"quotes"`. To avoid having `black` change the quotes, use the `-S` flag when running it
+- We format python files using `black`, with the exception that we using single `'quotes'`, instead of double `"quotes"`.
 - For linting, we use `flake8`.
 - For sorting imports, we use `isort`.
 
-The `setup.cfg` already contain the proper configuration for these tools. If you are working in a moren IDE (such a VSCode), which integrates these tools, the options will be picked up.
+The `setup.cfg` and `pyproject.toml` already contain the proper configuration for these tools. If you are working in a moren IDE (such a VSCode), which integrates these tools, the options will be picked up.
 
 If you are working from the command line, you should use these tools form the root of this repository (and not from the executor's folder), for example
 ```
-flake8 jinahub/encoders/text/BERTTextEncoder
+black jinahub/encoders/text/BERTTextEncoder
 ```
 
 ### 📖 Documentation

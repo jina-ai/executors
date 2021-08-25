@@ -5,6 +5,7 @@ from typing import Callable
 
 import pytest
 from jina import Flow
+
 from ...audioclip_text import AudioCLIPTextEncoder
 
 
