@@ -96,7 +96,9 @@ jobs:
       - name: debug
         run: echo ${{ matrix.folder }}
       - name: build docker image
-        run: docker build -t $(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]') -f Dockerfile.gpu .
+        run: |
+          docker build -t $(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]') -f Dockerfile.gpu .
+          echo "IMAGE_NAME=$(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - name: start container
         run: |
           docker run \
@@ -104,8 +106,8 @@ jobs:
             --name ${PWD##*/} \
             --gpus all \
             --volume /var/run/docker.sock:/var/run/docker.sock \
-            -d $(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]') tail -F /dev/null
-          export DOCKER_EXEC="docker exec ${PWD##*/}"
+            -d $IMAGE_NAME tail -F /dev/null
+          echo "DOCKER_EXEC=docker exec ${PWD##*/}" >> $GITHUB_ENV
       - name: Install Docker CLI in container
         run: |
           $DOCKER_EXEC sudo apt update
