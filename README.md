@@ -94,6 +94,7 @@ Then follow the guide on [Executors](https://github.com/jina-ai/jina/blob/master
 While this repository is primarily developed and maintained by the Jina engineering team, we welcome contributions from the community as well!
 
 For instructions on how to contribute, please check out the [CONTRIBUTING.md](./CONTRIBUTING.md) guilde.
+
 ## Using this repository as a package
 
 Notice that we have a `setup.py` in this repository. 
