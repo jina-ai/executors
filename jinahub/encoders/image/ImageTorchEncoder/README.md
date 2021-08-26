@@ -1,4 +1,4 @@
-# ✨ ImageTorchEncoder
+# ✨ ImageTorchEncoder 
 
 **ImageTorchEncoder** wraps the models from [torchvision](https://pytorch.org/vision/stable/index.html).
 
@@ -7,10 +7,16 @@ into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of 
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [✨ ImageTorchEncoder](#-imagetorchencoder)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [using docker images](#using-docker-images)
+      - [using source code](#using-source-code)
+  - [🎉️ Example](#️-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 
 ## 🌱 Prerequisites

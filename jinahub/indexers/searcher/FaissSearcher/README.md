@@ -1,4 +1,4 @@
-# ✨ FaissSearcher
+# ✨ FaissSearcher 
 
 **FaissSearcher** is a Faiss-powered vector Searcher.
 
@@ -7,10 +7,17 @@ Faiss is a library for efficient similarity search and clustering of dense vecto
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [✨ FaissSearcher](#-faisssearcher)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [Loading data](#loading-data)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [using docker images](#using-docker-images)
+      - [using source code](#using-source-code)
+  - [🎉️ Example](#️-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 
 ## 🌱 Prerequisites

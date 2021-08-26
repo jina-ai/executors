@@ -1,4 +1,4 @@
-# ✨ DPRTextEncoder
+# ✨ DPRTextEncoder 
 
  **DPRTextEncoder** is a class that encodes text into embeddings using the DPR model from huggingface transformers.
 
@@ -31,10 +31,14 @@ The following parameters can be passed on initialization:
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+- [✨ DPRTextEncoder](#-dprtextencoder)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [🚚 Via JinaHub](#-via-jinahub)
+  - [🎉️ Example](#️-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 ## 🌱 Prerequisites
 

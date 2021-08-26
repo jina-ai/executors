@@ -1,4 +1,4 @@
-# LaserEncoder
+# LaserEncoder 
 
 **LaserEncoder** is a encoder based on Facebook Research's LASER (Language-Agnostic SEntence Representations) to compute multilingual sentence embeddings.
 
@@ -7,10 +7,16 @@ It encodes `Document` content from an 1d array of string in size `B` into an nda
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [LaserEncoder](#laserencoder)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [using docker images](#using-docker-images)
+      - [using source code](#using-source-code)
+  - [🎉 Example:](#-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 
 ## 🌱 Prerequisites

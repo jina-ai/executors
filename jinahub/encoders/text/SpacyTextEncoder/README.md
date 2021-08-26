@@ -1,14 +1,20 @@
-# ✨ SpacyTextEncoder
+# ✨ SpacyTextEncoder 
 
 **SpacyTextEncoder** is a class that encodes text with spaCy models.
 
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [✨ SpacyTextEncoder](#-spacytextencoder)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [using docker images](#using-docker-images)
+      - [using source code](#using-source-code)
+  - [🎉️ Example](#️-example)
+      - [Inputs](#inputs)
+      - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 
 ## 🌱 Prerequisites

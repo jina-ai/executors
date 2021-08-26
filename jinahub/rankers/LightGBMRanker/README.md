@@ -1,4 +1,4 @@
-# ✨ LightGBMRanker
+# ✨ LightGBMRanker 
 
 **LightGBMRanker** is a Jina ranker, using the [LightGBM](https://github.com/microsoft/LightGBM) library, mode specifically, the `LightGBMRanker` is used for learning-to-rank.
 

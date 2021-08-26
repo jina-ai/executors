@@ -1,4 +1,4 @@
-# ✨ SimpleIndexer
+# ✨ SimpleIndexer 
 
 **SimpleIndexer** is a Jina indexer, using the [DocumentArrayMemmap](https://github.com/jina-ai/jina/blob/master/jina/types/arrays/memmap.py) class as a storage system.
 
@@ -6,10 +6,16 @@
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [✨ SimpleIndexer](#-simpleindexer)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [using docker images (not recommended)](#using-docker-images-not-recommended)
+      - [using source code](#using-source-code)
+  - [🎉️ Example](#️-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 
 ## 🌱 Prerequisites

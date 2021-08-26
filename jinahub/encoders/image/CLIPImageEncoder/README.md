@@ -1,4 +1,4 @@
-# ✨ CLIPImageEncoder
+# ✨ CLIPImageEncoder 
 
 **CLIPImageEncoder** is a class that wraps the image embedding functionality using the **CLIP** model from huggingface transformers.
 
@@ -23,10 +23,16 @@ The following parameters can be passed on initialization:
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [✨ CLIPImageEncoder](#-clipimageencoder)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [using docker images](#using-docker-images)
+      - [using source code](#using-source-code)
+  - [🎉️ Example](#️-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 
 ## 🌱 Prerequisites

@@ -1,14 +1,20 @@
 
-# ✨ AudioCLIPEncoder
+# ✨ AudioCLIPEncoder 
 
 **AudioCLIPEncoder** is a class that wraps the [AudioCLIP](https://github.com/AndreyGuzhov/AudioCLIP) model for generating embeddings for audio data. 
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [✨ AudioCLIPEncoder](#-audioclipencoder)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [using docker images](#using-docker-images)
+      - [using source code](#using-source-code)
+  - [🎉️ Example](#️-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 ## 🌱 Prerequisites
 

@@ -1,4 +1,4 @@
-# ✨ HnswlibSearcher
+# ✨ HnswlibSearcher 
 
 **HnswlibSearcher** is a Hnswlib-powered vector Searcher.
 
@@ -7,10 +7,17 @@ Hnswlib is a fast approximate nearest neighbor search library and clustering of 
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [✨ HnswlibSearcher](#-hnswlibsearcher)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [Loading data](#loading-data)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [using docker images](#using-docker-images)
+      - [using source code](#using-source-code)
+  - [🎉️ Example](#️-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 
 ## 🌱 Prerequisites

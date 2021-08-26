@@ -1,4 +1,4 @@
-# ✨ TextPaddleEncoder
+# ✨ TextPaddleEncoder 
 
 **TextPaddleEncoder** is a class that wraps the text embedding functionality from the **PaddlePaddle** and **PaddleHub**.
 
@@ -8,10 +8,16 @@
 
 **Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+- [✨ TextPaddleEncoder](#-textpaddleencoder)
+  - [🌱 Prerequisites](#-prerequisites)
+  - [🚀 Usages](#-usages)
+    - [🚚 Via JinaHub](#-via-jinahub)
+      - [Using docker images](#using-docker-images)
+      - [Using source code](#using-source-code)
+  - [🎉️ Example](#️-example)
+    - [Inputs](#inputs)
+    - [Returns](#returns)
+  - [🔍️ Reference](#️-reference)
 
 ## 🌱 Prerequisites
 

@@ -1,4 +1,4 @@
-# ✨ TFIDFTextEncoder
+# ✨ TFIDFTextEncoder 
 
 **TFIDFTextEncoder** is a class that wraps the text embedding functionality of a TFIDF model.
 
