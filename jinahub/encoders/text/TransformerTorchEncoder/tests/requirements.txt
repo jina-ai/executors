@@ -1,3 +1,4 @@
+git+https://github.com/jina-ai/jina.git@2.0.20
 pytest==6.2.4
 pytest-mock==3.6.1
 pytest-lazy-fixture==0.6.3

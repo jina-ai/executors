@@ -64,8 +64,6 @@ jobs:
         run: |
           if [[ -f "tests/pre_test.sh" ]]; then
             bash tests/pre_test.sh; fi
-      - name: Install jina
-        run: pip install git+https://github.com/jina-ai/jina/
       - name: Install image normalizer
         run: pip install git+https://github.com/jina-ai/executor-normalizer
       - name: Python requirements

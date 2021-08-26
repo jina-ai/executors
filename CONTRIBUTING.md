@@ -37,7 +37,7 @@ The module's python code should be structured according to [Structure of the rep
 
 ### 🧰 Requirements and Dockerfile
 
-For all the python dependencies of your executor, use a `requirements.txt` file at the base of your repository. Do not put `jina` there - when the executor is used in a docker container or through Jina hub, `jina` will already be installed. Although you will need `jina` installed in your local development environment, of course.
+For all the python dependencies of your executor, use a `requirements.txt` file at the base of your repository. Do not put `jina` there - when the executor is used in a docker container or through Jina hub, `jina` will already be installed. Although you will need `jina` installed in your local development environment, of course - see [test requirements](#test-time-dependencies) for that.
 
 Usually, this is all you need. In this case you do not need to create a Dockerfile - when uploading to the hub, one will be created automatically.
 
@@ -101,7 +101,11 @@ To make sure your executor is working as it should, we need tests. We aim for 10
 
 To make sure that all the dependencies needed by the executor and any test time dependencies are properly installed, you need to create these files:
 
-- `tests/requirements.txt` (required): Put any python requirements needed for testing, but not covered in `requirements.txt`, in this file. As with normal requirements, do not put the `jina` package here. At minimum, this file should include `pytest`
+- `tests/requirements.txt` (required): Put any python requirements needed for testing, but not covered in `requirements.txt`, in this file - you will need `pytest`, for example. Put a specific version of jina here, but make sure it is installed from git, like so
+    ```
+    git+https://github.com/jina-ai/jina.git@2.0.20
+    ```
+    Try to put the latest version of jina there.
 - `tests/pre_test.sh` (optional): If you need any system dependencies installed before performing the tests, put it in this script. This will be run before any dependencies are installed.
 
 If your executors requires downloading large files (see [below](#-downloading-large-artifacts)), do this with a pytest fixture. Here's an example
