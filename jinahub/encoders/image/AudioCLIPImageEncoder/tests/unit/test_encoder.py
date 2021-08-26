@@ -121,22 +121,22 @@ def test_batch_no_preprocessing(basic_encoder_no_pre):
     np.testing.assert_allclose(docs[0].embedding, docs[1].embedding)
 
 
-# @pytest.mark.parametrize(
-#     "path, expected_counts",
-#     [['c', (('r', 0), ('c', 3), ('cc', 0))], ['cc', (('r', 0), ('c', 0), ('cc', 2))]],
-# )
-# def test_traversal_path(
-#     path: str,
-#     expected_counts: Tuple[str, int],
-#     nested_docs: DocumentArray,
-#     basic_encoder: AudioCLIPImageEncoder,
-# ):
-#     basic_encoder.encode(nested_docs, parameters={'traversal_paths': [path]})
-#     for path_check, count in expected_counts:
-#         assert (
-#             len(nested_docs.traverse_flat([path_check]).get_attributes('embedding'))
-#             == count
-#         )
+@pytest.mark.parametrize(
+    "path, expected_counts",
+    [['c', (('r', 0), ('c', 3), ('cc', 0))], ['cc', (('r', 0), ('c', 0), ('cc', 2))]],
+)
+def test_traversal_path(
+    path: str,
+    expected_counts: Tuple[str, int],
+    nested_docs: DocumentArray,
+    basic_encoder: AudioCLIPImageEncoder,
+):
+    basic_encoder.encode(nested_docs, parameters={'traversal_paths': [path]})
+    for path_check, count in expected_counts:
+        assert (
+            len(nested_docs.traverse_flat([path_check]).get_attributes('embedding'))
+            == count
+        )
 
 
 @pytest.mark.parametrize("batch_size", [1, 2, 4, 8])
