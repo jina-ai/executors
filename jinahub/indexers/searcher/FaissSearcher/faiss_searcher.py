@@ -18,9 +18,6 @@ class FaissSearcher(Executor):
     For more information about the Faiss supported parameters and installation problems, please consult:
         - https://github.com/facebookresearch/faiss
 
-    .. note::
-        Faiss package dependency is only required at the query time.
-
     :param index_key: index type supported by ``faiss.index_factory``
     :param trained_index_file: the index file dumped from a trained index, e.g., ``faiss.index``. If none is provided, `indexed` data will be used
         to train the Indexer (In that case, one must be careful when sharding is enabled, because every shard will be trained with its own part of data).
@@ -86,28 +83,34 @@ class FaissSearcher(Executor):
         self.default_top_k = default_top_k
         self.default_traversal_paths = default_traversal_paths
         self.is_distance = is_distance
+
+        self._doc_ids = []
         self._doc_id_to_offset = {}
+        self._prefetch_data = []
 
         self.logger = get_logger(self)
 
         dump_path = dump_path or kwargs.get('runtime_args').get('dump_path')
         if dump_path is not None:
-            self.logger.info('Start building "FaissIndexer" from dump data')
+            self.logger.info(
+                f'Start building "FaissIndexer" from dump data {dump_path}'
+            )
             ids_iter, vecs_iter = import_vectors(
                 dump_path, str(self.runtime_args.pea_id)
             )
-            self._ids = np.array(list(ids_iter))
-            self._doc_id_to_offset = {v: i for i, v in enumerate(self._ids)}
 
-            self._prefetch_data = []
+            self._doc_ids = np.array(list(ids_iter))
+            self._doc_id_to_offset = {v: i for i, v in enumerate(self._doc_ids)}
+
             if self.prefetch_size and self.prefetch_size > 0:
                 for _ in range(prefetch_size):
                     try:
                         self._prefetch_data.append(next(vecs_iter))
+
                     except StopIteration:
                         break
             else:
-                self._prefetch_data = list(vecs_iter)
+                self._prefetch_data = list(zip(ids_iter, vecs_iter))
 
             self.num_dim = self._prefetch_data[0].shape[0]
             self.dtype = self._prefetch_data[0].dtype
@@ -116,10 +119,6 @@ class FaissSearcher(Executor):
                 raise ValueError(
                     f'The trained index file {self.trained_index_file} does not exist'
                 )
-
-            self._init_faiss_index(
-                self.num_dim, trained_index_file=self.trained_index_file
-            )
 
             self._build_index(vecs_iter)
         else:
@@ -179,7 +178,6 @@ class FaissSearcher(Executor):
             assert index.d == self.num_dim
             assert index.is_trained
         else:
-            print(f'num_dim: {num_dim}, key: {self.index_key}, metric: {self.metric}')
             index = faiss.index_factory(num_dim, self.index_key, metric_type)
 
         self._faiss_index = self.to_device(index)
@@ -191,6 +189,8 @@ class FaissSearcher(Executor):
         :param vecs_iter: iterator of numpy array containing the vectors to index
         """
 
+        self._init_faiss_index(self.num_dim, trained_index_file=self.trained_index_file)
+
         if self.requires_training and (not self._faiss_index.is_trained):
             self.logger.info(f'Taking indexed data as training points')
             if self.max_num_training_points is None:
@@ -199,7 +199,7 @@ class FaissSearcher(Executor):
                 while len(self._prefetch_data) < self.max_num_training_points:
                     try:
                         self._prefetch_data.append(next(vecs_iter))
-                    except:
+                    except StopIteration:
                         break
 
             train_data = np.stack(self._prefetch_data)
@@ -291,13 +291,15 @@ class FaissSearcher(Executor):
 
         dists, ids = self._faiss_index.search(vecs, top_k)
 
+        print(f'====> ids: {ids}')
+
         if self.metric == 'inner_product':
             dists = 1 - dists
 
         for doc_idx, matches in enumerate(zip(ids, dists)):
             for m_info in zip(*matches):
                 idx, dist = m_info
-                match = Document(id=self._ids[idx])
+                match = Document(id=self._doc_ids[idx])
                 if self.is_distance:
                     match.scores[self.metric] = dist
                 else:

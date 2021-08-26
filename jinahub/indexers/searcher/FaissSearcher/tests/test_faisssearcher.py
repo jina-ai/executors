@@ -368,3 +368,39 @@ def test_faiss_indexer_train(metas, tmpdir, max_num_points):
         }
     )
     assert indexer._faiss_index.is_trained
+
+
+def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
+    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
+    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
+    np.save(train_filepath, train_data)
+
+    trained_index_file = os.path.join(tmpdir, 'faiss.index')
+    indexer = FaissSearcher(
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+        prefetch_size=256,
+    )
+    indexer.train(
+        parameters={
+            'train_filepath': train_filepath,
+        }
+    )
+
+    trained_indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    trained_indexer.search(query_docs, parameters={'top_k': 4})
+    assert len(query_docs[0].matches) == 4
+    for d in query_docs:
+        assert (
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
+        )
