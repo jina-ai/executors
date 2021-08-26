@@ -33,7 +33,7 @@ def test_docker_runtime():
         subprocess.run(
             [
                 'jina',
-                'pea',
+                'executor',
                 '--uses=docker://audiocliptextencoder',
                 '--volumes=.cache:/workspace/.cache',
             ],

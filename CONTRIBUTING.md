@@ -136,7 +136,7 @@ def test_integration(data_generator: Callable, request_size: int):
             assert doc.embedding.shape == (1024,)
 ```
 
-Also, test that the executor can be run from a docker container, when running it with `jina pea --uses=docker://...`. This test will look like this
+Also, test that the executor can be run from a docker container, when running it with `jina executor --uses=docker://...`. This test will look like this
 
 ```python
 import subprocess
@@ -147,7 +147,7 @@ import pytest
 def test_docker_runtime():
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
-            ['jina', 'pea', '--uses=docker://myexecutor'], 
+            ['jina', 'executor', '--uses=docker://myexecutor'], 
             timeout=30,
             check=True
         )
