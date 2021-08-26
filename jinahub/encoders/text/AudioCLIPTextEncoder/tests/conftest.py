@@ -9,13 +9,13 @@ import pytest
 from jina import Document, DocumentArray
 
 
-@pytest.fixture(scope="session", autouse=True)
-def download_cache():
-    subprocess.run(
-        'scripts/download_full.sh', cwd=Path(__file__).parents[1], check=True
-    )
-    yield
-    shutil.rmtree('.cache')
+# @pytest.fixture(scope="session", autouse=True)
+# def download_cache():
+#     subprocess.run(
+#         'scripts/download_full.sh', cwd=Path(__file__).parents[1], check=True
+#     )
+#     yield
+#     shutil.rmtree('.cache')
 
 
 @pytest.fixture(scope='session')
@@ -56,7 +56,7 @@ def docs_with_chunk_chunk_text() -> DocumentArray:
     chunks_2 = [[Document(text='hello world') for _ in range(10)] for _ in range(10)]
 
     root.chunks.extend(chunks)
-    for i, chunk in enumerate(chunks):
+    for i, chunk in enumerate(root.chunks):
         chunk.chunks.extend(chunks_2[i])
 
     return DocumentArray([root])
