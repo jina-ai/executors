@@ -2,4 +2,3 @@ torch==1.9.0
 transformers==4.9.1
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
 pytest==6.2.4
-jina[hub]==2.0.12
