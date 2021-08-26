@@ -1,4 +1,4 @@
-from typing import Iterable, Literal, Optional
+from typing import Iterable, Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -45,7 +45,7 @@ class DPRTextEncoder(Executor):
     def __init__(
         self,
         pretrained_model_name_or_path: str = 'facebook/dpr-question_encoder-single-nq-base',
-        encoder_type: Literal['context', 'question'] = 'question',
+        encoder_type: str = 'question',
         base_tokenizer_model: Optional[str] = None,
         title_tag_key: Optional[str] = None,
         max_length: Optional[int] = None,
