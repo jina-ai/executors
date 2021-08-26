@@ -21,7 +21,7 @@ def download_cache():
 @pytest.fixture(scope='session')
 def build_docker_image() -> str:
     img_name = Path(__file__).parents[1].stem.lower()
-    subprocess.run(['docker' 'build', 't', img_name, '.'], check=True)
+    subprocess.run(['docker', 'build', '-t', img_name, '.'], check=True)
 
     return img_name
 
