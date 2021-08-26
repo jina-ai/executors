@@ -392,9 +392,11 @@ def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
         metas=metas,
         runtime_args={'pea_id': 0},
     )
-    trained_indexer.search(query_docs, parameters={'top_k': 4})
-    assert len(query_docs[0].matches) == 4
-    for d in query_docs:
+    query = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query)
+    trained_indexer.search(docs, parameters={'top_k': 4})
+    assert len(docs[0].matches) == 4
+    for d in docs:
         assert (
             d.matches[0].scores[indexer.metric].value
             >= d.matches[1].scores[indexer.metric].value
@@ -409,9 +411,11 @@ def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
         metas=metas,
         runtime_args={'pea_id': 0},
     )
-    indexer.search(query_docs, parameters={'top_k': 4})
-    assert len(query_docs[0].matches) == 4
-    for d in query_docs:
+    query = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query)
+    indexer.search(docs, parameters={'top_k': 4})
+    assert len(docs[0].matches) == 4
+    for d in docs:
         assert (
             d.matches[0].scores[indexer.metric].value
             >= d.matches[1].scores[indexer.metric].value
