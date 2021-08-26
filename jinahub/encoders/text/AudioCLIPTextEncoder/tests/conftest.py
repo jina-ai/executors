@@ -18,6 +18,14 @@ def download_cache():
     shutil.rmtree('.cache')
 
 
+@pytest.fixture(scope='session')
+def build_docker_image() -> str:
+    img_name = Path(__file__).parents[1].stem.lower()
+    subprocess.run(['docker' 'build', 't', img_name, '.'], check=True)
+
+    return img_name
+
+
 @pytest.fixture()
 def data_generator():
     def _generator():

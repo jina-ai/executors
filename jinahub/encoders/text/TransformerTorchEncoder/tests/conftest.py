@@ -1,10 +1,20 @@
 __copyright__ = 'Copyright (c) 2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
+import subprocess
 import os
+from pathlib import Path
 
 import pytest
 from jina import Document, DocumentArray
+
+
+@pytest.fixture(scope='session')
+def build_docker_image() -> str:
+    img_name = Path(__file__).parents[1].stem.lower()
+    subprocess.run(['docker' 'build', 't', img_name, '.'], check=True)
+
+    return img_name
 
 
 @pytest.fixture()

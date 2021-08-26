@@ -28,13 +28,13 @@ def test_integration(data_generator: Callable, request_size: int):
 
 
 @pytest.mark.docker
-def test_docker_runtime():
+def test_docker_runtime(build_docker_image: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
             [
                 'jina',
                 'executor',
-                '--uses=docker://audiocliptextencoder',
+                f'--uses=docker://{build_docker_image}',
                 '--volumes=.cache:/workspace/.cache',
             ],
             timeout=30,

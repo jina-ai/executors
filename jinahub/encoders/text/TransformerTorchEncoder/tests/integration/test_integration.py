@@ -78,10 +78,10 @@ def test_traversal_path(
 
 
 @pytest.mark.docker
-def test_docker_runtime():
+def test_docker_runtime(build_docker_image: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
-            ['jina', 'executor', '--uses=docker://transformertorchencoder'],
+            ['jina', 'executor', f'--uses=docker://{build_docker_image}'],
             timeout=30,
             check=True,
         )
