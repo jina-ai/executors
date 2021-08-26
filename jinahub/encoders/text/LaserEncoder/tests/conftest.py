@@ -13,3 +13,4 @@ def download_models():
         check=True,
     )
     yield
+    shutil.rmtree('.cache')
