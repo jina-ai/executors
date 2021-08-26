@@ -1,19 +1,13 @@
-# ImagePaddlehubEncoder 
+# ImagePaddlehubEncoder
 
 **ImagePaddlehubEncoder** encodes `Document` content from a ndarray, potentially B x (Channel x Height x Width) into a ndarray of `B x D`. Internally, **ImagePaddlehubEncoder** wraps the models from [paddlehub](https://github.com/PaddlePaddle/PaddleHub)
 
 **Table of Contents**
 
-- [ImagePaddlehubEncoder](#imagepaddlehubencoder)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-      - [using docker images](#using-docker-images)
-      - [using source code](#using-source-code)
-  - [🎉 Example:](#-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
-  - [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 
 ## 🌱 Prerequisites

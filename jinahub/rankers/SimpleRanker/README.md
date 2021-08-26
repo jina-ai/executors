@@ -1,4 +1,4 @@
-# ✨ SimpleRanker 
+# ✨ SimpleRanker
 
 **SimpleRanker** is a class aggregates the score of the matched doc from the matched chunks.
 
@@ -6,14 +6,10 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [✨ SimpleRanker](#-simpleranker)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-      - [using docker images](#using-docker-images)
-      - [using source code](#using-source-code)
-  - [🎉️ Example](#️-example)
-  - [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#%EF%B8%8F-example)
+- [🔍️ Reference](#%EF%B8%8F-reference)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

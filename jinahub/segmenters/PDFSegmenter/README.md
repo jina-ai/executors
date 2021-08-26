@@ -1,17 +1,11 @@
-# ✨ PDFSegmenter 
+# ✨ PDFSegmenter
 
 PDFPlumberSegmenter is a segmenter used for extracting images and text as chunks from PDF data. It stores each images and text of each page as chunks separately.
 
-- [✨ PDFSegmenter](#-pdfsegmenter)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-      - [using docker images](#using-docker-images)
-      - [using source code](#using-source-code)
-  - [🎉️ Example](#️-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
-  - [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 ## 🌱 Prerequisites
 

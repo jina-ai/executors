@@ -1,4 +1,4 @@
-# ✨ MongoStorage 
+# ✨ MongoStorage
 
 **MongoStorage** is a Jina indexer, using [mongodb](https://www.mongodb.com/) as a backend. 
 

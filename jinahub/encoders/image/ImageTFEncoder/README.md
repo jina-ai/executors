@@ -1,19 +1,13 @@
-# ✨ ImageTFEncoder 
+# ✨ ImageTFEncoder
 
 `ImageTFEncoder` encodes ``Document`` content from a ndarray, potentially BatchSize x (Height x Width x Channel) into a ndarray of `BatchSize * d`. Internally, :class:`ImageTFEncoder` wraps the models from `tensorflow.keras.applications`. https://keras.io/applications/
 
 **Table of Contents**
 
-- [✨ ImageTFEncoder](#-imagetfencoder)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-      - [using docker images](#using-docker-images)
-      - [using source code](#using-source-code)
-  - [🎉️ Example](#️-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
-  - [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 
 ## 🌱 Prerequisites

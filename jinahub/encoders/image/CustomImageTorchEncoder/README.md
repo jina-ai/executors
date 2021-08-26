@@ -1,4 +1,4 @@
-# ✨ CustomImageTorchEncoder 
+# ✨ CustomImageTorchEncoder
 
 **CustomImageTorchEncoder** is a class that uses any custom pretrained model provided to extract embeddings for `Documents` containing images as `blob`.
 It relies on having a [`state_dict`](https://pytorch.org/tutorials/beginner/saving_loading_models.html#what-is-a-state-dict) stored
@@ -15,16 +15,11 @@ The following parameters can be passed on initialization:
 
 **Table of Contents**
 
-- [✨ CustomImageTorchEncoder](#-customimagetorchencoder)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-      - [using docker images](#using-docker-images)
-      - [using source code](#using-source-code)
-  - [🎉️ Example](#️-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
-  - [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
+- 
 
 ## 🌱 Prerequisites
 

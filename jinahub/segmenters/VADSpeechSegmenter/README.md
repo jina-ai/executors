@@ -1,4 +1,4 @@
-# VADSpeechSegmenter 
+# VADSpeechSegmenter
 
 **VADSpeechSegmenter** segments speech audio using Silero VAD (voice activity detector).
 
@@ -11,15 +11,10 @@ This VAD is similar to WebRTC but instead of differentiating voice from silence,
 
 **Table of Contents**
 
-- [VADSpeechSegmenter](#vadspeechsegmenter)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-      - [via Docker image (recommended)](#via-docker-image-recommended)
-      - [via source code](#via-source-code)
-  - [🎉️ Example](#️-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
-  - [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 
 ## 🌱 Prerequisites

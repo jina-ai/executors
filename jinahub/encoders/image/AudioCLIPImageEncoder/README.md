@@ -1,4 +1,4 @@
-# ✨ AudioCLIPImageEncoder 
+# ✨ AudioCLIPImageEncoder
 
 **AudioCLIPImageEncoder** is an encoder that encodes images using the [AudioCLIP](https://arxiv.org/abs/2106.13043) model.
 
@@ -15,16 +15,10 @@ The following arguments can be passed on initialization:
 
 **Table of Contents**
 
-- [✨ AudioCLIPImageEncoder](#-audioclipimageencoder)
-	- [🌱 Prerequisites](#-prerequisites)
-	- [🚀 Usages](#-usages)
-		- [🚚 Via JinaHub](#-via-jinahub)
-			- [Using docker image](#using-docker-image)
-			- [Using source code](#using-source-code)
-	- [🎉️ Example](#️-example)
-			- [Inputs](#inputs)
-			- [Returns](#returns)
-	- [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 ## 🌱 Prerequisites
 

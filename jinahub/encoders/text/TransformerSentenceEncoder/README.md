@@ -1,4 +1,4 @@
-# ✨ Executor Sentence Encoder  
+# ✨ Executor Sentence Encoder 
 
 **TransformerSentenceEncoder** wraps the [Sentence Transformer](https://www.sbert.net/docs)
 library into an `Jina` executor. 
@@ -6,16 +6,10 @@ library into an `Jina` executor.
 
 **Table of Contents**
 
-- [✨ Executor Sentence Encoder](#-executor-sentence-encoder)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-      - [using docker images](#using-docker-images)
-      - [using source code](#using-source-code)
-  - [🎉️ Example](#️-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
-  - [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 
 ## 🌱 Prerequisites

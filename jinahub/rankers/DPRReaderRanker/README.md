@@ -1,4 +1,4 @@
-# ✨ DPRReaderRanker 
+# ✨ DPRReaderRanker
 
  **DPRReaderRanker** Performs a re-ranking of the matches for each document (question), as well as the answer spans extraction for each match. It uses the DPR Reader model to re-rank documents based on cross-attention between the question and the potential answer passages.
 
@@ -28,14 +28,10 @@ The following parameters can be passed on initialization:
 
 **Table of Contents**
 
-- [✨ DPRReaderRanker](#-dprreaderranker)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-  - [🎉️ Example](#️-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
-  - [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#%EF%B8%8F-example)
+- [🔍️ Reference](#%EF%B8%8F-reference)
 
 ## 🌱 Prerequisites
 

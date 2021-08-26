@@ -1,4 +1,4 @@
-# ✨ RedisStorage 
+# ✨ RedisStorage
 
 **RedisStorage** is Indexer wrapper around the redis server. Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache, and message broker. You can read more about it here: https://redis.io
 

@@ -1,4 +1,4 @@
-# ✨ VideoTorchEncoder 
+# ✨ VideoTorchEncoder
 
 **VideoTorchEncoder** is a class that encodes video clips into dense embeddings using pretrained models 
 from [`torchvision.models`](https://pytorch.org/docs/stable/torchvision/models.html) for video data.
@@ -6,16 +6,10 @@ from [`torchvision.models`](https://pytorch.org/docs/stable/torchvision/models.h
 
 **Table of Contents**
 
-- [✨ VideoTorchEncoder](#-videotorchencoder)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-      - [using docker images](#using-docker-images)
-      - [using source code](#using-source-code)
-  - [🎉️ Example](#️-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
-  - [🔍️ Reference](#️-reference)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 
 ## 🌱 Prerequisites

@@ -1,19 +1,14 @@
-# ✨ MatchMerger 
+# ✨ MatchMerger
 
 **MatchMerger** Merges the results of shards by appending all matches. Assume you have 20 shards and use `top-k=10`, you will get 200 results in the merger.
 The `MatchMerger` is used in the `uses_after` attribute when adding an `Executor` to the `Flow`.
 
 **Table of Contents**
 
-- [✨ MatchMerger](#-matchmerger)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-      - [using docker images](#using-docker-images)
-      - [using source code](#using-source-code)
-  - [🎉️ Example](#️-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
+- [🌱 Prerequisites](#-prerequisites)
+- [🚀 Usages](#-usages)
+- [🎉️ Example](#-example)
+- [🔍️ Reference](#-reference)
 
 
 ## 🌱 Prerequisites
