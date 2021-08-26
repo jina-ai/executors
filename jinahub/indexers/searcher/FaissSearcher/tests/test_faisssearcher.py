@@ -63,11 +63,6 @@ def test_config():
 
 
 def test_faiss_indexer_empty(metas):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     indexer = FaissSearcher(
         index_key='IVF10,PQ2',
         metas=metas,
@@ -398,6 +393,23 @@ def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
         runtime_args={'pea_id': 0},
     )
     trained_indexer.search(query_docs, parameters={'top_k': 4})
+    assert len(query_docs[0].matches) == 4
+    for d in query_docs:
+        assert (
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
+        )
+
+
+def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='IVF10,PQ2',
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    indexer.search(query_docs, parameters={'top_k': 4})
     assert len(query_docs[0].matches) == 4
     for d in query_docs:
         assert (

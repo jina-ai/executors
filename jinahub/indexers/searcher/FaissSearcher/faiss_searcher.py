@@ -291,8 +291,6 @@ class FaissSearcher(Executor):
 
         dists, ids = self._faiss_index.search(vecs, top_k)
 
-        print(f'====> ids: {ids}')
-
         if self.metric == 'inner_product':
             dists = 1 - dists
 
