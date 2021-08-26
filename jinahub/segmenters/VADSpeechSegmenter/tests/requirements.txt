@@ -1,1 +1,1 @@
-pytest
+jina[hub]~=2.0.18
