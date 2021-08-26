@@ -62,8 +62,8 @@ jobs:
           python-version: "3.7"
       - name: Pre-test script
         run: |
-          if [[ -f "scripts/pre_test.sh" ]]; then
-            bash scripts/pre_test.sh; fi
+          if [[ -f "tests/pre_test.sh" ]]; then
+            bash tests/pre_test.sh; fi
       - name: Install jina
         run: pip install git+https://github.com/jina-ai/jina/
       - name: Install image normalizer
@@ -97,6 +97,11 @@ jobs:
         uses: actions/checkout@v2
       - name: debug
         run: echo ${{ matrix.test-path }}
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      - name: Install jina
+        run: pip install git+https://github.com/jina-ai/jina/
       - name: run docker tests
         run: |
           if [[ -f "${{ matrix.executor-path }}/Dockerfile" ]]; then
