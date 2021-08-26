@@ -62,8 +62,8 @@ jobs:
           python-version: "3.7"
       - name: Pre-test script
         run: |
-          if [[ -f "scripts/pre_test.sh" ]]; then
-            bash scripts/pre_test.sh; fi
+          if [[ -f "tests/pre_test.sh" ]]; then
+            bash tests/pre_test.sh; fi
       - name: Install jina
         run: pip install git+https://github.com/jina-ai/jina/
       - name: Install image normalizer
