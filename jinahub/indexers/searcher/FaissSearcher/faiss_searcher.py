@@ -316,9 +316,9 @@ class FaissSearcher(Executor):
         :param parameters: a dictionary containing the parameters for the training
         """
 
-        train_filepath = parameters.get('train_filepath')
-        if train_filepath is None:
-            raise ValueError(f'No "train_filepath" provided for training {self}')
+        train_data_file = parameters.get('train_data_file')
+        if train_data_file is None:
+            raise ValueError(f'No "train_data_file" provided for training {self}')
 
         max_num_training_points = parameters.get(
             'max_num_training_points', self.max_num_training_points
@@ -329,7 +329,7 @@ class FaissSearcher(Executor):
         if not trained_index_file:
             raise ValueError('No "trained_index_file" provided for training {self}')
 
-        train_data = self._load_training_data(train_filepath)
+        train_data = self._load_training_data(train_data_file)
         if train_data is None:
             raise ValueError(
                 'Loading training data failed. some faiss indexes require previous training.'

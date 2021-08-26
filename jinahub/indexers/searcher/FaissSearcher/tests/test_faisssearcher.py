@@ -344,9 +344,9 @@ def test_faiss_normalization(metas, metric, tmpdir):
 
 @pytest.mark.parametrize('max_num_points', [257, 500, None])
 def test_faiss_indexer_train(metas, tmpdir, max_num_points):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
+    train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    np.save(train_filepath, train_data)
+    np.save(train_data_file, train_data)
 
     trained_index_file = os.path.join(tmpdir, 'faiss.index')
     indexer = FaissSearcher(
@@ -358,7 +358,7 @@ def test_faiss_indexer_train(metas, tmpdir, max_num_points):
     )
     indexer.train(
         parameters={
-            'train_filepath': train_filepath,
+            'train_data_file': train_data_file,
             'max_num_training_points': max_num_points,
         }
     )
@@ -366,9 +366,9 @@ def test_faiss_indexer_train(metas, tmpdir, max_num_points):
 
 
 def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
+    train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    np.save(train_filepath, train_data)
+    np.save(train_data_file, train_data)
 
     trained_index_file = os.path.join(tmpdir, 'faiss.index')
     indexer = FaissSearcher(
@@ -380,7 +380,7 @@ def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
     )
     indexer.train(
         parameters={
-            'train_filepath': train_filepath,
+            'train_data_file': train_data_file,
         }
     )
 
