@@ -22,27 +22,27 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
-  linting:
-    needs: [prep-testbed]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: "3.7"
-      - name: Install requirements
-        run: pip install black flake8 isort
-      - name: Flake8 linting
-        run: flake8 ${{ matrix.executor-path }}
-      - name: Check imports using isort
-        run: isort --check-only ${{ matrix.executor-path }}
-      - name: Black check formatting
-        run: black --check ${{ matrix.executor-path }}
+  # linting:
+  #   needs: [prep-testbed]
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - uses: actions/setup-python@v2
+  #       with:
+  #         python-version: "3.7"
+  #     - name: Install requirements
+  #       run: pip install black flake8 isort
+  #     - name: Flake8 linting
+  #       run: flake8 ${{ matrix.executor-path }}
+  #     - name: Check imports using isort
+  #       run: isort --check-only ${{ matrix.executor-path }}
+  #     - name: Black check formatting
+  #       run: black --check ${{ matrix.executor-path }}
 
   unit-tests:
     needs: [prep-testbed]
