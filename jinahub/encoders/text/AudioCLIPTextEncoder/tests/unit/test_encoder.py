@@ -62,6 +62,7 @@ def test_traversal_path(
                 for emb in embeddings:
                     if emb is None:
                         return False
+                print(len(embeddings))
                 return len(embeddings) == count
 
         return validate
