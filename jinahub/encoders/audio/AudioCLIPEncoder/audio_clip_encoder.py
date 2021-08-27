@@ -5,8 +5,8 @@ from typing import Optional, Iterable, Any
 
 from jina import Executor, DocumentArray, requests
 from jina.excepts import BadDocType
-import numpy as np
 import librosa as lr
+import numpy as np
 import torch
 
 from .audio_clip.model import AudioCLIP
@@ -56,7 +56,7 @@ class AudioCLIPEncoder(Executor):
         # traverse thought all documents which have to be processed
         flat_docs = docs.traverse_flat(traversal_paths)
 
-        # filter out documents without images
+        # filter out documents without audio wav
         filtered_docs = DocumentArray(
             [doc for doc in flat_docs if doc.blob is not None]
         )
