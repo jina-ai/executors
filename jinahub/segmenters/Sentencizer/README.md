@@ -1,28 +1,16 @@
-# ✨ Sentencizer
+# Sentencizer
 
 **Sentencizer** is a class that splits texts into sentences.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
 
-## 🚀 Usages
+## Usages
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -60,7 +48,7 @@ pods:
     uses: 'jinahub://Sentencizer'
 ```
 
-## 🎉️ Example 
+## Example 
 
 ```python
 from jina import Flow, Document
@@ -80,6 +68,6 @@ with f:
 
 `Document` with two `chunks` Documents. The first chunk contains `text='Hello.'`, the second chunk contains `text='World.'`
 
-## 🔍️ Reference
+## Reference
 - Used in the multires-lyrics-search example in: https://github.com/jina-ai/examples
 

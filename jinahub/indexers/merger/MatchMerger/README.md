@@ -1,28 +1,15 @@
-# ✨ MatchMerger
+# MatchMerger
 
 **MatchMerger** Merges the results of shards by appending all matches. Assume you have 20 shards and use `top-k=10`, you will get 200 results in the merger.
 The `MatchMerger` is used in the `uses_after` attribute when adding an `Executor` to the `Flow`.
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-- This Executor works on Python 3.7 and 3.8. 
-- Make sure to install the [requirements](requirements.txt)
-
-## 🚀 Usages
+## Usages
 
 Check [tests](tests) for an example on how to use it.
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -61,7 +48,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
+## Example 
 
 ```python
 from jina import Flow, Document

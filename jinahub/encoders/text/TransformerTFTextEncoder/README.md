@@ -1,25 +1,12 @@
 # TransformerTFTextEncoder
 TransformerTFEncoder wraps the tensorflow-version of transformers from huggingface, encodes data from an array of string in size `B` into an ndarray in size `B x D`
 
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+## Usages
 
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -61,7 +48,7 @@ pods:
     uses: 'jinahub://TransformerTFTextEncoder'
 ```
 
-## 🎉 Example:
+## Example
 
 Here is an example usage of the **TransformerTFTextEncoder**.
 
@@ -89,4 +76,4 @@ Here is an example usage of the **TransformerTFTextEncoder**.
 
 `Document` with `embedding` fields filled with an `ndarray`  with `dtype==np.float32`.
 
-## 🔍️ Reference
+

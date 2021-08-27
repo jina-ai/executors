@@ -1,4 +1,4 @@
-# ✨ DPRReaderRanker
+# DPRReaderRanker
 
  **DPRReaderRanker** Performs a re-ranking of the matches for each document (question), as well as the answer spans extraction for each match. It uses the DPR Reader model to re-rank documents based on cross-attention between the question and the potential answer passages.
 
@@ -26,20 +26,13 @@ The following parameters can be passed on initialization:
 - `device`: The device (cpu or gpu) that the model should be on.
 
 
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
 
-## 🌱 Prerequisites
 
-No prerequisites are required to run this executor.
 
-## 🚀 Usages
+## Usages
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 Use the prebuilt images from JinaHub in your python codes, 
 
@@ -60,7 +53,7 @@ pods:
     uses: 'jinahub+docker://DPRReaderRanker'
 ```
 
-## 🎉️ Example 
+## Example 
 
 
 ```python
@@ -95,7 +88,7 @@ with f:
 
 
 
-## 🔍️ Reference
+## Reference
 
 - [DPR paper](https://arxiv.org/abs/2004.04906)
 - [Huggingface transformers DPR model documentation](https://huggingface.co/transformers/model_doc/dpr.html)

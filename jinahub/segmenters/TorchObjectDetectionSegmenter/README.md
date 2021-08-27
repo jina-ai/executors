@@ -1,24 +1,10 @@
-# ✨ TorchObjectDetectionSegmenter
+# TorchObjectDetectionSegmenter
 
 **TorchObjectDetectionSegmenter** is a class that supports object detection and bounding box extraction using PyTorch with Faster R-CNN and Mask R-CNN models.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-To install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
 
 To verify the installation works:
 ```
@@ -26,9 +12,9 @@ pip install -r tests/requirements.txt
 pytest -sv tests
 ```
 
-## 🚀 Usages
+## Usages
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -66,7 +52,7 @@ pods:
     uses: 'jinahub://TorchObjectDetectionSegmenter'
 ```
 
-## 🎉️ Example 
+## Example 
 
 
 ```python
@@ -88,7 +74,7 @@ with f:
 `Document` with `chunks` that contain the original image in `blob`, bounding box coordinates of objects detected in `location`, and image label key value pair in `tags`.
 
 
-## 🔍️ Reference
+## Reference
 - [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](https://arxiv.org/abs/1506.01497)
 - [Mask R-CNN](https://arxiv.org/abs/1703.06870)
 - [TORCHVISION OBJECT DETECTION FINETUNING TUTORIAL](https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html)

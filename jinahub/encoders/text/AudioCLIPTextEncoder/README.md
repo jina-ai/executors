@@ -1,4 +1,4 @@
-# ✨ AudioCLIPTextEncoder
+# AudioCLIPTextEncoder
 
 **AudioCLIPTextEncoder** is an encoder that encodes text using the [AudioCLIP](https://arxiv.org/abs/2106.13043) model.
 
@@ -13,14 +13,8 @@ The following arguments can be passed on initialization:
 - `default_batch_size`: default batch size (used if not specified in request's parameters)
 - `device`: device that the model is on (should be "cpu", "cuda" or "cuda:X", where X is the index of the GPU on the machine)
 
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
-
-## 🌱 Prerequisites
+## Prerequisites
 
 
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
@@ -43,9 +37,9 @@ wget https://raw.githubusercontent.com/jina-ai/executors/main/jinahub/encoders/t
 
 And then you will also need to pass the argument `model_path='.cache/AudioCLIP-Partial-Training.pt'` when you initialize the executor.
 
-## 🚀 Usages
+## Usages
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### Using docker images
 
@@ -90,7 +84,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
+## Example 
 
 Here's a basic example demonstrating the use of this encoder
 
@@ -117,7 +111,7 @@ with f:
 `Document` with `embedding` fields filled with an `ndarray` of the shape 1024 with `dtype=nfloat32`.
 
 
-## 🔍️ Reference
+## Reference
 
 - [AudioCLIP paper](https://arxiv.org/abs/2106.13043)
 - [AudioCLIP GitHub Repository](https://github.com/AndreyGuzhov/AudioCLIP)

@@ -1,4 +1,4 @@
-# ✨ Image Normalizer
+# Image Normalizer
 
 **Image Normalizer** is a class that resizes, crops and normalizes images.
 Since normalization is highly dependent on the model, 
@@ -15,32 +15,11 @@ The following parameters can be used:
 - `target_channel_axis` (int): The desired channel axis in the images. If this is not equal to the channel_axis, the axis is moved.
 - `target_dtype` (np.dtype, default `np.float32`): The desired type of the image array 
 
-**Table of Contents**
-
-- [✨ Image Normalizer](#-image-normalizer)
-  - [🌱 Prerequisites](#-prerequisites)
-  - [🚀 Usages](#-usages)
-    - [🚚 Via JinaHub](#-via-jinahub)
-      - [using docker images](#using-docker-images)
-      - [using source code](#using-source-code)
-  - [🎉️ Example](#️-example)
-    - [Inputs](#inputs)
-    - [Returns](#returns)
-  - [🔍️ Reference](#️-reference)
-
-## 🌱 Prerequisites
 
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+## Usages
 
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -82,7 +61,7 @@ pods:
 
 
 
-## 🎉️ Example 
+## Example 
 
 
 ```python
@@ -103,5 +82,3 @@ with f:
 
 `Document` with overridden image `blob` that is normalized, scaled, cropped and resized as instructed.
 
-
-## 🔍️ Reference

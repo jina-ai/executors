@@ -9,25 +9,10 @@ Instead of segmenting according to time at fixed-length intervals, this segmente
 This VAD is similar to WebRTC but instead of differentiating voice from silence, this segmenter differenciates voice from noise/music/silence.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-In case you want to install the dependencies locally run
-```
-sudo apt-get update && sudo apt-get install libsndfile1 ffmpeg
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
+## Usages
 
 #### via Docker image (recommended)
 
@@ -49,7 +34,7 @@ f = Flow().add(uses='jinahub://VADSpeechSegmenter')
 - To override class metas, use `.add(..., uses_metas: {'key': 'value})`
 
 
-## 🎉️ Example
+## Example
 
 ```python
 import os
@@ -87,5 +72,5 @@ The segmented audio along with the original audio files can be found in the `{wo
 `Document` with `chunks` that contain the segmented audio with `location` that denotes the start and end index of the chunk in the original data.
 
 
-## 🔍️ Reference
+## Reference
 - [silero-vad](https://github.com/snakers4/silero-vad)

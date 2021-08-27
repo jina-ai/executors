@@ -1,4 +1,4 @@
-# ✨ MongoStorage
+# MongoStorage
 
 **MongoStorage** is a Jina indexer, using [mongodb](https://www.mongodb.com/) as a backend. 
 
@@ -13,20 +13,10 @@ The class constructer receive the following parameters:
 5. `database`: the database name.
 6. `collection`: the collection name.
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-- This Executor works on Python 3.7 and 3.8.
-- Make sure to install the [requirements](requirements.txt)
+## Prerequisites
 
 Additionally, you will need a running MongoDB instnace. This can be a local instance, a Docker image, or a virtual machine in the cloud. Make sure you have the credentials and connection parameters.
 
@@ -36,9 +26,9 @@ You can start one in a Docker container, like so:
 docker run --name mongo-storage  -p 127.0.0.1:27017:27017/tcp -d mongo:latest
 ```
 
-## 🚀 Usages
+## Usages
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 
@@ -77,7 +67,7 @@ pods:
     uses: 'jinahub://MongoDBStorage'
 ```
 
-## 🎉️ Example 
+## Example 
 
 ```python
 from jina import Flow, Document

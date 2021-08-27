@@ -1,25 +1,19 @@
 
-# ✨ AudioCLIPEncoder
+# AudioCLIPEncoder
 
 **AudioCLIPEncoder** is a class that wraps the [AudioCLIP](https://github.com/AndreyGuzhov/AudioCLIP) model for generating embeddings for audio data. 
 
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
-
-## 🌱 Prerequisites
+## Prerequisites
 
 
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
 Run the provided bash script `scripts/download_model.sh` to download the pretrained model.
 
-## 🚀 Usages
+## Usages
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -57,7 +51,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
+## Example 
 
 With fake data
 
@@ -107,6 +101,6 @@ print(f'{resp}')
 `Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` with `dtype=nfloat32`.
 
 
-## 🔍️ Reference
+## Reference
 - [AudioCLIP paper](https://arxiv.org/abs/2106.13043)
 - [AudioCLIP code](https://github.com/AndreyGuzhov/AudioCLIP)

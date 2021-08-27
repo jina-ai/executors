@@ -1,27 +1,11 @@
-# ✨ SimpleRanker
+# SimpleRanker
 
 **SimpleRanker** is a class aggregates the score of the matched doc from the matched chunks.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
+## Usages
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.  
-
-There are no requirements for running this executor.
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -63,7 +47,7 @@ pods:
 ```
 	
 
-## 🎉️ Example 
+## Example 
 
 ```python
 from jina import Flow, DocumentArray, Document
@@ -95,5 +79,5 @@ with f:
 ```
 
 
-## 🔍️ Reference
+## Reference
 - See the [multires lyrics search example](https://github.com/jina-ai/examples/tree/master/multires-lyrics-search) for example usage

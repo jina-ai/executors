@@ -1,24 +1,13 @@
-# ✨ PDFSegmenter
+# PDFSegmenter
 
 PDFPlumberSegmenter is a segmenter used for extracting images and text as chunks from PDF data. It stores each images and text of each page as chunks separately.
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
+## Usages
 
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -56,7 +45,7 @@ pods:
     uses: 'jinahub://PDFSegmenter'
 ```
 
-## 🎉️ Example 
+## Example 
 
 
 ```python
@@ -77,4 +66,3 @@ with f:
 
 `Document` with `chunks` containing text and images of the PDF
 
-## 🔍️ Reference

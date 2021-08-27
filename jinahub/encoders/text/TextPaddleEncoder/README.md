@@ -1,4 +1,4 @@
-# ✨ TextPaddleEncoder
+# TextPaddleEncoder
 
 **TextPaddleEncoder** is a class that wraps the text embedding functionality from the **PaddlePaddle** and **PaddleHub**.
 
@@ -6,25 +6,11 @@
 `TextPaddleEncoder` encode text stored in the `text` attribute of the [**Document**](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) and saves the encoding in the embedding attribute.
 
 
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
-## 🌱 Prerequisites
+## Usages
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### Using docker images
 
@@ -70,7 +56,7 @@ pods:
 	
 
 
-## 🎉️ Example
+## Example
 
 ```python
 from jina import Flow, Document
@@ -103,5 +89,5 @@ with f:
 
 
 
-## 🔍️ Reference
+## Reference
 - https://www.paddlepaddle.org.cn/hublist?filter=en_category&value=SemanticModel

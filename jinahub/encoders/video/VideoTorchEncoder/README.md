@@ -1,29 +1,13 @@
-# ✨ VideoTorchEncoder
+# VideoTorchEncoder
 
 **VideoTorchEncoder** is a class that encodes video clips into dense embeddings using pretrained models 
 from [`torchvision.models`](https://pytorch.org/docs/stable/torchvision/models.html) for video data.
 
 
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
+## Usages
 
-
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -64,7 +48,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
+## Example 
 
 ```python
 from jina import Flow, Document
@@ -91,6 +75,6 @@ When setting `use_default_preprocessing=True`, the input `blob` must have the si
 `Document` with `embedding` fields filled with an `ndarray` of the shape `512`.
 
 
-## 🔍️ Reference
+## Reference
 - https://pytorch.org/vision/stable/models.html#video-classification
 

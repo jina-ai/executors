@@ -1,4 +1,4 @@
-# ✨ Big Transfer Image Encoder
+# Big Transfer Image Encoder
 
 **Big Transfer Image Encoder** is a class that uses the Big Transfer models presented by Google [here]((https://github.com/google-research/big_transfer)).
 It uses a pretrained version of a BiT model to encode an image from an array of shape 
@@ -15,34 +15,12 @@ The following parameters can be used:
 - `default_traversal_paths` (List[str], defaults to ['r']): Traversal path through the docs
 - `default_batch_size` (int): Batch size to be used in the encoder model. If not specified, all the documents are
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+## Usages
 
-No prerequisites are required to run this executor. The executor automatically
-downloads the BiT model specified by `model_name`! Alternatively, you could also 
-download the model in advance and use the `model_path` parameter.
-
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -107,7 +85,7 @@ pods:
 ```
 
 
-## 🎉️ Example
+## Example
 
 ```python
 from jina import Flow, Document
@@ -128,6 +106,6 @@ with f:
 `Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` (model-dependent) with `dtype=nfloat32`.
 
 
-## 🔍️ Reference
+## Reference
 - https://github.com/google-research/big_transfer
 - https://tfhub.dev/google/collections/bit/1

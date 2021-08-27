@@ -1,28 +1,15 @@
-# ✨ SpacyTextEncoder
+# SpacyTextEncoder
 
 **SpacyTextEncoder** is a class that encodes text with spaCy models.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
+## Usages
 
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -61,7 +48,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
+## Example 
 
 
 ```python
@@ -83,6 +70,6 @@ with f:
 
 `Document` with `embedding` field filled with spacy vector.
 
-## 🔍️ Reference
+## Reference
 - https://spacy.io/models/
 - https://spacy.io/usage/models

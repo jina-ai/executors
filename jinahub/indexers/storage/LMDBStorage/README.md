@@ -1,23 +1,13 @@
-# ✨ LMDBStorage
+# LMDBStorage
 
 **LMDBStorage** is a Jina indexer, using [lmdb](https://lmdb.readthedocs.io/en/release/) as a backend. 
 
 `lmdb` is a disk-based key-value storage system. It is quite performant. The test `test_lmdb_crud` in `tests/` ran with 100k docs in 1m 3secs
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
+## Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-- This Executor works on Python 3.7 and 3.8. 
-- Make sure to install the [requirements](requirements.txt)
 
 📕 **Note on docker network for macOS users**:  
 If you run both the database and the `LMDBStorage` docker container on the same machine 
@@ -26,9 +16,9 @@ Use `host.docker.internal` to access localhost on the host machine.
 You can pass this parameter to the `LMDBStorage` storage by using `uses_with={'hostname': 'host.docker.internal''}` when
 calling the `flow.add(...)` function.
 
-## 🚀 Usages
+## Usages
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 
@@ -67,7 +57,7 @@ pods:
     uses: 'jinahub://LMDBStorage'
 ```
 
-## 🎉️ Example 
+## Example 
 
 ```python
 from jina import Flow, Document
@@ -95,5 +85,5 @@ Check [tests](tests/test_lmdb.py) for more usage scenarios.
 
 Nothing
 
-## 🔍️ Reference
+## Reference
 - https://lmdb.readthedocs.io/en/release/

@@ -1,30 +1,16 @@
-# ✨ ImageTorchEncoder
+# ImageTorchEncoder
 
 **ImageTorchEncoder** wraps the models from [torchvision](https://pytorch.org/vision/stable/index.html).
 
 **ImageTorchEncoder** encodes `Document` blobs of type a `ndarray` and shape Batch x Height x Width x Channel 
 into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of the `Document`.
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+## Usages
 
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 
@@ -65,7 +51,7 @@ pods:
     volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
 ```
 
-## 🎉️ Example 
+## Example 
 
 ```python
 import numpy as np
@@ -110,5 +96,6 @@ If `use_default_preprocessing=False`:
 ### Returns
 `Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` (size depends on the model) with `dtype=float32`.
 
-## 🔍️ Reference
+## Reference
+
 - [PyTorch TorchVision Transformers Preprocessing](https://sparrow.dev/torchvision-transforms/)

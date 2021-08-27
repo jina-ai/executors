@@ -1,4 +1,4 @@
-# ✨ TFIDFTextEncoder
+# TFIDFTextEncoder
 
 **TFIDFTextEncoder** is a class that wraps the text embedding functionality of a TFIDF model.
 
@@ -7,23 +7,11 @@ The TFIDF model is a classic vector representation for [information retrieval](h
 `TfidfTextEncoder` encodes data from a `DocumentArray` and updates the `doc.embedding` attributes with a  `scipy.csr_matrix`of floating point values for each doc in DocumentArray.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
+## Prerequisites
 
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-In case you want to install the dependencies locally run
-```
-pip install -r requirements.txt
-```
 
 You also need a TF-IDF vectorizer pretrained.
 
@@ -49,9 +37,9 @@ if __name__ == '__main__':
     pickle.dump(tfidf_vectorizer, open('tfidf_vectorizer.pickle', 'wb'))
 ```
 
-## 🚀 Usages
+## Usages
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -90,7 +78,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
+## Example 
 
 ```python
 from jina import Flow, Document
@@ -112,5 +100,6 @@ with f:
 
 
 
-## 🔍️ Reference
+## Reference
+
 https://en.wikipedia.org/wiki/Tf-idf

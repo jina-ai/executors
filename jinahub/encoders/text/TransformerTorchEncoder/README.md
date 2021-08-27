@@ -1,4 +1,4 @@
-# ✨ Transformer Torch Encoder
+# Transformer Torch Encoder
 
 **Transformer Torch Encoder** is a class that encodes sentences into embeddings.
 
@@ -15,27 +15,12 @@ The following parameters can be used:
 - `default_batch_size` (int, default 32): Defines the batch size for inference on the loaded PyTorch model.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
+## Usages
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -83,7 +68,7 @@ pods:
 ```
 
 
-## 🎉️ Example
+## Example
 
 ```python
 from jina import Flow, Document
@@ -104,6 +89,6 @@ with f:
 `Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` (model-dependent) with `dtype=nfloat32`.
 
 
-## 🔍️ Reference
+## Reference
 - Available models: https://huggingface.co/transformers/pretrained_models.html
 - More available models: https://huggingface.co/sentence-transformers

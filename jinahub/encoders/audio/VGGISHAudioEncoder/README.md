@@ -1,36 +1,21 @@
 
-# ✨ VggishAudioEncoder
+# VggishAudioEncoder
 
 **VggishAudioEncoder** is a class that wraps the [VGGISH](https://github.com/tensorflow/models/tree/master/research/audioset/vggish) model for generating embeddings for audio data. 
 
 
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
-
-## 🌱 Prerequisites
+## Prerequisites
 
 
 > These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
 Run the provided bash script `download_model.sh` to download the pretrained model.
 
-To install the dependencies locally run 
-```
-pip install . 
-pip install -r tests/requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
-```
 
-## 🚀 Usages
+## Usages
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -68,7 +53,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
+## Example 
 
 With fake data
 
@@ -117,6 +102,6 @@ print(f'{resp}')
 `Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` with `dtype=nfloat32`.
 
 
-## 🔍️ Reference
+## Reference
 - [VGGISH paper](https://research.google/pubs/pub45611/)
 - [VGGISH code](https://github.com/tensorflow/models/tree/master/research/audioset/vggish)

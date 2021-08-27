@@ -1,26 +1,15 @@
-# ✨ HnswlibSearcher
+# HnswlibSearcher
 
 **HnswlibSearcher** is a Hnswlib-powered vector Searcher.
 
 Hnswlib is a fast approximate nearest neighbor search library and clustering of dense vectors.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
 
-- This Executor works on Python 3.7 and 3.8. 
-- Make sure to install the [requirements](requirements.txt)
-
-## 🚀 Usages
+## Usages
 
 Check [tests](tests) for an example on how to use it.
 
@@ -43,7 +32,7 @@ with:
 
 The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../README.md).
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -81,7 +70,7 @@ pods:
     uses: 'jinahub://HnswlibSearcher'
 ```
 
-## 🎉️ Example 
+## Example 
 
 
 ```python
@@ -104,6 +93,6 @@ with f:
 Attaches matches to the Documents sent as inputs, with the id of the match, and its embedding. For retrieving the full metadata (original text or image blob), use a [key-value searcher](./../../keyvalue).
 
 
-## 🔍️ Reference
+## Reference
 
 - [Hnswlib](https://github.com/nmslib/hnswlib)

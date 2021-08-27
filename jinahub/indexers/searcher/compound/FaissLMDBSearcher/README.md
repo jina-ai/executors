@@ -1,24 +1,12 @@
-# ✨ FaissLMDBSearcher
+# FaissLMDBSearcher
 
 **FaissLMDBSearcher** is a compound Searcher Executor for Jina, made up of [FaissSearcher](../../FaissSearcher) for performing similarity search on the embeddings, and of [FileSearcher](../../keyvalue/FileSearcher) for retrieving the metadata of the Documents. 
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-- This Executor works on Python 3.7 and 3.8. 
-- Make sure to install the [requirements](requirements.txt)
-
-## 🚀 Usages
+## Usages
 
 Check [integration tests](../../../../../tests/integration/lmdb_dump_reload) for an example on how to use it.
 
@@ -41,7 +29,7 @@ with:
 
 The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../../README.md).
 
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
@@ -80,7 +68,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
+## Example 
 
 
 ```python
@@ -103,4 +91,3 @@ The FaissSearcher attaches matches to the Documents sent as inputs, with the id 
 Then, the FileSearcher retrieves the full metadata (original text or image blob) and attaches those to the Document.
 You receive back the full Document.
 
-## 🔍️ Reference

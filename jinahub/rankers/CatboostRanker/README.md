@@ -1,26 +1,19 @@
-# ✨ CatboostRanker
+# CatboostRanker
 
 **CatboostRanker** is a Jina ranker, using the [CatBoost](https://catboost.ai/) library, mode specifically, the `CatBoostRanker` for learning-to-rank.
 
 `CatboostRanker` retrieves `query_features`, `match_features` and `relevance_label` stored inside `Document` object from `DocumentArray`, and builds a feature-label dataset to train the model.
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
 
 
-## 🌱 Prerequisites
 
-- This Executor works on Python 3.7 and 3.8. 
-- Make sure to install the [requirements](requirements.txt)
-- Refer to CatBoost [tutorial](https://github.com/catboost/tutorials/blob/master/ranking/ranking_tutorial.ipynb) to learn how to use CatBoost to train a ranker.
+## Prerequisites
 
-## 🚀 Usages
+Refer to CatBoost [tutorial](https://github.com/catboost/tutorials/blob/master/ranking/ranking_tutorial.ipynb) to learn how to use CatBoost to train a ranker.
 
-### 🚚 Via JinaHub
+## Usages
+
+### Via JinaHub
 
 #### using docker images
 
@@ -62,7 +55,7 @@ pods:
 
 	
 
-## 🎉️ Example 
+## Example 
 
 ```python
 from jina import Flow, DocumentArray

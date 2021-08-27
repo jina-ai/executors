@@ -1,4 +1,4 @@
-# ✨ CLIPImageEncoder
+# CLIPImageEncoder
 
 **CLIPImageEncoder** is a class that wraps the image embedding functionality using the **CLIP** model from huggingface transformers.
 
@@ -21,26 +21,12 @@ The following parameters can be passed on initialization:
 - `default_traversal_paths`: fallback traversal path in case there is no traversal path sent in the request
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+## Usages
 
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
+### Via JinaHub
 
 #### using docker images
 
@@ -80,7 +66,7 @@ pods:
 ```
 
 
-## 🎉️ Example 
+## Example 
 
 
 ```python
@@ -118,7 +104,7 @@ If you set `use_default_preprocessing=False` when creating this encoder, then yo
 
 
 
-## 🔍️ Reference
+## Reference
 
 - [CLIP blog post](https://openai.com/blog/clip/)
 - [CLIP paper](https://arxiv.org/abs/2103.00020)
