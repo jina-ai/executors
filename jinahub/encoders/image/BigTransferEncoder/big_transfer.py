@@ -2,15 +2,20 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from typing import Optional, Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import tensorflow as tf
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
-from tensorflow.python.keras.models import load_model
 from jina_commons.batching import get_docs_batch_generator
-from jina_commons.encoders.image.preprocessing import load_image, move_channel_axis, resize_short, crop_image
+from jina_commons.encoders.image.preprocessing import (
+    crop_image,
+    load_image,
+    move_channel_axis,
+    resize_short,
+)
+from tensorflow.python.keras.models import load_model
 
 
 class BigTransferEncoder(Executor):
@@ -52,14 +57,17 @@ class BigTransferEncoder(Executor):
 
     """
 
-    def __init__(self,
-                 model_path: Optional[str] = 'pretrained',
-                 model_name: Optional[str] = 'Imagenet21k/R50x1',
-                 device: str = 'cpu',
-                 target_dim: Optional[Tuple[int, int, int]] = None,
-                 default_traversal_paths: List[str] = None,
-                 default_batch_size: int = 32,
-                 *args, **kwargs):
+    def __init__(
+        self,
+        model_path: Optional[str] = 'pretrained',
+        model_name: Optional[str] = 'Imagenet21k/R50x1',
+        device: str = 'cpu',
+        target_dim: Optional[Tuple[int, int, int]] = None,
+        default_traversal_paths: List[str] = None,
+        default_batch_size: int = 32,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.model_path = model_path
         self.model_name = model_name
@@ -72,17 +80,16 @@ class BigTransferEncoder(Executor):
         if not os.path.exists(self.model_path):
             self.download_model()
 
-        cpus = tf.config.experimental.list_physical_devices(
-            device_type='CPU')
-        gpus = tf.config.experimental.list_physical_devices(
-            device_type='GPU')
+        cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
+        gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
         if 'cuda' in device and len(gpus) > 0:
-            gpu_index = 0 if not 'cuda:' in device else \
-                int(device.split(':')[1])
+            gpu_index = 0 if not 'cuda:' in device else int(device.split(':')[1])
             cpus.append(gpus[gpu_index])
         if 'cuda' in self.device and len(gpus) == 0:
-            self.logger.warning('You tried to use a GPU but no GPU was found on'
-                                ' your system. Defaulting to CPU!')
+            self.logger.warning(
+                'You tried to use a GPU but no GPU was found on'
+                ' your system. Defaulting to CPU!'
+            )
         tf.config.experimental.set_visible_devices(devices=cpus)
         self.logger.info(f'BiT model path: {self.model_path}')
         _model = load_model(self.model_path)
@@ -94,34 +101,40 @@ class BigTransferEncoder(Executor):
         _available_models = ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
         available_models = [f'{d}/{m}' for m in _available_models for d in dataset]
         if self.model_name not in available_models:
-            raise AttributeError(f'{self.model_name} model does not exists. '
-                                 f'Choose one from {available_models}!')
+            raise AttributeError(
+                f'{self.model_name} model does not exists. '
+                f'Choose one from {available_models}!'
+            )
 
         self.logger.info(f'Starting download of {self.model_name} BiT model')
         import requests
+
         os.makedirs(self.model_path)
         os.makedirs((os.path.join(self.model_path, 'variables')))
         response = requests.get(
             f'https://storage.googleapis.com/bit_models/'
-            f'{self.model_name}/feature_vectors/saved_model.pb')
-        with open(os.path.join(self.model_path, 'saved_model.pb'),
-                  'wb') as file:
+            f'{self.model_name}/feature_vectors/saved_model.pb'
+        )
+        with open(os.path.join(self.model_path, 'saved_model.pb'), 'wb') as file:
             file.write(response.content)
         response = requests.get(
             f'https://storage.googleapis.com/bit_models/'
             f'{self.model_name}/feature_vectors/variables/'
-            f'variables.data-00000-of-00001')
-        with open(os.path.join(self.model_path,
-                               'variables/variables.data-00000-of-00001'),
-                  'wb') as file:
+            f'variables.data-00000-of-00001'
+        )
+        with open(
+            os.path.join(self.model_path, 'variables/variables.data-00000-of-00001'),
+            'wb',
+        ) as file:
             file.write(response.content)
         response = requests.get(
             f'https://storage.googleapis.com/bit_models/'
             f'{self.model_name}/feature_vectors/variables/'
-            f'variables.index')
-        with open(os.path.join(self.model_path,
-                               'variables/variables.index'),
-                  'wb') as file:
+            f'variables.index'
+        )
+        with open(
+            os.path.join(self.model_path, 'variables/variables.index'), 'wb'
+        ) as file:
             file.write(response.content)
         self.logger.info(f'Completed download of {self.model_name} BiT model')
 
@@ -136,9 +149,11 @@ class BigTransferEncoder(Executor):
         """
         docs_batch_generator = get_docs_batch_generator(
             docs,
-            traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+            traversal_path=parameters.get(
+                'traversal_paths', self.default_traversal_paths
+            ),
             batch_size=parameters.get('batch_size', self.default_batch_size),
-            needs_attr='blob'
+            needs_attr='blob',
         )
         for batch in docs_batch_generator:
             if self.target_dim:
