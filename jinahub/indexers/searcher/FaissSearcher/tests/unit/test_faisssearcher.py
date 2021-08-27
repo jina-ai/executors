@@ -11,7 +11,7 @@ from jina import DocumentArray, Document, Executor
 from jina.executors.metas import get_default_metas
 
 from jina_commons.indexers.dump import export_dump_streaming
-from ..faiss_searcher import FaissSearcher
+from ...faiss_searcher import FaissSearcher
 
 
 def _get_docs_from_vecs(queries):
@@ -58,7 +58,7 @@ def tmpdir_dump(tmpdir):
 
 
 def test_config():
-    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    ex = Executor.load_config(str(Path(__file__).parents[0].parents[1] / 'config.yml'))
     assert ex.index_key == 'IVF10,PQ4'
 
 
