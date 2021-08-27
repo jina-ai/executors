@@ -35,7 +35,7 @@ if [[ -d "tests/" ]]; then
     sudo apt-get update && sudo apt-get install libsndfile1 ffmpeg
   fi
 
-  pytest -s -v tests/
+  pytest -s -v -m "not gpu" tests/
   local_exit_code=$?
 
   deactivate
