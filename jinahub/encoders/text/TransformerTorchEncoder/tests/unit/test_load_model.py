@@ -8,6 +8,7 @@ from jina import DocumentArray
 
 from ...transform_encoder import TransformerTorchEncoder
 
+
 MODELS_TO_TEST = [
     'sentence-transformers/distilbert-base-nli-stsb-mean-tokens',
     'bert-base-uncased',
