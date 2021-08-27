@@ -3,10 +3,10 @@ jina==2.0.7
 librosa==0.8.0
 matplotlib==3.4.2
 matplotlib-inline==0.1.2
-numpy==1.18.1
+numpy==1.20.0
 pandas==1.0.3
-pytorch-ignite==0.3.0
 pytest==6.2.4
+pytorch-ignite==0.3.0
 regex==2021.7.6
 scikit-learn==0.22.1
 scipy==1.4.1
