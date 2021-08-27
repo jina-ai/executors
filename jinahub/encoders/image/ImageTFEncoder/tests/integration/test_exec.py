@@ -83,14 +83,10 @@ def test_traversal_path(
             return_results=True,
         )
         for path, count in docs_per_path:
-            assert (
-                len(
-                    DocumentArray(results[0].docs)
-                    .traverse_flat(path)
-                    .get_attributes('embedding')
-                )
-                == count
-            )
+            embeddings = DocumentArray(results[0].docs)\
+                .traverse_flat(path)\
+                .get_attributes('embedding')
+            assert len([x for x in embeddings if x is not None]) == count
 
 
 @pytest.mark.gpu
