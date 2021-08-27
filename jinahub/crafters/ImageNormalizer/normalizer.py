@@ -118,11 +118,14 @@ class ImageNormalizer(Executor):
             the output will have the same height and width as the `target_size`.
         :param top: the vertical coordinate of the top left corner of the crop box.
         :param left: the horizontal coordinate of the top left corner of the crop box.
-        :param how: the way of cropping. Valid values include `center`, `random`, and, `precise`. Default is `precise`.
+        :param how: the way of cropping. Valid values include `center`, `random`, and,
+            `precise`. Default is `precise`.
             - `center`: crop the center part of the image
             - `random`: crop a random part of the image
-            - `precise`: crop the part of the image specified by the crop box with the given ``top`` and ``left``.
-            .. warning:: When `precise` is used, ``top`` and ``left`` must be fed valid value.
+            - `precise`: crop the part of the image specified by the crop box with
+                the given ``top`` and ``left``.
+            .. warning:: When `precise` is used, ``top`` and ``left`` must be fed
+                valid value.
         """
         assert isinstance(img, Image.Image), 'img must be a PIL.Image'
         img_w, img_h = img.size
@@ -166,11 +169,13 @@ class ImageNormalizer(Executor):
         """
         Resize the input :py:mod:`PIL` image.
         :param img: :py:mod:`PIL.Image`, the image to be resized
-        :param target_size: desired output size. If size is a sequence like (h, w), the output size will be matched to
-            this. If size is an int, the smaller edge of the image will be matched to this number maintain the aspect
+        :param target_size: desired output size. If size is a sequence like (h, w),
+            the output size will be matched to this. If size is an int, the smaller
+            edge of the image will be matched to this number maintain the aspect
             ratio.
-        :param how: the interpolation method. Valid values include `NEAREST`, `BILINEAR`, `BICUBIC`, and `LANCZOS`.
-            Default is `LANCZOS`. Please refer to `PIL.Image` for detaisl.
+        :param how: the interpolation method. Valid values include `NEAREST`,
+        `BILINEAR`, `BICUBIC`, and `LANCZOS`. Default is `LANCZOS`.
+        Please refer to `PIL.Image` for details.
         """
         assert isinstance(img, Image.Image), 'img must be a PIL.Image'
         if isinstance(self.resize_dim, int):

@@ -6,8 +6,6 @@ import pytest
 from PIL.Image import fromarray
 from jina import Flow, Document
 
-from ...normalizer import ImageNormalizer
-
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 

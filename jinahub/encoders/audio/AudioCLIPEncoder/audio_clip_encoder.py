@@ -1,13 +1,13 @@
 __copyright__ = 'Copyright (c) 2020-2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
-from typing import Optional, Iterable, Any
+from typing import Any, Iterable, Optional
 
-from jina import Executor, DocumentArray, requests
-from jina.excepts import BadDocType
 import librosa as lr
 import numpy as np
 import torch
+from jina import DocumentArray, Executor, requests
+from jina.excepts import BadDocType
 
 from .audio_clip.model import AudioCLIP
 

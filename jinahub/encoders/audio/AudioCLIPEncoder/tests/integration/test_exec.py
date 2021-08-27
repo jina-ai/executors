@@ -2,9 +2,10 @@ __copyright__ = 'Copyright (c) 2020-2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
 import os
-import librosa
 
-from jina import Flow, Document, DocumentArray
+import librosa
+from jina import Document, DocumentArray, Flow
+
 from ... import AudioCLIPEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
