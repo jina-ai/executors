@@ -117,6 +117,7 @@ jobs:
       - name: Run GPU tests in container
         run: |
           $DOCKER_EXEC pip install -r tests/requirements.txt
+          $DOCKER_EXEC ls
           $DOCKER_EXEC pytest -s -v -m "gpu and not docker" tests/
       - name: Run test of GPU image
         run: pytest -s -v -m "gpu and docker"
