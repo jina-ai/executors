@@ -83,9 +83,11 @@ def test_traversal_path(
             return_results=True,
         )
         for path, count in docs_per_path:
-            embeddings = DocumentArray(results[0].docs)\
-                .traverse_flat(path)\
+            embeddings = (
+                DocumentArray(results[0].docs)
+                .traverse_flat(path)
                 .get_attributes('embedding')
+            )
             assert len([x for x in embeddings if x is not None]) == count
 
 
