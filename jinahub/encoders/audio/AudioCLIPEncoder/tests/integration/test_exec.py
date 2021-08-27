@@ -1,5 +1,5 @@
-__copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
-__license__ = "Apache-2.0"
+__copyright__ = 'Copyright (c) 2020-2021 Jina AI Limited. All rights reserved.'
+__license__ = 'Apache-2.0'
 
 import os
 import librosa
@@ -21,11 +21,11 @@ def test_flow_from_yml():
 
 def test_embedding_exists():
 
-    x_audio, _ = librosa.load(os.path.join(cur_dir, '../test_data/sample.mp3'))
-    doc = DocumentArray([Document(blob=x_audio)])
+    x_audio, sr = librosa.load(os.path.join(cur_dir, '../test_data/sample.mp3'))
+    doc = DocumentArray([Document(blob=x_audio, tags={'sample_rate': sr})])
 
     with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as f:
         responses = f.post(on='index', inputs=doc, return_results=True)
 
     assert responses[0].docs[0].embedding is not None
-    assert responses[0].docs[0].embedding.shape == (1024, )
+    assert responses[0].docs[0].embedding.shape == (1024,)
