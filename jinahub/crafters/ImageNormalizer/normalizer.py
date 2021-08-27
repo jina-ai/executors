@@ -2,10 +2,10 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from pydoc import locate
-from typing import Tuple, Union, Iterable
+from typing import Iterable, Tuple, Union
+
 import numpy as np
 import PIL.Image as Image
-
 from jina import DocumentArray, Executor, requests
 from jina_commons import get_logger
 

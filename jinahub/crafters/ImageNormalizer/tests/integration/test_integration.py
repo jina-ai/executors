@@ -3,8 +3,8 @@ from pydoc import locate
 
 import numpy as np
 import pytest
+from jina import Document, Flow
 from PIL.Image import fromarray
-from jina import Flow, Document
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

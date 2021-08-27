@@ -3,8 +3,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from jina import Document, DocumentArray, Executor
 from PIL.Image import Image, fromarray
-from jina import DocumentArray, Document, Executor
 
 from ...normalizer import ImageNormalizer
 
