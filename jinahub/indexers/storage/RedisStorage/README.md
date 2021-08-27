@@ -22,50 +22,10 @@ Use `host.docker.internal` to access localhost on the host machine.
 You can pass this parameter to the `RedisStorage` storage by using `uses_with={'hostname': 'host.docker.internal''}` when
 calling the `flow.add(...)` function.
 
-## Usages
+## Usage
 
 This indexer does not allow indexing two documents with the same `ID` and will issue a warning. It also does not allow updating a document by a non-existing ID and will issue a warning.
 
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://RedisStorage')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://RedisStorage'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://RedisStorage')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://RedisStorage'
-```
-
-
-## Example 
 
 
 ```python

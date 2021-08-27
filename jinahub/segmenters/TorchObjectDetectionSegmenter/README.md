@@ -5,54 +5,7 @@
 
 
 
-
-To verify the installation works:
-```
-pip install -r tests/requirements.txt
-pytest -sv tests
-```
-
-## Usages
-
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://TorchObjectDetectionSegmenter')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://TorchObjectDetectionSegmenter'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://TorchObjectDetectionSegmenter')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://TorchObjectDetectionSegmenter'
-```
-
-## Example 
+## Usage 
 
 
 ```python

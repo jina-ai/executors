@@ -7,47 +7,7 @@ library into an `Jina` executor.
 
 
 
-## Usages
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://TransformerSentenceEncoder')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://TransformerSentenceEncoder'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://TransformerSentenceEncoder')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://TransformerSentenceEncoder'
-```
-
-
-## Example 
+## Usage 
 
 ```python
 from jina import Flow, Document

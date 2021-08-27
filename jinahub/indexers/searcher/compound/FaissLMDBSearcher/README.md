@@ -6,7 +6,7 @@
 
 
 
-## Usages
+## Usage 
 
 Check [integration tests](../../../../../tests/integration/lmdb_dump_reload) for an example on how to use it.
 
@@ -29,46 +29,7 @@ with:
 
 The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../../README.md).
 
-### Via JinaHub
 
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://FaissLMDBSearcher')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://FaissLMDBSearcher'
-```
-
-#### using source code
-Use the source code from JinaHub in your code
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://FaissLMDBSearcher')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://FaissLMDBSearcher'
-```
-
-
-## Example 
 
 
 ```python

@@ -11,51 +11,8 @@
 
 Refer to CatBoost [tutorial](https://github.com/catboost/tutorials/blob/master/ranking/ranking_tutorial.ipynb) to learn how to use CatBoost to train a ranker.
 
-## Usages
 
-### Via JinaHub
-
-#### using docker images
-
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://CatboostRanker')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://CatboostRanker'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://CatboostRanker')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: ranker
-    uses: 'jinahub://CatboostRanker'
-```
-
-
-	
-
-## Example 
+## Usage 
 
 ```python
 from jina import Flow, DocumentArray

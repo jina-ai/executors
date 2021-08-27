@@ -4,48 +4,7 @@ PDFPlumberSegmenter is a segmenter used for extracting images and text as chunks
 
 
 
-
-## Usages
-
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://PDFSegmenter')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: crafter
-    uses: 'jinahub+docker://PDFSegmenter'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://PDFSegmenter')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: crafter
-    uses: 'jinahub://PDFSegmenter'
-```
-
-## Example 
+## Usage 
 
 
 ```python

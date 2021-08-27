@@ -37,48 +37,8 @@ if __name__ == '__main__':
     pickle.dump(tfidf_vectorizer, open('tfidf_vectorizer.pickle', 'wb'))
 ```
 
-## Usages
 
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://TFIDFTextEncoder')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://TFIDFTextEncoder'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://TFIDFTextEncoder')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://TFIDFTextEncoder'
-```
-
-
-## Example 
+## Usage 
 
 ```python
 from jina import Flow, Document
@@ -102,4 +62,4 @@ with f:
 
 ## Reference
 
-https://en.wikipedia.org/wiki/Tf-idf
+- https://en.wikipedia.org/wiki/Tf-idf

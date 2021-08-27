@@ -3,51 +3,7 @@
 **SimpleRanker** is a class aggregates the score of the matched doc from the matched chunks.
 
 
-## Usages
-
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://SimpleRanker')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://SimpleRanker'
-    uses_with:
-      metric: 'cosine'
-      ranking: 'min'    # Other options are 'max', 'mean_max', 'mean_min'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://SimpleRanker')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://SimpleRanker'
-```
-	
-
-## Example 
+## Usage 
 
 ```python
 from jina import Flow, DocumentArray, Document

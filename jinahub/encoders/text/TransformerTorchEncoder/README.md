@@ -18,11 +18,9 @@ The following parameters can be used:
 
 
 
-## Usages
+## Usage
 
-### Via JinaHub
 
-#### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
@@ -45,30 +43,9 @@ pods:
 ``` 
 This does not support GPU at the moment.
 
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub://TransformerTorchEncoder')
-
-with f:
-    resp = f.post(on='foo', inputs=Document(text='hello Jina'), return_results=True)
-    print(f'{resp[0].docs[0].embedding.shape}')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://TransformerTorchEncoder'
-```
 
 
-## Example
+## Usage
 
 ```python
 from jina import Flow, Document

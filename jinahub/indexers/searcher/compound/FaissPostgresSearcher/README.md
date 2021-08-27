@@ -13,7 +13,7 @@ You can start one in a Docker container, like so:
 docker run -e POSTGRES_PASSWORD=123456  -p 127.0.0.1:5432:5432/tcp postgres:13.2 
 ```
 
-## Usages
+## Usage
 
 Check [integration tests](../../../../../tests/integration/psql_dump_reload) for an example on how to use it.
 
@@ -35,47 +35,6 @@ with:
 - from the `Flow.rolling_update` method. See [README](../../../../../README.md).
 
 The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../../README.md).
-
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://FaissPostgresSearcher')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://FaissPostgresSearcher'
-```
-
-#### using source code
-Use the source code from JinaHub in your code
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://FaissPostgresSearcher')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://FaissPostgresSearcher'
-```
-
-
-## Example 
 
 
 ```python

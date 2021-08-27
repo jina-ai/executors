@@ -7,50 +7,12 @@
 
 
 
-## Usages
-
-### Via JinaHub
+## Usage
 
 #### using docker images (not recommended)
 
 > This method is currently not recommended for the SimpleIndexer because there is a bug corrupting the indexed data. We recommend using this executor from source code instead! See 'using source code' section below)
 
-Use the prebuilt images from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://SimpleIndexer')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://SimpleIndexer'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://SimpleIndexer')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://SimpleIndexer'
-```
-
-## Example 
 
 ```python
 from jina import Flow, Document

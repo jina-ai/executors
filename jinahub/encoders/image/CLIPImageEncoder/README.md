@@ -24,49 +24,9 @@ The following parameters can be passed on initialization:
 
 
 
-## Usages
-
-### Via JinaHub
-
-#### using docker images
-
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://CLIPImageEncoder')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://CLIPImageEncoder'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://CLIPImageEncoder')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://CLIPImageEncoder'
-```
 
 
-## Example 
+## Usage 
 
 
 ```python

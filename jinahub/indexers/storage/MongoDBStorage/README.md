@@ -26,48 +26,7 @@ You can start one in a Docker container, like so:
 docker run --name mongo-storage  -p 127.0.0.1:27017:27017/tcp -d mongo:latest
 ```
 
-## Usages
-
-### Via JinaHub
-
-#### using docker images
-
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://MongoDBStorage')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://MongoDBStorage'
-```
-
-#### using source codes
-Use the source codes from JinaHub in your python codes,
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://MongoDBStorage')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://MongoDBStorage'
-```
-
-## Example 
+## Usage 
 
 ```python
 from jina import Flow, Document

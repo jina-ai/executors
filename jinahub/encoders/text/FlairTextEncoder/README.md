@@ -7,48 +7,8 @@ Internally, `FlairTextEncoder` wraps the DocumentPoolEmbeddings from Flair.
 
 
 
-## Usages
 
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://FlairTextEncoder')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://FlairTextEncoder'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://FlairTextEncoder')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://FlairTextEncoder'
-```
-
-
-## Example
+## Usage
 
 Here is an example usage of the **FlairTextEncoder**.
 

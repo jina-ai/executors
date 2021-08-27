@@ -12,29 +12,8 @@ This VAD is similar to WebRTC but instead of differentiating voice from silence,
 
 
 
-## Usages
 
-#### via Docker image (recommended)
-
-```python
-from jina import Flow
-
-f = Flow().add(uses='jinahub+docker://VADSpeechSegmenter')
-```
-
-#### via source code
-
-```python
-from jina import Flow
-
-f = Flow().add(uses='jinahub://VADSpeechSegmenter')
-```
-
-- To override `__init__` args & kwargs, use `.add(..., uses_with: {'key': 'value'})`
-- To override class metas, use `.add(..., uses_metas: {'key': 'value})`
-
-
-## Example
+## Usage
 
 ```python
 import os

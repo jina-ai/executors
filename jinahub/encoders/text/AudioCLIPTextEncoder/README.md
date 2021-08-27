@@ -37,11 +37,7 @@ wget https://raw.githubusercontent.com/jina-ai/executors/main/jinahub/encoders/t
 
 And then you will also need to pass the argument `model_path='.cache/AudioCLIP-Partial-Training.pt'` when you initialize the executor.
 
-## Usages
-
-### Via JinaHub
-
-#### Using docker images
+## Usage
 
 Use the prebuilt images from JinaHub in your Python code, 
 
@@ -64,27 +60,6 @@ pods:
     volumes: '/path/to/pwd/.cache:/workspace/.cache'
 ```
 
-#### Using source code
-
-Use the source code from JinaHub in your Python code,
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://AudioCLIPTextEncoder')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://AudioCLIPTextEncoder'
-```
-
-
-## Example 
 
 Here's a basic example demonstrating the use of this encoder
 

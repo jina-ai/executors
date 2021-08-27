@@ -9,7 +9,7 @@ Faiss is a library for efficient similarity search and clustering of dense vecto
 
 
 
-## Usages
+## Usage
 
 Check [tests](tests) for an example on how to use it.
 
@@ -30,47 +30,7 @@ with:
 
 - from the `Flow.rolling_update` method. See [README](../../../../README.md).
 
-The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../README.md).
-
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://FaissSearcher')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://FaissSearcher'
-```
-
-#### using source code
-Use the source code from JinaHub in your code
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://FaissSearcher')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://FaissSearcher'
-```
-
-## Example 
+The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../README.md). 
 
 
 ```python

@@ -4,30 +4,7 @@ TransformerTFEncoder wraps the tensorflow-version of transformers from huggingfa
 
 
 
-## Usages
-
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://TransformerTFTextEncoder')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://TransformerTFTextEncoder'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
+## Usage
 
 ```python
 from jina import Flow, Document
@@ -39,16 +16,6 @@ with f:
     print(f'{resp[0].docs[0].embedding.shape}')
 ```
 
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://TransformerTFTextEncoder'
-```
-
-## Example
 
 Here is an example usage of the **TransformerTFTextEncoder**.
 

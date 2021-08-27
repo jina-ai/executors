@@ -30,30 +30,7 @@ The following parameters can be passed on initialization:
 
 
 
-## Usages
-
-### Via JinaHub
-
-Use the prebuilt images from JinaHub in your python codes, 
-
-```python
-from jina import Flow
-	
-f = Flow().add(
-    uses='jinahub+docker://DPRReaderRanker',
-)
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://DPRReaderRanker'
-```
-
-## Example 
+## Usage 
 
 
 ```python

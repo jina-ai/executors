@@ -13,53 +13,10 @@ The following parameters can be passed on initialization:
 - `model_definition_file` (string, default: None): The python file path where the model class is defined
 - `model_class_name` (string, default: None): The model class name to instantiate with the `state_dict` in `model_state_dict_path`
 
-- 
 
 
 
-
-## Usages
-
-### Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://CustomImageTorchEncoder')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://CustomImageTorchEncoder'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://CustomImageTorchEncoder')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://CustomImageTorchEncoder'
-```
-
-
-## Example
+## Usage
 
 ```python
 import torch

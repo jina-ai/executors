@@ -17,48 +17,9 @@ python -m laserembeddings download-models
 
 
 
-## Usages
-
-### Via JinaHub
-
-#### using docker images
+## Usage
 Use the prebuilt images from JinaHub in your Python code. The input language can be configured with `language`. The full list of possible values can be found at [LASER](https://github.com/facebookresearch/LASER#supported-languages) with the language code ([ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)) 
 
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://laser-encoder', uses_with={'language': 'en'})
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://laser-encoder'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://laser-encoder')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://laser-encoder'
-```
-
-
-## Example
 
 Here is an example usage of the **LaserEncoder**.
 
@@ -78,4 +39,3 @@ with f:
 `Document` with `embedding` fields filled with an `ndarray`  with `dtype=nfloat32`.
 
 
-## Reference

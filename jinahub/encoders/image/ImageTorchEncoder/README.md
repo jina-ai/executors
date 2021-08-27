@@ -8,11 +8,8 @@ into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of 
 
 
 
-## Usages
+## Usage
 
-### Via JinaHub
-
-#### using docker images
 
 Use the prebuilt images from JinaHub in your Python codes.
 With the `volumes` argument you can pass model from your local machine into the Docker container.
@@ -31,27 +28,6 @@ pods:
     volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
 ```
 
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://ImageTorchEncoder',
-               volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://ImageTorchEncoder'
-    volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
-```
-
-## Example 
 
 ```python
 import numpy as np
