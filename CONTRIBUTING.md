@@ -174,7 +174,7 @@ def build_docker_image() -> str:
     return img_name
 ```
 
-Here replace `myexecutor` with the *lower case* name of your executor (the image with its name is built in CI before the test is run). You can also add additional arguments to the main command - if you need to download large files for your model (which should have been done in a fixture at test time), you would add `'--volumes=/path/to/file:/path/to/file/in/container/'`.
+You can also add additional arguments to the main command - if you need to download large files for your model (which should have been done in a fixture at test time), you would add `'--volumes=/path/to/file:/path/to/file/in/container/'`.
 
 What this test does is to launch the executor in a docker container, and if no other errors occur, timeout after 30 seconds (more than enough time for the executor to initialize), which means that it was launched succesfully. On error you will see the full printout of the output in the container, so that you can debug the issue.
 
