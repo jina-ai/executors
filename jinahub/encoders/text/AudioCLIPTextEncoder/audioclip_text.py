@@ -4,7 +4,7 @@ __license__ = "Apache-2.0"
 from typing import Iterable, Optional
 
 import torch
-from jina import Executor, DocumentArray, requests
+from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
 
 from .audio_clip.model import AudioCLIP
@@ -14,7 +14,7 @@ class AudioCLIPTextEncoder(Executor):
     """
     Encode text data with the AudioCLIP model
 
-    :param model_path: path of the pre-trained AudioCLIP model.
+    :param model_path: path to the pre-trained AudioCLIP model.
     :param default_traversal_paths: default traversal path (used if not specified in
         request's parameters)
     :param default_batch_size: default batch size (used if not specified in

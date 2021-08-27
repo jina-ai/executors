@@ -1,22 +1,11 @@
-# ✨ RedisStorage
+# RedisStorage
 
 **RedisStorage** is Indexer wrapper around the redis server. Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache, and message broker. You can read more about it here: https://redis.io
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-- This Executor works on Python 3.7 and 3.8. 
-- Make sure to install the [requirements](requirements.txt)
+## Prerequisites
 
 Additionally, you will need a running redis server. This can be a local instance, a Docker image, or a virtual machine in the cloud. To connect to redis, you need the hostname and the port. 
 
@@ -33,50 +22,10 @@ Use `host.docker.internal` to access localhost on the host machine.
 You can pass this parameter to the `RedisStorage` storage by using `uses_with={'hostname': 'host.docker.internal''}` when
 calling the `flow.add(...)` function.
 
-## 🚀 Usages
+## Usage
 
 This indexer does not allow indexing two documents with the same `ID` and will issue a warning. It also does not allow updating a document by a non-existing ID and will issue a warning.
 
-### 🚚 Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://RedisStorage')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://RedisStorage'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://RedisStorage')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://RedisStorage'
-```
-
-
-## 🎉️ Example 
 
 
 ```python
@@ -97,6 +46,6 @@ Any type of `Document`.
 
 Nothing. The `Documents` are stored.
 
-## 🔍️ Reference
+## Reference
 
 - https://redis.io

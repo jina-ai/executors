@@ -3,8 +3,8 @@ from typing import List
 
 import numpy as np
 import pytest
-import torch
 from jina import Document, DocumentArray, Executor
+
 from ...audioclip_text import AudioCLIPTextEncoder
 
 _EMBEDDING_DIM = 1024
@@ -24,7 +24,7 @@ def test_encoding_cpu():
     assert input_data[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='GPU is needed for this test')
+@pytest.mark.gpu
 def test_encoding_gpu():
     enc = AudioCLIPTextEncoder(device='cuda')
     input_data = DocumentArray([Document(text='hello world')])
@@ -45,7 +45,7 @@ def test_encoding_gpu():
         ),
         (
             pytest.lazy_fixture('docs_with_chunk_chunk_text'),
-            [['r', 0], ['c', 0], ['cc', 10]],
+            [['r', 0], ['c', 0], ['cc', 100]],
             'cc',
         ),
     ],
@@ -53,23 +53,14 @@ def test_encoding_gpu():
 def test_traversal_path(
     docs: DocumentArray, docs_per_path: List[List[str]], traversal_path: str
 ):
-    def validate_traversal(expected_docs_per_path: List[List[str]]):
-        def validate(res):
-            for path, count in expected_docs_per_path:
-                embeddings = (
-                    DocumentArray(res).traverse_flat([path]).get_attributes('embedding')
-                )
-                for emb in embeddings:
-                    if emb is None:
-                        return False
-                return len(embeddings) == count
-
-        return validate
-
     encoder = AudioCLIPTextEncoder(default_traversal_paths=[traversal_path])
     encoder.encode(docs, {'traversal_paths': [traversal_path]})
 
-    assert validate_traversal(docs_per_path)(docs)
+    for path, count in docs_per_path:
+        embeddings = (
+            DocumentArray(docs).traverse_flat([path]).get_attributes('embedding')
+        )
+        assert len(list(filter(lambda x: x is not None, embeddings))) == count
 
 
 def test_encodes_semantic_meaning():

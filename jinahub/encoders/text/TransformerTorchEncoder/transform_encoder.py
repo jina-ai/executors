@@ -1,9 +1,9 @@
 __copyright__ = 'Copyright (c) 2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
-from typing import Dict, Generator, List, Optional, Tuple
-
 import os
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 import torch
 from jina import DocumentArray, Executor, requests
@@ -11,12 +11,15 @@ from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 from transformers import AutoModel, AutoTokenizer
 
+_DEFAULT_MODEL = 'sentence-transformers/distilbert-base-nli-stsb-mean-tokens'
+
 
 class TransformerTorchEncoder(Executor):
     """
     The transformer torch encoder encodes sentences into embeddings.
 
-    :param pretrained_model_name_or_path: Name of the pretrained model or path to the model
+    :param pretrained_model_name_or_path: Name of the pretrained model or path to the
+        model
     :param base_tokenizer_model: Base tokenizer model
     :param pooling_strategy: The pooling strategy to be used
     :param layer_index: Index of the layer which contains the embeddings
@@ -24,15 +27,17 @@ class TransformerTorchEncoder(Executor):
     :param embedding_fn_name: Function to call on the model in order to get output
     :param device: Device to be used. Use 'cuda' for GPU
     :param num_threads: The number of threads used for intraop parallelism on CPU
-    :param default_traversal_paths: Used in the encode method an define traversal on the received `DocumentArray`
-    :param default_batch_size: Defines the batch size for inference on the loaded PyTorch model.
+    :param default_traversal_paths: Used in the encode method an define traversal on the
+         received `DocumentArray`
+    :param default_batch_size: Defines the batch size for inference on the loaded
+        PyTorch model.
     :param args: Arguments
     :param kwargs: Keyword Arguments
     """
 
     def __init__(
         self,
-        pretrained_model_name_or_path: str = 'sentence-transformers/distilbert-base-nli-stsb-mean-tokens',
+        pretrained_model_name_or_path: str = _DEFAULT_MODEL,
         base_tokenizer_model: Optional[str] = None,
         pooling_strategy: str = 'mean',
         layer_index: int = -1,
@@ -60,7 +65,7 @@ class TransformerTorchEncoder(Executor):
         self.max_length = max_length
         self.logger = JinaLogger(self.__class__.__name__)
 
-        if (not device in ['cpu', 'cuda']) and (not device.startswith('cuda:')):
+        if (device not in ['cpu', 'cuda']) and (not device.startswith('cuda:')):
             self.logger.error(
                 f'Torch device {device} not supported. Must be cpu or cuda!'
             )
@@ -130,11 +135,13 @@ class TransformerTorchEncoder(Executor):
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
-        Encode text data into a ndarray of `D` as dimension, and fill the embedding of each Document.
+        Encode text data into a ndarray of `D` as dimension, and fill the embedding of
+        each Document.
 
         :param docs: DocumentArray containing text
-        :param parameters: dictionary to define the `traversal_paths` and the `batch_size`. For example,
-               `parameters={'traversal_paths': ['r'], 'batch_size': 10}`.
+        :param parameters: dictionary to define the `traversal_paths` and the
+            `batch_size`. For example,
+            `parameters={'traversal_paths': ['r'], 'batch_size': 10}`.
         :param kwargs: Additional key value arguments.
         """
         for batch in get_docs_batch_generator(
