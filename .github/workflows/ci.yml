@@ -66,8 +66,7 @@ jobs:
             bash tests/pre_test.sh; fi
       - name: Install latest stable 2.x jina version
         run: |
-          PACKAGE_JSON_URL="https://pypi.org/pypi/jina/json"
-          JINA_VERSION=$(curl -L -s "$PACKAGE_JSON_URL" \
+          JINA_VERSION=$(curl -L -s "https://pypi.org/pypi/jina/json" \
             |  jq  -r '.releases | keys | .[]
               | select(contains("dev") | not)
               | select(startswith("2."))' \

@@ -95,17 +95,23 @@ The solution in this case is to instruct users how to download the file **before
 
 ### 🛠️ Writing tests
 
-To make sure your executor is working as it should, we need tests. We aim for 100% test coverage - that is, for all the code to be covered by tests. Tests should live inside the `tests/` folder, and should be written for the [pytest](https://docs.pytest.org/en/6.2.x/) test suite. There are two kinds of tests that you need: **integration** and **unit**.
+To make sure your executor is working as it should, we need tests. We aim for 100% test coverage - that is, for all the code to be covered by tests. Tests should live inside the `tests/` folder, and should be written for the [pytest](https://docs.pytest.org/en/6.2.x/) test suite. There are two kinds of tests that you need: **integration** and **unit**. So the structure of the tests directory should look like this
+
+```
+tests/
+├── unit/             # Required
+├── integration/      # Required
+├── conftest.py       # Required, see integration tests
+├── requirements.txt  # Required, see test-time dependencies
+└── pre_test.sh       # Optional, see test-time dependencies
+
+```
 
 #### Test-time dependencies
 
 To make sure that all the dependencies needed by the executor and any test time dependencies are properly installed, you need to create these files:
 
-- `tests/requirements.txt` (required): Put any python requirements needed for testing, but not covered in `requirements.txt`, in this file - you will need `pytest`, for example. Put a specific version of jina here, but make sure it is installed from git, like so
-    ```
-    git+https://github.com/jina-ai/jina.git@v2.0.20
-    ```
-    Try to put the latest version of jina there.
+- `tests/requirements.txt` (required): Put any python requirements needed for testing, but not covered in `requirements.txt`, in this file - you will need `pytest`, for example. Do not list `jina` here - in CI, the latest `2.x` version will be automatically installed (and you should install it locally as well).
 - `tests/pre_test.sh` (optional): If you need any system dependencies installed before performing the tests, put it in this script. This will be run before any dependencies are installed.
 
 If your executors requires downloading large files (see [below](#-downloading-large-artifacts)), do this with a pytest fixture. Here's an example
@@ -148,20 +154,31 @@ import subprocess
 import pytest
 
 @pytest.mark.docker
-def test_docker_runtime():
+def test_docker_runtime(build_docker_image: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
-            ['jina', 'executor', '--uses=docker://myexecutor'], 
+            ['jina', 'executor', '--uses=docker://{build_docker_image}'], 
             timeout=30,
             check=True
         )
+```
+
+And the needed fixture looks like this (put it in `tests/conftest.py`)
+
+```python
+@pytest.fixture(scope='session')
+def build_docker_image() -> str:
+    img_name = Path(__file__).parents[1].stem.lower() # lower case name of executor dir
+    subprocess.run(['docker', 'build', '-t', img_name, '.'], check=True)
+
+    return img_name
 ```
 
 Here replace `myexecutor` with the *lower case* name of your executor (the image with its name is built in CI before the test is run). You can also add additional arguments to the main command - if you need to download large files for your model (which should have been done in a fixture at test time), you would add `'--volumes=/path/to/file:/path/to/file/in/container/'`.
 
 What this test does is to launch the executor in a docker container, and if no other errors occur, timeout after 30 seconds (more than enough time for the executor to initialize), which means that it was launched succesfully. On error you will see the full printout of the output in the container, so that you can debug the issue.
 
-The test is given the `@pytest.mark.docker` decorator, so that when testing locally, you can skip this test - because otherwise you would need to build the image after every change. You can do this by running pytest as
+The test is given the `@pytest.mark.docker` decorator, so that when testing locally, you can mostly skip this test - because otherwise the image will be re-built after every change, which takes time. You can do this by running pytest as
 
 ```
 pytest -m "not docker"
