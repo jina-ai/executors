@@ -82,7 +82,7 @@ class BigTransferEncoder(Executor):
         cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
         if 'cuda' in device and len(gpus) > 0:
-            gpu_index = 0 if not 'cuda:' in device else int(device.split(':')[1])
+            gpu_index = 0 if 'cuda:' not in device else int(device.split(':')[1])
             cpus.append(gpus[gpu_index])
         if 'cuda' in self.device and len(gpus) == 0:
             self.logger.warning(
