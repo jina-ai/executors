@@ -162,7 +162,7 @@ jobs:
       - name: Install jina
         run: pip install git+https://github.com/jina-ai/jina/
       - name: Python requirements
-        run: pip install -r requirements.txt -r tests/requirements.txt
+        run: pip install -r gpu_requirements.txt -r tests/requirements.txt
       - name: Image name
         run: echo "IMAGE_NAME=$(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - name: build docker image

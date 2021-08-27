@@ -1,3 +1,4 @@
-https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow_cpu-2.6.0-cp38-cp38-manylinux2010_x86_64.whl
+-f https://storage.googleapis.com/tensorflow/linux/cpu/
+tensorflow_cpu
 Pillow==8.2.0
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
