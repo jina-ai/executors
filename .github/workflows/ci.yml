@@ -64,6 +64,15 @@ jobs:
         run: |
           if [[ -f "tests/pre_test.sh" ]]; then
             bash tests/pre_test.sh; fi
+      - name: Install latest stable 2.x jina version
+        run: |
+          PACKAGE_JSON_URL="https://pypi.org/pypi/jina/json"
+          JINA_VERSION=$(curl -L -s "$PACKAGE_JSON_URL" 
+            |  jq  -r '.releases | keys | .[] 
+              | select(contains("dev") | not) 
+              | select(startswith("2."))' 
+            | sort -V | tail -1)
+          pip install git+https://github.com/jina-ai/jina.git@v${JINA_VERSION}
       - name: Install image normalizer
         run: pip install git+https://github.com/jina-ai/executor-normalizer
       - name: Python requirements
