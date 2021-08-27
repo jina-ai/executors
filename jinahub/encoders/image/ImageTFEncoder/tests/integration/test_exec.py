@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from typing import List
-
+import subprocess
 import numpy as np
 import pytest
 from jina import Flow, Document, DocumentArray
@@ -60,3 +60,22 @@ def test_traversal_path(docs: DocumentArray, docs_per_path: List[List[str]], tra
         for path, count in docs_per_path:
             assert len(DocumentArray(results[0].docs).traverse_flat(path).get_attributes('embedding')) == count
 
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu():
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                '--uses=docker://imagetfencoder:gpu',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'device:cuda'
+
+            ],
+            timeout=30,
+            check=True
+        )

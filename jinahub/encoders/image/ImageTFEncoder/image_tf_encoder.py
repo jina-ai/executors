@@ -38,7 +38,7 @@ class ImageTFEncoder(Executor):
         - `max`: Means that global max pooling will be applied.
     :param default_batch_size: size of each batch
     :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-    :param on_gpu: set to True if using GPU
+    :param device: Device ('cpu', 'cuda', 'cuda:2')
     :param args: additional positional arguments.
     :param kwargs: additional positional arguments.
     """
@@ -49,7 +49,7 @@ class ImageTFEncoder(Executor):
                  pool_strategy: str = 'max',
                  default_batch_size: int = 32,
                  default_traversal_paths: List[str] = None,
-                 on_gpu: bool = True,
+                 device: str = 'cpu',
                  *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
@@ -60,15 +60,17 @@ class ImageTFEncoder(Executor):
         self.img_shape = img_shape
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
-        self.on_gpu = on_gpu
+        self.device = device
         self.logger = JinaLogger(self.__class__.__name__)
 
         import tensorflow as tf
         cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
-        if self.on_gpu and len(gpus) > 0:
-            cpus.append(gpus[0])
-        if self.on_gpu and len(gpus) == 0:
+        if 'cuda' in device and len(gpus) > 0:
+            gpu_index = 0 if not 'cuda:' in device else \
+                int(device.split(':')[1])
+            cpus.append(gpus[gpu_index])
+        if 'cuda' in self.device and len(gpus) == 0:
             self.logger.warning('You tried to use a GPU but no GPU was found on'
                                 ' your system. Defaulting to CPU!')
         tf.config.experimental.set_visible_devices(devices=cpus)

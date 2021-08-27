@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict
 
 import numpy as np
+import pytest
 from jina import DocumentArray, Document, Executor
 
 from ...image_tf_encoder import ImageTFEncoder
@@ -56,3 +57,18 @@ def test_image_results(test_images: Dict[str, np.array]):
     assert small_distance < dist('banana2', 'studio')
     assert small_distance < dist('airplane', 'studio')
     assert small_distance < dist('airplane', 'satellite')
+
+
+@pytest.mark.gpu
+def test_image_results_gpu(test_images: Dict[str, np.array]):
+    num_doc = 2
+    test_data = np.random.rand(num_doc, input_dim, input_dim, 3)
+    doc = DocumentArray()
+    for i in range(num_doc):
+        doc.append(Document(blob=test_data[i]))
+
+    encoder = ImageTFEncoder(device='cuda')
+    encoder.encode(doc, parameters={})
+    assert len(doc) == num_doc
+    for i in range(num_doc):
+        assert doc[i].embedding.shape == (target_output_dim,)
