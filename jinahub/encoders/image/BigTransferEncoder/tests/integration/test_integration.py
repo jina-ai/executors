@@ -1,6 +1,7 @@
 import os
 import shutil
 import pytest
+import subprocess
 
 import PIL.Image as Image
 import numpy as np
@@ -10,6 +11,7 @@ from jina import Flow, Document
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 from ...big_transfer import BigTransferEncoder
+
 
 def data_generator(num_docs):
     for i in range(num_docs):
@@ -38,3 +40,23 @@ def test_all_models(model_name: str, dataset: str):
         docs = data[0].docs
         for doc in docs:
             assert doc.embedding is not None
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu():
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                '--uses=docker://bigtransferencoder:gpu',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'device:cuda'
+
+            ],
+            timeout=30,
+            check=True
+        )
