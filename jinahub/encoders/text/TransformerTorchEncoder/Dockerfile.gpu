@@ -6,7 +6,7 @@ RUN JINA_PIP_INSTALL_PERF=1 pip install --no-cache-dir jina==2.0.20
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . ./transformer-text-encoder/
-WORKDIR ./transformer-text-encoder
+COPY . ./transformer_text_encoder/
+WORKDIR ./transformer_text_encoder
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
