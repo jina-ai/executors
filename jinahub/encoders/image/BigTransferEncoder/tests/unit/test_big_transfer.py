@@ -2,11 +2,10 @@ import os
 import shutil
 from pathlib import Path
 
-import pytest
 import numpy as np
 import PIL.Image as Image
-
-from jina import DocumentArray, Document, Executor
+import pytest
+from jina import Document, DocumentArray, Executor
 
 from ...big_transfer import BigTransferEncoder
 
