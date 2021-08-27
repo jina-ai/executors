@@ -1,4 +1,4 @@
-# ✨ DocCache
+# DocCache
 
 DocCache is an Executor that can cache documents that it has seen before, by different combination of fields (or just one field). It then removes the Document that has the same combination of values in those fields from the DocumentArray, so it will not reach the following Executors in your Flow. 
 
@@ -7,64 +7,9 @@ This is useful for continuously indexing Documents, and not having to worry abou
 ## Notes
 The Executor only removes Documents in the `/index` endpoint. In the other endpoints, operations are done by the Document `id`.
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
-
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-- This Executor works on Python 3.7 and 3.8. 
-- Make sure to install the [requirements](requirements.txt)
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://DocCache')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://DocCache'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://DocCache')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://DocCache'
-```
-
-
-## 🎉️ Example 
+## Usage 
 
 In a Flow:
 
@@ -143,5 +88,3 @@ This API is used to delete the hash codes of the cached `Document`. If the Docum
 #### Outputs
 
 `DocumentArray` without the duplicated `Document`.
-
-## 🔍️ Reference

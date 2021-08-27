@@ -1,4 +1,4 @@
-# ✨ DPRTextEncoder
+# DPRTextEncoder
 
  **DPRTextEncoder** is a class that encodes text into embeddings using the DPR model from huggingface transformers.
 
@@ -29,47 +29,9 @@ The following parameters can be passed on initialization:
 - `device`: The device (cpu or gpu) that the model should be on.
 
 
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
 
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below. 
-
-You can install the requirements with
-
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
-
-Use the prebuilt images from JinaHub in your python codes, 
-
-```python
-from jina import Flow
-	
-f = Flow().add(
-    uses='jinahub+docker://DPRTextEncoder',
-)
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://DPRTextEncoder'
-```
-
-## 🎉️ Example 
+## Usage 
 
 
 ```python
@@ -97,7 +59,7 @@ with f:
 
 
 
-## 🔍️ Reference
+## Reference
 
 - [DPR paper](https://arxiv.org/abs/2004.04906)
 - [Huggingface transformers DPR model documentation](https://huggingface.co/transformers/model_doc/dpr.html)

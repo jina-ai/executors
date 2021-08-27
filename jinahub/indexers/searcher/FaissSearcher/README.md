@@ -1,27 +1,15 @@
-# ✨ FaissSearcher
+# FaissSearcher
 
 **FaissSearcher** is a Faiss-powered vector Searcher.
 
 Faiss is a library for efficient similarity search and clustering of dense vectors. It contains algorithms that search in sets of vectors of any size, up to ones that possibly do not fit in RAM. It also contains supporting code for evaluation and parameter tuning. Faiss is written in C++ with complete wrappers for Python/numpy. Some of the most useful algorithms are implemented on the GPU. It is developed by Facebook AI Research.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-- This Executor works on Python 3.7 and 3.8. 
-- Make sure to install the [requirements](requirements.txt)
-
-## 🚀 Usages
+## Usage
 
 Check [tests](tests) for an example on how to use it.
 
@@ -42,47 +30,7 @@ with:
 
 - from the `Flow.rolling_update` method. See [README](../../../../README.md).
 
-The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../README.md).
-
-### 🚚 Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://FaissSearcher')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://FaissSearcher'
-```
-
-#### using source code
-Use the source code from JinaHub in your code
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://FaissSearcher')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://FaissSearcher'
-```
-
-## 🎉️ Example 
+The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../README.md). 
 
 
 ```python
@@ -105,6 +53,6 @@ with f:
 Attaches matches to the Documents sent as inputs, with the id of the match, and its embedding. For retrieving the full metadata (original text or image blob), use a [key-value searcher](./../../keyvalue).
 
 
-## 🔍️ Reference
+## Reference
 
 - [Facebook Research's Faiss](https://github.com/facebookresearch/faiss)

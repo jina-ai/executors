@@ -1,22 +1,9 @@
-# ✨ FaissPostgresSearcher
+# FaissPostgresSearcher
 
 **FaissPostgresSearcher** is a compound Searcher Executor for Jina, made up of [FaissSearcher](../../FaissSearcher) for performing similarity search on the embeddings, and of [PostgresSearcher](../../keyvalue/PostgresSearcher) for retrieving the metadata of the Documents. 
 
 
-**Table of Contents**
 
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
-
-
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-- This Executor works on Python 3.7 and 3.8. 
-- Make sure to install the [requirements](requirements.txt)
 
 Additionally, you will need a running PostgreSQL database. This can be a local instance, a Docker image, or a virtual machine in the cloud. Make sure you have the credentials and connection parameters.
 
@@ -26,7 +13,7 @@ You can start one in a Docker container, like so:
 docker run -e POSTGRES_PASSWORD=123456  -p 127.0.0.1:5432:5432/tcp postgres:13.2 
 ```
 
-## 🚀 Usages
+## Usage
 
 Check [integration tests](../../../../../tests/integration/psql_dump_reload) for an example on how to use it.
 
@@ -49,47 +36,6 @@ with:
 
 The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../../README.md).
 
-### 🚚 Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://FaissPostgresSearcher')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub+docker://FaissPostgresSearcher'
-```
-
-#### using source code
-Use the source code from JinaHub in your code
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://FaissPostgresSearcher')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: indexer
-    uses: 'jinahub://FaissPostgresSearcher'
-```
-
-
-## 🎉️ Example 
-
 
 ```python
 from jina import Flow, Document
@@ -111,6 +57,5 @@ The FaissSearcher attaches matches to the Documents sent as inputs, with the id 
 Then, the PostgresSearcher retrieves the full metadata (original text or image blob) and attaches those to the Document.
 You receive back the full Document.
 
-## 🔍️ Reference
 
 

@@ -1,4 +1,4 @@
-# ✨ CLIPImageEncoder
+# CLIPImageEncoder
 
 **CLIPImageEncoder** is a class that wraps the image embedding functionality using the **CLIP** model from huggingface transformers.
 
@@ -21,66 +21,12 @@ The following parameters can be passed on initialization:
 - `default_traversal_paths`: fallback traversal path in case there is no traversal path sent in the request
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
-
-#### using docker images
-
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://CLIPImageEncoder')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://CLIPImageEncoder'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://CLIPImageEncoder')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://CLIPImageEncoder'
-```
 
 
-## 🎉️ Example 
+
+## Usage 
 
 
 ```python
@@ -118,7 +64,7 @@ If you set `use_default_preprocessing=False` when creating this encoder, then yo
 
 
 
-## 🔍️ Reference
+## Reference
 
 - [CLIP blog post](https://openai.com/blog/clip/)
 - [CLIP paper](https://arxiv.org/abs/2103.00020)
