@@ -11,12 +11,14 @@ from jina_commons.indexers.dump import export_dump_streaming
 
 from ...faiss_searcher import FaissSearcher
 
+
 def _get_docs_from_vecs(queries):
     docs = DocumentArray()
     for q in queries:
         doc = Document(embedding=q)
         docs.append(doc)
     return docs
+
 
 @pytest.fixture(scope='function', autouse=True)
 def metas(tmpdir):
@@ -26,6 +28,7 @@ def metas(tmpdir):
     metas['name'] = 'faiss_idx'
     yield metas
     del os.environ['TEST_WORKSPACE']
+
 
 def test_train_and_index(metas, tmpdir):
     vec_idx = np.random.randint(0, high=512, size=[512]).astype(str)
@@ -40,7 +43,6 @@ def test_train_and_index(metas, tmpdir):
 
     trained_index_file = os.path.join(os.environ['TEST_WORKSPACE'], 'faiss.index')
 
-
     export_dump_streaming(
         os.path.join(tmpdir, 'dump'),
         1,
@@ -50,8 +52,8 @@ def test_train_and_index(metas, tmpdir):
     dump_path = os.path.join(tmpdir, 'dump')
 
     f = Flow().add(
-        uses = FaissSearcher,
-        timeout_ready = -1,
+        uses=FaissSearcher,
+        timeout_ready=-1,
         uses_with={
             'index_key': 'IVF10_HNSW32,PQ2',
             'trained_index_file': trained_index_file,
@@ -60,7 +62,6 @@ def test_train_and_index(metas, tmpdir):
     with f:
         # the trained index will be dumped to "faiss.index"
         f.post(on='/train', parameters={'train_data_file': train_data_file})
-        
 
     f = Flow().add(
         uses=FaissSearcher,
@@ -68,15 +69,13 @@ def test_train_and_index(metas, tmpdir):
         uses_with={
             'index_key': 'IVF10_HNSW32,PQ2',
             'trained_index_file': trained_index_file,
-            'dump_path': dump_path
+            'dump_path': dump_path,
         },
     )
     with f:
-        result = f.post(on='/search', data=query_docs, return_results=True, parameters={'top_k': 4})[0].docs
+        result = f.post(
+            on='/search', data=query_docs, return_results=True, parameters={'top_k': 4}
+        )[0].docs
         assert len(result[0].matches) == 4
         for d in result:
-            assert (
-                d.matches[0].scores['l2'].value
-                >= d.matches[1].scores['l2'].value
-            )
-
+            assert d.matches[0].scores['l2'].value >= d.matches[1].scores['l2'].value

@@ -289,7 +289,6 @@ class FaissSearcher(Executor):
 
             normalize_L2(vecs)
 
-
         dists, ids = self._faiss_index.search(vecs, top_k)
 
         if self.metric == 'inner_product':
