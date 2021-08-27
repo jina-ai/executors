@@ -90,7 +90,6 @@ def test_simple_indexer_flow(tmpdir):
             inputs=[Document(id='a', embedding=np.array([1]))],
             return_results=True,
         )
-        print(f'{resp}')
         resp = f.post(
             on='/search',
             inputs=[Document(embedding=np.array([1]))],
@@ -103,24 +102,32 @@ def test_simple_indexer_flow(tmpdir):
 def test_simple_indexer(tmpdir):
     metas = {'workspace': str(tmpdir)}
     indexer = SimpleIndexer(index_file_name='name', metas=metas)
-
-    assert indexer._flush
     index_docs = DocumentArray([Document(id='a', embedding=np.array([1]))])
     indexer.index(index_docs, {})
-    assert indexer._flush
 
     search_docs = DocumentArray(([Document(embedding=np.array([1]))]))
     indexer.search(
         docs=search_docs,
         parameters={'top_k': 5},
     )
-    assert not indexer._flush
     assert search_docs[0].matches[0].id == 'a'
 
     search_docs_id = DocumentArray([Document(id='a')])
     assert search_docs_id[0].embedding is None
     indexer.fill_embedding(search_docs_id)
     assert search_docs_id[0].embedding is not None
+
+
+def test_fill_embeddings(tmpdir):
+    metas = {'workspace': str(tmpdir)}
+    indexer = SimpleIndexer(index_file_name='name', metas=metas)
+
+    index_docs = DocumentArray([Document(id='a', embedding=np.array([1]))])
+    indexer.index(index_docs, {})
+    da = DocumentArray([Document(id='a'), Document(id='b')])
+    indexer.fill_embedding(da)
+    assert da['a'].embedding is not None
+    assert da['b'].embedding is None
 
 
 def test_simple_indexer_loading(tmpdir, docs):
@@ -242,3 +249,17 @@ def test_simple_indexer_search(tmpdir, distance_metric, docs):
     assert search_docs[0].chunks[1].matches[0].id == 'doc1-chunk2'
     assert search_docs[1].chunks[0].matches[0].id == 'doc2-chunk1'
     assert search_docs[1].chunks[1].matches[0].id == 'doc2-chunk2'
+
+
+@pytest.mark.parametrize('key_length, expected', [(2, 1), (3, 2)])
+def test_simple_indexer_key_length(key_length, expected, tmpdir):
+    metas = {'workspace': str(tmpdir)}
+
+    indexer = SimpleIndexer(index_file_name='search_normal', key_length=key_length, metas=metas)
+    with indexer:
+        docs = DocumentArray([Document(id='aab'), Document(id='aac')])
+        indexer.index(docs)
+        assert len(indexer._docs) == 2
+    indexer2 = SimpleIndexer(index_file_name='search_normal', key_length=key_length, metas=metas)
+    assert len(indexer2._docs) == expected
+

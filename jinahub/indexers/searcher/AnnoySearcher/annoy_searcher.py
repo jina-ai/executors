@@ -50,6 +50,7 @@ class AnnoySearcher(Executor):
         self.default_traversal_paths = default_traversal_paths
         self.is_distance = is_distance
         self.logger = get_logger(self)
+        self._doc_id_to_offset = {}
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path', None)
         if dump_path is not None:
             self.logger.info('Start building "AnnoyIndexer" from dump data')
@@ -58,7 +59,6 @@ class AnnoySearcher(Executor):
             self._vecs = np.array(list(vecs))
             num_dim = self._vecs.shape[1]
             self._indexer = AnnoyIndex(num_dim, self.metric)
-            self._doc_id_to_offset = {}
             self._load_index(self._ids, self._vecs)
             self.logger.info('Done building Annoy index')
         else:
@@ -106,6 +106,9 @@ class AnnoySearcher(Executor):
     @requests(on='/fill_embedding')
     def fill_embedding(self, query_da: DocumentArray, **kwargs):
         for doc in query_da:
-            doc.embedding = np.array(
-                self._indexer.get_item_vector(int(self._doc_id_to_offset[str(doc.id)]))
-            )
+            doc_idx = self._doc_id_to_offset.get(doc.id)
+            if doc_idx is not None:
+                doc.embedding = np.array(self._indexer.get_item_vector(int(doc_idx)))
+            else:
+                self.logger.warning(f'Document {doc.id} not found in index')
+
