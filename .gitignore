@@ -131,3 +131,7 @@ shell/jina-wizard.sh
 /docs/chapters/proto/docs.md
 
 **/.jina/
+
+# Local model downloads
+.cache
+assets

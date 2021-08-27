@@ -22,21 +22,74 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
+  linting:
+    needs: [prep-testbed]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      - name: Install requirements
+        run: pip install black flake8 isort
+      - name: Flake8 linting
+        run: flake8 ${{ matrix.executor-path }}
+      - name: Check imports using isort
+        run: isort --check-only ${{ matrix.executor-path }}
+      - name: Black check formatting
+        run: black --check ${{ matrix.executor-path }}
+
   unit-tests:
     needs: [prep-testbed]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        test-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+        executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+    defaults:
+      run:
+        working-directory: ${{ matrix.executor-path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: debug
-        run: echo ${{ matrix.test-path }}
-      - name: run unit tests
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      - name: Pre-test script
         run: |
-          bash ./scripts/tests.sh ${{ matrix.test-path }}
+          if [[ -f "tests/pre_test.sh" ]]; then
+            bash tests/pre_test.sh; fi
+      - name: Install latest stable 2.x jina version
+        run: |
+          JINA_VERSION=$(curl -L -s "https://pypi.org/pypi/jina/json" \
+            |  jq  -r '.releases | keys | .[]
+              | select(contains("dev") | not)
+              | select(startswith("2."))' \
+            | sort -V | tail -1)
+          pip install git+https://github.com/jina-ai/jina.git@v${JINA_VERSION}
+      - name: Install image normalizer
+        run: pip install git+https://github.com/jina-ai/executor-normalizer
+      - name: Python requirements
+        run: pip install -r requirements.txt -r tests/requirements.txt
+      - name: Create Dockerfile, if needed
+        run: |
+          if [[ ! -f "Dockerfile" ]]; then
+            normalizer . --jina-version=2; fi
+      - name: Run unit tests
+        run: pytest -s -v -m "not gpu"
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # @@@@@@@ ⚠️ DEPRECATED ⚠️ @@@@@@@@@
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # This job should be removed once all executors are reformatted,
+  # new way of testing docker files is directly with pytest, see
+  # CONTRIBUTING.md in this repo
 
   docker-tests:
     needs: [prep-testbed]
@@ -44,7 +97,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+        executor-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -52,7 +105,8 @@ jobs:
         run: echo ${{ matrix.test-path }}
       - name: run docker tests
         run: |
-          bash ./scripts/test_docker.sh ${{ matrix.test-path }}
+          if [[ -f "${{ matrix.executor-path }}/Dockerfile" ]]; then
+            bash ./scripts/test_docker.sh ${{ matrix.executor-path }}; fi
 
   # always run
   integration-tests:
@@ -60,18 +114,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: run integration tests
-        run: ./scripts/integration.sh
-
-  success-all-test:
-    needs: [integration-tests, unit-tests, docker-tests]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: technote-space/workflow-conclusion-action@v2
-      - name: Check Failure
-        if: env.WORKFLOW_CONCLUSION == 'failure'
-        run: exit 1
-      - name: Success
-        if: ${{ success() }}
-        run: echo "All Done"
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      - name: Install requirements
+        run: |
+          pip install -r tests/requirements.txt
+          export PYTHONPATH=.
+      - name: Run integration tests
+        run: pytest -s -v tests/integration
