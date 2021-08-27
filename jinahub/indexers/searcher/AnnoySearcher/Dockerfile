@@ -1,7 +1,6 @@
-FROM jinaai/jina:2.0 as base
+FROM jinaai/jina:master-py37-perf as base
 # install and upgrade pip
-RUN apt-get update && apt-get install -y python3.7 python3.7-dev python3-pip git
-RUN python3.7 -m pip install --upgrade pip
+RUN apt-get update && apt-get install -y git g++
 
 # setup the workspace
 COPY . /workspace

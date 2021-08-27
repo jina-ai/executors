@@ -9,7 +9,7 @@ cd $test_dir
 
 if [[ -f "scripts/download_model.sh" ]]; then
   bash scripts/download_model.sh
-  sudo apt-get install libsndfile-dev ffmpeg
+  sudo apt-get -y update && sudo apt-get install libsndfile-dev ffmpeg
 fi
 
 if [[ -d "tests/" ]]; then

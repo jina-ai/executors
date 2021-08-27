@@ -19,6 +19,7 @@ class SimpleIndexer(Executor):
             default_traversal_paths: Optional[List[str]] = None,
             default_top_k: int = 5,
             distance_metric: str = 'cosine',
+            key_length: Optional[int] = None,
             **kwargs,
     ):
         """
@@ -30,9 +31,12 @@ class SimpleIndexer(Executor):
         :param default_top_k: default value for the top_k parameter
         :param distance_metric: The distance metric to be used for finding the
             most similar embeddings. The distance metrics supported are the ones supported by `DocumentArray` match method.
+        :param key_length: The length of the keys to be stored inside the `DocumentArrayMemmap` when indexing. To be considered according to the length
+        of the `Document` ids expected to be indexed.
         """
         super().__init__(**kwargs)
-        self._docs = DocumentArrayMemmap(self.workspace + f'/{index_file_name}')
+        extra_kwargs = {'key_length': key_length} if key_length is not None else {}
+        self._docs = DocumentArrayMemmap(self.workspace + f'/{index_file_name}', **extra_kwargs)
         self.default_traversal_paths = default_traversal_paths or ['r']
         self.default_top_k = default_top_k
         self._distance = distance_metric
@@ -40,7 +44,6 @@ class SimpleIndexer(Executor):
         if distance_metric in ['cosine', 'euclidean', 'sqeuclidean']:
             self._use_scipy = False
 
-        self._flush = True
         self._docs_embeddings = None
         self.logger = get_logger(self)
 
@@ -62,7 +65,6 @@ class SimpleIndexer(Executor):
         )
         flat_docs = docs.traverse_flat(traversal_paths)
         self._docs.extend(flat_docs)
-        self._flush = True
 
     @requests(on='/search')
     def search(
@@ -95,10 +97,9 @@ class SimpleIndexer(Executor):
             use_scipy=self._use_scipy,
             limit=top_k,
         )
-        self._flush = False
 
     @requests(on='/delete')
-    def delete(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
+    def delete(self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs):
         """Delete entries from the index by id
 
         :param docs: the documents to delete
@@ -115,7 +116,7 @@ class SimpleIndexer(Executor):
                 del self._docs[idx]
 
     @requests(on='/update')
-    def update(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
+    def update(self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs):
         """Update doc with the same id
 
         :param docs: the documents to update
@@ -134,7 +135,7 @@ class SimpleIndexer(Executor):
                 self._docs.append(doc)
 
     @requests(on='/fill_embedding')
-    def fill_embedding(self, docs: DocumentArray, **kwargs):
+    def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
         """retrieve embedding of Documents by id
 
         :param docs: DocumentArray to search with
@@ -142,4 +143,7 @@ class SimpleIndexer(Executor):
         if not docs:
             return
         for doc in docs:
-            doc.embedding = self._docs[doc.id].embedding
+            if doc.id in self._docs:
+                doc.embedding = self._docs[doc.id].embedding
+            else:
+                self.logger.warning(f'Document {doc.id} not found in index')

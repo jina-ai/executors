@@ -33,6 +33,8 @@ class FaissSearcher(Executor):
     :param normalize: whether or not to normalize the vectors e.g. for the cosine similarity https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how-can-i-index-vectors-for-cosine-similarity
     :param nprobe: Number of clusters to consider at search time.
     :param is_distance: Boolean flag that describes if distance metric need to be reinterpreted as similarities.
+    :param make_direct_map: Boolean flag that describes if direct map has to be computed after building the index. Useful if you need to call `fill_embedding` endpoint and reconstruct vectors
+        by id
 
     .. highlight:: python
     .. code-block:: python
@@ -85,6 +87,7 @@ class FaissSearcher(Executor):
         self.default_top_k = default_top_k
         self.default_traversal_paths = default_traversal_paths
         self.is_distance = is_distance
+        self._doc_id_to_offset = {}
 
         self.logger = get_logger(self)
 
@@ -95,7 +98,7 @@ class FaissSearcher(Executor):
                 dump_path, str(self.runtime_args.pea_id)
             )
             self._ids = np.array(list(ids_iter))
-            self._ext2int = {v: i for i, v in enumerate(self._ids)}
+            self._doc_id_to_offset = {v: i for i, v in enumerate(self._ids)}
 
             self._prefetch_data = []
             if self.prefetch_size and self.prefetch_size > 0:
@@ -353,10 +356,24 @@ class FaissSearcher(Executor):
                 f'{abspath} is broken/incomplete, perhaps forgot to ".close()" in the last usage?'
             )
 
+    @requests(on='/fill_embedding')
+    def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
+        if docs is None:
+            return
+        for doc in docs:
+            if doc.id in self._doc_id_to_offset:
+                try:
+                    reconstruct_embedding = self.index.reconstruct(self._doc_id_to_offset[doc.id])
+                    doc.embedding = np.array(
+                        reconstruct_embedding
+                    )
+                except RuntimeError as exception:
+                    self.logger.warning(f'Trying to reconstruct from document id failed. Most likely the index built '
+                                        f'from index key {self.index_key} does not support this operation. {repr(exception)}')
+            else:
+                self.logger.debug(f'Document {doc.id} not found in index')
+
     @property
     def size(self):
         """Return the nr of elements in the index"""
-        if hasattr(self, '_ids'):
-            return len(self._ids)
-        else:
-            return 0
+        return len(self._doc_id_to_offset)
