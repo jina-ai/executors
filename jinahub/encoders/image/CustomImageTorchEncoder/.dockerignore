@@ -1,6 +1,0 @@
-.git
-.venv
-.github
-.pytest_cache
-__pycache__
-scripts
