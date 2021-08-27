@@ -1,0 +1,3 @@
+jina~=2.0
+pytest
+pytest-mock

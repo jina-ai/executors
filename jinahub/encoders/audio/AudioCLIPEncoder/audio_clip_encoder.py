@@ -24,7 +24,7 @@ class AudioCLIPEncoder(Executor):
     def __init__(
         self,
         model_path: str = 'assets/AudioCLIP-Full-Training.pt',
-        default_traversal_paths: Iterable[str] = ['r'],
+        default_traversal_paths: Iterable[str] = None,
         *args,
         **kwargs
     ):
@@ -35,7 +35,7 @@ class AudioCLIPEncoder(Executor):
         self.aclp = AudioCLIP(pretrained=model_path)
         self.aclp.eval()
         self.aclp.audio.eval()
-        self.default_traversal_paths = default_traversal_paths
+        self.default_traversal_paths = default_traversal_paths or ['r']
 
     @requests
     def encode(

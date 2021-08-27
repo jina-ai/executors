@@ -143,7 +143,7 @@ def test_crafting_image(test_image_uri_doc, manual_convert, dtype_conversion, de
         docs = DocumentArray([doc])
     else:
         docs = DocumentArray([test_image_uri_doc])
-        docs[0].chunks.extend(DocumentArray([test_image_uri_doc]))
+        docs[0].chunks.extend([Document(uri=test_image_uri_doc.uri)])
     processed_docs = norm.craft(docs, parameters={}).traverse_flat(default_traversal_paths)
     assert np.array_equal(processed_docs[0].blob, img.astype(dtype_conversion))
 
