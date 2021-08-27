@@ -28,12 +28,10 @@ class BigTransferEncoder(Executor):
     https://storage.googleapis.com/bit_models/.
 
     :param model_path: the path of the model in the `SavedModel` format.
-        The pretrained model can be downloaded at
-        wget https://storage.googleapis.com/bit_models/[model_name]/feature_vectors/saved_model.pb
-        wget https://storage.googleapis.com/bit_models/[model_name]/feature_vectors/variables/variables.data-00000-of-00001
-        wget https://storage.googleapis.com/bit_models/[model_name]/feature_vectors/variables/variables.index
-
-    :param model_name: includes ``Imagenet1k/R50x1``, ``Imagenet1k/R101x1``, ``Imagenet1k/R50x3``, ``Imagenet1k/R101x3``, ``Imagenet1k/R152x4``, ``Imagenet21k/R50x1``, ``Imagenet21k/R101x1``, ``Imagenet21k/R50x3``, ``Imagenet21k/R101x3``, ``Imagenet21k/R152x4``
+    :param model_name: includes ``Imagenet1k/R50x1``, ``Imagenet1k/R101x1``,
+        ``Imagenet1k/R50x3``, ``Imagenet1k/R101x3``, ``Imagenet1k/R152x4``,
+        ``Imagenet21k/R50x1``, ``Imagenet21k/R101x1``, ``Imagenet21k/R50x3``,
+        ``Imagenet21k/R101x3``, ``Imagenet21k/R152x4``
 
     This encoder checks if the specified model_path exists.
     If it does exist, the model in this folder is used.
@@ -51,7 +49,8 @@ class BigTransferEncoder(Executor):
             ├── variables.data-00000-of-00001
             └── variables.index
     :param: device: Device to be used, e.g. 'cpu', 'cuda', 'cuda:2'
-    :param target_dim: preprocess the data image into shape of `target_dim`, (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
+    :param target_dim: preprocess the data image into shape of `target_dim`,
+        (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
     :param default_traversal_paths: Traversal path through the docs
     :param default_batch_size: Batch size to be used in the encoder model
 
