@@ -18,9 +18,5 @@ for changed_file in $CHANGED_FILES; do
   fi
 done
 
-output="[]"
-if [ ${#changed_folders[@]} -ne 0 ]; then
-    output=$(jq --compact-output --null-input '$ARGS.positional' --args "${changed_folders[@]}")
-fi
-
+output=$(jq --compact-output --null-input '$ARGS.positional' --args "${changed_folders[@]}")
 echo "::set-output name=matrix::${output}"
