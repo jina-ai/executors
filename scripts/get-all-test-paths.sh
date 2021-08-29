@@ -4,27 +4,22 @@
 set -ex
 
 changed_folders=()
-root=`pwd`
 
 for changed_file in $CHANGED_FILES; do
-#  echo changed $changed_file
-
   file_base_dir=$(dirname $changed_file)
-#  echo checking $file_base_dir
-  cd $file_base_dir
 
   # only if the folder has a tests or a Dockerfile but excluding integration tests (always run & separate)
-  if [[ -f "Dockerfile" || -d "tests/" ]]; then
+  if [[ -f "${file_base_dir}/Dockerfile" || -d "${file_base_dir}/tests/" ]]; then
     if [[ ! " ${changed_folders[@]} " =~ " ${file_base_dir} " ]]; then
-#      echo adding $file_base_dir
       if [[ $file_base_dir != "." ]]; then
         changed_folders+=(${file_base_dir})
       fi
     fi
   fi
-
-  cd $root
 done
 
-#echo will run tests on ${changed_folders[@]}
-printf '%s\n' "${changed_folders[@]}" | jq -R . | jq -cs .
+if [ ${#changed_folders[@]} -eq 0 ]; then
+    echo "No changed executors"
+else
+    printf "::set-output name=matrix:: %s\n" "${changed_folders[@]}" | jq -R . | jq -cs .
+fi
