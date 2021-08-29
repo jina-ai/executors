@@ -21,5 +21,5 @@ done
 if [ ${#changed_folders[@]} -eq 0 ]; then
     echo "::set-output name=matrix:: []"
 else
-    printf "::set-output name=matrix:: %s\n" "${changed_folders[@]}" | jq -R . | jq -cs .
+    echo "::set-output name=matrix:: $("${changed_folders[@]}" | jq -R . | jq -cs .)"
 fi
