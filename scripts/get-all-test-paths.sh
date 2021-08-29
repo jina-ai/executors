@@ -18,8 +18,9 @@ for changed_file in $CHANGED_FILES; do
   fi
 done
 
-if [ ${#changed_folders[@]} -eq 0 ]; then
-    echo "::set-output name=matrix:: []"
-else
-    echo "::set-output name=matrix:: $("${changed_folders[@]}" | jq -R . | jq -cs .)"
+output="[]"
+if [ ${#changed_folders[@]} -ne 0 ]; then
+    output=$(echo "${changed_folders[@]}" | jq -R . | jq -cs .)
 fi
+
+echo "::set-output name=matrix:: ${output}"
