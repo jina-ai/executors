@@ -12,8 +12,11 @@ for changed_file in $CHANGED_FILES; do
 
   # only if the folder has a tests or a Dockerfile but excluding integration tests (always run & separate)
   if [[ -f "${file_base_dir}/Dockerfile" || -d "${file_base_dir}/tests/" ]]; then
+    echo "step 1"
     if [[ ! " ${changed_folders[@]} " =~ " ${file_base_dir} " ]]; then
+      echo "step 2"
       if [[ $file_base_dir != "." ]]; then
+        echo "adding $file_base_dir"
         changed_folders+=(${file_base_dir})
       fi
     fi
