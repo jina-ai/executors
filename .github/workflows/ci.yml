@@ -22,6 +22,7 @@ jobs:
   linting:
     needs: [prep-testbed]
     runs-on: ubuntu-latest
+    if: ${{ needs.prep-testbed.outputs.matrix != '[]' && needs.prep-testbed.outputs.matrix != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -44,6 +45,7 @@ jobs:
   unit-tests:
     needs: [prep-testbed]
     runs-on: ubuntu-latest
+    if: ${{ needs.prep-testbed.outputs.matrix != '[]' && needs.prep-testbed.outputs.matrix != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -91,6 +93,7 @@ jobs:
   docker-tests:
     needs: [prep-testbed]
     runs-on: ubuntu-latest
+    if: ${{ needs.prep-testbed.outputs.matrix != '[]' && needs.prep-testbed.outputs.matrix != '' }}
     strategy:
       fail-fast: false
       matrix:
