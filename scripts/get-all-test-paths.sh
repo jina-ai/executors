@@ -8,7 +8,9 @@ changed_folders=()
 for changed_file in $CHANGED_FILES; do
   file_base_dir=$(dirname $changed_file)
   echo $changed_file
-  echo $file_base_dir
+  echo "+++++++++++++++++++++++++++++++++++++++"
+  echo "${file_base_dir}/Dockerfile"
+  echo "+++++++++++++++++++++++++++++++++++++++"
 
   # only if the folder has a tests or a Dockerfile but excluding integration tests (always run & separate)
   if [[ -f "${file_base_dir}/Dockerfile" || -d "${file_base_dir}/tests/" ]]; then
