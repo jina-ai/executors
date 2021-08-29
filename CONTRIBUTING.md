@@ -65,6 +65,8 @@ If you are working from the command line, you should use these tools form the ro
 black jinahub/encoders/text/BERTTextEncoder
 ```
 
+We also provide a `.pre-commit-config.yaml` file, which enables you to use [pre-commit](https://pre-commit.com/index.html) to automatically perform the required linting/formatting actions before you commit your changes.
+
 ### 📖 Documentation
 
 When writing code you should already be adding documentation, by writing docstrings for all classes, methods and functions. Type hints for all arguments and return values should be added as well.
