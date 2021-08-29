@@ -20,7 +20,7 @@ done
 
 output="[]"
 if [ ${#changed_folders[@]} -ne 0 ]; then
-    output=$(jq --compact-output --null-input '$ARGS.positional' --args "${X[@]}")
+    output=$(jq --compact-output --null-input '$ARGS.positional' --args "${changed_folders[@]}")
 fi
 
 echo "::set-output name=matrix:: ${output}"
