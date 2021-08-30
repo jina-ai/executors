@@ -84,7 +84,8 @@ class MongoHandler:
                 filter={'id': doc.id}, projection={'_id': False}
             )
             if result:
-                result.pop('embedding')
+                if 'embedding' in result:
+                    result.pop('embedding')
                 retrieved_doc = Document(result)
                 doc.update(retrieved_doc)
 
