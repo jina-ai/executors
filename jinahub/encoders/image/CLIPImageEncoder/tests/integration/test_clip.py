@@ -1,3 +1,5 @@
+import subprocess
+
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Flow
@@ -26,3 +28,22 @@ def test_integration(request_size: int):
         for doc in r.docs:
             assert doc.embedding is not None
             assert doc.embedding.shape == (512,)
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu():
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                '--uses=docker://clipimageencoder:gpu',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'device:cuda',
+            ],
+            timeout=30,
+            check=True,
+        )

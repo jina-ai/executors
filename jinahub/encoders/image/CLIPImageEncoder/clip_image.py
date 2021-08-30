@@ -1,7 +1,7 @@
 from typing import Optional, Tuple
 
 import torch
-from jina import Executor, DocumentArray, requests
+from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 from transformers import CLIPFeatureExtractor, CLIPModel
@@ -14,7 +14,8 @@ class CLIPImageEncoder(Executor):
     :param pretrained_model_name_or_path: Can be either:
         - A string, the model id of a pretrained CLIP model hosted
             inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
-        - A path to a directory containing model weights saved, e.g., ./my_model_directory/
+        - A path to a directory containing model weights saved, e.g.,
+            ./my_model_directory/
     :param base_feature_extractor: Base feature extractor for images.
         Defaults to ``pretrained_model_name_or_path`` if None
     :param use_default_preprocessing: Whether to use the `base_feature_extractor` on
@@ -23,8 +24,10 @@ class CLIPImageEncoder(Executor):
         for details.
     :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
         where X is the index of the GPU on the machine)
-    :param default_batch_size: fallback batch size in case there is no batch size sent in the request
-    :param default_traversal_paths: fallback traversal path in case there is no traversal path sent in the request
+    :param default_batch_size: fallback batch size in case there is no batch size
+        sent in the request
+    :param default_traversal_paths: fallback traversal path in case there is no
+        traversal path sent in the request
     """
 
     def __init__(
@@ -66,12 +69,13 @@ class CLIPImageEncoder(Executor):
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: dict, **kwargs):
         """
-        Encode all docs with images and store the encodings in the embedding attribute of the docs.
+        Encode all docs with images and store the encodings in the embedding
+        attribute of the docs.
 
         :param docs: documents sent to the encoder. The docs must have `blob` of the
-            shape ``Height x Width x 3``. By default, the input ``blob`` must be an ``ndarray``
-            with ``dtype=uint8`` or ``dtype=float32``. The ``Height`` and ``Width``
-            can have arbitrary values.
+            shape ``Height x Width x 3``. By default, the input ``blob`` must
+            be an ``ndarray`` with ``dtype=uint8`` or ``dtype=float32``.
+            The ``Height`` and ``Width`` can have arbitrary values.
 
             If you set ``use_default_preprocessing=True`` when creating this encoder,
             then the image arrays should have the shape ``[H, W, C]``, and be in the
