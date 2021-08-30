@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
 
-import pytest
 import numpy as np
-from jina import Document, DocumentArray, Flow, Executor
-from jina_commons.indexers.dump import import_vectors, import_metas
+import pytest
+from jina import Document, DocumentArray, Executor, Flow
+from jina_commons.indexers.dump import import_metas, import_vectors
 
 from ..mongo_storage import doc_without_embedding
 
