@@ -2,12 +2,11 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from pathlib import Path
-from typing import Tuple, Dict
-
-import pytest
+from typing import Dict, Tuple
 
 import numpy as np
-from jina import DocumentArray, Document, Executor
+import pytest
+from jina import Document, DocumentArray, Executor
 
 from ...torch_encoder import ImageTorchEncoder
 
@@ -62,11 +61,10 @@ def test_encode_image_returns_correct_length(
     ],
 )
 @pytest.mark.gpu
-def test_encode_image_returns_correct_length(
+def test_encode_image_returns_correct_length_gpu(
     traversal_paths: Tuple[str], docs: DocumentArray
 ) -> None:
-    encoder = ImageTorchEncoder(default_traversal_path=traversal_paths,
-                                device='cuda')
+    encoder = ImageTorchEncoder(default_traversal_path=traversal_paths, device='cuda')
 
     encoder.encode(docs=docs, parameters={})
 

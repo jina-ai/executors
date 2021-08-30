@@ -4,13 +4,12 @@ __license__ = "Apache-2.0"
 import os
 from typing import Dict
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
-from torchvision.models.mobilenetv2 import model_urls
+from jina import Document, DocumentArray
 from PIL import Image
-
-from jina import DocumentArray, Document
+from torchvision.models.mobilenetv2 import model_urls
 
 
 @pytest.fixture()

@@ -1,9 +1,10 @@
 from pathlib import Path
 from typing import Dict
 
-import pytest
 import numpy as np
-from jina import DocumentArray, Document, Executor
+import pytest
+from jina import Document, DocumentArray, Executor
+
 from ...paddle_image import ImagePaddlehubEncoder
 
 input_dim = 224

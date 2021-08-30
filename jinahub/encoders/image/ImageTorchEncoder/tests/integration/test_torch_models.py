@@ -3,14 +3,11 @@ __license__ = "Apache-2.0"
 
 from typing import Dict
 
-import pytest
-
 import numpy as np
-from jina import DocumentArray, Document
+import pytest
+from jina import Document, DocumentArray
 
 from ...torch_encoder import ImageTorchEncoder
-
-
 
 MODELS_TO_TEST = [
     'mobilenet_v2',
@@ -22,17 +19,12 @@ MODELS_TO_TEST = [
 ]
 
 
-@pytest.mark.parametrize(
-    'model_name', MODELS_TO_TEST
-)
+@pytest.mark.parametrize('model_name', MODELS_TO_TEST)
 def test_load_torch_models(model_name: str, test_images: Dict[str, np.array]):
     encoder = ImageTorchEncoder(model_name=model_name)
 
     docs = DocumentArray([Document(blob=img_arr) for img_arr in test_images.values()])
-    encoder.encode(
-        docs=docs,
-        parameters={}
-    )
+    encoder.encode(docs=docs, parameters={})
 
     for doc in docs:
         assert doc.embedding is not None
