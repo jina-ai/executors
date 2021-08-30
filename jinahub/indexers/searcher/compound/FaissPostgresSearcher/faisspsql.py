@@ -4,29 +4,26 @@ __license__ = "Apache-2.0"
 import copy
 from typing import Dict
 
-from jina import requests, DocumentArray, Executor
-
+from jina import DocumentArray, Executor, requests
 from jina_commons import get_logger
 
 try:
     from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
-except:
+except ImportError:
     from jina_executors.indexers.searcher.FaissSearcher.faiss_searcher import (
         FaissSearcher,
     )
 
 try:
-    from jinahub.indexers.storage.PostgreSQLStorage import (
-        PostgreSQLStorage,
-    )
-except:
-    from jina_executors.indexers.storage.PostgreSQLStorage import (
-        PostgreSQLStorage,
-    )
+    from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+except ImportError:
+    from jina_executors.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 
 
 class FaissPostgresSearcher(Executor):
-    """A Compound Indexer made up of a FaissSearcher (for vectors) and a Postgres Indexer"""
+    """A Compound Indexer made up of a FaissSearcher (for vectors) and a PostgreSQL
+    Indexer (for indexing and key-value lookup).
+    """
 
     def __init__(
         self,
