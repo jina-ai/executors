@@ -11,20 +11,18 @@ jobs:
         uses: jitterbit/get-changed-files@v1
         continue-on-error: true
       - id: set-matrix
-        run: |
-          sudo apt-get install jq
-          echo "::set-output name=matrix::$(bash scripts/get-all-test-paths.sh)"
+        run: bash scripts/get-all-test-paths.sh
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.all }}
       - id: debug
-        run: |
-          echo ${{ steps.set-matrix.outputs.matrix }}
+        run: echo ${{ steps.set-matrix.outputs.matrix }}
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
   linting:
     needs: [prep-testbed]
     runs-on: ubuntu-latest
+    if: ${{ needs.prep-testbed.outputs.matrix != '[]' }}
     strategy:
       fail-fast: false
       matrix:
@@ -47,6 +45,7 @@ jobs:
   unit-tests:
     needs: [prep-testbed]
     runs-on: ubuntu-latest
+    if: ${{ needs.prep-testbed.outputs.matrix != '[]' }}
     strategy:
       fail-fast: false
       matrix:
@@ -94,6 +93,7 @@ jobs:
   docker-tests:
     needs: [prep-testbed]
     runs-on: ubuntu-latest
+    if: ${{ needs.prep-testbed.outputs.matrix != '[]' }}
     strategy:
       fail-fast: false
       matrix:

@@ -17,9 +17,8 @@ for changed_file in $CHANGED_FILES; do
   cd $file_base_dir
 
   # only if the folder has a tests or a Dockerfile but excluding integration tests (always run & separate)
-  if [[ -f "Dockerfile" || -d "tests/" ]]; then
+  if [[ -f "${file_base_dir}/Dockerfile" || -d "${file_base_dir}/tests/" ]]; then
     if [[ ! " ${changed_folders[@]} " =~ " ${file_base_dir} " ]]; then
-#      echo adding $file_base_dir
       if [[ $file_base_dir != "." ]]; then
         changed_folders+=(${file_base_dir})
       fi
@@ -29,5 +28,5 @@ for changed_file in $CHANGED_FILES; do
   cd $root
 done
 
-#echo will run tests on ${changed_folders[@]}
-printf '%s\n' "${changed_folders[@]}" | jq -R . | jq -cs .
+output=$(jq --compact-output --null-input '$ARGS.positional' --args "${changed_folders[@]}")
+echo "::set-output name=matrix::${output}"
