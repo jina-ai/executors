@@ -46,6 +46,16 @@ def test_mongo_search(docs_to_index, storage, docker_compose):
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_mongo_search_without_embedding(
+    docs_to_index_no_embedding, storage, docker_compose
+):
+    storage.add(docs=docs_to_index_no_embedding, parameters={})
+    docs_to_search = DocumentArray([Document(id=docs_to_index_no_embedding[0].id)])
+    storage.search(docs=docs_to_search)
+    assert docs_to_search[0].text == docs_to_index_no_embedding[0].text
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_mongo_delete(docs_to_index, storage, docker_compose):
     doc_id_to_delete = docs_to_index[0].id
     storage.delete(docs=DocumentArray([Document(id=doc_id_to_delete)]))
