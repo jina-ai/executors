@@ -1,9 +1,9 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
-from typing import Tuple, Generator, Dict, List, Optional
+from typing import Dict, Generator, List, Optional, Tuple
 
 import numpy as np
-from jina import Executor, requests, DocumentArray, Document
+from jina import Document, DocumentArray, Executor, requests
 from jina_commons.indexers.dump import export_dump_streaming
 
 from .mongo_handler import MongoHandler

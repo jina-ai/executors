@@ -1,8 +1,8 @@
 import os
 import time
 
-import pytest
 import numpy as np
+import pytest
 from jina import Document, DocumentArray
 
 from .. import MongoDBStorage

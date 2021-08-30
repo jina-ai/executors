@@ -3,10 +3,10 @@ __license__ = "Apache-2.0"
 
 from typing import Optional
 
+from jina import Document, DocumentArray
+from jina.logging.logger import JinaLogger
 from pymongo import MongoClient
 from pymongo.errors import BulkWriteError
-from jina.logging.logger import JinaLogger
-from jina import Document, DocumentArray
 
 
 class MongoHandler:
