@@ -33,7 +33,8 @@ class MongoHandler:
 
     @property
     def collection(self):
-        """Get the collection, if the collection is new, create index based on ID field."""
+        """Get the collection, if the collection is new,
+        create index based on ID field."""
         if not self._collection:
             self._collection = self._connection[self._database_name][
                 self._collection_name

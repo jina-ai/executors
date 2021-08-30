@@ -73,7 +73,8 @@ class MongoDBStorage(Executor):
     def search(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
         """Get the Documents by the ids of the docs in the DocArray
 
-        :param docs: the DocumentArray to search with (they only need to have the `.id` set)
+        :param docs: the DocumentArray to search with
+                    (they only need to have the `.id` set)
         :param parameters: the parameters to this request
         """
         traversal_paths = parameters.get('traversal_paths', self._traversal_paths)
