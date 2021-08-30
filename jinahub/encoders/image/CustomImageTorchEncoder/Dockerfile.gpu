@@ -9,6 +9,6 @@ RUN pip install --no-cache-dir -r gpu_requirements.txt
 COPY . /custom_encoder/
 WORKDIR /custom_encoder
 
-RUN python tests/model/external_model.py
+RUN python3 tests/model/external_model.py
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
