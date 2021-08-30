@@ -137,7 +137,6 @@ class CustomImageTorchEncoder(Executor):
                 _feature = self.adaptiveAvgPool2d(
                     self._get_features(content=_input).detach()
                 )
-                _feature = _feature.to(self.device)
-                _feature = _feature.numpy()
+                _feature = _feature.cpu().numpy()
                 for doc, embedding in zip(document_batch, _feature):
                     doc.embedding = embedding.squeeze()

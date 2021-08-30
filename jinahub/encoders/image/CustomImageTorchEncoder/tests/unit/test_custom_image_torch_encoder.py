@@ -66,9 +66,7 @@ def test_encoder_gpu():
     test_img = np.random.rand(3, input_dim, input_dim)
     docs = DocumentArray([Document(blob=test_img), Document(blob=test_img)])
     encoder.encode(docs, {})
-    import time
 
-    time.sleep(5)
     assert len(docs) == 2
     for doc in docs:
         assert doc.embedding.shape == (output_dim,)
