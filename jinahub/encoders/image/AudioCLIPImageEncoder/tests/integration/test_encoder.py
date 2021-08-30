@@ -1,12 +1,10 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Callable
-
 import numpy as np
 import pytest
-
 from jina import Document, DocumentArray, Flow
+
 from ...audioclip_image import AudioCLIPImageEncoder
 
 
