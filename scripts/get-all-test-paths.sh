@@ -7,6 +7,14 @@ changed_folders=()
 
 for changed_file in $CHANGED_FILES; do
   file_base_dir=$(dirname $changed_file)
+  # Test folder changes
+  if [ $(basename $file_base_dir) = "tests" ]; then
+    file_base_dir=$(dirname "$file_base_dir")
+  fi
+  # Changes in subfolder of test folder (e.g. unit_test/integration)
+  if [ $(basename $(dirname "$file_base_dir")) = "tests" ]; then
+    file_base_dir=$(dirname $(dirname "$file_base_dir"))
+  fi
 
   # only if the folder has a tests or a Dockerfile but excluding integration tests (always run & separate)
   if [[ -f "${file_base_dir}/Dockerfile" || -d "${file_base_dir}/tests/" ]]; then
