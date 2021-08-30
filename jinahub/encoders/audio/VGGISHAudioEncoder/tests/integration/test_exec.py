@@ -9,7 +9,6 @@ import pytest
 from jina import Document, DocumentArray, Flow
 
 from ...vggish import vggish_input
-from ...vggish_audio_encoder import VggishAudioEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

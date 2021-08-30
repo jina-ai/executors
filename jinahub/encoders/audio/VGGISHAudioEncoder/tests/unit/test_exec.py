@@ -28,7 +28,7 @@ def test_embedding_dimension():
 
 
 @pytest.mark.gpu
-def test_embedding_dimension():
+def test_embedding_dimension_gpu():
     x_audio, sample_rate = librosa.load(
         Path(__file__).parents[1] / 'test_data/sample.wav'
     )

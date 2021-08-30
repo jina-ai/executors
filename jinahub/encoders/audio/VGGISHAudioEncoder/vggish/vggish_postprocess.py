@@ -20,7 +20,13 @@ __license__ = "Apache-2.0"
 
 import numpy as np
 
-from .vggish_params import *
+from .vggish_params import (
+    EMBEDDING_SIZE,
+    PCA_EIGEN_VECTORS_NAME,
+    PCA_MEANS_NAME,
+    QUANTIZE_MAX_VAL,
+    QUANTIZE_MIN_VAL,
+)
 
 
 class Postprocessor(object):

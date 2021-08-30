@@ -18,13 +18,21 @@ __license__ = "Apache-2.0"
 
 """Compute input examples for VGGish from audio waveform."""
 
-import os
-import sys
-
+import numpy as np
 import resampy
 
-from .mel_features import *
-from .vggish_params import *
+from .mel_features import frame, log_mel_spectrogram
+from .vggish_params import (
+    EXAMPLE_HOP_SECONDS,
+    EXAMPLE_WINDOW_SECONDS,
+    LOG_OFFSET,
+    MEL_MAX_HZ,
+    MEL_MIN_HZ,
+    NUM_MEL_BINS,
+    SAMPLE_RATE,
+    STFT_HOP_LENGTH_SECONDS,
+    STFT_WINDOW_LENGTH_SECONDS,
+)
 
 try:
     import soundfile as sf

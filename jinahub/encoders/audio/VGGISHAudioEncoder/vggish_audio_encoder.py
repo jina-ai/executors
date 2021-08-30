@@ -3,17 +3,19 @@ __license__ = "Apache-2.0"
 
 import os
 from pathlib import Path
-from typing import Any, Iterable, List, Optional
+from typing import Iterable, Optional
 
+import numpy as np
 import requests as _requests
 import tensorflow as tf
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
-tf.compat.v1.disable_eager_execution()
+from .vggish.vggish_params import INPUT_TENSOR_NAME, OUTPUT_TENSOR_NAME
+from .vggish.vggish_postprocess import Postprocessor
+from .vggish.vggish_slim import define_vggish_slim, load_vggish_slim_checkpoint
 
-from .vggish.vggish_postprocess import *
-from .vggish.vggish_slim import *
+tf.compat.v1.disable_eager_execution()
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -23,7 +25,8 @@ class VggishAudioEncoder(Executor):
     Encode audio data with Vggish embeddings
 
     :param model_path: path of the models directory
-    :param default_traversal_paths: fallback batch size in case there is not batch size sent in the request
+    :param default_traversal_paths: fallback batch size in case there is not
+        batch size sent in the request
     :param device: device to run the model on e.g. 'cpu'/'cuda'/'cuda:2'
     """
 
@@ -61,7 +64,8 @@ class VggishAudioEncoder(Executor):
 
         if not self.vgg_model_path.exists():
             self.logger.info(
-                'VGGish model cannot be found from the given model path, downloading a new one...'
+                'VGGish model cannot be found from the given model path, '
+                'downloading a new one...'
             )
             try:
                 r = _requests.get(
@@ -82,7 +86,8 @@ class VggishAudioEncoder(Executor):
 
         if not self.pca_model_path.exists():
             self.logger.info(
-                'PCA model cannot be found from the given model path, downloading a new one...'
+                'PCA model cannot be found from the given model path, '
+                'downloading a new one...'
             )
             try:
                 r = _requests.get(
@@ -115,8 +120,9 @@ class VggishAudioEncoder(Executor):
 
         :param docs: documents sent to the encoder. The docs must have `text`.
             By default, the input `text` must be a `list` of `str`.
-        :param parameters: dictionary to define the `traversal_paths` and the `batch_size`. For example,
-               `parameters={'traversal_paths': ['r'], 'batch_size': 10}`.
+        :param parameters: dictionary to define the `traversal_paths` and the
+            `batch_size`. For example, `parameters={'traversal_paths': ['r'],
+            'batch_size': 10}`.
         :param kwargs: Additional key value arguments.
         :return:
         """

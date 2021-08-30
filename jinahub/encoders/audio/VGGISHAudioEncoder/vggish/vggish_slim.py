@@ -36,7 +36,7 @@ https://github.com/tensorflow/models/blob/master/research/slim/nets/vgg.py
 import tensorflow.compat.v1 as tf
 import tf_slim as slim
 
-from .vggish_params import *
+from .vggish_params import EMBEDDING_SIZE, INIT_STDDEV, NUM_BANDS, NUM_FRAMES
 
 
 def define_vggish_slim(features_tensor=None, training=False):
