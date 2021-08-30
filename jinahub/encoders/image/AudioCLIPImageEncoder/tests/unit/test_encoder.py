@@ -133,10 +133,8 @@ def test_traversal_path(
 ):
     basic_encoder.encode(nested_docs, parameters={'traversal_paths': [path]})
     for path_check, count in expected_counts:
-        assert (
-            len(nested_docs.traverse_flat([path_check]).get_attributes('embedding'))
-            == count
-        )
+        embeddings = nested_docs.traverse_flat([path_check]).get_attributes('embedding')
+        assert (len([em for em in embeddings if em is not None]) == count)
 
 
 @pytest.mark.parametrize("batch_size", [1, 2, 4, 8])

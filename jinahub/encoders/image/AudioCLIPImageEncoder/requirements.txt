@@ -1,15 +1,12 @@
-jina==2.0.10
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
-
-# Curated requirements from AudioCLIP
-librosa==0.7.2
+-f https://download.pytorch.org/whl/torch_stable.html
+torch==1.9.0+cpu
+torchvision
 pytorch-ignite==0.3.0
-scikit-learn==0.22.1
-scipy==1.4.1
 termcolor==1.1.0
-torch==1.7.1
-torchvision==0.8.2
 tqdm==4.43.0
 visdom==0.1.8.9
 ftfy==6.0.3
+librosa==0.8.0
 regex==2021.7.6
+ffmpeg

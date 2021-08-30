@@ -1,2 +1,2 @@
-jina[http]==2.0.0rc9
+jina[http]~=2.0
 pytest==6.2.4
