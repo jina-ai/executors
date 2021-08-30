@@ -1,5 +1,5 @@
-paddlehub==1.8.2
-paddlepaddle==1.8.5
-six==1.15.0
-jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
+torch==1.9.0
+torchvision==0.10.0
 pillow==8.2
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
+lz4~=3.1

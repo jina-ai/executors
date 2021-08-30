@@ -5,6 +5,7 @@ from typing import List
 
 import numpy as np
 import pytest
+import subprocess
 from jina import Flow, Document, DocumentArray
 from ...paddle_image import ImagePaddlehubEncoder
 
@@ -58,4 +59,24 @@ def test_traversal_path(docs: DocumentArray, docs_per_path: List[List[str]], tra
             return_results=True
         )
         for path, count in docs_per_path:
-            assert len(DocumentArray(results[0].docs).traverse_flat([path]).get_attributes('embedding')) == count
+            embeddings = DocumentArray(results[0].docs).traverse_flat([path]).get_attributes('embedding')
+            assert len([em for em in embeddings if em is not None]) == count
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu():
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                '--uses=docker://imagepaddlehubencoder:gpu',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'device:cuda',
+            ],
+            timeout=30,
+            check=True,
+        )

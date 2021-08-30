@@ -54,6 +54,27 @@ def test_encode_image_returns_correct_length(
         assert doc.embedding.shape == (512,)
 
 
+@pytest.mark.parametrize(
+    'traversal_paths, docs',
+    [
+        (('r',), pytest.lazy_fixture('docs_with_blobs')),
+        (('c',), pytest.lazy_fixture('docs_with_chunk_blobs')),
+    ],
+)
+@pytest.mark.gpu
+def test_encode_image_returns_correct_length(
+    traversal_paths: Tuple[str], docs: DocumentArray
+) -> None:
+    encoder = ImageTorchEncoder(default_traversal_path=traversal_paths,
+                                device='cuda')
+
+    encoder.encode(docs=docs, parameters={})
+
+    for doc in docs.traverse_flat(traversal_paths):
+        assert doc.embedding is not None
+        assert doc.embedding.shape == (512,)
+
+
 @pytest.mark.parametrize('model_name', ['resnet50', 'mobilenet_v3_large', 'googlenet'])
 def test_encodes_semantic_meaning(test_images: Dict[str, np.array], model_name: str):
     encoder = ImageTorchEncoder(model_name=model_name)

@@ -1,4 +1,4 @@
-FROM jinaai/jina:master-py37-perf
+FROM jinaai/jina:2.0.20
 
 # install git
 RUN apt-get -y update && apt-get install -y git libgomp1 libglib2.0-0 libsm6 libxext6 libfontconfig1 libxrender1

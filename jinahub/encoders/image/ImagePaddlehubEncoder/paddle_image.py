@@ -39,7 +39,7 @@ class ImagePaddlehubEncoder(Executor):
     :param channel_axis: The axis of the color channel, default is -3
     :param default_batch_size: size of each batch
     :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-    :param on_gpu: set to True if using GPU
+    :param device: Device to run the model on (e.b. 'cpu'/'cuda'/'cuda:2')
     :param args:  Additional positional arguments
     :param kwargs: Additional keyword arguments
     """
@@ -51,7 +51,7 @@ class ImagePaddlehubEncoder(Executor):
             channel_axis: int = -3,
             default_batch_size: int = 32,
             default_traversal_paths: Tuple[str] = ('r', ),
-            on_gpu: bool = False,
+            device: str = 'cpu',
             *args,
             **kwargs,
     ):
@@ -62,17 +62,22 @@ class ImagePaddlehubEncoder(Executor):
         self._default_channel_axis = -3
         self.inputs_name = None
         self.outputs_name = None
-        self.on_gpu = on_gpu
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
 
         import paddlehub as hub
+        import paddle
+        paddle.enable_static()
         module = hub.Module(name=self.model_name)
         inputs, outputs, self.model = module.context(trainable=False)
         self.inputs_name, self.outputs_name = self._get_inputs_and_outputs_name(inputs, outputs)
 
         import paddle.fluid as fluid
-        self.device = fluid.CUDAPlace(0) if self.on_gpu else fluid.CPUPlace()
+        if 'cuda' in device:
+            gpu_index = 0 if 'cuda:' not in device else int(device.split(':')[1])
+            self.device = fluid.CUDAPlace(gpu_index)
+        else:
+            self.device = fluid.CPUPlace()
         self.exe = fluid.Executor(self.device)
 
     @requests

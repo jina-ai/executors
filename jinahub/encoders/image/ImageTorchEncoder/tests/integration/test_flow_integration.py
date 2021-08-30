@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from typing import List
-
+import subprocess
 import numpy as np
 import pytest
 
@@ -71,3 +71,22 @@ def test_traversal_paths(docs: DocumentArray, docs_per_path: List[List[str]], tr
         )
 
     assert validate_traversal(docs_per_path)(resp)
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu():
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                '--uses=docker://imagetorchencoder:gpu',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'device:cuda',
+            ],
+            timeout=30,
+            check=True,
+        )

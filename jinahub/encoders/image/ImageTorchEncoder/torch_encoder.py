@@ -39,7 +39,7 @@ class ImageTorchEncoder(Executor):
     def __init__(
         self,
         model_name: str = 'resnet18',
-        device: Optional[str] = None,
+        device: str = 'cpu',
         default_traversal_path: Tuple = ('r', ),
         default_batch_size: Optional[int] = 32,
         use_default_preprocessing: bool = True,
@@ -48,8 +48,20 @@ class ImageTorchEncoder(Executor):
     ):
         super().__init__(*args, **kwargs)
 
-        if not device:
-            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if (device not in ['cpu', 'cuda']) and (not device.startswith('cuda:')):
+            self.logger.error(
+                f'Torch device {device} not supported. Must be cpu or cuda!'
+            )
+            raise RuntimeError(
+                f'Torch device {device} not supported. Must be cpu or cuda!'
+            )
+
+        if device.startswith('cuda') and not torch.cuda.is_available():
+            self.logger.warning(
+                'You tried to use GPU but torch did not detect your '
+                'GPU correctly. Defaulting to CPU. Check your CUDA installation!'
+            )
+            device = 'cpu'
         self.device = device
         self.default_batch_size = default_batch_size
         self.use_default_preprocessing = use_default_preprocessing
@@ -59,7 +71,7 @@ class ImageTorchEncoder(Executor):
         # axis 0 is the batch
         self._default_channel_axis = 1
 
-        self.model_wrapper = EmbeddingModelWrapper(model_name)
+        self.model_wrapper = EmbeddingModelWrapper(model_name, device=self.device)
 
         self._preprocess = T.Compose([
             T.ToPILImage(),
