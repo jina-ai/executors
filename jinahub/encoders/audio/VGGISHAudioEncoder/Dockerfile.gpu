@@ -1,6 +1,6 @@
 FROM nvidia/cuda:11.3.1-cudnn8-runtime
 
-RUN apt update && apt install -y python3.8 python3-pip git ffmpeg libsndfile1-dev
+RUN apt update && DEBIAN_FRONTEND="noninteractive" apt install -y python3.8 python3-pip git libsndfile-dev
 RUN JINA_PIP_INSTALL_PERF=1 pip install --no-cache-dir jina==2.0.20
 
 COPY gpu_requirements.txt gpu_requirements.txt
