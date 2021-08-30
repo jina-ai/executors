@@ -1,7 +1,6 @@
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
 resampy==0.2.2
--f https://storage.googleapis.com/tensorflow/linux/cpu/
-tensorflow_cpu
+tensorflow==2.5.0
 tf_slim==1.1.0
 six==1.15.0
 soundfile==0.10.3.post1

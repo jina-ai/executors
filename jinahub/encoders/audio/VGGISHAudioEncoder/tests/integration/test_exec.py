@@ -2,9 +2,11 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-import librosa
+import subprocess
 
-from jina import Flow, Document, DocumentArray
+import librosa
+import pytest
+from jina import Document, DocumentArray, Flow
 
 from ...vggish import vggish_input
 from ...vggish_audio_encoder import VggishAudioEncoder
@@ -23,7 +25,9 @@ def test_flow_from_yml():
 
 def test_embedding_exists():
 
-    x_audio, sample_rate = librosa.load(os.path.join(cur_dir, '../test_data/sample.wav'))
+    x_audio, sample_rate = librosa.load(
+        os.path.join(cur_dir, '../test_data/sample.wav')
+    )
     log_mel_examples = vggish_input.waveform_to_examples(x_audio, sample_rate)
     doc = DocumentArray([Document(blob=log_mel_examples)])
 
@@ -31,3 +35,22 @@ def test_embedding_exists():
         responses = f.post(on='index', inputs=doc, return_results=True)
 
     assert responses[0].docs[0].embedding is not None
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu():
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                '--uses=docker://vggishaudioencoder:gpu',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'device:cuda',
+            ],
+            timeout=30,
+            check=True,
+        )

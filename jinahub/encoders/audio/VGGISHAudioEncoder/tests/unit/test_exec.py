@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import librosa
+import pytest
 from jina import Document, DocumentArray, Executor
 from tensorflow.python.framework import ops
 
@@ -22,5 +23,18 @@ def test_embedding_dimension():
     doc = DocumentArray([Document(blob=log_mel_examples)])
     ops.reset_default_graph()
     model = VggishAudioEncoder()
+    model.encode(doc, parameters={})
+    assert doc[0].embedding.shape == (128,)
+
+
+@pytest.mark.gpu
+def test_embedding_dimension():
+    x_audio, sample_rate = librosa.load(
+        Path(__file__).parents[1] / 'test_data/sample.wav'
+    )
+    log_mel_examples = vggish_input.waveform_to_examples(x_audio, sample_rate)
+    doc = DocumentArray([Document(blob=log_mel_examples)])
+    ops.reset_default_graph()
+    model = VggishAudioEncoder(device='cuda')
     model.encode(doc, parameters={})
     assert doc[0].embedding.shape == (128,)
