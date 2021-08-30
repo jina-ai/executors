@@ -2,14 +2,16 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from typing import Iterable, Optional, Dict, List
-import numpy as np
-import faiss
+from typing import Dict, Iterable, List, Optional
 
-from jina import Executor, DocumentArray, requests, Document
+import faiss
+import numpy as np
+from jina import Document, DocumentArray, Executor, requests
 from jina.helper import batch_iterator
 from jina_commons import get_logger
 from jina_commons.indexers.dump import import_vectors
+
+# flake8: noqa
 
 
 class FaissSearcher(Executor):
@@ -192,7 +194,7 @@ class FaissSearcher(Executor):
         self._init_faiss_index(self.num_dim, trained_index_file=self.trained_index_file)
 
         if self.requires_training and (not self._faiss_index.is_trained):
-            self.logger.info(f'Taking indexed data as training points')
+            self.logger.info('Taking indexed data as training points')
             if self.max_num_training_points is None:
                 self._prefetch_data.extend(list(vecs_iter))
             else:
@@ -220,7 +222,7 @@ class FaissSearcher(Executor):
                 )
                 train_data = train_data[random_indices, :]
 
-            self.logger.info(f'Training Faiss indexer...')
+            self.logger.info('Training Faiss indexer...')
 
             if self.normalize:
                 faiss.normalize_L2(train_data)
@@ -234,7 +236,7 @@ class FaissSearcher(Executor):
         #     )
         #     index.parallel_mode = 1
 
-        self.logger.info(f'Building the Faiss index...')
+        self.logger.info('Building the Faiss index...')
         self._build_partial_index(vecs_iter)
 
     def _build_partial_index(self, vecs_iter: Iterable['np.ndarray']):

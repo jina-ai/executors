@@ -2,11 +2,11 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-import pytest
-import numpy as np
-from jina import Flow, Document, requests, DocumentArray
-from jina.executors.metas import get_default_metas
 
+import numpy as np
+import pytest
+from jina import Document, DocumentArray, Flow
+from jina.executors.metas import get_default_metas
 from jina_commons.indexers.dump import export_dump_streaming
 
 from ...faiss_searcher import FaissSearcher

@@ -1,16 +1,15 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-import gzip
 import os
 from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import DocumentArray, Document, Executor
+from jina import Document, DocumentArray, Executor
 from jina.executors.metas import get_default_metas
-
 from jina_commons.indexers.dump import export_dump_streaming
+
 from ...faiss_searcher import FaissSearcher
 
 
@@ -206,7 +205,7 @@ def test_faiss_indexer_known(metas, tmpdir):
 
 
 def test_faiss_indexer_known_big(metas, tmpdir):
-    """Let's try to have some real test. We will have an index with 10k vectors of random values between 5 and 10.
+    """Let's try to have some real test. We will have an index with 10k vectors of random values between 5 and 10. # noqa: 501
     We will change tweak some specific vectors that we expect to be retrieved at query time. We will tweak vector
     at index [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], this will also be the query vectors.
     Then the keys will be assigned shifted to test the proper usage of `int2ext_id` and `ext2int_id`
