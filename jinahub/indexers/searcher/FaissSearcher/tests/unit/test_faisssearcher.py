@@ -1,17 +1,16 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-import gzip
 import os
 from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import DocumentArray, Document, Executor
+from jina import Document, DocumentArray, Executor
 from jina.executors.metas import get_default_metas
-
 from jina_commons.indexers.dump import export_dump_streaming
-from ..faiss_searcher import FaissSearcher
+
+from ...faiss_searcher import FaissSearcher
 
 
 def _get_docs_from_vecs(queries):
@@ -25,8 +24,8 @@ def _get_docs_from_vecs(queries):
 # fix the seed here
 np.random.seed(500)
 retr_idx = None
-vec_idx = np.random.randint(0, high=100, size=[10]).astype(str)
-vec = np.array(np.random.random([10, 10]), dtype=np.float32)
+vec_idx = np.random.randint(0, high=512, size=[512]).astype(str)
+vec = np.array(np.random.random([512, 10]), dtype=np.float32)
 
 query = np.array(np.random.random([10, 10]), dtype=np.float32)
 query_docs = _get_docs_from_vecs(query)
@@ -58,19 +57,13 @@ def tmpdir_dump(tmpdir):
 
 
 def test_config():
-    ex = Executor.load_config(str(Path(__file__).parents[1] / 'config.yml'))
+    ex = Executor.load_config(str(Path(__file__).parents[0].parents[1] / 'config.yml'))
     assert ex.index_key == 'IVF10,PQ4'
 
 
 def test_faiss_indexer_empty(metas):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     indexer = FaissSearcher(
         index_key='IVF10,PQ2',
-        train_filepath=train_filepath,
         metas=metas,
         runtime_args={'pea_id': 0},
         prefetch_size=256,
@@ -80,15 +73,18 @@ def test_faiss_indexer_empty(metas):
 
 
 def test_faiss_indexer(metas, tmpdir_dump):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
+    import faiss
+
+    trained_index_file = os.path.join(os.environ['TEST_WORKSPACE'], 'faiss.index')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
+    faiss_index = faiss.index_factory(10, 'IVF10,PQ2')
+    faiss_index.train(train_data)
+    faiss.write_index(faiss_index, trained_index_file)
 
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='IVF10,PQ2',
-        train_filepath=train_filepath,
+        trained_index_file=trained_index_file,
         dump_path=tmpdir_dump,
         metas=metas,
         runtime_args={'pea_id': 0},
@@ -97,28 +93,24 @@ def test_faiss_indexer(metas, tmpdir_dump):
     assert len(query_docs[0].matches) == 4
     for d in query_docs:
         assert (
-                d.matches[0].scores[indexer.metric].value
-                >= d.matches[1].scores[indexer.metric].value
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
         )
 
 
 @pytest.mark.parametrize('index_key', ['Flat'])
 def test_fill_embeddings(index_key, metas, tmpdir_dump):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key=index_key,
-        train_filepath=train_filepath,
         dump_path=tmpdir_dump,
         metas=metas,
         runtime_args={'pea_id': 0},
     )
     indexer.search(query_docs, parameters={'top_k': 4})
-    da = DocumentArray([Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)])
+    da = DocumentArray(
+        [Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)]
+    )
     indexer.fill_embedding(da)
     assert da[str(vec_idx[0])].embedding is not None
     assert da[str(vec_idx[0])].embedding is not None
@@ -127,21 +119,17 @@ def test_fill_embeddings(index_key, metas, tmpdir_dump):
 
 @pytest.mark.parametrize('index_key', ['IVF10,PQ2', 'LSH'])
 def test_fill_embeddings_fail(index_key, metas, tmpdir_dump):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key=index_key,
-        train_filepath=train_filepath,
         dump_path=tmpdir_dump,
         metas=metas,
-        runtime_args={'pea_id': 0}
+        runtime_args={'pea_id': 0},
     )
     indexer.search(query_docs, parameters={'top_k': 4})
-    da = DocumentArray([Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)])
+    da = DocumentArray(
+        [Document(id=vec_idx[0]), Document(id=vec_idx[1]), Document(id=99999999)]
+    )
     indexer.fill_embedding(da)
     assert da[str(vec_idx[0])].embedding is None
     assert da[str(vec_idx[0])].embedding is None
@@ -153,15 +141,9 @@ def test_fill_embeddings_fail(index_key, metas, tmpdir_dump):
     [('l2', True), ('inner_product', True), ('l2', False), ('inner_product', False)],
 )
 def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='IVF10,PQ2',
-        train_filepath=train_filepath,
         metric=metric,
         is_distance=is_distance,
         dump_path=tmpdir_dump,
@@ -176,18 +158,17 @@ def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
     for i in range(len(docs[0].matches) - 1):
         if not is_distance:
             assert (
-                    docs[0].matches[i].scores[metric].value
-                    >= docs[0].matches[i + 1].scores[metric].value
+                docs[0].matches[i].scores[metric].value
+                >= docs[0].matches[i + 1].scores[metric].value
             )
         else:
             assert (
-                    docs[0].matches[i].scores[metric].value
-                    <= docs[0].matches[i + 1].scores[metric].value
+                docs[0].matches[i].scores[metric].value
+                <= docs[0].matches[i + 1].scores[metric].value
             )
 
 
-@pytest.mark.parametrize('train_data', ['new', 'none', 'index'])
-def test_faiss_indexer_known(metas, train_data, tmpdir):
+def test_faiss_indexer_known(metas, tmpdir):
     vectors = np.array(
         [[1, 1, 1], [10, 10, 10], [100, 100, 100], [1000, 1000, 1000]], dtype=np.float32
     )
@@ -199,20 +180,9 @@ def test_faiss_indexer_known(metas, train_data, tmpdir):
         zip(keys, vectors, [b'' for _ in range(len(vectors))]),
     )
 
-    if train_data == 'new':
-        train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-        train_data = vectors
-        with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-            f.write(train_data.tobytes())
-    elif train_data == 'none':
-        train_filepath = None
-    elif train_data == 'index':
-        train_filepath = os.path.join(metas['workspace'], 'faiss.test.gz')
-
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='Flat',
-        train_filepath=train_filepath,
         metas=metas,
         dump_path=os.path.join(tmpdir, 'dump'),
         runtime_args={'pea_id': 0},
@@ -235,7 +205,7 @@ def test_faiss_indexer_known(metas, train_data, tmpdir):
 
 
 def test_faiss_indexer_known_big(metas, tmpdir):
-    """Let's try to have some real test. We will have an index with 10k vectors of random values between 5 and 10.
+    """Let's try to have some real test. We will have an index with 10k vectors of random values between 5 and 10. # noqa: 501
     We will change tweak some specific vectors that we expect to be retrieved at query time. We will tweak vector
     at index [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], this will also be the query vectors.
     Then the keys will be assigned shifted to test the proper usage of `int2ext_id` and `ext2int_id`
@@ -250,11 +220,6 @@ def test_faiss_indexer_known_big(metas, tmpdir):
         queries[int(idx / 1000)] = array
         vectors[idx] = array
 
-    train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-    train_data = vectors
-    with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-        f.write(train_data.tobytes())
-
     keys = np.arange(10000, 20000).astype(str)
 
     dump_path = os.path.join(tmpdir, 'dump')
@@ -268,7 +233,6 @@ def test_faiss_indexer_known_big(metas, tmpdir):
         prefetch_size=256,
         index_key='Flat',
         requires_training=True,
-        train_filepath=train_filepath,
         metas=metas,
         dump_path=dump_path,
         runtime_args={'pea_id': 0},
@@ -313,15 +277,6 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
     vec_idx = np.random.randint(0, high=num_data, size=[num_data]).astype(str)
     vec = np.random.random([num_data, num_dim])
 
-    train_filepath = os.path.join(metas['workspace'], 'faiss.test.gz')
-    if train_data == 'new':
-        train_filepath = os.path.join(os.environ['TEST_WORKSPACE'], 'train.tgz')
-        train_data = vec
-        with gzip.open(train_filepath, 'wb', compresslevel=1) as f:
-            f.write(train_data.tobytes())
-    elif train_data == 'none':
-        train_filepath = None
-
     dump_path = os.path.join(tmpdir, 'dump')
     export_dump_streaming(
         dump_path,
@@ -332,7 +287,6 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='IVF10,PQ4',
-        train_filepath=train_filepath,
         max_num_training_points=max_num_points,
         requires_training=True,
         metas=metas,
@@ -385,3 +339,83 @@ def test_faiss_normalization(metas, metric, tmpdir):
     indexer.search(docs, parameters={'top_k': 2})
     dist = docs.traverse_flat(['m']).get_attributes('scores')
     assert dist[0][metric].value == 1.0
+
+
+@pytest.mark.parametrize('max_num_points', [257, 500, None])
+def test_faiss_indexer_train(metas, tmpdir, max_num_points):
+    train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
+    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
+    np.save(train_data_file, train_data)
+
+    trained_index_file = os.path.join(tmpdir, 'faiss.index')
+    indexer = FaissSearcher(
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+        prefetch_size=256,
+    )
+    indexer.train(
+        parameters={
+            'train_data_file': train_data_file,
+            'max_num_training_points': max_num_points,
+        }
+    )
+    assert indexer._faiss_index.is_trained
+
+
+def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
+    train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
+    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
+    np.save(train_data_file, train_data)
+
+    trained_index_file = os.path.join(tmpdir, 'faiss.index')
+    indexer = FaissSearcher(
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+        prefetch_size=256,
+    )
+    indexer.train(
+        parameters={
+            'train_data_file': train_data_file,
+        }
+    )
+
+    trained_indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    query = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query)
+    trained_indexer.search(docs, parameters={'top_k': 4})
+    assert len(docs[0].matches) == 4
+    for d in docs:
+        assert (
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
+        )
+
+
+def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='IVF10,PQ2',
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    query = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query)
+    indexer.search(docs, parameters={'top_k': 4})
+    assert len(docs[0].matches) == 4
+    for d in docs:
+        assert (
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
+        )
