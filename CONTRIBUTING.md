@@ -43,13 +43,20 @@ Usually, this is all you need. In this case you do not need to create a Dockerfi
 
 If there are any other requirements (such as installing system packages using `apt-get`), then you need to create a `Dockerfile` with instructions for installation of all other requirements. Some things to take into account when creating the Dockerfile:
 - If possible, use `jinaai/jina:2-py37-perf` as your base image. It is a lightweight image, based on the `python:3.7-slim` image, and comes with the latest stable version of `jina` preinstalled.
+- If you use another base image, make sure to install `jina` in it. Only fix the major version, like so `jina~=2.0`
 - The entrypoint should be
     ```
     ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
     ```
 
-#### GPU Dockerfile (🚧 WIP)
+#### GPU Dockerfile
 
+If your executor can use a GPU, then you should also make a GPU dockerfile for it. The file
+should be called `Dockerfile.gpu`. Here you are free in the choice of the base image, but
+remember to install `jina` in it - for exact version, see above.
+
+You will also need to write [GPU tests](#gpu-tests). These tests will actually be executed
+inside the docker container created from this image.
 
 ### ✨ Coding standards
 
@@ -173,7 +180,7 @@ def test_docker_runtime(build_docker_image: str):
 And the needed fixture looks like this (put it in `tests/conftest.py`)
 
 ```python
-@pytest.fixture(scope='session'):
+@pytest.fixture(scope='session')
 def docker_image_name() -> str:
     return Path(__file__).parents[1].stem.lower()
 
@@ -181,7 +188,6 @@ def docker_image_name() -> str:
 @pytest.fixture(scope='session')
 def build_docker_image(docker_image_name: str) -> str:
     subprocess.run(['docker', 'build', '-t', docker_image_name, '.'], check=True)
-
     return docker_image_name
 ```
 
@@ -205,7 +211,70 @@ Unit tests test the functioning of your executor. These tests need to be detaile
 - For encoders: check that the resulting embeddings have the desired **semantic similarity** properties. This means, for example, that for an image encoder embeddings of the images of a cat and dog should be closer to each other than to an image of an airplane. Here you can look at other encoders of the same modality and copy this test from them. 
 
 
-### GPU tests (🚧 WIP)
+### GPU tests
+
+If your executor can be used on a GPU, you should add GPU tests as well. For GPU testing, you can limit yourself to only basic tests:
+- testing that the requests with usual inputs (e.g. encoding text or images) work on GPU
+- check that any GPU-specific functionality works (e.g. setting automatic mixed precision)
+- check that launching the executor from a docker image works with GPU enabled
+
+All the edge-cases tests, error tests, etc., can be done on CPU only.
+
+Don't worry if you do not have a GPU machine to test it on - take advantage of our GPU self-hosted runners in CI! They'll run all the GPU tests for you 😎 The self-hosted runners run on an EC2 instance with a NVIDIA T4 GPU. The tests will be run inside the [GPU docker container](#gpu-dockerfile)
+
+When creating a GPU test, use the `gpu` pytest marker, like this
+
+```python
+@pytest.mark.gpu
+def test_gpu_encoding():
+    encoder = MyTextEncoder(device='cuda')
+    document = Document(text='some text')
+    encoder.encode(document)
+    
+    assert document.embedding.shape == (512, )
+```
+
+This way, you can skip these tests when you run them locally:
+```console
+pytest -m "not gpu"
+```
+
+Note that you can skip both docker and GPU tests by using
+```console
+pytest -m "not gpu and not docker"
+```
+
+For running the integration test, first add this fixture to `tests/conftest.py`
+
+```python
+@pytest.fixture(scope='session')
+def build_docker_image_gpu(docker_image_name: str) -> str:
+    image_name = f'{docker_image_name}:gpu'
+    subprocess.run(
+        ['docker', 'build', '-t', image_name, '-f', 'Dockerfile.gpu', '.'], check=True
+    )
+
+    return image_name
+```
+
+The test (in `tests/integration`) should then look like this
+
+```python
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime(build_docker_image_gpu: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'executor',
+                '--uses=docker://{build_docker_image_gpu}',
+                '--gpus all'
+            ], 
+            timeout=30,
+            check=True
+        )
+```
 
 ### 📦 Uploading to JinaHub
 
