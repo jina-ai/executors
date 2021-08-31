@@ -44,6 +44,46 @@ with f:
     print(f'{resp}')
 ```
 
+### Training
+
+To use a trainable Faiss indexer (e.g., _IVF_, _PQ_ based), we can first train the indexer with the data from `train_data_file`:
+
+```python
+from jina import Flow
+import numpy as np
+
+train_data_file = 'train.npy'
+train_data = np.array(np.random.random([10240, 256]), dtype=np.float32)
+np.save(train_data_file, train_data)
+
+f = Flow().add(
+    uses="jinahub://FaissSearcher",
+    timeout_ready=-1,
+    uses_with={
+      'index_key': 'IVF10_HNSW32,PQ64',
+      'trained_index_file': 'faiss.index',
+    },
+)
+
+with f:
+    # the trained index will be dumped to "faiss.index"
+    f.post(on='/train', parameters={'train_data_file': train_data_file})
+```
+
+Then, we can directly use the trained indexer with providing `trained_index_file`:
+
+```python
+f = Flow().add(
+    uses="jinahub://FaissSearcher",
+    timeout_ready=-1,
+    uses_with={
+      'index_key': 'IVF10_HNSW32,PQ64',
+      'trained_index_file': 'faiss.index',
+      'dump_path': '/path/to/dump_file'
+    },
+)
+```
+
 ### Inputs 
 
 `Document` with `.embedding` the same shape as the `Documents` it has stored.
