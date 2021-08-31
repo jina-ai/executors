@@ -3,9 +3,10 @@ __license__ = 'Apache-2.0'
 
 from pathlib import Path
 
+import pytest
 import librosa
 import numpy as np
-import pytest
+
 from jina import Document, DocumentArray, Executor
 from jina.excepts import BadDocType
 

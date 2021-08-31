@@ -18,29 +18,21 @@ __license__ = "Apache-2.0"
 
 """Compute input examples for VGGish from audio waveform."""
 
-import numpy as np
 import resampy
 
-from .mel_features import frame, log_mel_spectrogram
-from .vggish_params import (
-    EXAMPLE_HOP_SECONDS,
-    EXAMPLE_WINDOW_SECONDS,
-    LOG_OFFSET,
-    MEL_MAX_HZ,
-    MEL_MIN_HZ,
-    NUM_MEL_BINS,
-    SAMPLE_RATE,
-    STFT_HOP_LENGTH_SECONDS,
-    STFT_WINDOW_LENGTH_SECONDS,
-)
+import sys
+import os
+
+from .vggish_params import *
+from .mel_features import *
 
 try:
     import soundfile as sf
 
+
     def wav_read(wav_file):
         wav_data, sr = sf.read(wav_file, dtype='int16')
         return wav_data, sr
-
 
 except ImportError:
 
@@ -80,16 +72,18 @@ def waveform_to_examples(data, sample_rate):
         hop_length_secs=STFT_HOP_LENGTH_SECONDS,
         num_mel_bins=NUM_MEL_BINS,
         lower_edge_hertz=MEL_MIN_HZ,
-        upper_edge_hertz=MEL_MAX_HZ,
-    )
+        upper_edge_hertz=MEL_MAX_HZ)
 
     # Frame features into examples.
     features_sample_rate = 1.0 / STFT_HOP_LENGTH_SECONDS
-    example_window_length = int(round(EXAMPLE_WINDOW_SECONDS * features_sample_rate))
-    example_hop_length = int(round(EXAMPLE_HOP_SECONDS * features_sample_rate))
+    example_window_length = int(round(
+        EXAMPLE_WINDOW_SECONDS * features_sample_rate))
+    example_hop_length = int(round(
+        EXAMPLE_HOP_SECONDS * features_sample_rate))
     log_mel_examples = frame(
-        log_mel, window_length=example_window_length, hop_length=example_hop_length
-    )
+        log_mel,
+        window_length=example_window_length,
+        hop_length=example_hop_length)
     return log_mel_examples
 
 

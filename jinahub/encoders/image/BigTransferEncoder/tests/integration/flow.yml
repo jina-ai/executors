@@ -9,3 +9,4 @@ executors:
       jtype: BigTransferEncoder
       with:
         model_name: $TRANSFER_MODEL_NAME
+        on_gpu: true

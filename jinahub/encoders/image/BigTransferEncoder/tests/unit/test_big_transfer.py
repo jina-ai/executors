@@ -2,10 +2,11 @@ import os
 import shutil
 from pathlib import Path
 
+import pytest
 import numpy as np
 import PIL.Image as Image
-import pytest
-from jina import Document, DocumentArray, Executor
+
+from jina import DocumentArray, Document, Executor
 
 from ...big_transfer import BigTransferEncoder
 
@@ -24,7 +25,7 @@ def test_initialization_and_model_download():
     encoder = BigTransferEncoder()
     assert encoder.model_path == 'pretrained'
     assert encoder.model_name == 'Imagenet21k/R50x1'
-    assert encoder.device == 'cpu'
+    assert not encoder.on_gpu
     assert os.path.exists('pretrained')
     assert os.path.exists(os.path.join('pretrained', 'saved_model.pb'))
     # This call will use the downloaded model
@@ -101,19 +102,3 @@ def test_encoding_override_chunks():
     assert doc.embedding is None
     for i in range(3):
         assert doc.chunks[i].embedding.shape == (2048,)
-
-
-@pytest.mark.gpu
-def test_encoding_gpu():
-    doc = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
-    doc.convert_image_uri_to_blob()
-    img = Image.fromarray(doc.blob.astype('uint8'))
-    img = img.resize((96, 96))
-    img = np.array(img).astype('float32') / 255
-    doc.blob = img
-    assert doc.embedding is None
-
-    encoder = BigTransferEncoder(device='cuda')
-
-    encoder.encode(DocumentArray([doc]), {})
-    assert doc.embedding.shape == (2048,)

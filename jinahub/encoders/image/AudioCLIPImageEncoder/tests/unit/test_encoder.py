@@ -6,9 +6,9 @@ from typing import Tuple
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray, Executor
 from PIL import Image
 
+from jina import Document, DocumentArray, Executor
 from ...audioclip_image import AudioCLIPImageEncoder
 
 
@@ -43,7 +43,7 @@ def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.default_batch_size == 32
     assert ex.default_traversal_paths == ['r']
-    assert ex.use_default_preprocessing
+    assert ex.use_default_preprocessing == True
 
 
 def test_no_documents(basic_encoder):
@@ -133,8 +133,10 @@ def test_traversal_path(
 ):
     basic_encoder.encode(nested_docs, parameters={'traversal_paths': [path]})
     for path_check, count in expected_counts:
-        embeddings = nested_docs.traverse_flat([path_check]).get_attributes('embedding')
-        assert len([em for em in embeddings if em is not None]) == count
+        assert (
+            len(nested_docs.traverse_flat([path_check]).get_attributes('embedding'))
+            == count
+        )
 
 
 @pytest.mark.parametrize("batch_size", [1, 2, 4, 8])

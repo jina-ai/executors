@@ -1,2 +1,2 @@
-jina~=2.0
+git+https://github.com/jina-ai/jina.git@v2.0.0#egg=jina[hub]
 pytest==6.2.4
