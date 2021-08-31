@@ -6,7 +6,6 @@ set -ex
 changed_folders=()
 
 for changed_file in $CHANGED_FILES; do
-
   file_base_dir=$(dirname $changed_file)
   # Test folder changes
   if [ $(basename $file_base_dir) = "tests" ]; then
