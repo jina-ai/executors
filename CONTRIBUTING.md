@@ -173,12 +173,16 @@ def test_docker_runtime(build_docker_image: str):
 And the needed fixture looks like this (put it in `tests/conftest.py`)
 
 ```python
-@pytest.fixture(scope='session')
-def build_docker_image() -> str:
-    img_name = Path(__file__).parents[1].stem.lower() # lower case name of executor dir
-    subprocess.run(['docker', 'build', '-t', img_name, '.'], check=True)
+@pytest.fixture(scope='session'):
+def docker_image_name() -> str:
+    return Path(__file__).parents[1].stem.lower()
 
-    return img_name
+
+@pytest.fixture(scope='session')
+def build_docker_image(docker_image_name: str) -> str:
+    subprocess.run(['docker', 'build', '-t', docker_image_name, '.'], check=True)
+
+    return docker_image_name
 ```
 
 You can also add additional arguments to the main command - if you need to download large files for your model (which should have been done in a fixture at test time), you would add `'--volumes=/path/to/file:/path/to/file/in/container/'`.
