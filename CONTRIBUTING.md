@@ -262,7 +262,7 @@ The test (in `tests/integration`) should then look like this
 ```python
 @pytest.mark.gpu
 @pytest.mark.docker
-def test_docker_runtime(build_docker_image_gpu: str):
+def test_docker_runtime_gpu(build_docker_image_gpu: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
             [
