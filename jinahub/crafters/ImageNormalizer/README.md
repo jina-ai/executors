@@ -1,4 +1,4 @@
-# Image Normalizer 
+# Image Normalizer
 
 **Image Normalizer** is a class that resizes, crops and normalizes images.
 Since normalization is highly dependent on the model, 
