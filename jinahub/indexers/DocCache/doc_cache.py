@@ -4,8 +4,7 @@ import pickle
 from typing import Tuple, Optional
 
 from jina import Executor, DocumentArray, requests, Document
-
-from jina_commons import get_logger
+from jina.logging.logger import JinaLogger
 
 
 class _CacheHandler:
@@ -53,7 +52,7 @@ class DocCache(Executor):
         if fields is None:
             fields = ('content_hash', ),
         self.fields = fields
-        self.logger = get_logger(self)
+        self.logger = JinaLogger(getattr(self.metas, 'name', self.__class__.__name__))
         if not os.path.exists(self.workspace):
             os.makedirs(self.workspace)
         self.cache_handler = _CacheHandler(
