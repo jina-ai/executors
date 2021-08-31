@@ -1,7 +1,7 @@
 > ⚠️ Please do **not** commit your new Executor to this repository. This repository is **only** for Jina engineers to better manage in-house executors in a centralized way. You *may* submit PRs to fix bugs/add features to the existing ones.
 
 
-# Executors (interal-only)
+# Executors (internal-only)
 
 To develop your own Executor, please use [`jina hub new`](#create-new) and create your own Executor repo.
 
