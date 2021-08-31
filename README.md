@@ -3,7 +3,7 @@
 
 # Executors (internal-only)
 
-To develop your own Executor, please use [`jina hub new`](https://docs.jina.ai/advanced/hub/create-hub-executor/) and create your own Executor repo.
+To develop your own Executor, please use [`jina hub new`](https://docs.jina.ai/advanced/hub/create-hub-executor/) and **create your own Executor repo**.
 
 Here is the complete guide: https://docs.jina.ai/advanced/hub/
 
