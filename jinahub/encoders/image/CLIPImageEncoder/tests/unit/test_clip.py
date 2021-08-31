@@ -5,8 +5,8 @@ import clip
 import numpy as np
 import pytest
 import torch
-from jina import Document, DocumentArray, Executor
 from PIL import Image
+from jina import Document, DocumentArray, Executor
 
 from ...clip_image import CLIPImageEncoder
 
@@ -100,7 +100,7 @@ def test_cpu_no_preprocessing():
     assert input_data[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
-@pytest.mark.gpu
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU is needed for this test")
 def test_encoding_gpu():
     encoder = CLIPImageEncoder(device="cuda")
     input_data = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
@@ -110,7 +110,7 @@ def test_encoding_gpu():
     assert input_data[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
-@pytest.mark.gpu
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU is needed for this test")
 def test_gpu_no_preprocessing():
     encoder = CLIPImageEncoder(device="cuda", use_default_preprocessing=False)
     input_data = DocumentArray(
@@ -178,8 +178,10 @@ def test_traversal_path(
 ):
     encoder.encode(nested_docs, parameters={"traversal_paths": [path]})
     for path_check, count in expected_counts:
-        embeddings = nested_docs.traverse_flat([path_check]).get_attributes("embedding")
-        assert len([em for em in embeddings if em is not None]) == count
+        assert (
+            len(nested_docs.traverse_flat([path_check]).get_attributes("embedding"))
+            == count
+        )
 
 
 @pytest.mark.parametrize("batch_size", [1, 2, 4, 8])
