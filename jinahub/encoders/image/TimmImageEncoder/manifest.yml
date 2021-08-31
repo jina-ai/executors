@@ -1,0 +1,5 @@
+manifest_version: 1
+name: TimmImageEncoder
+description: '`TimmImageEncoder` encodes data from a `ndarray` into a d-dimensional vector space.'
+url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/TimmImageEncoder
+keywords: [CNN, pytorch, timm, Computer Vision, alexnet, densenet, resnet, efficientnet, mobilenet, ghostnet, image, encode]

@@ -1,0 +1,4 @@
+jtype: TimmImageEncoder
+metas:
+  py_modules:
+    - timm_encoder.py
