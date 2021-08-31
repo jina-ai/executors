@@ -69,8 +69,11 @@ def test_traversal_paths(
     def validate_traversal(expected_docs_per_path: List[List[str]]):
         def validate(res):
             for path, count in expected_docs_per_path:
-                embeddings = DocumentArray(res[0].docs).traverse_flat(
-                    [path]).get_attributes('embedding')
+                embeddings = (
+                    DocumentArray(res[0].docs)
+                    .traverse_flat([path])
+                    .get_attributes('embedding')
+                )
                 return len([em for em in embeddings if em is not None]) == count
 
         return validate
