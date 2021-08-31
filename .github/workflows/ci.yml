@@ -83,7 +83,7 @@ jobs:
         run: pytest -s -v -m "not gpu"
       - name: Print image size
         run: |
-          IMG_NAME=$(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]')
+          IMG_NAME=$(echo "${PWD##*/}" | tr '[:upper:]' '[:lower:]')
           docker inspect $IMG_NAME | jq '.[0].Size' | numfmt --to=iec --suffix=B
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
