@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
 
-import pytest
 import numpy as np
-from jina import Document, DocumentArray, Flow, Executor
-from jina_commons.indexers.dump import import_vectors, import_metas
+import pytest
+from jina import Document, DocumentArray, Executor, Flow
+from jina_commons.indexers.dump import import_metas, import_vectors
 
 from ..mongo_storage import doc_without_embedding
 
@@ -43,6 +43,16 @@ def test_mongo_search(docs_to_index, storage, docker_compose):
     docs_to_search = DocumentArray([Document(id=docs_to_index[0].id)])
     storage.search(docs=docs_to_search)
     assert docs_to_search[0].text == docs_to_index[0].text
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_mongo_search_without_embedding(
+    docs_to_index_no_embedding, storage, docker_compose
+):
+    storage.add(docs=docs_to_index_no_embedding, parameters={})
+    docs_to_search = DocumentArray([Document(id=docs_to_index_no_embedding[0].id)])
+    storage.search(docs=docs_to_search)
+    assert docs_to_search[0].text == docs_to_index_no_embedding[0].text
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
