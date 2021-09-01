@@ -80,7 +80,7 @@ jobs:
           if [[ ! -f "Dockerfile" ]]; then
             normalizer . --jina-version=2; fi
       - name: Run unit tests
-        run: pytest -s -v -m "not gpu and not docker"
+        run: pytest -s -v -m "not gpu"
       # - name: Print image size
       #   run: |
       #     IMG_NAME=$(echo "${PWD##*/}" | tr '[:upper:]' '[:lower:]')

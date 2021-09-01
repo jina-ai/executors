@@ -88,7 +88,7 @@ def test_traversal_path(
 def test_docker_runtime(build_docker_image: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
-            ['jina', 'executor', '--uses=docker://{build_docker_image}'],
+            ['jina', 'executor', f'--uses=docker://{build_docker_image}'],
             timeout=30,
             check=True,
         )
@@ -102,7 +102,7 @@ def test_docker_runtime_gpu(build_docker_image_gpu: str):
             [
                 'jina',
                 'executor',
-                '--uses=docker://{build_docker_image_gpu}',
+                f'--uses=docker://{build_docker_image_gpu}',
                 '--gpus all',
                 '--uses-with',
                 'device:cuda',
