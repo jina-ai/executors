@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Union
 
 import numpy as np
 import tensorflow as tf
