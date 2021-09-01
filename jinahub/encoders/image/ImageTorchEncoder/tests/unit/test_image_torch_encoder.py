@@ -53,22 +53,13 @@ def test_encode_image_returns_correct_length(
         assert doc.embedding.shape == (512,)
 
 
-@pytest.mark.parametrize(
-    'traversal_paths, docs',
-    [
-        (('r',), pytest.lazy_fixture('docs_with_blobs')),
-        (('c',), pytest.lazy_fixture('docs_with_chunk_blobs')),
-    ],
-)
 @pytest.mark.gpu
-def test_encode_image_returns_correct_length_gpu(
-    traversal_paths: Tuple[str], docs: DocumentArray
-) -> None:
-    encoder = ImageTorchEncoder(default_traversal_path=traversal_paths, device='cuda')
+def test_encode_gpu(docs_with_blobs: DocumentArray) -> None:
+    encoder = ImageTorchEncoder(default_traversal_path=('r',), device='cuda')
 
-    encoder.encode(docs=docs, parameters={})
+    encoder.encode(docs=docs_with_blobs, parameters={})
 
-    for doc in docs.traverse_flat(traversal_paths):
+    for doc in docs_with_blobs.traverse_flat(('r',)):
         assert doc.embedding is not None
         assert doc.embedding.shape == (512,)
 
