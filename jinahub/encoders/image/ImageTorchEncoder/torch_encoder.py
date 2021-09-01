@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torchvision.transforms as T
 from jina import DocumentArray, Executor, requests
+from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 
 from .models import EmbeddingModelWrapper
@@ -46,7 +47,7 @@ class ImageTorchEncoder(Executor):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-
+        self.logger = JinaLogger(self.__class__.__name__)
         if (device not in ['cpu', 'cuda']) and (not device.startswith('cuda:')):
             self.logger.error(
                 f'Torch device {device} not supported. Must be cpu or cuda!'
