@@ -188,17 +188,20 @@ def test_return_embeddings(docker_compose):
 @pytest.mark.parametrize('psql_virtual_shards', [44, 128])
 @pytest.mark.parametrize('real_shards', [1, 5])
 def test_snapshot(docker_compose, psql_virtual_shards, real_shards):
+    postgres_indexer = PostgreSQLStorage(virtual_shards=psql_virtual_shards)
+
     def _assert_snapshot_shard_distribution(func, nr_shards, total_docs_expected):
         total_docs = 0
         for i in range(nr_shards):
             data = func(shard_id=i, total_shards=nr_shards)
             docs_this_shard = len(list(data))
+            assert docs_this_shard >= postgres_indexer.virtual_shards // real_shards
+            print(f'shard {i} has {docs_this_shard} documents', flush=True)
             total_docs += docs_this_shard
 
         np.testing.assert_equal(total_docs, total_docs_expected)
 
     NR_SHARDS = real_shards
-    postgres_indexer = PostgreSQLStorage(virtual_shards=psql_virtual_shards)
     NR_DOCS = postgres_indexer.virtual_shards * 2 + 3
     original_docs = DocumentArray(
         list(get_documents(nr=NR_DOCS, chunks=0, same_content=False))

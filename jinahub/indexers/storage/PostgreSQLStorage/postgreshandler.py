@@ -2,6 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import datetime
+import hashlib
 from typing import Generator, List, Optional, Tuple
 
 import numpy as np
@@ -34,7 +35,7 @@ class PostgreSQLHandler:
     :param database: the database name
     :param collection: the collection name
     :param dry_run: If True, no database connection will be build
-    :param total_shards: the number of shards to
+    :param virtual_shards: the number of shards to
     distribute the data (used when rolling update on Searcher side)
     :param args: other arguments
     :param kwargs: other keyword arguments
@@ -51,7 +52,7 @@ class PostgreSQLHandler:
         max_connections: int = 5,
         dump_dtype: type = np.float64,
         dry_run: bool = False,
-        total_shards: int = 128,
+        virtual_shards: int = 128,
         *args,
         **kwargs,
     ):
@@ -59,10 +60,7 @@ class PostgreSQLHandler:
         self.logger = JinaLogger('psq_handler')
         self.table = table
         self.dump_dtype = dump_dtype
-        self.total_shards = total_shards
-        # TODO maybe store in a table and restore
-        # at init time
-        self._next_shard = 0
+        self.virtual_shards = virtual_shards
         self.snapshot_table = 'snapshot'
 
         if not dry_run:
@@ -195,7 +193,7 @@ class PostgreSQLHandler:
                         if doc.embedding is not None
                         else None,
                         doc_without_embedding(doc),
-                        self._get_next_shard(),
+                        self._get_next_shard(doc.id),
                     )
                     for doc in docs
                 ],
@@ -329,12 +327,10 @@ class PostgreSQLHandler:
         records = cursor.fetchall()
         return records[0][0]
 
-    def _get_next_shard(self):
-        next_shard = self._next_shard
-        self._next_shard += 1
-        if self._next_shard == self.total_shards:
-            self._next_shard = 0
-        return next_shard
+    def _get_next_shard(self, doc_id: str):
+        sha = hashlib.sha256()
+        sha.update(bytes(doc_id, 'utf-8'))
+        return int(sha.hexdigest(), 16) % self.virtual_shards
 
     def snapshot(self):
         """

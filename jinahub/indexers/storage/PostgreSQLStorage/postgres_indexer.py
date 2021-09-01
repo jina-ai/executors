@@ -70,7 +70,7 @@ class PostgreSQLStorage(Executor):
             table=self.table,
             max_connections=max_connections,
             dry_run=dry_run,
-            total_shards=virtual_shards,
+            virtual_shards=virtual_shards,
         )
         self.default_return_embeddings = default_return_embeddings
 

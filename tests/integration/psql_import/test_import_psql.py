@@ -275,7 +275,7 @@ def test_start_up(docker_compose):
     # here we show how you can avoid having to do a snapshot
     # and then call sync
     # and automatically start a Searcher that loads their data from PSQL
-    # WARNING: this cannot guarantee consistency, if you do
+    # WARNING: this cannot guarantee consistency if you do
     # any writes to the PSQL while the shards are loading
     with _flow(
         uses_after='MatchMerger', total_shards=shards, startup_args={'only_delta': True}

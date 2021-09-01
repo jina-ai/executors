@@ -61,9 +61,18 @@ class FaissPostgresSearcher(Executor):
         self._vec_indexer = None
         self._init_kwargs = kwargs
 
-        self._init_executors(dump_path, kwargs, startup_sync, startup_sync_args)
+        (
+            self._kv_indexer,
+            self._vec_indexer,
+            startup_sync,
+            startup_sync_args,
+        ) = self._init_executors(dump_path, kwargs, startup_sync, startup_sync_args)
+        if startup_sync:
+            self.sync(parameters=startup_sync_args)
 
     def _init_executors(self, dump_path, kwargs, startup_sync, startup_sync_args):
+        kv_indexer = PostgreSQLStorage(**kwargs)
+
         if startup_sync_args is None and startup_sync:
             startup_sync_args = {}
         # if the user passes args for syncing, they must've meant to sync as well
@@ -77,12 +86,11 @@ class FaissPostgresSearcher(Executor):
                 f'for {name}. Use .rolling_update() to re-initialize...'
             )
         if startup_sync:
-            self._kv_indexer = PostgreSQLStorage(**kwargs)
-            self._vec_indexer = FaissSearcher(**kwargs)
-            self.sync(parameters=startup_sync_args, startup=True)
+            vec_indexer = FaissSearcher(**kwargs)
+            startup_sync_args['startup'] = True
         else:
-            self._kv_indexer = PostgreSQLStorage(**kwargs)
-            self._vec_indexer = FaissSearcher(dump_path=dump_path, **kwargs)
+            vec_indexer = FaissSearcher(dump_path=dump_path, **kwargs)
+        return kv_indexer, vec_indexer, startup_sync, startup_sync_args
 
     @requests(on='/sync')
     def sync(self, parameters: Optional[Dict], **kwargs):
@@ -125,16 +133,16 @@ class FaissPostgresSearcher(Executor):
 
     def _sync_only_delta(self, parameters, **kwargs):
         timestamp = parameters.get('timestamp', None)
-        startup = kwargs.get('startup', False)
-        if timestamp is None and startup:
-            timestamp = datetime.datetime.min
-
+        startup = parameters.get('startup', False)
         if timestamp is None:
-            self.logger.error(
-                f'No timestamp provided in parameters: '
-                f'{parameters}. Cannot do sync delta'
-            )
-            return
+            if startup:
+                timestamp = datetime.datetime.min
+            else:
+                self.logger.error(
+                    f'No timestamp provided in parameters: '
+                    f'{parameters}. Cannot do sync delta'
+                )
+                return
 
         if startup:
             # this was startup, so treat the method as a dump_func
