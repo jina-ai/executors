@@ -1,13 +1,13 @@
 __copyright__ = 'Copyright (c) 2020-2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
-from typing import Optional, Iterable, Any
+from typing import Any, Iterable, Optional
 
-from jina import Executor, DocumentArray, requests
-from jina.excepts import BadDocType
 import librosa as lr
 import numpy as np
 import torch
+from jina import DocumentArray, Executor, requests
+from jina.excepts import BadDocType
 
 from .audio_clip.model import AudioCLIP
 
@@ -24,7 +24,7 @@ class AudioCLIPEncoder(Executor):
     def __init__(
         self,
         model_path: str = 'assets/AudioCLIP-Full-Training.pt',
-        default_traversal_paths: Iterable[str] = ['r'],
+        default_traversal_paths: Iterable[str] = None,
         *args,
         **kwargs
     ):
@@ -35,7 +35,7 @@ class AudioCLIPEncoder(Executor):
         self.aclp = AudioCLIP(pretrained=model_path)
         self.aclp.eval()
         self.aclp.audio.eval()
-        self.default_traversal_paths = default_traversal_paths
+        self.default_traversal_paths = default_traversal_paths or ['r']
 
     @requests
     def encode(

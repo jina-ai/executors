@@ -4,7 +4,7 @@ __license__ = "Apache-2.0"
 from typing import Iterable, Optional
 
 import torch
-from jina import Executor, DocumentArray, requests
+from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
 from PIL import Image
 from torchvision import transforms

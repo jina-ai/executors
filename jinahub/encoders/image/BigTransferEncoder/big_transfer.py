@@ -2,15 +2,20 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from typing import Optional, Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import tensorflow as tf
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
-from tensorflow.python.keras.models import load_model
 from jina_commons.batching import get_docs_batch_generator
-from jina_commons.encoders.image.preprocessing import load_image, move_channel_axis, resize_short, crop_image
+from jina_commons.encoders.image.preprocessing import (
+    crop_image,
+    load_image,
+    move_channel_axis,
+    resize_short,
+)
+from tensorflow.python.keras.models import load_model
 
 
 class BigTransferEncoder(Executor):
@@ -23,12 +28,10 @@ class BigTransferEncoder(Executor):
     https://storage.googleapis.com/bit_models/.
 
     :param model_path: the path of the model in the `SavedModel` format.
-        The pretrained model can be downloaded at
-        wget https://storage.googleapis.com/bit_models/[model_name]/feature_vectors/saved_model.pb
-        wget https://storage.googleapis.com/bit_models/[model_name]/feature_vectors/variables/variables.data-00000-of-00001
-        wget https://storage.googleapis.com/bit_models/[model_name]/feature_vectors/variables/variables.index
-
-    :param model_name: includes ``Imagenet1k/R50x1``, ``Imagenet1k/R101x1``, ``Imagenet1k/R50x3``, ``Imagenet1k/R101x3``, ``Imagenet1k/R152x4``, ``Imagenet21k/R50x1``, ``Imagenet21k/R101x1``, ``Imagenet21k/R50x3``, ``Imagenet21k/R101x3``, ``Imagenet21k/R152x4``
+    :param model_name: includes ``Imagenet1k/R50x1``, ``Imagenet1k/R101x1``,
+        ``Imagenet1k/R50x3``, ``Imagenet1k/R101x3``, ``Imagenet1k/R152x4``,
+        ``Imagenet21k/R50x1``, ``Imagenet21k/R101x1``, ``Imagenet21k/R50x3``,
+        ``Imagenet21k/R101x3``, ``Imagenet21k/R152x4``
 
     This encoder checks if the specified model_path exists.
     If it does exist, the model in this folder is used.
@@ -45,26 +48,29 @@ class BigTransferEncoder(Executor):
         └── variables
             ├── variables.data-00000-of-00001
             └── variables.index
-    :param: on_gpu: If true, the GPU will be used. Make sure to have
-        tensorflow-gpu==2.5 installed
-    :param target_dim: preprocess the data image into shape of `target_dim`, (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
+    :param: device: Device to be used, e.g. 'cpu', 'cuda', 'cuda:2'
+    :param target_dim: preprocess the data image into shape of `target_dim`,
+        (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
     :param default_traversal_paths: Traversal path through the docs
     :param default_batch_size: Batch size to be used in the encoder model
 
     """
 
-    def __init__(self,
-                 model_path: Optional[str] = 'pretrained',
-                 model_name: Optional[str] = 'Imagenet21k/R50x1',
-                 on_gpu: bool = False,
-                 target_dim: Optional[Tuple[int, int, int]] = None,
-                 default_traversal_paths: List[str] = None,
-                 default_batch_size: int = 32,
-                 *args, **kwargs):
+    def __init__(
+        self,
+        model_path: Optional[str] = 'pretrained',
+        model_name: Optional[str] = 'Imagenet21k/R50x1',
+        device: str = 'cpu',
+        target_dim: Optional[Tuple[int, int, int]] = None,
+        default_traversal_paths: List[str] = None,
+        default_batch_size: int = 32,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.model_path = model_path
         self.model_name = model_name
-        self.on_gpu = on_gpu
+        self.device = device
         self.target_dim = target_dim
         self.logger = JinaLogger(self.__class__.__name__)
         self.default_batch_size = default_batch_size
@@ -73,15 +79,16 @@ class BigTransferEncoder(Executor):
         if not os.path.exists(self.model_path):
             self.download_model()
 
-        cpus = tf.config.experimental.list_physical_devices(
-            device_type='CPU')
-        gpus = tf.config.experimental.list_physical_devices(
-            device_type='GPU')
-        if self.on_gpu and len(gpus) > 0:
-            cpus.append(gpus[0])
-        if self.on_gpu and len(gpus) == 0:
-            self.logger.warning('You tried to use a GPU but no GPU was found on'
-                                ' your system. Defaulting to CPU!')
+        cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
+        gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
+        if 'cuda' in device and len(gpus) > 0:
+            gpu_index = 0 if 'cuda:' not in device else int(device.split(':')[1])
+            cpus.append(gpus[gpu_index])
+        if 'cuda' in self.device and len(gpus) == 0:
+            self.logger.warning(
+                'You tried to use a GPU but no GPU was found on'
+                ' your system. Defaulting to CPU!'
+            )
         tf.config.experimental.set_visible_devices(devices=cpus)
         self.logger.info(f'BiT model path: {self.model_path}')
         _model = load_model(self.model_path)
@@ -93,34 +100,40 @@ class BigTransferEncoder(Executor):
         _available_models = ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
         available_models = [f'{d}/{m}' for m in _available_models for d in dataset]
         if self.model_name not in available_models:
-            raise AttributeError(f'{self.model_name} model does not exists. '
-                                 f'Choose one from {available_models}!')
+            raise AttributeError(
+                f'{self.model_name} model does not exists. '
+                f'Choose one from {available_models}!'
+            )
 
         self.logger.info(f'Starting download of {self.model_name} BiT model')
         import requests
+
         os.makedirs(self.model_path)
         os.makedirs((os.path.join(self.model_path, 'variables')))
         response = requests.get(
             f'https://storage.googleapis.com/bit_models/'
-            f'{self.model_name}/feature_vectors/saved_model.pb')
-        with open(os.path.join(self.model_path, 'saved_model.pb'),
-                  'wb') as file:
+            f'{self.model_name}/feature_vectors/saved_model.pb'
+        )
+        with open(os.path.join(self.model_path, 'saved_model.pb'), 'wb') as file:
             file.write(response.content)
         response = requests.get(
             f'https://storage.googleapis.com/bit_models/'
             f'{self.model_name}/feature_vectors/variables/'
-            f'variables.data-00000-of-00001')
-        with open(os.path.join(self.model_path,
-                               'variables/variables.data-00000-of-00001'),
-                  'wb') as file:
+            f'variables.data-00000-of-00001'
+        )
+        with open(
+            os.path.join(self.model_path, 'variables/variables.data-00000-of-00001'),
+            'wb',
+        ) as file:
             file.write(response.content)
         response = requests.get(
             f'https://storage.googleapis.com/bit_models/'
             f'{self.model_name}/feature_vectors/variables/'
-            f'variables.index')
-        with open(os.path.join(self.model_path,
-                               'variables/variables.index'),
-                  'wb') as file:
+            f'variables.index'
+        )
+        with open(
+            os.path.join(self.model_path, 'variables/variables.index'), 'wb'
+        ) as file:
             file.write(response.content)
         self.logger.info(f'Completed download of {self.model_name} BiT model')
 
@@ -135,9 +148,11 @@ class BigTransferEncoder(Executor):
         """
         docs_batch_generator = get_docs_batch_generator(
             docs,
-            traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+            traversal_path=parameters.get(
+                'traversal_paths', self.default_traversal_paths
+            ),
             batch_size=parameters.get('batch_size', self.default_batch_size),
-            needs_attr='blob'
+            needs_attr='blob',
         )
         for batch in docs_batch_generator:
             if self.target_dim:
