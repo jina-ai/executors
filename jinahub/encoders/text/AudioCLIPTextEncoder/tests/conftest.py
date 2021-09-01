@@ -6,7 +6,6 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from jina import Document, DocumentArray
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -24,39 +23,3 @@ def build_docker_image() -> str:
     subprocess.run(['docker', 'build', '-t', img_name, '.'], check=True)
 
     return img_name
-
-
-@pytest.fixture()
-def data_generator():
-    def _generator():
-        data_file_path = Path(__file__).parent / 'texts' / 'test_data.txt'
-        with open(data_file_path, 'r') as file:
-            lines = file.readlines()
-        for line in lines:
-            yield Document(text=line.strip())
-
-    return _generator
-
-
-@pytest.fixture()
-def docs_with_text() -> DocumentArray:
-    return DocumentArray([Document(text='hello world') for _ in range(10)])
-
-
-@pytest.fixture()
-def docs_with_chunk_text() -> DocumentArray:
-    chunks = [Document(text='hello world') for _ in range(10)]
-    return DocumentArray([Document(chunks=chunks)])
-
-
-@pytest.fixture()
-def docs_with_chunk_chunk_text() -> DocumentArray:
-    root = Document()
-    chunks = [Document() for _ in range(10)]
-    chunks_2 = [[Document(text='hello world') for _ in range(10)] for _ in range(10)]
-
-    root.chunks.extend(chunks)
-    for i, chunk in enumerate(root.chunks):
-        chunk.chunks.extend(chunks_2[i])
-
-    return DocumentArray([root])

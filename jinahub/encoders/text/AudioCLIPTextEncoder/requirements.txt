@@ -3,8 +3,7 @@ jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-c
 # Curated requirements from AudioCLIP
 librosa==0.7.2
 pytorch-ignite==0.3.0
-scikit-learn==0.22.1
-scipy==1.4.1
+scipy==1.7.1
 termcolor==1.1.0
 torch==1.7.1
 torchvision==0.8.2
