@@ -14,12 +14,16 @@ def download_cache():
         'scripts/download_full.sh', cwd=Path(__file__).parents[1], check=True
     )
     yield
-    shutil.rmtree('.cache')
+    shutil.rmtree(Path(__file__).parents[1] / '.cache')
 
 
 @pytest.fixture(scope='session')
-def build_docker_image() -> str:
-    img_name = Path(__file__).parents[1].stem.lower()
-    subprocess.run(['docker', 'build', '-t', img_name, '.'], check=True)
+def docker_image_name() -> str:
+    return Path(__file__).parents[1].stem.lower()
 
-    return img_name
+
+@pytest.fixture(scope='session')
+def build_docker_image(docker_image_name: str) -> str:
+    subprocess.run(['docker', 'build', '-t', docker_image_name, '.'], check=True)
+
+    return docker_image_name
