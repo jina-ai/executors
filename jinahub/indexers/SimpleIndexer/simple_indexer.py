@@ -1,8 +1,8 @@
 from typing import Dict, Optional, List
 
-from jina import Executor, DocumentArray, requests, Document
+from jina import Executor, DocumentArray, requests
+from jina.logging.logger import JinaLogger
 from jina.types.arrays.memmap import DocumentArrayMemmap
-from jina_commons import get_logger
 
 
 class SimpleIndexer(Executor):
@@ -45,7 +45,7 @@ class SimpleIndexer(Executor):
             self._use_scipy = False
 
         self._docs_embeddings = None
-        self.logger = get_logger(self)
+        self.logger = JinaLogger(getattr(self.metas, 'name', self.__class__.__name__))
 
     @requests(on='/index')
     def index(

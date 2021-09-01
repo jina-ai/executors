@@ -7,7 +7,7 @@ import numpy as np
 import PIL.Image as Image
 
 from jina import DocumentArray, Executor, requests
-from jina_commons import get_logger
+from jina.logging.logger import JinaLogger
 
 
 class ImageNormalizer(Executor):
@@ -32,7 +32,7 @@ class ImageNormalizer(Executor):
         self.img_std = np.array(img_std).reshape((1, 1, 3))
         self.channel_axis = channel_axis
         self.target_channel_axis = target_channel_axis
-        self.logger = get_logger(self)
+        self.logger = JinaLogger(getattr(self.metas, 'name', self.__class__.__name__))
         self.default_traversal_paths = default_traversal_paths
 
         # when passed from yaml it is string
