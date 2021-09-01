@@ -196,7 +196,6 @@ def test_snapshot(docker_compose, psql_virtual_shards, real_shards):
             data = func(shard_id=i, total_shards=nr_shards)
             docs_this_shard = len(list(data))
             assert docs_this_shard >= postgres_indexer.virtual_shards // real_shards
-            print(f'shard {i} has {docs_this_shard} documents', flush=True)
             total_docs += docs_this_shard
 
         np.testing.assert_equal(total_docs, total_docs_expected)

@@ -19,7 +19,6 @@ def _flow(uses_after, total_shards, startup_args):
         name='indexer',
         uses=FaissPostgresSearcher,
         uses_with={
-            'total_shards': total_shards,
             'startup_sync_args': startup_args,
         },
         uses_metas={'name': 'compound_indexer'},

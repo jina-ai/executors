@@ -38,14 +38,13 @@ class FaissPostgresSearcher(Executor):
         self,
         dump_path: Optional[str] = None,
         startup_sync: bool = False,
-        total_shards: Optional[int] = None,
         startup_sync_args: Optional[None] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.logger = get_logger(self)
 
-        self.total_shards = total_shards
+        self.total_shards = self.runtime_args.parallel
         if self.total_shards is None:
             self.logger.warning(
                 'total_shards is None, rolling update '
