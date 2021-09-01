@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Union, Iterable, List, Any, Optional, Tuple
+from typing import Iterable, Tuple
 
 import numpy as np
 from jina import DocumentArray, Executor, requests
@@ -39,21 +39,21 @@ class ImagePaddlehubEncoder(Executor):
     :param channel_axis: The axis of the color channel, default is -3
     :param default_batch_size: size of each batch
     :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-    :param on_gpu: set to True if using GPU
+    :param device: Device to run the model on (e.b. 'cpu'/'cuda'/'cuda:2')
     :param args:  Additional positional arguments
     :param kwargs: Additional keyword arguments
     """
 
     def __init__(
-            self,
-            model_name: str = 'xception71_imagenet',
-            pool_strategy: str = 'mean',
-            channel_axis: int = -3,
-            default_batch_size: int = 32,
-            default_traversal_paths: Tuple[str] = ('r', ),
-            on_gpu: bool = False,
-            *args,
-            **kwargs,
+        self,
+        model_name: str = 'xception71_imagenet',
+        pool_strategy: str = 'mean',
+        channel_axis: int = -3,
+        default_batch_size: int = 32,
+        default_traversal_paths: Tuple[str] = ('r',),
+        device: str = 'cpu',
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.pool_strategy = pool_strategy
@@ -62,17 +62,26 @@ class ImagePaddlehubEncoder(Executor):
         self._default_channel_axis = -3
         self.inputs_name = None
         self.outputs_name = None
-        self.on_gpu = on_gpu
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
 
+        import paddle
         import paddlehub as hub
+
+        paddle.enable_static()
         module = hub.Module(name=self.model_name)
         inputs, outputs, self.model = module.context(trainable=False)
-        self.inputs_name, self.outputs_name = self._get_inputs_and_outputs_name(inputs, outputs)
+        self.inputs_name, self.outputs_name = self._get_inputs_and_outputs_name(
+            inputs, outputs
+        )
 
         import paddle.fluid as fluid
-        self.device = fluid.CUDAPlace(0) if self.on_gpu else fluid.CPUPlace()
+
+        if 'cuda' in device:
+            gpu_index = 0 if 'cuda:' not in device else int(device.split(':')[1])
+            self.device = fluid.CUDAPlace(gpu_index)
+        else:
+            self.device = fluid.CPUPlace()
         self.exe = fluid.Executor(self.device)
 
     @requests
@@ -89,9 +98,11 @@ class ImagePaddlehubEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+                traversal_path=parameters.get(
+                    'traversal_paths', self.default_traversal_paths
+                ),
                 batch_size=parameters.get('batch_size', self.default_batch_size),
-                needs_attr='blob'
+                needs_attr='blob',
             )
             self._create_embeddings(document_batches_generator)
 
@@ -100,12 +111,14 @@ class ImagePaddlehubEncoder(Executor):
             blob_batch = [d.blob for d in document_batch]
             blob_batch = np.array(blob_batch)
             if self.channel_axis != self._default_channel_axis:
-                blob_batch = np.moveaxis(blob_batch, self.channel_axis, self._default_channel_axis)
+                blob_batch = np.moveaxis(
+                    blob_batch, self.channel_axis, self._default_channel_axis
+                )
             feature_map, *_ = self.exe.run(
                 program=self.model,
                 fetch_list=[self.outputs_name],
                 feed={self.inputs_name: blob_batch.astype('float32')},
-                return_numpy=True
+                return_numpy=True,
             )
 
             if feature_map.ndim == 2 or self.pool_strategy is None:

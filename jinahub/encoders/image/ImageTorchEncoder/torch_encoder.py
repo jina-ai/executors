@@ -1,14 +1,13 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Dict, Iterable, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
-
-import torchvision.transforms as T
 import torch
-
-from jina import Executor, requests, DocumentArray
+import torchvision.transforms as T
+from jina import DocumentArray, Executor, requests
+from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 
 from .models import EmbeddingModelWrapper
@@ -36,20 +35,20 @@ class ImageTorchEncoder(Executor):
     :param args:  Additional positional arguments
     :param kwargs: Additional keyword arguments
     """
+
     def __init__(
         self,
         model_name: str = 'resnet18',
-        device: Optional[str] = None,
-        default_traversal_path: Tuple = ('r', ),
+        device: str = 'cpu',
+        default_traversal_path: Tuple = ('r',),
         default_batch_size: Optional[int] = 32,
         use_default_preprocessing: bool = True,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.logger = JinaLogger(self.__class__.__name__)
 
-        if not device:
-            device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
         self.default_batch_size = default_batch_size
         self.use_default_preprocessing = use_default_preprocessing
@@ -59,18 +58,17 @@ class ImageTorchEncoder(Executor):
         # axis 0 is the batch
         self._default_channel_axis = 1
 
-        self.model_wrapper = EmbeddingModelWrapper(model_name)
+        self.model_wrapper = EmbeddingModelWrapper(model_name, device=self.device)
 
-        self._preprocess = T.Compose([
-            T.ToPILImage(),
-            T.Resize(256),
-            T.CenterCrop(224),
-            T.ToTensor(),
-            T.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225]
-            )
-        ])
+        self._preprocess = T.Compose(
+            [
+                T.ToPILImage(),
+                T.Resize(256),
+                T.CenterCrop(224),
+                T.ToTensor(),
+                T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]
+        )
 
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
@@ -85,9 +83,11 @@ class ImageTorchEncoder(Executor):
         if docs:
             docs_batch_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get('traversal_paths', self.default_traversal_path),
+                traversal_path=parameters.get(
+                    'traversal_paths', self.default_traversal_path
+                ),
                 batch_size=parameters.get('batch_size', self.default_batch_size),
-                needs_attr='blob'
+                needs_attr='blob',
             )
             self._compute_embeddings(docs_batch_generator)
 

@@ -2,7 +2,9 @@ from pathlib import Path
 from typing import Dict
 
 import numpy as np
-from jina import DocumentArray, Document, Executor
+import pytest
+from jina import Document, DocumentArray, Executor
+
 from ...paddle_image import ImagePaddlehubEncoder
 
 input_dim = 224
@@ -41,3 +43,13 @@ def test_imagepaddlehubencoder_encode(test_images: Dict[str, np.array]):
     assert small_distance < dist('banana2', 'studio')
     assert small_distance < dist('airplane', 'studio')
     assert small_distance < dist('airplane', 'satellite')
+
+
+@pytest.mark.gpu
+def test_encode_gpu(test_images: Dict[str, np.array]):
+    encoder = ImagePaddlehubEncoder(channel_axis=3, device='cuda')
+
+    for name, image_arr in test_images.items():
+        docs = DocumentArray([Document(blob=image_arr)])
+        encoder.encode(docs, parameters={})
+        assert docs[0].embedding.shape == (2048,)

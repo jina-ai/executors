@@ -52,7 +52,7 @@ def test_encoding_cpu():
     assert input_data[0].embedding.shape == (768,)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='GPU is needed for this test')
+@pytest.mark.gpu
 def test_encoding_gpu():
     enc = TransformerTorchEncoder(device='cuda')
     input_data = DocumentArray([Document(text='hello world')])

@@ -1,0 +1,1 @@
+sudo apt-get update && sudo apt-get install -y ffmpeg libsndfile1-dev
