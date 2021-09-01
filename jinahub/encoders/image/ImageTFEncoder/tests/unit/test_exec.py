@@ -66,7 +66,7 @@ def test_image_results_gpu(test_images: Dict[str, np.array]):
     for i in range(num_doc):
         doc.append(Document(blob=test_data[i]))
 
-    encoder = ImageTFEncoder(device='cuda')
+    encoder = ImageTFEncoder(device='/GPU:0')
     encoder.encode(doc, parameters={})
     assert len(doc) == num_doc
     for i in range(num_doc):

@@ -108,11 +108,11 @@ def test_docker_runtime_gpu(build_docker_image_gpu: str):
         subprocess.run(
             [
                 'jina',
-                'executor',
+                'pea',
                 f'--uses=docker://{build_docker_image_gpu}',
                 '--gpus all',
                 '--uses-with',
-                'device:cuda',
+                'device:"/GPU:0"',
             ],
             timeout=30,
             check=True,

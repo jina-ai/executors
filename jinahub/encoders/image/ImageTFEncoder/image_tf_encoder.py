@@ -1,9 +1,10 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Optional, Union
 
 import numpy as np
+import tensorflow as tf
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
@@ -38,7 +39,7 @@ class ImageTFEncoder(Executor):
         - `max`: Means that global max pooling will be applied.
     :param default_batch_size: size of each batch
     :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-    :param device: Device ('cpu', 'cuda', 'cuda:2')
+    :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
     :param args: additional positional arguments.
     :param kwargs: additional positional arguments.
     """
@@ -49,10 +50,10 @@ class ImageTFEncoder(Executor):
         img_shape: int = 336,
         pool_strategy: str = 'max',
         default_batch_size: int = 32,
-        default_traversal_paths: List[str] = None,
-        device: str = 'cpu',
+        default_traversal_paths: Union[List[str], str] = None,
+        device: str = '/CPU:0',
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         if default_traversal_paths is None:
@@ -62,31 +63,24 @@ class ImageTFEncoder(Executor):
         self.img_shape = img_shape
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
-        self.device = device
         self.logger = JinaLogger(self.__class__.__name__)
 
-        import tensorflow as tf
-
-        cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
-        if 'cuda' in device and len(gpus) > 0:
-            gpu_index = 0 if 'cuda:' not in device else int(device.split(':')[1])
-            cpus.append(gpus[gpu_index])
-        if 'cuda' in self.device and len(gpus) == 0:
-            self.logger.warning(
-                'You tried to use a GPU but no GPU was found on'
-                ' your system. Defaulting to CPU!'
-            )
-        tf.config.experimental.set_visible_devices(devices=cpus)
+        if 'GPU' in device:
+            gpu_index = 0 if 'GPU:' not in device else int(device.split(':')[-1])
+            if len(gpus) < gpu_index + 1:
+                raise RuntimeError(f'Device {device} not found on your system!')
+        self.device = tf.device(device)
 
-        model = getattr(tf.keras.applications, self.model_name)(
-            input_shape=(self.img_shape, self.img_shape, 3),
-            include_top=False,
-            pooling=self.pool_strategy,
-            weights='imagenet',
-        )
-        model.trainable = False
-        self.model = model
+        with self.device:
+            model = getattr(tf.keras.applications, self.model_name)(
+                input_shape=(self.img_shape, self.img_shape, 3),
+                include_top=False,
+                pooling=self.pool_strategy,
+                weights='imagenet',
+            )
+            model.trainable = False
+            self.model = model
 
     @requests
     def encode(self, docs: DocumentArray, parameters: Dict, **kwargs):
@@ -114,6 +108,7 @@ class ImageTFEncoder(Executor):
     def _create_embeddings(self, document_batches_generator: Iterable):
         for document_batch in document_batches_generator:
             blob_batch = np.stack([d.blob for d in document_batch])
-            embedding_batch = self.model(blob_batch)
+            with self.device:
+                embedding_batch = self.model(blob_batch)
             for document, embedding in zip(document_batch, embedding_batch):
                 document.embedding = np.array(embedding)

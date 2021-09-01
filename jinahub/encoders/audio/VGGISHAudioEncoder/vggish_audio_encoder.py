@@ -27,16 +27,16 @@ class VggishAudioEncoder(Executor):
     :param model_path: path of the models directory
     :param default_traversal_paths: fallback batch size in case there is not
         batch size sent in the request
-    :param device: device to run the model on e.g. 'cpu'/'cuda'/'cuda:2'
+    :param device: device to run the model on e.g. '/CPU:0','/GPU:0','/GPU:2'
     """
 
     def __init__(
         self,
         model_path: str = Path(cur_dir) / 'models',
         default_traversal_paths: Optional[Iterable[str]] = None,
-        device: str = 'cpu',
+        device: str = '/CPU:0',
         *args,
-        **kwargs
+        **kwargs,
     ):
 
         super().__init__(*args, **kwargs)
@@ -52,14 +52,11 @@ class VggishAudioEncoder(Executor):
 
         cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
-        if 'cuda' in device and len(gpus) > 0:
-            gpu_index = 0 if 'cuda:' not in device else int(device.split(':')[1])
+        if 'GPU' in device:
+            gpu_index = 0 if 'GPU:' not in device else int(device.split(':')[-1])
+            if len(gpus) < gpu_index + 1:
+                raise RuntimeError(f'Device {device} not found on your system!')
             cpus.append(gpus[gpu_index])
-        if 'cuda' in self.device and len(gpus) == 0:
-            self.logger.warning(
-                'You tried to use a GPU but no GPU was found on'
-                ' your system. Defaulting to CPU!'
-            )
         tf.config.experimental.set_visible_devices(devices=cpus)
 
         if not self.vgg_model_path.exists():

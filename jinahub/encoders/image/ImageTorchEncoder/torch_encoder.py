@@ -56,12 +56,6 @@ class ImageTorchEncoder(Executor):
                 f'Torch device {device} not supported. Must be cpu or cuda!'
             )
 
-        if device.startswith('cuda') and not torch.cuda.is_available():
-            self.logger.warning(
-                'You tried to use GPU but torch did not detect your '
-                'GPU correctly. Defaulting to CPU. Check your CUDA installation!'
-            )
-            device = 'cpu'
         self.device = device
         self.default_batch_size = default_batch_size
         self.use_default_preprocessing = use_default_preprocessing

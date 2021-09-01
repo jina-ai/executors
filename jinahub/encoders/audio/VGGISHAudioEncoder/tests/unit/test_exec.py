@@ -35,6 +35,6 @@ def test_embedding_dimension_gpu():
     log_mel_examples = vggish_input.waveform_to_examples(x_audio, sample_rate)
     doc = DocumentArray([Document(blob=log_mel_examples)])
     ops.reset_default_graph()
-    model = VggishAudioEncoder(device='cuda')
+    model = VggishAudioEncoder(device='/GPU:0')
     model.encode(doc, parameters={})
     assert doc[0].embedding.shape == (128,)
