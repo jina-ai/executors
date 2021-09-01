@@ -2,6 +2,8 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
+import subprocess
+from pathlib import Path
 from typing import Dict
 
 import numpy as np
@@ -71,3 +73,22 @@ def test_images(test_dir: str) -> Dict[str, np.ndarray]:
         for file_name in ['airplane', 'banana1', 'banana2', 'satellite', 'studio']
     }
     return image_dict
+
+
+@pytest.fixture(scope='session')
+def docker_image_name() -> str:
+    return Path(__file__).parents[1].stem.lower()
+
+
+@pytest.fixture(scope='session')
+def build_docker_image(docker_image_name: str) -> str:
+    subprocess.run(['docker', 'build', '-t', docker_image_name, '.'], check=True)
+    return docker_image_name
+
+
+@pytest.fixture(scope='session')
+def build_docker_image_gpu(docker_image_name: str) -> str:
+    image_name = f'{docker_image_name}:gpu'
+    subprocess.run(
+        ['docker', 'build', '-t', image_name, '-f', 'Dockerfile.gpu', '.'], check=True
+    )

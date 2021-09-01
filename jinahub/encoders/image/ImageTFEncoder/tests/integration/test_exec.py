@@ -91,6 +91,16 @@ def test_traversal_path(
             assert len([x for x in embeddings if x is not None]) == count
 
 
+@pytest.mark.docker
+def test_docker_runtime(build_docker_image: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            ['jina', 'executor', '--uses=docker://{build_docker_image}'],
+            timeout=30,
+            check=True
+        )
+
+
 @pytest.mark.gpu
 @pytest.mark.docker
 def test_docker_runtime_gpu(build_docker_image_gpu: str):
