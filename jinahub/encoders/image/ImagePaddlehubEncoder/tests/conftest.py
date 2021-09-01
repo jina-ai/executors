@@ -83,3 +83,4 @@ def build_docker_image_gpu(docker_image_name: str) -> str:
     subprocess.run(
         ['docker', 'build', '-t', image_name, '-f', 'Dockerfile.gpu', '.'], check=True
     )
+    return image_name
