@@ -14,15 +14,33 @@ from jina_commons.indexers.dump import import_metas, import_vectors
 METRIC = 'l2'
 
 
+def _flow(uses_after, total_shards, startup_args):
+    return Flow().add(
+        name='indexer',
+        uses=FaissPostgresSearcher,
+        uses_with={
+            'total_shards': total_shards,
+            'startup_sync_args': startup_args,
+        },
+        uses_metas={'name': 'compound_indexer'},
+        parallel=total_shards,
+        replicas=1,
+        polling='all',
+        uses_after=uses_after,
+    )
+
+
 @pytest.fixture()
 def docker_compose(request):
     os.system(
-        f"docker-compose -f {request.param} --project-directory . up  --build -d --remove-orphans"
+        f"docker-compose -f {request.param} --project-directory . up  --build -d "
+        f"--remove-orphans"
     )
     time.sleep(5)
     yield
     os.system(
-        f"docker-compose -f {request.param} --project-directory . down --remove-orphans"
+        f"docker-compose -f {request.param} --project-directory . down "
+        f"--remove-orphans"
     )
 
 
@@ -115,7 +133,8 @@ def assert_dump_data(dump_path, docs, shards, pea_id):
         docs_expected = docs[(pea_id) * size_shard : (pea_id + 1) * size_shard]
     print(f'### pea {pea_id} has {len(docs_expected)} docs')
 
-    # TODO these might fail if we implement any ordering of elements on dumping / reloading
+    # TODO these might fail if we implement any ordering of elements on dumping /
+    #  reloading
     ids_dump = list(ids_dump)
     vectors_dump = list(vectors_dump)
     np.testing.assert_equal(set(ids_dump), set([d.id for d in docs_expected]))
@@ -169,12 +188,12 @@ def test_psql_import(
     os.environ['STORAGE_WORKSPACE'] = os.path.join(str(tmpdir), 'index_ws')
     os.environ['SHARDS'] = str(shards)
     if shards > 1:
-        os.environ['USES_AFTER'] = 'MatchMerger'
+        uses_after = 'MatchMerger'
     else:
-        os.environ['USES_AFTER'] = 'Pass'
+        uses_after = 'Pass'
 
     # we only need one Flow
-    with Flow.load_config(flow_yml) as flow:
+    with _flow(uses_after=uses_after, total_shards=shards, startup_args={}) as flow:
         # necessary since PSQL instance might not have shutdown properly between tests
         flow.post(on='/delete', inputs=docs)
 
@@ -243,3 +262,28 @@ def test_benchmark(tmpdir, docker_compose):
         docker_compose=compose_yml,
         benchmark=True,
     )
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_start_up(docker_compose):
+    docs = list(get_batch_iterator(batches=10, batch_size=10, emb_size=7))
+    shards = 3
+
+    with _flow(uses_after='MatchMerger', total_shards=shards, startup_args={}) as flow:
+        flow.post(on='/index', inputs=docs)
+
+    # here we show how you can avoid having to do a snapshot
+    # and then call sync
+    # and automatically start a Searcher that loads their data from PSQL
+    # WARNING: this cannot guarantee consistency, if you do
+    # any writes to the PSQL while the shards are loading
+    with _flow(
+        uses_after='MatchMerger', total_shards=shards, startup_args={'only_delta': True}
+    ) as flow:
+        results = flow.post(
+            on='/search',
+            inputs=docs,
+            parameters={'top_k': len(docs)},
+            return_results=True,
+        )
+        assert len(results[0].docs[0].matches) == len(docs)
