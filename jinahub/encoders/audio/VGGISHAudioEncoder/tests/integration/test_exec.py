@@ -42,7 +42,7 @@ def test_docker_runtime(build_docker_image: str):
         subprocess.run(
             ['jina', 'executor', '--uses=docker://{build_docker_image}'],
             timeout=30,
-            check=True
+            check=True,
         )
 
 
