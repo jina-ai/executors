@@ -48,13 +48,6 @@ class ImageTorchEncoder(Executor):
     ):
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)
-        if (device not in ['cpu', 'cuda']) and (not device.startswith('cuda:')):
-            self.logger.error(
-                f'Torch device {device} not supported. Must be cpu or cuda!'
-            )
-            raise RuntimeError(
-                f'Torch device {device} not supported. Must be cpu or cuda!'
-            )
 
         self.device = device
         self.default_batch_size = default_batch_size
