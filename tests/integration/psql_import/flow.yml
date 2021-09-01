@@ -1,0 +1,17 @@
+jtype: Flow
+version: '1'
+executors:
+  - name: indexer
+    uses:
+      jtype: FaissPostgresSearcher
+      with:
+        # required for calculating data allocation in import
+        # TODO make it part of core to automatically pass this argument to shards
+        total_shards: $SHARDS
+      metas:
+        name: compound_indexer
+    shards: $SHARDS
+    # TODO to decide on orchestration
+    replicas: 1
+    polling: all
+    uses_after: $USES_AFTER
