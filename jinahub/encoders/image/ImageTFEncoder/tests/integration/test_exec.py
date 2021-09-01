@@ -93,18 +93,18 @@ def test_traversal_path(
 
 @pytest.mark.gpu
 @pytest.mark.docker
-def test_docker_runtime_gpu():
+def test_docker_runtime_gpu(build_docker_image_gpu: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
             [
                 'jina',
-                'pea',
-                '--uses=docker://imagetfencoder:gpu',
-                '--gpus',
-                'all',
+                'executor',
+                '--uses=docker://{build_docker_image_gpu}',
+                '--gpus all',
                 '--uses-with',
-                'device:cuda',
+                'device:cuda'
             ],
             timeout=30,
-            check=True,
+            check=True
         )
+

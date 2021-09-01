@@ -1,12 +1,12 @@
-FROM nvidia/cuda:11.3.1-cudnn8-runtime
+FROM nvidia/cuda:11.2.1-cudnn8-runtime
 
 RUN apt update && DEBIAN_FRONTEND="noninteractive" apt install -y python3.8 python3-pip git libsndfile-dev
-RUN JINA_PIP_INSTALL_PERF=1 pip install --no-cache-dir jina==2.0.20
+RUN JINA_PIP_INSTALL_PERF=1 pip install --no-cache-dir jina~=2.0
 
 COPY gpu_requirements.txt gpu_requirements.txt
 RUN pip install --no-cache-dir -r gpu_requirements.txt
 
-COPY . ./vgg_audio_encoder/
-WORKDIR ./vgg_audio_encoder
+COPY . /workdir/
+WORKDIR /workdir
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
