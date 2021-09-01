@@ -28,11 +28,11 @@ class EmbeddingModelWrapper:
     def __init__(self, model_name: str, device: Optional[str] = None):
         if not device:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = device
 
         self._layer_name = _ModelCatalogue.get_layer_name(model_name)
         self._model = getattr(models, model_name)(pretrained=True)
-
-        self.device = device
+        self._model.to(torch.device(self.device))
 
         self._pooling_layer = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         self._pooling_layer.to(torch.device(self.device))
@@ -57,7 +57,7 @@ class EmbeddingModelWrapper:
         tensor = torch.from_numpy(images).to(self.device)
         features = self.get_features(tensor)
         features = self._pooling_function(features)
-        features = features.detach().numpy()
+        features = features.detach().cpu().numpy()
         return features
 
 
