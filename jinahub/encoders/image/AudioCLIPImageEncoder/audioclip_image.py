@@ -46,6 +46,7 @@ class AudioCLIPImageEncoder(Executor):
     ):
         super().__init__(*args, **kwargs)
 
+        self.device = device
         self.model = AudioCLIP(pretrained=model_path).to(device).eval()
         self.default_traversal_paths = default_traversal_paths or ['r']
         self.default_batch_size = default_batch_size
@@ -120,7 +121,7 @@ class AudioCLIPImageEncoder(Executor):
                         images.append(torch.tensor(doc.blob, dtype=torch.float32))
 
                 images = torch.stack(images)
-                embeddings = self.model.encode_image(image=images)
+                embeddings = self.model.encode_image(image=images.to(self.device))
                 embeddings = embeddings.cpu().numpy()
 
                 for idx, doc in enumerate(batch):
