@@ -594,6 +594,14 @@ class FaissSearcher(Executor):
     def is_deleted(self, idx):
         return self._is_deleted[idx]
 
+    def _append_vecs_and_ids(self, doc_ids: List[str], vecs: np.ndarray):
+        assert len(doc_ids) == vecs.shape[0]
+        for doc_id in doc_ids:
+            self._doc_id_to_offset[doc_id] = len(self._doc_ids)
+            self._doc_ids.append(doc_id)
+            self._is_deleted.append(0)
+        self._index(vecs)
+
     def _add_delta(self, delta: Generator[Tuple[str, bytes, datetime], None, None]):
         """
         Adding the delta data to the indexer
@@ -607,10 +615,8 @@ class FaissSearcher(Executor):
                 vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
                     1, -1
                 )  # shape [1, D]
-                self._doc_id_to_offset[doc_id] = len(self._doc_ids)
-                self._doc_ids.append(doc_id)
-                self._is_deleted.append(0)
-                self._index(vec)
+
+                self._append_vecs_and_ids([doc_id], vec)
             elif vec_buffer is None:  # soft delete
                 self._is_deleted[idx] = 1
             else:  # update
@@ -621,7 +627,4 @@ class FaissSearcher(Executor):
                 vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
                     1, -1
                 )  # shape [1, D]
-                self._doc_id_to_offset[doc_id] = len(self._doc_ids)
-                self._doc_ids.append(doc_id)
-                self._is_deleted.append(0)
-                self._index(vec)
+                self._append_vecs_and_ids([doc_id], vec)
