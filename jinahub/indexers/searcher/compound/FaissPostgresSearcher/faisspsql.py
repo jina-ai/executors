@@ -9,17 +9,8 @@ from typing import Dict, Optional
 from jina import DocumentArray, Executor, requests
 from jina_commons import get_logger
 
-try:
-    from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
-except ImportError:  # noqa: E722
-    from jina_executors.indexers.searcher.FaissSearcher.faiss_searcher import (
-        FaissSearcher,
-    )
-
-try:
-    from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
-except ImportError:  # noqa: E722
-    from jina_executors.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
+from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 
 
 class FaissPostgresSearcher(Executor):
@@ -28,8 +19,6 @@ class FaissPostgresSearcher(Executor):
 
     :param dump_path: a path to a dump folder containing
     the dump data obtained by calling jina_commons.dump_docs
-    :param startup_sync: whether to use the dump
-     function of PostgreSQLStorage, when dump_path is not provided
     :param startup_sync_args: the arguments to be passed to the self.sync call on
     startup (if startup_sync)
     """
@@ -37,14 +26,16 @@ class FaissPostgresSearcher(Executor):
     def __init__(
         self,
         dump_path: Optional[str] = None,
-        startup_sync: bool = False,
-        startup_sync_args: Optional[None] = None,
+        startup_sync_args: Optional[Dict] = None,
+        total_shards: Optional[int] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.logger = get_logger(self)
 
-        self.total_shards = self.runtime_args.parallel
+        if total_shards is None:
+            self.total_shards = getattr(self.runtime_args, 'parallel', None)
+
         if self.total_shards is None:
             self.logger.warning(
                 'total_shards is None, rolling update '
@@ -54,7 +45,6 @@ class FaissPostgresSearcher(Executor):
         # when constructed from rolling update
         # args are passed via runtime_args
         dump_path = dump_path or kwargs.get('runtime_args').get('dump_path')
-        startup_sync = startup_sync or kwargs.get('runtime_args').get('startup_sync')
 
         self._kv_indexer = None
         self._vec_indexer = None
@@ -63,33 +53,22 @@ class FaissPostgresSearcher(Executor):
         (
             self._kv_indexer,
             self._vec_indexer,
-            startup_sync,
-            startup_sync_args,
-        ) = self._init_executors(dump_path, kwargs, startup_sync, startup_sync_args)
-        if startup_sync:
+        ) = self._init_executors(dump_path, kwargs, startup_sync_args)
+        if startup_sync_args:
+            startup_sync_args['startup'] = True
             self.sync(parameters=startup_sync_args)
 
-    def _init_executors(self, dump_path, kwargs, startup_sync, startup_sync_args):
+    def _init_executors(self, dump_path, kwargs, startup_sync_args):
         kv_indexer = PostgreSQLStorage(**kwargs)
+        vec_indexer = FaissSearcher(dump_path=dump_path, **kwargs)
 
-        if startup_sync_args is None and startup_sync:
-            startup_sync_args = {}
-        # if the user passes args for syncing, they must've meant to sync as well
-        if startup_sync_args and (startup_sync is False or startup_sync is None):
-            startup_sync = True
-
-        if dump_path is None and startup_sync is None:
+        if dump_path is None and startup_sync_args is None:
             name = getattr(self.metas, 'name', self.__class__.__name__)
             self.logger.warning(
                 f'No "dump_path" or "use_dump_func" provided '
                 f'for {name}. Use .rolling_update() to re-initialize...'
             )
-        if startup_sync:
-            vec_indexer = FaissSearcher(**kwargs)
-            startup_sync_args['startup'] = True
-        else:
-            vec_indexer = FaissSearcher(dump_path=dump_path, **kwargs)
-        return kv_indexer, vec_indexer, startup_sync, startup_sync_args
+        return kv_indexer, vec_indexer
 
     @requests(on='/sync')
     def sync(self, parameters: Optional[Dict], **kwargs):
@@ -194,7 +173,7 @@ class FaissPostgresSearcher(Executor):
         self._kv_indexer.snapshot()
 
     @requests(on='/index')
-    def index(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def index(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """Index new documents
 
         NOTE: PSQL has a uniqueness constraint on ID
@@ -202,14 +181,14 @@ class FaissPostgresSearcher(Executor):
         self._kv_indexer.add(docs, parameters, **kwargs)
 
     @requests(on='/update')
-    def update(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def update(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
         Update documents in PSQL, based on id
         """
         self._kv_indexer.update(docs, parameters, **kwargs)
 
     @requests(on='/delete')
-    def delete(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def delete(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
         Delete docs from PSQL, based on id
         """
