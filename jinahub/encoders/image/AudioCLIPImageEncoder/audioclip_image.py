@@ -37,7 +37,7 @@ class AudioCLIPImageEncoder(Executor):
     def __init__(
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
-        default_traversal_paths: Iterable[str] = ['r'],
+        default_traversal_paths: Iterable[str] = ('r',),
         default_batch_size: int = 32,
         use_default_preprocessing: bool = True,
         device: str = 'cpu',

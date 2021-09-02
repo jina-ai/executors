@@ -1,4 +1,3 @@
-jina==2.0.10
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
 
 # Curated requirements from AudioCLIP

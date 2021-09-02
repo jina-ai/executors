@@ -13,6 +13,17 @@ The following arguments can be passed on initialization:
 - `default_batch_size`: default batch size (used if not specified in request's parameters)
 - `device`: device that the model is on (should be "cpu", "cuda" or "cuda:X", where X is the index of the GPU on the machine)
 
+#### Inputs 
+
+`Document` with the `blob` attribute, where `blob` is an `np.ndarray` of dtype ``np.uint8`` (unless you set ``use_default_preprocessing=True``, then they can also be of a float type).
+
+If you set `use_default_preprocessing=True` when creating this encoder, then the image arrays should have the shape `[H, W, C]`, and be in the RGB color format.
+
+If you set `use_default_preprocessing=False` when creating this encoder, then you need to ensure that the images you pass in are already pre-processed. This means that they are all the same size (for batching) - the CLIP model was trained on `224 x 224` images, and that they are of the shape `[C, H, W]` (in the RGB color format). They should also be normalized.
+
+#### Returns
+
+`Document` with `embedding` field filled with an `ndarray` of the shape `(1024,)` with `dtype=nfloat32`.
 
 ## Prerequisites
 
@@ -78,18 +89,6 @@ with f:
 	resp = f.post(on='foo', inputs=doc, return_results=True)
 	print(resp[0])
 ```
-
-#### Inputs 
-
-`Document` with the `blob` attribute, where `blob` is an `np.ndarray` of dtype ``np.uint8`` (unless you set ``use_default_preprocessing=True``, then they can also be of a float type).
-
-If you set `use_default_preprocessing=True` when creating this encoder, then the image arrays should have the shape `[H, W, C]`, and be in the RGB color format.
-
-If you set `use_default_preprocessing=False` when creating this encoder, then you need to ensure that the images you pass in are already pre-processed. This means that they are all the same size (for batching) - the CLIP model was trained on `224 x 224` images, and that they are of the shape `[C, H, W]` (in the RGB color format). They should also be normalized.
-
-#### Returns
-
-`Document` with `embedding` field filled with an `ndarray` of the shape `(1024,)` with `dtype=nfloat32`.
 
 
 ## Reference
