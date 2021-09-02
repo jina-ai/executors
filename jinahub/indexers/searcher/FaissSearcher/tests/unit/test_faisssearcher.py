@@ -497,3 +497,51 @@ def test_faiss_delta(metas, tmpdir):
     indexer.search(docs, parameters={'top_k': 2})
     dist = docs.traverse_flat(['m']).get_attributes('scores')
     assert dist[0]['l2'].value == 1.0
+
+
+def test_faiss_snapshot(metas, tmpdir):
+    num_data = 2
+    num_dims = 64
+
+    vecs = np.zeros((num_data, num_dims))
+    vecs[:, 0] = 2
+    vecs[0, 1] = 3
+    keys = np.arange(0, num_data).astype(str)
+
+    dump_path = os.path.join(tmpdir, 'dump')
+    export_dump_streaming(
+        dump_path,
+        1,
+        len(keys),
+        zip(keys, vecs, [b'' for _ in range(len(vecs))]),
+    )
+
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='Flat',
+        normalize=True,
+        requires_training=True,
+        metas=metas,
+        dump_path=dump_path,
+        runtime_args={'pea_id': 0},
+    )
+
+    indexer.snapshot()
+
+    new_indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='Flat',
+        normalize=True,
+        requires_training=True,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+
+    assert new_indexer.size == 2
+
+    query = np.zeros((1, num_dims))
+    query[0, 0] = 5
+    docs = _get_docs_from_vecs(query.astype('float32'))
+    new_indexer.search(docs, parameters={'top_k': 2})
+    dist = docs.traverse_flat(['m']).get_attributes('scores')
+    assert dist[0]['l2'].value == 1.0

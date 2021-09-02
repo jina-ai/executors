@@ -113,7 +113,11 @@ class FaissSearcher(Executor):
         self._prefetch_data = []
 
         self.logger = get_logger(self)
-        self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
+        is_loaded = False
+        if os.path.exists(self.snapshot_path):
+            is_loaded = self._load_snapshot()
+        if not is_loaded:
+            self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
 
     def _load_dump(self, dump_path, dump_func, prefetch_size, **kwargs):
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
@@ -382,7 +386,7 @@ class FaissSearcher(Executor):
             self.logger.warning(
                 'None snapshot is found in workspace, you should build the indexer from scratch'
             )
-            return
+            return False
 
         self.logger.info(f'Loading indexer from snapshot {self.snapshot_path}...')
 
@@ -390,16 +394,17 @@ class FaissSearcher(Executor):
             self._doc_ids = pickle.load(fp)
             self._doc_id_to_offset = {v: i for i, v in enumerate(self._doc_ids)}
 
-        with open(os.path.join(self.snapshot_path, 'delete_marks.bin'), "wb") as fp:
+        with open(os.path.join(self.snapshot_path, 'delete_marks.bin'), 'rb') as fp:
             self._is_deleted = pickle.load(fp)
 
         index = faiss.read_index(os.path.join(self.snapshot_path, 'faiss.bin'))
         assert index.metric_type == self.metric_type
-        assert index.d == self.num_dim
         assert index.is_trained
-
+        self.num_dim = index.d
         self._faiss_index = self.to_device(index)
         self._faiss_index.nprobe = self.nprobe
+
+        return True
 
     @requests(on='/train')
     def train(self, parameters: Dict, **kwargs):
