@@ -1,14 +1,15 @@
 [tool.isort]
 profile = "black"
 skip_glob = [
-    "*/audio_clip/*"
+    "*/audio_clip/*",
+    "*/vggish/*"
 ]
 
 [tool.black]
 skip_string_normalization = true
 extend_exclude = '''
 (
-    audio_clip/
+    audio_clip/|vggish/
 )
 '''
 

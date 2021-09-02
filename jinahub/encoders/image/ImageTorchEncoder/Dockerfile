@@ -1,4 +1,4 @@
-FROM jinaai/jina:2.0.3
+FROM jinaai/jina:2-py37-perf
 
 RUN apt-get update && apt install -y git
 

@@ -73,25 +73,6 @@ class TransformerTorchEncoder(Executor):
                 f'Torch device {device} not supported. Must be cpu or cuda!'
             )
 
-        if device.startswith('cuda') and not torch.cuda.is_available():
-            self.logger.warning(
-                'You tried to use GPU but torch did not detect your '
-                'GPU correctly. Defaulting to CPU. Check your CUDA installation!'
-            )
-            device = 'cpu'
-
-        if device == 'cuda':
-            parallel_device_id = self.runtime_args.pea_id
-            if torch.cuda.device_count() > parallel_device_id:
-                device = f'cuda:{parallel_device_id}'
-                self.logger.debug(f'You will use the cuda device of: {device}')
-            else:
-                self.logger.warning(
-                    f'You tried to use cuda:{parallel_device_id} but torch '
-                    'did not detect your GPU correctly. Default to CPU.'
-                )
-                device = 'cpu'
-
         if device == 'cpu' and num_threads:
             cpu_num = os.cpu_count()
             if num_threads > cpu_num:

@@ -13,7 +13,7 @@ jobs:
       - id: set-matrix
         run: bash scripts/get-all-test-paths.sh
         env:
-          CHANGED_FILES: ${{ steps.changed-files.outputs.added_modified }}
+          CHANGED_FILES: ${{ steps.changed-files.outputs.all }}
       - id: debug
         run: echo ${{ steps.set-matrix.outputs.matrix }}
     outputs:
@@ -81,6 +81,10 @@ jobs:
             normalizer . --jina-version=2; fi
       - name: Run unit tests
         run: pytest -s -v -m "not gpu"
+      # - name: Print image size
+      #   run: |
+      #     IMG_NAME=$(echo "${PWD##*/}" | tr '[:upper:]' '[:lower:]')
+      #     docker inspect $IMG_NAME | jq '.[0].Size' | numfmt --to=iec --suffix=B
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   # @@@@@@@ ⚠️ DEPRECATED ⚠️ @@@@@@@@@
@@ -123,3 +127,67 @@ jobs:
           export PYTHONPATH=.
       - name: Run integration tests
         run: pytest -s -v tests/integration
+
+  gpu-folders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - id: changed-files
+        uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
+      - id: set-matrix
+        run: bash scripts/get-gpu-executors.sh
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.all }}
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+  gpu-tests:
+    needs: [gpu-folders]
+    runs-on: [self-hosted, gpu]
+    strategy:
+      fail-fast: false
+      matrix:
+        folder: ${{fromJson(needs.gpu-folders.outputs.matrix)}}
+    defaults:
+      run:
+        working-directory: ${{ matrix.folder }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      - name: Pre-test script
+        run: |
+          if [[ -f "scripts/pre_test.sh" ]]; then
+            bash scripts/pre_test.sh; fi
+      - name: Install jina
+        run: pip install git+https://github.com/jina-ai/jina/
+      - name: Python requirements
+        run: pip install -r requirements.txt -r tests/requirements.txt
+      - name: Image name
+        run: echo "IMAGE_NAME=$(echo "${PWD##*/}:gpu" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      - name: build docker image
+        run: docker build -t $IMAGE_NAME -f Dockerfile.gpu .
+      - name: Print image size
+        run: docker inspect $IMAGE_NAME | jq '.[0].Size' | numfmt --to=iec --suffix=B      
+      - name: start container
+        run: |
+          docker run \
+            --entrypoint "" \
+            --name ${PWD##*/} \
+            --gpus all \
+            -d $IMAGE_NAME tail -F /dev/null
+          echo "DOCKER_EXEC=docker exec ${PWD##*/}" >> $GITHUB_ENV
+      - name: Run GPU tests in container
+        run: |
+          $DOCKER_EXEC pip install -r tests/requirements.txt
+          $DOCKER_EXEC ls
+          $DOCKER_EXEC pytest -s -v -m "gpu and not docker" tests/
+      - name: Run test of GPU image
+        run: pytest -s -v -m "gpu and docker"
+      - name: stop container
+        if: ${{ always() }}
+        run: docker stop $(docker ps -a -q) && docker rm ${PWD##*/}

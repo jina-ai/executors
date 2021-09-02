@@ -1,9 +1,10 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Iterable, List, Dict
+from typing import Dict, Iterable, List, Union
 
 import numpy as np
+import tensorflow as tf
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
@@ -38,20 +39,22 @@ class ImageTFEncoder(Executor):
         - `max`: Means that global max pooling will be applied.
     :param default_batch_size: size of each batch
     :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-    :param on_gpu: set to True if using GPU
+    :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
     :param args: additional positional arguments.
     :param kwargs: additional positional arguments.
     """
 
-    def __init__(self,
-                 model_name: str = 'MobileNetV2',
-                 img_shape: int = 336,
-                 pool_strategy: str = 'max',
-                 default_batch_size: int = 32,
-                 default_traversal_paths: List[str] = None,
-                 on_gpu: bool = True,
-                 *args,
-                 **kwargs):
+    def __init__(
+        self,
+        model_name: str = 'MobileNetV2',
+        img_shape: int = 336,
+        pool_strategy: str = 'max',
+        default_batch_size: int = 32,
+        default_traversal_paths: Union[List[str], str] = None,
+        device: str = '/CPU:0',
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         if default_traversal_paths is None:
             default_traversal_paths = ['r']
@@ -60,26 +63,24 @@ class ImageTFEncoder(Executor):
         self.img_shape = img_shape
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
-        self.on_gpu = on_gpu
         self.logger = JinaLogger(self.__class__.__name__)
 
-        import tensorflow as tf
-        cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
-        if self.on_gpu and len(gpus) > 0:
-            cpus.append(gpus[0])
-        if self.on_gpu and len(gpus) == 0:
-            self.logger.warning('You tried to use a GPU but no GPU was found on'
-                                ' your system. Defaulting to CPU!')
-        tf.config.experimental.set_visible_devices(devices=cpus)
+        if 'GPU' in device:
+            gpu_index = 0 if 'GPU:' not in device else int(device.split(':')[-1])
+            if len(gpus) < gpu_index + 1:
+                raise RuntimeError(f'Device {device} not found on your system!')
+        self.device = tf.device(device)
 
-        model = getattr(tf.keras.applications, self.model_name)(
-            input_shape=(self.img_shape, self.img_shape, 3),
-            include_top=False,
-            pooling=self.pool_strategy,
-            weights='imagenet')
-        model.trainable = False
-        self.model = model
+        with self.device:
+            model = getattr(tf.keras.applications, self.model_name)(
+                input_shape=(self.img_shape, self.img_shape, 3),
+                include_top=False,
+                pooling=self.pool_strategy,
+                weights='imagenet',
+            )
+            model.trainable = False
+            self.model = model
 
     @requests
     def encode(self, docs: DocumentArray, parameters: Dict, **kwargs):
@@ -96,15 +97,18 @@ class ImageTFEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+                traversal_path=parameters.get(
+                    'traversal_paths', self.default_traversal_paths
+                ),
                 batch_size=parameters.get('batch_size', self.default_batch_size),
-                needs_attr='blob'
+                needs_attr='blob',
             )
             self._create_embeddings(document_batches_generator)
 
     def _create_embeddings(self, document_batches_generator: Iterable):
         for document_batch in document_batches_generator:
             blob_batch = np.stack([d.blob for d in document_batch])
-            embedding_batch = self.model(blob_batch)
+            with self.device:
+                embedding_batch = self.model(blob_batch)
             for document, embedding in zip(document_batch, embedding_batch):
                 document.embedding = np.array(embedding)

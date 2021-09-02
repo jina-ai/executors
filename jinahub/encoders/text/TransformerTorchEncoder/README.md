@@ -44,6 +44,30 @@ pods:
 This does not support GPU at the moment.
 
 
+#### GPU usage
+
+You can use the GPU via the source code. Therefore, you need a matching CUDA version
+and GPU drivers installed on your system. 
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub://TransformerTorchEncoder'
+    uses_with:
+      device: 'cuda'
+```
+Alternatively, use the jinahub gpu docker container. Therefore, you need GPU
+drivers installed on your system and nvidia-docker installed.
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub+docker://TransformerTorchEncoder/gpu'
+    gpus: all
+    uses_with:
+      device: 'cuda'
+```
+
 
 ## Usage
 
