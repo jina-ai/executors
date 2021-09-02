@@ -325,7 +325,7 @@ class FaissSearcher(Executor):
         )
 
         # expand topk number for filtering
-        expand_topk = top_k + min(100, self.delted_count)
+        expand_topk = top_k + min(top_k, self.delted_count)
 
         query_docs = docs.traverse_flat(traversal_paths)
 
