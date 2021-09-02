@@ -14,7 +14,7 @@ local_exit_code=1
 if [[ -f "Dockerfile" ]]; then
   python -m venv .venv
   source .venv/bin/activate
-  pip install wheel docker
+  pip install wheel docker jina
   pip install -r requirements.txt
 
   if [[ -f "tests/requirements.txt" ]]; then
