@@ -466,6 +466,8 @@ def test_faiss_delta(metas, tmpdir):
 
     indexer._add_delta(_generate_add_delta())
     assert indexer.size == 6
+    assert indexer._is_deleted == [0, 0, 0, 0, 0, 0]
+    assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5']
 
     def _generate_delete_delta():
         for i in range(2, 4):
@@ -473,6 +475,8 @@ def test_faiss_delta(metas, tmpdir):
 
     indexer._add_delta(_generate_delete_delta())
     assert indexer.size == 4
+    assert indexer._is_deleted == [0, 0, 1, 1, 0, 0]
+    assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5']
 
     def _generate_update_delta():
         for i in range(4, 6):
@@ -481,6 +485,8 @@ def test_faiss_delta(metas, tmpdir):
 
     indexer._add_delta(_generate_update_delta())
     assert indexer.size == 4
+    assert indexer._is_deleted == [0, 0, 1, 1, 1, 1, 0, 0]
+    assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5', '4', '5']
 
     # update the deleted docs take the same effect of adding new items
     def _generate_update_delta():
@@ -490,6 +496,8 @@ def test_faiss_delta(metas, tmpdir):
 
     indexer._add_delta(_generate_update_delta())
     assert indexer.size == 6
+    assert indexer._is_deleted == [0, 0, 1, 1, 1, 1, 0, 0, 0, 0]
+    assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5', '4', '5', '2', '3']
 
     query = np.zeros((1, num_dims))
     query[0, 0] = 5
@@ -499,7 +507,7 @@ def test_faiss_delta(metas, tmpdir):
     assert dist[0]['l2'].value == 1.0
 
 
-def test_faiss_snapshot(metas, tmpdir):
+def test_faiss_save(metas, tmpdir):
     num_data = 2
     num_dims = 64
 
