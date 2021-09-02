@@ -3,6 +3,7 @@ __license__ = "Apache-2.0"
 
 import gzip
 import os
+import pickle
 from datetime import datetime
 from typing import Callable, Dict, Generator, Iterable, List, Optional, Tuple
 
@@ -210,12 +211,12 @@ class FaissSearcher(Executor):
 
         if trained_index_file and os.path.exists(trained_index_file):
             index = faiss.read_index(trained_index_file)
-            assert index.metric_type == metric_type
+            assert index.metric_type == self.metric_type
             assert index.ntotal == 0
             assert index.d == self.num_dim
             assert index.is_trained
         else:
-            index = faiss.index_factory(num_dim, self.index_key, metric_type)
+            index = faiss.index_factory(num_dim, self.index_key, self.metric_type)
 
         self._faiss_index = self.to_device(index)
         self._faiss_index.nprobe = self.nprobe
@@ -366,6 +367,51 @@ class FaissSearcher(Executor):
                 count += 1
                 if count >= top_k:
                     break
+
+    @requests(on='/snapshot')
+    def snapshot(self, **kwargs):
+        """
+        Create a snapshot of the current indexer
+        """
+
+        os.makedirs(self.snapshot_path, exist_ok=True)
+
+        # dump faiss index
+        faiss.write_index(
+            self._faiss_index, os.path.join(self.snapshot_path, 'faiss.bin')
+        )
+
+        import pickle
+
+        with open(os.path.join(self.snapshot_path, 'doc_ids.bin'), "wb") as fp:
+            pickle.dump(self._doc_ids, fp)
+
+        with open(os.path.join(self.snapshot_path, 'delete_marks.bin'), "wb") as fp:
+            pickle.dump(self._is_deleted, fp)
+
+    def _load_snapshot(self):
+        if not os.path.exists(self.snapshot_path):
+            self.logger.warning(
+                'None snapshot is found in workspace, you should build the indexer from scratch'
+            )
+            return
+
+        self.logger.info(f'Loading indexer from snapshot {self.snapshot_path}...')
+
+        with open(os.path.join(self.snapshot_path, 'doc_ids.bin'), 'rb') as fp:
+            self._doc_ids = pickle.load(fp)
+            self._doc_id_to_offset = {v: i for i, v in enumerate(self._doc_ids)}
+
+        with open(os.path.join(self.snapshot_path, 'delete_marks.bin'), "wb") as fp:
+            self._is_deleted = pickle.load(fp)
+
+        index = faiss.read_index(os.path.join(self.snapshot_path, 'faiss.bin'))
+        assert index.metric_type == self.metric_type
+        assert index.d == self.num_dim
+        assert index.is_trained
+
+        self._faiss_index = self.to_device(index)
+        self._faiss_index.nprobe = self.nprobe
 
     @requests(on='/train')
     def train(self, parameters: Dict, **kwargs):
@@ -545,6 +591,24 @@ class FaissSearcher(Executor):
     @property
     def delted_count(self):
         return sum(self._is_deleted)
+
+    @property
+    def snapshot_path(self):
+        return os.path.join(self.workspace, 'faiss_snapshot')
+
+    @property
+    def metric_type(self):
+        metric_type = faiss.METRIC_L2
+        if self.metric == 'inner_product':
+            self.logger.warning(
+                'inner_product will be output as distance instead of similarity.'
+            )
+            metric_type = faiss.METRIC_INNER_PRODUCT
+        if self.metric not in {'inner_product', 'l2'}:
+            self.logger.warning(
+                'Invalid distance metric for Faiss index construction. Defaulting to l2 distance'
+            )
+        return metric_type
 
     def is_deleted(self, idx):
         return self._is_deleted[idx]
