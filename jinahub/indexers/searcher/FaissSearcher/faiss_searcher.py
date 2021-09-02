@@ -373,8 +373,6 @@ class FaissSearcher(Executor):
             self._faiss_index, os.path.join(self.snapshot_path, 'faiss.bin')
         )
 
-        import pickle
-
         with open(os.path.join(self.snapshot_path, 'doc_ids.bin'), "wb") as fp:
             pickle.dump(self._doc_ids, fp)
 
