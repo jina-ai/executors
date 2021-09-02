@@ -114,8 +114,8 @@ class FaissSearcher(Executor):
 
         self.logger = get_logger(self)
         is_loaded = False
-        if os.path.exists(self.snapshot_path):
-            is_loaded = self._load_snapshot()
+        if os.path.exists(self.workspace):
+            is_loaded = self._load(self.workspace)
         if not is_loaded:
             self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
 
@@ -360,47 +360,49 @@ class FaissSearcher(Executor):
                 if count >= top_k:
                     break
 
-    @requests(on='/snapshot')
-    def snapshot(self, **kwargs):
+    @requests(on='/save')
+    def save(self, target_path: Optional[str] = None, **kwargs):
         """
-        Create a snapshot of the current indexer
+        Save a snapshot of the current indexer
         """
 
-        os.makedirs(self.snapshot_path, exist_ok=True)
+        target_path = target_path if target_path else self.workspace
+
+        os.makedirs(target_path, exist_ok=True)
 
         # dump faiss index
-        faiss.write_index(
-            self._faiss_index, os.path.join(self.snapshot_path, 'faiss.bin')
-        )
+        faiss.write_index(self._faiss_index, os.path.join(target_path, 'faiss.bin'))
 
-        with open(os.path.join(self.snapshot_path, 'doc_ids.bin'), "wb") as fp:
+        with open(os.path.join(target_path, 'doc_ids.bin'), "wb") as fp:
             pickle.dump(self._doc_ids, fp)
 
-        with open(os.path.join(self.snapshot_path, 'delete_marks.bin'), "wb") as fp:
+        with open(os.path.join(target_path, 'delete_marks.bin'), "wb") as fp:
             pickle.dump(self._is_deleted, fp)
 
-    def _load_snapshot(self):
-        if not os.path.exists(self.snapshot_path):
+    def _load(self, from_path: Optional[str] = None):
+        from_path = from_path if from_path else self.workspace
+        self.logger.info(f'Try to load indexer from {from_path}...')
+        try:
+            with open(os.path.join(from_path, 'doc_ids.bin'), 'rb') as fp:
+                self._doc_ids = pickle.load(fp)
+                self._doc_id_to_offset = {v: i for i, v in enumerate(self._doc_ids)}
+
+            with open(os.path.join(from_path, 'delete_marks.bin'), 'rb') as fp:
+                self._is_deleted = pickle.load(fp)
+
+            index = faiss.read_index(os.path.join(from_path, 'faiss.bin'))
+            assert index.metric_type == self.metric_type
+            assert index.is_trained
+            self.num_dim = index.d
+            self._faiss_index = self.to_device(index)
+            self._faiss_index.nprobe = self.nprobe
+        except FileNotFoundError:
             self.logger.warning(
-                'None snapshot is found in workspace, you should build the indexer from scratch'
+                'None snapshot is found, you should build the indexer from scratch'
             )
             return False
-
-        self.logger.info(f'Loading indexer from snapshot {self.snapshot_path}...')
-
-        with open(os.path.join(self.snapshot_path, 'doc_ids.bin'), 'rb') as fp:
-            self._doc_ids = pickle.load(fp)
-            self._doc_id_to_offset = {v: i for i, v in enumerate(self._doc_ids)}
-
-        with open(os.path.join(self.snapshot_path, 'delete_marks.bin'), 'rb') as fp:
-            self._is_deleted = pickle.load(fp)
-
-        index = faiss.read_index(os.path.join(self.snapshot_path, 'faiss.bin'))
-        assert index.metric_type == self.metric_type
-        assert index.is_trained
-        self.num_dim = index.d
-        self._faiss_index = self.to_device(index)
-        self._faiss_index.nprobe = self.nprobe
+        except Exception as ex:
+            raise ex
 
         return True
 
@@ -572,10 +574,6 @@ class FaissSearcher(Executor):
     @property
     def delted_count(self):
         return sum(self._is_deleted)
-
-    @property
-    def snapshot_path(self):
-        return os.path.join(self.workspace, 'faiss_snapshot')
 
     @property
     def metric_type(self):

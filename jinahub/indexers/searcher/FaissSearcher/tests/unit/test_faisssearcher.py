@@ -526,7 +526,7 @@ def test_faiss_snapshot(metas, tmpdir):
         runtime_args={'pea_id': 0},
     )
 
-    indexer.snapshot()
+    indexer.save()
 
     new_indexer = FaissSearcher(
         prefetch_size=256,

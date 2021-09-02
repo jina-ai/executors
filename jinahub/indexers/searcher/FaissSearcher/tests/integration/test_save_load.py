@@ -31,7 +31,7 @@ def metas(tmpdir):
     del os.environ['TEST_WORKSPACE']
 
 
-def test_snapshot(metas, tmpdir):
+def test_save(metas, tmpdir):
     vec_idx = np.random.randint(0, high=512, size=[512]).astype(str)
     vec = np.array(np.random.random([512, 10]), dtype=np.float32)
 
@@ -55,7 +55,7 @@ def test_snapshot(metas, tmpdir):
         },
     )
     with f:
-        f.post(on='/snapshot')
+        f.post(on='/save')
 
     new_f = Flow().add(
         uses=FaissSearcher,
