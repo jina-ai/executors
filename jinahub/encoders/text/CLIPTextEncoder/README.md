@@ -34,19 +34,15 @@ The following parameters can be passed on initialization:
 ```python
 from jina import Flow, Document
 import numpy as np
-	
+
 f = Flow().add(uses='jinahub+docker://CLIPTextEncoder')
-	
-def check_emb(resp):
-    for doc in resp.data.docs:
-        assert doc.emb.shape == (512,)
-	
+
 with f:
     f.post(
-        on='/foo', 
-	inputs=Document(text='your text'), 
-	on_done=check_emb
-    )	    
+        on='/foo',
+        inputs=Document(text='your text'),
+        on_done=print
+    )
 ```
 
 ## Reference

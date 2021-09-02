@@ -1,4 +1,4 @@
-from typing import Iterable, Literal, Optional
+from typing import Iterable, Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -45,7 +45,7 @@ class DPRTextEncoder(Executor):
     def __init__(
         self,
         pretrained_model_name_or_path: str = 'facebook/dpr-question_encoder-single-nq-base',
-        encoder_type: Literal['context', 'question'] = 'question',
+        encoder_type: str = 'question',
         base_tokenizer_model: Optional[str] = None,
         title_tag_key: Optional[str] = None,
         max_length: Optional[int] = None,
@@ -92,7 +92,7 @@ class DPRTextEncoder(Executor):
                 pretrained_model_name_or_path
             )
 
-        self.model = self.model.to(torch.device(self.device)).eval()
+        self.model = self.model.to(self.device).eval()
 
         self.default_traversal_paths = default_traversal_paths
         self.default_batch_size = default_batch_size
@@ -144,8 +144,7 @@ class DPRTextEncoder(Executor):
                         truncation=True,
                         return_tensors='pt',
                     )
-                    embeddings = self.model(**inputs).pooler_output
-                    embeddings = embeddings.cpu().numpy()
+                    embeddings = self.model(**inputs).pooler_output.cpu().numpy()
 
-                    for doc, embed in zip(batch_docs, embeddings):
-                        doc.embedding = embed
+                for doc, embedding in zip(batch_docs, embeddings):
+                    doc.embedding = embedding

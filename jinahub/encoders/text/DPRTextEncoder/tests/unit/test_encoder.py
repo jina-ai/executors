@@ -24,10 +24,7 @@ def basic_encoder_ctx() -> DPRTextEncoder:
 
 def test_config():
     encoder = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert encoder.default_batch_size == 32
-    assert encoder.default_traversal_paths == ('r',)
     assert encoder.encoder_type == 'question'
-    assert encoder.title_tag_key is None
 
 
 def test_no_document(basic_encoder: DPRTextEncoder):
@@ -55,7 +52,15 @@ def test_context_encoder_doc_no_title(basic_encoder_ctx: DPRTextEncoder):
 
 def test_wrong_encoder_type():
     with pytest.raises(ValueError, match='The ``encoder_type`` parameter'):
-        encoder = DPRTextEncoder(encoder_type='worng_type')
+        DPRTextEncoder(encoder_type='worng_type')
+
+
+def test_warning_no_title_tag(caplog):
+    DPRTextEncoder(
+        'facebook/dpr-ctx_encoder-single-nq-base',
+        encoder_type='context',
+    )
+    assert caplog.record_tuples == [("root", 'WARNING', "boo arg")]
 
 
 def test_encoding_cpu():
@@ -80,7 +85,7 @@ def test_encoding_context_type(basic_encoder_ctx: DPRTextEncoder):
     assert docs[0].embedding.shape == (768,)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='GPU is needed for this test')
+@pytest.mark.gpu
 def test_encoding_gpu():
     docs = DocumentArray([Document(text='hello there')])
     encoder = DPRTextEncoder(device='cuda')
