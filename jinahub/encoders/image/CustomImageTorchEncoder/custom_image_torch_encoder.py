@@ -55,12 +55,6 @@ class CustomImageTorchEncoder(Executor):
         super().__init__(*args, **kwargs)
         self.layer_name = layer_name
         self.logger = JinaLogger(self.__class__.__name__)
-        if device.startswith("cuda") and not torch.cuda.is_available():
-            self.logger.warning(
-                "You tried to use GPU but torch did not detect your"
-                "GPU correctly. Defaulting to CPU. Check your CUDA installation!"
-            )
-            device = "cpu"
         self.device = device
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths

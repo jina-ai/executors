@@ -52,13 +52,6 @@ class CLIPImageEncoder(Executor):
 
         self.logger = JinaLogger(self.__class__.__name__)
 
-        if device.startswith("cuda") and not torch.cuda.is_available():
-            self.logger.warning(
-                "You tried to use GPU but torch did not detect your"
-                "GPU correctly. Defaulting to CPU. Check your CUDA installation!"
-            )
-            device = "cpu"
-
         self.device = device
         self.preprocessor = CLIPFeatureExtractor.from_pretrained(
             self.base_feature_extractor

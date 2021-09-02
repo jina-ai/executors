@@ -48,7 +48,7 @@ class BigTransferEncoder(Executor):
         └── variables
             ├── variables.data-00000-of-00001
             └── variables.index
-    :param: device: Device to be used, e.g. 'cpu', 'cuda', 'cuda:2'
+    :param: device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
     :param target_dim: preprocess the data image into shape of `target_dim`,
         (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
     :param default_traversal_paths: Traversal path through the docs
@@ -60,7 +60,7 @@ class BigTransferEncoder(Executor):
         self,
         model_path: Optional[str] = 'pretrained',
         model_name: Optional[str] = 'Imagenet21k/R50x1',
-        device: str = 'cpu',
+        device: str = '/CPU:0',
         target_dim: Optional[Tuple[int, int, int]] = None,
         default_traversal_paths: List[str] = None,
         default_batch_size: int = 32,
@@ -79,21 +79,18 @@ class BigTransferEncoder(Executor):
         if not os.path.exists(self.model_path):
             self.download_model()
 
-        cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
-        if 'cuda' in device and len(gpus) > 0:
-            gpu_index = 0 if 'cuda:' not in device else int(device.split(':')[1])
-            cpus.append(gpus[gpu_index])
-        if 'cuda' in self.device and len(gpus) == 0:
-            self.logger.warning(
-                'You tried to use a GPU but no GPU was found on'
-                ' your system. Defaulting to CPU!'
-            )
-        tf.config.experimental.set_visible_devices(devices=cpus)
+        if 'GPU' in device:
+            gpu_index = 0 if 'GPU:' not in device else int(device.split(':')[-1])
+            if len(gpus) < gpu_index + 1:
+                raise RuntimeError(f'Device {device} not found on your system!')
+        self.device = tf.device(device)
+
         self.logger.info(f'BiT model path: {self.model_path}')
-        _model = load_model(self.model_path)
-        self.model = _model.signatures['serving_default']
-        self._get_input = tf.convert_to_tensor
+        with self.device:
+            _model = load_model(self.model_path)
+            self.model = _model.signatures['serving_default']
+            self._get_input = tf.convert_to_tensor
 
     def download_model(self):
         dataset = ['Imagenet1k', 'Imagenet21k']
@@ -164,7 +161,8 @@ class BigTransferEncoder(Executor):
                     data[index] = self._preprocess(data[index])
                 else:
                     data[index] = doc.blob
-            _output = self.model(self._get_input(data.astype(np.float32)))
+            with self.device:
+                _output = self.model(self._get_input(data.astype(np.float32)))
             output = _output['output_1'].numpy()
             for index, doc in enumerate(batch):
                 doc.embedding = output[index]

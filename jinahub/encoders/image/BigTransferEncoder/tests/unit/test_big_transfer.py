@@ -113,7 +113,7 @@ def test_encoding_gpu():
     doc.blob = img
     assert doc.embedding is None
 
-    encoder = BigTransferEncoder(device='cuda')
+    encoder = BigTransferEncoder(device='/GPU:0')
 
     encoder.encode(DocumentArray([doc]), {})
     assert doc.embedding.shape == (2048,)

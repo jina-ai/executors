@@ -81,7 +81,7 @@ pods:
   - name: encoder
     uses: 'jinahub://BigTransferEncoder'
     uses_with:
-      device: 'cuda'
+      device: '/GPU:0'
 ```
 Alternatively, use the jinahub gpu docker container. Therefore, you need GPU
 drivers installed on your system and nvidia-docker installed.
@@ -92,7 +92,7 @@ pods:
     uses: 'jinahub+docker://BigTransferEncoder/gpu'
     gpus: all
     uses_with:
-      device: 'cuda'
+      device: '/GPU:0'
 ```
 
 ## 🎉️ Example

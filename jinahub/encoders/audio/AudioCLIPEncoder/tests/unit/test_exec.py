@@ -28,6 +28,18 @@ def test_embedding_dimension():
     assert docs[0].tags['sample_rate'] == AudioCLIPEncoder.TARGET_SAMPLE_RATE
 
 
+@pytest.mark.gpu
+def test_embedding_dimension_gpu():
+    x_audio, sample_rate = librosa.load(
+        str(Path(__file__).parents[1] / 'test_data/sample.wav')
+    )
+    docs = DocumentArray([Document(blob=x_audio, tags={'sample_rate': sample_rate})])
+    model = AudioCLIPEncoder(device='cuda')
+    model.encode(docs, parameters={})
+    assert docs[0].embedding.shape == (1024,)
+    assert docs[0].tags['sample_rate'] == AudioCLIPEncoder.TARGET_SAMPLE_RATE
+
+
 def test_many_documents():
 
     audio1, sample_rate1 = librosa.load(

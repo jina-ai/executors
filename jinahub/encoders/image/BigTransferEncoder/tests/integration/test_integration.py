@@ -40,19 +40,29 @@ def test_all_models(model_name: str, dataset: str):
             assert doc.embedding is not None
 
 
+@pytest.mark.docker
+def test_docker_runtime(build_docker_image: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            ['jina', 'executor', f'--uses=docker://{build_docker_image}'],
+            timeout=30,
+            check=True,
+        )
+
+
 @pytest.mark.gpu
 @pytest.mark.docker
-def test_docker_runtime_gpu():
+def test_docker_runtime_gpu(build_docker_image_gpu: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
             [
                 'jina',
                 'pea',
-                '--uses=docker://bigtransferencoder:gpu',
+                f'--uses=docker://{build_docker_image_gpu}',
                 '--gpus',
                 'all',
                 '--uses-with',
-                'device:cuda',
+                'device:"/GPU:0"',
             ],
             timeout=30,
             check=True,

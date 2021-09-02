@@ -1,14 +1,13 @@
-FROM nvidia/cuda:11.3.1-cudnn8-runtime
+FROM jinaai/jina:2-py37-perf
 
-RUN apt update && apt install -y python3.8 python3-pip git
-RUN JINA_PIP_INSTALL_PERF=1 pip install --no-cache-dir jina==2.0.20
-
+RUN apt update && apt install -y git
 COPY gpu_requirements.txt gpu_requirements.txt
 RUN pip install --no-cache-dir -r gpu_requirements.txt
 
-COPY . /custom_encoder/
-WORKDIR /custom_encoder
+COPY . /workdir/
+WORKDIR /workdir
 
-RUN python3 tests/model/external_model.py
+# required in order to have a default model for starting the image in CI
+RUN python tests/model/external_model.py
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

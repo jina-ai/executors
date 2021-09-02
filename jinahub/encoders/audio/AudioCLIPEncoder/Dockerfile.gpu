@@ -4,8 +4,8 @@ FROM jinaai/jina:2-py37-perf
 RUN apt-get -y update && apt-get install -y git wget libsndfile-dev
 
 # install requirements before copying the workspace
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+COPY gpu_requirements.txt gpu_requirements.txt
+RUN pip install -r gpu_requirements.txt
 
 # setup the workspace
 COPY . /workdir

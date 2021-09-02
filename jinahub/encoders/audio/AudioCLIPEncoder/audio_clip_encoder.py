@@ -17,6 +17,7 @@ class AudioCLIPEncoder(Executor):
     Encode audio data with AudioCLIP embeddings
     :param model_path: path of the pre-trained AudioCLIP model
     :param default_traversal_paths: default traversal path
+    :param device: Torch device string
     """
 
     TARGET_SAMPLE_RATE = 44100  # derived from ESResNeXt
@@ -25,6 +26,7 @@ class AudioCLIPEncoder(Executor):
         self,
         model_path: str = 'assets/AudioCLIP-Full-Training.pt',
         default_traversal_paths: Iterable[str] = None,
+        device: str = 'cpu',
         *args,
         **kwargs
     ):
@@ -32,9 +34,7 @@ class AudioCLIPEncoder(Executor):
         super().__init__(*args, **kwargs)
         torch.set_grad_enabled(False)
         self.model_path = model_path
-        self.aclp = AudioCLIP(pretrained=model_path)
-        self.aclp.eval()
-        self.aclp.audio.eval()
+        self.aclp = AudioCLIP(pretrained=model_path).to(device).eval()
         self.default_traversal_paths = default_traversal_paths or ['r']
 
     @requests

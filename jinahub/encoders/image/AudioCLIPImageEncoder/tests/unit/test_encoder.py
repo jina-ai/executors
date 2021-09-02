@@ -77,6 +77,16 @@ def test_err_no_preprocessing(basic_encoder_no_pre):
         basic_encoder_no_pre.encode(docs, {})
 
 
+@pytest.mark.gpu
+def test_single_image_gpu():
+    encoder = AudioCLIPImageEncoder(device='cuda')
+    docs = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
+    encoder.encode(docs, {})
+
+    assert docs[0].embedding.shape == (1024,)
+    assert docs[0].embedding.dtype == np.float32
+
+
 def test_single_image(basic_encoder):
     docs = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
     basic_encoder.encode(docs, {})

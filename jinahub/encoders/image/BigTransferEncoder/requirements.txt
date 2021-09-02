@@ -1,5 +1,4 @@
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
--f https://storage.googleapis.com/tensorflow/linux/cpu/
-tensorflow_cpu
+tensorflow-cpu
 numpy
 Pillow
