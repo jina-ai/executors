@@ -159,6 +159,7 @@ class FaissSearcher(Executor):
             vector = id_vector[1]
             self._doc_ids.append(id_)
             self._doc_id_to_offset[id_] = position
+            self._is_deleted.append(0)
             yield np.frombuffer(vector)
 
     def device(self):
@@ -196,19 +197,6 @@ class FaissSearcher(Executor):
 
     def _init_faiss_index(self, num_dim: int, trained_index_file: Optional[str] = None):
         """Initialize a Faiss indexer instance"""
-
-        metric_type = faiss.METRIC_L2
-        if self.metric == 'inner_product':
-            self.logger.warning(
-                'inner_product will be output as distance instead of similarity.'
-            )
-            metric_type = faiss.METRIC_INNER_PRODUCT
-        if self.metric not in {'inner_product', 'l2'}:
-            self.logger.warning(
-                'Invalid distance metric for Faiss'
-                ' index construction. Defaulting to l2 distance'
-            )
-
         if trained_index_file and os.path.exists(trained_index_file):
             index = faiss.read_index(trained_index_file)
             assert index.metric_type == self.metric_type
@@ -331,7 +319,7 @@ class FaissSearcher(Executor):
 
         query_docs = docs.traverse_flat(traversal_paths)
 
-        vecs = np.array(query_docs.get_attributes('embedding'))
+        vecs = np.array(query_docs.get_attributes('embedding'), dtype=np.float32)
 
         if self.normalize:
             from faiss import normalize_L2
@@ -364,7 +352,6 @@ class FaissSearcher(Executor):
                 query_docs[doc_idx].matches.append(match)
 
                 # early stop as topk results are ready
-                # TODO: retries when `expand_topk`
                 count += 1
                 if count >= top_k:
                     break
@@ -579,16 +566,6 @@ class FaissSearcher(Executor):
         """Return the nr of elements in the index"""
         return len(self._doc_ids) - self.delted_count
 
-<<<<<<< HEAD
-    def _add_delta(self, delta: Generator[Tuple[str, bytes, datetime], None, None]):
-        """
-        Adding the delta data to the indexer
-
-        :param delta: a generator yielding (id, doc_vec_bytes, last_updated)
-        """
-        # TODO implement using a soft delete
-        pass
-=======
     @property
     def delted_count(self):
         return sum(self._is_deleted)
@@ -634,6 +611,14 @@ class FaissSearcher(Executor):
             elif vec_buffer is None:  # soft delete
                 self._is_deleted[idx] = 1
             else:  # update
-                self.logger.warning(
-                    f'The update on doc ({doc_id}) has not been supported!'
-                )
+                # first soft delete
+                self._is_deleted[idx] = 1
+
+                # then add the updated doc
+                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
+                    1, -1
+                )  # shape [1, D]
+                self._doc_id_to_offset[doc_id] = len(self._doc_ids)
+                self._doc_ids.append(doc_id)
+                self._is_deleted.append(0)
+                self._index(vec)

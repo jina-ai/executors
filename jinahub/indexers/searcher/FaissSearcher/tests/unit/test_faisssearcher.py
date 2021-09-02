@@ -429,3 +429,71 @@ def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
 def test_dummy():
     # required in order for CI to pass
     pass
+
+
+def test_faiss_delta(metas, tmpdir):
+    num_data = 2
+    num_dims = 64
+
+    vecs = np.zeros((num_data, num_dims))
+    vecs[:, 0] = 2
+    vecs[0, 1] = 3
+    keys = np.arange(0, num_data).astype(str)
+
+    dump_path = os.path.join(tmpdir, 'dump')
+    export_dump_streaming(
+        dump_path,
+        1,
+        len(keys),
+        zip(keys, vecs, [b'' for _ in range(len(vecs))]),
+    )
+
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='Flat',
+        normalize=True,
+        requires_training=True,
+        metas=metas,
+        dump_path=dump_path,
+        runtime_args={'pea_id': 0},
+    )
+    assert indexer.size == 2
+
+    def _generate_add_delta():
+        for i in range(2, 6):
+            x = np.zeros((1, num_dims), dtype=np.float32)
+            yield f'{i}', x.tobytes(), None
+
+    indexer._add_delta(_generate_add_delta())
+    assert indexer.size == 6
+
+    def _generate_delete_delta():
+        for i in range(2, 4):
+            yield f'{i}', None, None
+
+    indexer._add_delta(_generate_delete_delta())
+    assert indexer.size == 4
+
+    def _generate_update_delta():
+        for i in range(4, 6):
+            x = np.zeros((1, num_dims), dtype=np.float32)
+            yield f'{i}', x.tobytes(), None
+
+    indexer._add_delta(_generate_update_delta())
+    assert indexer.size == 4
+
+    # update the deleted docs take the same effect of adding new items
+    def _generate_update_delta():
+        for i in range(2, 4):
+            x = np.zeros((1, num_dims), dtype=np.float32)
+            yield f'{i}', x.tobytes(), None
+
+    indexer._add_delta(_generate_update_delta())
+    assert indexer.size == 6
+
+    query = np.zeros((1, num_dims))
+    query[0, 0] = 5
+    docs = _get_docs_from_vecs(query.astype('float32'))
+    indexer.search(docs, parameters={'top_k': 2})
+    dist = docs.traverse_flat(['m']).get_attributes('scores')
+    assert dist[0]['l2'].value == 1.0
