@@ -6,9 +6,9 @@ from typing import Tuple
 
 import numpy as np
 import pytest
+from jina import Document, DocumentArray, Executor
 from PIL import Image
 
-from jina import Document, DocumentArray, Executor
 from ...audioclip_image import AudioCLIPImageEncoder
 
 
