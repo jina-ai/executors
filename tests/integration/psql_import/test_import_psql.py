@@ -14,15 +14,32 @@ from jina_commons.indexers.dump import import_metas, import_vectors
 METRIC = 'l2'
 
 
+def _flow(uses_after, total_shards, startup_args):
+    return Flow().add(
+        name='indexer',
+        uses=FaissPostgresSearcher,
+        uses_with={
+            'startup_sync_args': startup_args,
+        },
+        uses_metas={'name': 'compound_indexer'},
+        parallel=total_shards,
+        replicas=1,
+        polling='all',
+        uses_after=uses_after,
+    )
+
+
 @pytest.fixture()
 def docker_compose(request):
     os.system(
-        f"docker-compose -f {request.param} --project-directory . up  --build -d --remove-orphans"
+        f"docker-compose -f {request.param} --project-directory . up  --build -d "
+        f"--remove-orphans"
     )
     time.sleep(5)
     yield
     os.system(
-        f"docker-compose -f {request.param} --project-directory . down --remove-orphans"
+        f"docker-compose -f {request.param} --project-directory . down "
+        f"--remove-orphans"
     )
 
 
@@ -42,8 +59,7 @@ from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.join(cur_dir, 'docker-compose.yml')
-storage_flow_yml = os.path.join(cur_dir, 'flow_storage.yml')
-query_flow_yml = os.path.join(cur_dir, 'flow_query.yml')
+flow_yml = os.path.join(cur_dir, 'flow.yml')
 
 
 class Pass(Executor):
@@ -116,7 +132,8 @@ def assert_dump_data(dump_path, docs, shards, pea_id):
         docs_expected = docs[(pea_id) * size_shard : (pea_id + 1) * size_shard]
     print(f'### pea {pea_id} has {len(docs_expected)} docs')
 
-    # TODO these might fail if we implement any ordering of elements on dumping / reloading
+    # TODO these might fail if we implement any ordering of elements on dumping /
+    #  reloading
     ids_dump = list(ids_dump)
     vectors_dump = list(vectors_dump)
     np.testing.assert_equal(set(ids_dump), set([d.id for d in docs_expected]))
@@ -149,12 +166,11 @@ def flatten(it):
 
 
 # replicas w 1 shard doesn't work
-# @pytest.mark.parametrize('shards', [1, 3, 7])
-@pytest.mark.parametrize('shards', [3, 7])
+@pytest.mark.parametrize('shards', [1, 3, 7])
 @pytest.mark.parametrize('nr_docs', [100])
 @pytest.mark.parametrize('emb_size', [10])
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
-def test_dump_reload(
+def test_psql_import(
     tmpdir, nr_docs, emb_size, shards, docker_compose, benchmark=False
 ):
     # for psql to start
@@ -168,58 +184,57 @@ def test_dump_reload(
         docs = DocumentArray(flatten(docs))
         assert len(docs) == nr_docs
 
-    dump_path = os.path.join(str(tmpdir), 'dump_dir')
     os.environ['STORAGE_WORKSPACE'] = os.path.join(str(tmpdir), 'index_ws')
     os.environ['SHARDS'] = str(shards)
     if shards > 1:
-        os.environ['USES_AFTER'] = 'MatchMerger'
+        uses_after = 'MatchMerger'
     else:
-        os.environ['USES_AFTER'] = 'Pass'
+        uses_after = 'Pass'
 
-    with Flow.load_config(storage_flow_yml) as flow_storage:
-        with Flow.load_config(query_flow_yml) as flow_query:
-            with TimeContext(f'### indexing {nr_docs} docs'):
-                flow_storage.post(on='/index', inputs=docs)
+    # we only need one Flow
+    with _flow(uses_after=uses_after, total_shards=shards, startup_args={}) as flow:
+        # necessary since PSQL instance might not have shutdown properly between tests
+        if not benchmark:
+            flow.post(on='/delete', inputs=docs)
 
-            results = flow_query.post(
-                on='/search',
-                inputs=get_documents(nr=1, index_start=0, emb_size=emb_size),
-                return_results=True,
+        with TimeContext(f'### indexing {nr_docs} docs'):
+            flow.post(on='/index', inputs=docs)
+
+        results = flow.post(
+            on='/search',
+            inputs=get_documents(nr=1, index_start=0, emb_size=emb_size),
+            return_results=True,
+        )
+        assert len(results[0].docs[0].matches) == 0
+
+        with TimeContext(f'### snapshotting {nr_docs} docs'):
+            flow.post(
+                on='/snapshot',
             )
-            assert len(results[0].docs[0].matches) == 0
 
-            with TimeContext(f'### dumping {nr_docs} docs'):
-                flow_storage.post(
-                    on='/dump',
-                    target_peapod='indexer_storage',
-                    parameters={
-                        'dump_path': dump_path,
-                        'shards': shards,
-                        'include_metas': not benchmark,
-                        'timeout': -1,
-                    },
-                )
-
-            dir_size = path_size(dump_path)
-            assert dir_size > 0
-            print(f'### dump path size: {dir_size} MBs')
-
-            with TimeContext(f'### rolling update {nr_docs} docs'):
-                flow_query.rolling_update(pod_name='indexer_query', dump_path=dump_path)
-            results = flow_query.post(
-                on='/search',
-                inputs=get_documents(nr=3, index_start=0, emb_size=emb_size),
-                parameters={'top_k': top_k},
-                return_results=True,
+        with TimeContext(f'### importing {nr_docs} docs'):
+            flow.post(
+                on='/sync',
             )
+
+        params = {'top_k': nr_docs}
+        if benchmark:
+            params = {'top_k': top_k}
+        results = flow.post(
+            on='/search',
+            inputs=get_documents(nr=3, index_start=0, emb_size=emb_size),
+            parameters=params,
+            return_results=True,
+        )
+        if benchmark:
             assert len(results[0].docs[0].matches) == top_k
-            # TODO score is not deterministic
-            assert results[0].docs[0].matches[0].scores[METRIC].value > 0.0
+        else:
+            assert len(results[0].docs[0].matches) == nr_docs
+        # TODO score is not deterministic
+        assert results[0].docs[0].matches[0].scores[METRIC].value > 0.0
 
-    # assert data dumped is correct
-    if not benchmark:
-        for pea_id in range(shards):
-            assert_dump_data(dump_path, docs, shards, pea_id)
+    idx = PostgreSQLStorage()
+    assert idx.size == nr_docs
 
 
 def _in_docker():
@@ -239,7 +254,7 @@ def _in_docker():
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_benchmark(tmpdir, docker_compose):
     nr_docs = 100000
-    return test_dump_reload(
+    return test_psql_import(
         tmpdir,
         nr_docs=nr_docs,
         emb_size=128,
@@ -247,3 +262,28 @@ def test_benchmark(tmpdir, docker_compose):
         docker_compose=compose_yml,
         benchmark=True,
     )
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_start_up(docker_compose):
+    docs = list(get_batch_iterator(batches=10, batch_size=10, emb_size=7))
+    shards = 3
+
+    with _flow(uses_after='MatchMerger', total_shards=shards, startup_args={}) as flow:
+        flow.post(on='/index', inputs=docs)
+
+    # here we show how you can avoid having to do a snapshot
+    # and then call sync
+    # and automatically start a Searcher that loads their data from PSQL
+    # WARNING: this cannot guarantee consistency if you do
+    # any writes to the PSQL while the shards are loading
+    with _flow(
+        uses_after='MatchMerger', total_shards=shards, startup_args={'only_delta': True}
+    ) as flow:
+        results = flow.post(
+            on='/search',
+            inputs=docs,
+            parameters={'top_k': len(docs)},
+            return_results=True,
+        )
+        assert len(results[0].docs[0].matches) == len(docs)
