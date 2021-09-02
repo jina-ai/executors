@@ -5,7 +5,7 @@ from jina import Document, DocumentArray, Flow
 
 from ...dpr_text import DPRTextEncoder
 
-_EMBEDDING_DIM = 512
+_EMBEDDING_DIM = 768
 
 
 @pytest.mark.parametrize('request_size', [1, 10, 50, 100])

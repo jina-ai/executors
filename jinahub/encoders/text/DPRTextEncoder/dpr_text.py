@@ -125,8 +125,13 @@ class DPRTextEncoder(Executor):
                     texts = batch_docs.get_attributes('text')
                     text_pairs = None
                     if self.encoder_type == 'context' and self.title_tag_key:
-                        text_pairs = batch_docs.get_attributes(
-                            f'tags__{self.title_tag_key}'
+                        text_pairs = list(
+                            filter(
+                                lambda x: x is not None,
+                                batch_docs.get_attributes(
+                                    f'tags__{self.title_tag_key}'
+                                ),
+                            )
                         )
                         if len(text_pairs) != len(batch_docs):
                             raise ValueError(
