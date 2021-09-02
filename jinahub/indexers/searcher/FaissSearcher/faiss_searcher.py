@@ -576,7 +576,7 @@ class FaissSearcher(Executor):
     @property
     def size(self):
         """Return the nr of elements in the index"""
-        return len(self._doc_id_to_offset)
+        return len(self._doc_id_to_offset) - self.delted_count
 
 <<<<<<< HEAD
     def _add_delta(self, delta: Generator[Tuple[str, bytes, datetime], None, None]):
@@ -627,10 +627,9 @@ class FaissSearcher(Executor):
                 self._doc_id_to_offset[doc_id] = len(self._doc_ids)
                 self._doc_ids.append(doc_id)
                 self._index(vec)
-            elif vec is None:  # soft delete
+            elif vec_buffer is None:  # soft delete
                 self._is_deleted[idx] = 1
             else:  # update
                 self.logger.warning(
                     f'The update on doc ({doc_id}) has not been supported!'
                 )
->>>>>>> 45559ee (feat(faiss): soft delete)
