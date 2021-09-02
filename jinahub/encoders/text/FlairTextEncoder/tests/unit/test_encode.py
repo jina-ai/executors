@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import DocumentArray, Document, Executor
+from jina import Document, DocumentArray, Executor
 
 from ...flair_text import FlairTextEncoder
 

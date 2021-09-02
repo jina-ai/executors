@@ -4,10 +4,6 @@
  
 Internally, `FlairTextEncoder` wraps the DocumentPoolEmbeddings from Flair.
 
-
-
-
-
 ## Usage
 
 Here is an example usage of the **FlairTextEncoder**.
