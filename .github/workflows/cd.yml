@@ -64,7 +64,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
   push-gpu-executors:
-    needs: [ prep-push-bed ]
+    needs: [ gpu-folders ]
     runs-on: ubuntu-latest
     container:
       image: jinaai/jina:master-standard
