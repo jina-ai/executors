@@ -194,7 +194,8 @@ def test_psql_import(
     # we only need one Flow
     with _flow(uses_after=uses_after, total_shards=shards, startup_args={}) as flow:
         # necessary since PSQL instance might not have shutdown properly between tests
-        flow.post(on='/delete', inputs=docs)
+        if not benchmark:
+            flow.post(on='/delete', inputs=docs)
 
         with TimeContext(f'### indexing {nr_docs} docs'):
             flow.post(on='/index', inputs=docs)

@@ -2,6 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
+import subprocess
 
 import numpy as np
 import pytest
@@ -79,3 +80,20 @@ def test_train_and_index(metas, tmpdir):
         assert len(result[0].matches) == 4
         for d in result:
             assert d.matches[0].scores['l2'].value >= d.matches[1].scores['l2'].value
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu(build_docker_image_gpu: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'executor',
+                f'--uses=docker://{build_docker_image_gpu}',
+                '--gpus',
+                'all',
+            ],
+            timeout=30,
+            check=True,
+        )

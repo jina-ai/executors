@@ -426,6 +426,6 @@ def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
 
 
 @pytest.mark.gpu
-def dummy():
+def test_dummy():
     # required in order for CI to pass
     pass
