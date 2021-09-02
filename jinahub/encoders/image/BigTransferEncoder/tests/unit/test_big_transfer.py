@@ -24,7 +24,6 @@ def test_initialization_and_model_download():
     encoder = BigTransferEncoder()
     assert encoder.model_path == 'pretrained'
     assert encoder.model_name == 'Imagenet21k/R50x1'
-    assert encoder.device == 'cpu'
     assert os.path.exists('pretrained')
     assert os.path.exists(os.path.join('pretrained', 'saved_model.pb'))
     # This call will use the downloaded model
