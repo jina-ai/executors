@@ -27,7 +27,6 @@ def test_integration(request_size: int):
     assert sum(len(resp_batch.docs) for resp_batch in resp) == 50
     for r in resp:
         for doc in r.docs:
-            assert doc.embedding is not None
             assert doc.embedding.shape == (_EMBEDDING_DIM,)
 
 
