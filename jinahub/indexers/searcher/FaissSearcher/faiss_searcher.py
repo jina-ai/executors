@@ -325,8 +325,9 @@ class FaissSearcher(Executor):
             'traversal_paths', self.default_traversal_paths
         )
 
-        # expand topk number for filtering
-        expand_topk = top_k + min(top_k, self.delted_count)
+        # expand topk number guarantee to return topk results
+        # TODO WARNING: maybe this would degrade the query speed
+        expand_topk = top_k + self.delted_count
 
         query_docs = docs.traverse_flat(traversal_paths)
 
@@ -576,7 +577,7 @@ class FaissSearcher(Executor):
     @property
     def size(self):
         """Return the nr of elements in the index"""
-        return len(self._doc_id_to_offset) - self.delted_count
+        return len(self._doc_ids) - self.delted_count
 
 <<<<<<< HEAD
     def _add_delta(self, delta: Generator[Tuple[str, bytes, datetime], None, None]):
@@ -621,11 +622,14 @@ class FaissSearcher(Executor):
         for doc_id, vec_buffer, _ in delta:
             idx = self._doc_id_to_offset.get(doc_id)
             if idx is None:  # add new item
-                if vec is None:
+                if vec_buffer is None:
                     continue
-                vec = np.frombuffer(vec_buffer).reshape(1, -1)  # shape [1, D]
+                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
+                    1, -1
+                )  # shape [1, D]
                 self._doc_id_to_offset[doc_id] = len(self._doc_ids)
                 self._doc_ids.append(doc_id)
+                self._is_deleted.append(0)
                 self._index(vec)
             elif vec_buffer is None:  # soft delete
                 self._is_deleted[idx] = 1
