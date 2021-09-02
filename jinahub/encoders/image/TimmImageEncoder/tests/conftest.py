@@ -1,14 +1,10 @@
-__copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
-__license__ = "Apache-2.0"
-
 import os
 from typing import Dict
 
-import pytest
 import numpy as np
+import pytest
+from jina import Document, DocumentArray
 from PIL import Image
-
-from jina import DocumentArray, Document
 
 
 @pytest.fixture()

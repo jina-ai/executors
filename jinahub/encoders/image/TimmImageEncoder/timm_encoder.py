@@ -1,16 +1,10 @@
-__copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
-__license__ = "Apache-2.0"
-
-from typing import Optional, List, Dict, Iterable, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
-
-import torchvision.transforms as T
 import torch
-
-from jina import Executor, requests, DocumentArray
+import torchvision.transforms as T
+from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
-
 from timm import create_model
 from timm.data import resolve_data_config
 from timm.data.transforms_factory import create_transform

@@ -1,8 +1,8 @@
-import numpy as np
-import pytest
 import subprocess
 
-from jina import Flow, Document, DocumentArray
+import numpy as np
+import pytest
+from jina import Document, DocumentArray, Flow
 
 from ...timm_encoder import TimmImageEncoder
 

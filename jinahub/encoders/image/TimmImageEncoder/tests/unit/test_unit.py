@@ -1,10 +1,9 @@
 from pathlib import Path
-from typing import Tuple, Dict
-
-import pytest
+from typing import Dict, Tuple
 
 import numpy as np
-from jina import DocumentArray, Document, Executor
+import pytest
+from jina import Document, DocumentArray, Executor
 
 from ...timm_encoder import TimmImageEncoder
 
