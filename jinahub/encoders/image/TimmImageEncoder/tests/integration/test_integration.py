@@ -48,8 +48,10 @@ def test_with_batch():
 
 
 @pytest.mark.docker
-def test_docker_runtime():
+def test_docker_runtime(build_docker_image: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
-            ["jina", "pea", "--uses=docker://timmimageencoder"], timeout=30, check=True
+            ["jina", "executor", f"--uses=docker://{build_docker_image}"],
+            timeout=30,
+            check=True,
         )
