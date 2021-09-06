@@ -425,12 +425,6 @@ def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
         )
 
 
-@pytest.mark.gpu
-def test_dummy():
-    # required in order for CI to pass
-    pass
-
-
 def test_faiss_delta(metas, tmpdir):
     num_data = 2
     num_dims = 64
