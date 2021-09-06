@@ -5,7 +5,7 @@ from jina import Document, DocumentArray, Flow
 
 from ...flair_text import FlairTextEncoder
 
-_EMBEDDING_DIM = 2148
+_EMBEDDING_DIM = 100
 
 
 @pytest.mark.parametrize('request_size', [1, 10, 50, 100])

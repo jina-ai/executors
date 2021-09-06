@@ -6,7 +6,7 @@ from jina import Document, DocumentArray, Executor
 
 from ...flair_text import FlairTextEncoder
 
-_EMBEDDING_DIM = 2148
+_EMBEDDING_DIM = 100
 
 
 @pytest.fixture(scope='session')
@@ -65,9 +65,24 @@ def test_encoding_gpu():
     encoder = FlairTextEncoder(device='cuda')
     encoder.encode(docs, {})
 
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
 
-def test_encoding_models():
-    pass
+
+@pytest.mark.parametrize(
+    'embeddings',
+    (
+        ['flair:news-forward'],
+        ['flair:news-forward', 'flair:news-backward'],
+        ['word:glove', 'flair:news-backward'],
+        ['byte-pair:en'],
+    ),
+)
+def test_encoding_models(embeddings: List[str]):
+    docs = DocumentArray([Document(text='hello there')])
+    encoder = FlairTextEncoder(embeddings=embeddings)
+    encoder.encode(docs, {})
+
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
 @pytest.mark.parametrize(
