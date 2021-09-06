@@ -1,4 +1,2 @@
-jina==2.0.21
-faiss-cpu==1.6.5
-git+https://github.com/jina-ai/jina-commons
 pytest==6.2.4
+pytest-lazy-fixture==0.6.3

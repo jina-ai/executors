@@ -244,9 +244,13 @@ Note that you can skip both docker and GPU tests by using
 pytest -m "not gpu and not docker"
 ```
 
-For running the integration test, first add this fixture to `tests/conftest.py`
+For running the integration test, first add these fixtures to `tests/conftest.py`
 
 ```python
+@pytest.fixture(scope='session')
+def docker_image_name() -> str:
+    return Path(__file__).parents[1].stem.lower()
+
 @pytest.fixture(scope='session')
 def build_docker_image_gpu(docker_image_name: str) -> str:
     image_name = f'{docker_image_name}:gpu'
@@ -269,7 +273,8 @@ def test_docker_runtime_gpu(build_docker_image_gpu: str):
                 'jina',
                 'executor',
                 f'--uses=docker://{build_docker_image_gpu}',
-                '--gpus all'
+                '--gpus',
+                'all'
             ], 
             timeout=30,
             check=True
