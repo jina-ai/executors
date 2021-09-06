@@ -14,5 +14,4 @@ WORKDIR /workdir
 
 RUN ./scripts/download_model.sh
 
-ENV PYTHONPATH=/workdir
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

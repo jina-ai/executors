@@ -37,7 +37,8 @@ def test_integration(request_size: int):
 def test_docker_runtime(build_docker_image: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
-            ['jina', 'executor', f'--uses=docker://{build_docker_image}'],
+            ['jina', 'executor', f'--uses=docker://{build_docker_image}',
+             '--volumes=.cache:/workdir/.cache'],
             timeout=30,
             check=True,
         )
@@ -56,6 +57,7 @@ def test_docker_runtime_gpu(build_docker_image_gpu: str):
                 'all',
                 '--uses-with',
                 'device:cuda',
+                '--volumes=.cache:/workdir/.cache'
             ],
             timeout=30,
             check=True,

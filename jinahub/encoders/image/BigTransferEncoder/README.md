@@ -9,7 +9,7 @@ The following parameters can be used:
 - `model_path` (string, default: "pretrained"): The folder where the downloaded pretrained Big Transfer model is located
 - `model_name` (string, default: "R50x1"): The model to be downloaded when the model_path is empty. Choose from ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
 - `channel_axis` (int): The axis where the channel of the images needs to be (model-dependent)
-- `device` (string, default: 'cpu'): Specify the device to run the model on. Examples are 'cpu', 'cuda', 'cuda:2'.
+- `device` (string, default: '/CPU:0'): Specify the device to run the model on. Examples are '/CPU:0', '/GPU:0', '/GPU:2'.
 - `default_traversal_paths` (List[str], defaults to ['r']): Traversal path through the docs
 - `default_batch_size` (int): Batch size to be used in the encoder model. If not specified, all the documents are
 
