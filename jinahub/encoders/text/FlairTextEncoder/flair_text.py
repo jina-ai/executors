@@ -118,10 +118,10 @@ class FlairTextEncoder(Executor):
                 needs_attr='text',
             )
 
-        for document_batch in document_batches_generator:
+            for document_batch in document_batches_generator:
 
-            c_batch = [Sentence(d.text) for d in document_batch]
+                c_batch = [Sentence(d.text) for d in document_batch]
 
-            self.model.embed(c_batch)
-            for document, c_text in zip(document_batch, c_batch):
-                document.embedding = c_text.embedding.cpu().numpy()
+                self.model.embed(c_batch)
+                for document, c_text in zip(document_batch, c_batch):
+                    document.embedding = c_text.embedding.cpu().numpy()

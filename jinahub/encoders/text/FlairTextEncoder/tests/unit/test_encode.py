@@ -69,20 +69,20 @@ def test_encoding_gpu():
 
 
 @pytest.mark.parametrize(
-    'embeddings',
+    'embeddings, dim',
     (
-        ['flair:news-forward'],
-        ['flair:news-forward', 'flair:news-backward'],
-        ['word:glove', 'flair:news-backward'],
-        ['byte-pair:en'],
+        (['flair:news-forward'], 2048),
+        (['flair:news-forward', 'flair:news-backward'], 4096),
+        (['word:glove', 'flair:news-backward'], 2148),
+        (['byte-pair:en'], 100),
     ),
 )
-def test_encoding_models(embeddings: List[str]):
+def test_encoding_models(embeddings: List[str], dim: int):
     docs = DocumentArray([Document(text='hello there')])
     encoder = FlairTextEncoder(embeddings=embeddings)
     encoder.encode(docs, {})
 
-    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
+    assert docs[0].embedding.shape == (dim,)
 
 
 @pytest.mark.parametrize(
