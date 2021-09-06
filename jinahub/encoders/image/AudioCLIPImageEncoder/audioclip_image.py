@@ -37,7 +37,7 @@ class AudioCLIPImageEncoder(Executor):
     def __init__(
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
-        default_traversal_paths: Iterable[str] = None,
+        default_traversal_paths: Iterable[str] = ('r',),
         default_batch_size: int = 32,
         use_default_preprocessing: bool = True,
         device: str = 'cpu',
@@ -48,7 +48,7 @@ class AudioCLIPImageEncoder(Executor):
 
         self.device = device
         self.model = AudioCLIP(pretrained=model_path).to(device).eval()
-        self.default_traversal_paths = default_traversal_paths or ['r']
+        self.default_traversal_paths = default_traversal_paths
         self.default_batch_size = default_batch_size
         self.use_default_preprocessing = use_default_preprocessing
 

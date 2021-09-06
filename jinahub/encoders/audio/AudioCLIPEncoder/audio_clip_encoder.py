@@ -25,7 +25,7 @@ class AudioCLIPEncoder(Executor):
     def __init__(
         self,
         model_path: str = 'assets/AudioCLIP-Full-Training.pt',
-        default_traversal_paths: Iterable[str] = None,
+        default_traversal_paths: Iterable[str] = ('r',),
         device: str = 'cpu',
         *args,
         **kwargs
@@ -35,7 +35,7 @@ class AudioCLIPEncoder(Executor):
         torch.set_grad_enabled(False)
         self.model_path = model_path
         self.aclp = AudioCLIP(pretrained=model_path).to(device).eval()
-        self.default_traversal_paths = default_traversal_paths or ['r']
+        self.default_traversal_paths = default_traversal_paths
 
     @requests
     def encode(

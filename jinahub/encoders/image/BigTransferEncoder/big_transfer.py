@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 import numpy as np
 import tensorflow as tf
@@ -62,7 +62,7 @@ class BigTransferEncoder(Executor):
         model_name: Optional[str] = 'Imagenet21k/R50x1',
         device: str = '/CPU:0',
         target_dim: Optional[Tuple[int, int, int]] = None,
-        default_traversal_paths: List[str] = None,
+        default_traversal_paths: Iterable[str] = ('r',),
         default_batch_size: int = 32,
         *args,
         **kwargs,
@@ -74,7 +74,7 @@ class BigTransferEncoder(Executor):
         self.target_dim = target_dim
         self.logger = JinaLogger(self.__class__.__name__)
         self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths or ['r']
+        self.default_traversal_paths = default_traversal_paths
 
         if not os.path.exists(self.model_path):
             self.download_model()

@@ -36,11 +36,6 @@ def test_initialization_and_model_download():
 def test_encoding():
     doc = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
     doc.convert_image_uri_to_blob()
-    img = Image.fromarray(doc.blob.astype('uint8'))
-    img = img.resize((96, 96))
-    img = np.array(img).astype('float32') / 255
-    doc.blob = img
-    assert doc.embedding is None
 
     encoder = BigTransferEncoder()
 
@@ -51,8 +46,6 @@ def test_encoding():
 def test_preprocessing():
     doc = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
     doc.convert_image_uri_to_blob()
-
-    assert doc.embedding is None
 
     encoder = BigTransferEncoder(target_dim=(256, 256, 3))
 
@@ -83,7 +76,7 @@ def test_encoding_override_chunks():
         doc.chunks[i].convert_image_uri_to_blob()
 
     encoder = BigTransferEncoder()
-    assert encoder.default_traversal_paths == ['r']
+    assert encoder.default_traversal_paths == ('r',)
 
     encoder.encode(DocumentArray([doc]), parameters={'traversal_paths': ['c']})
     assert doc.embedding is None
