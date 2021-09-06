@@ -145,6 +145,7 @@ jobs:
   gpu-tests:
     needs: [gpu-folders]
     runs-on: [self-hosted, gpu]
+    if: ${{ needs.gpu-folders.outputs.matrix != '[]' }}
     strategy:
       fail-fast: false
       matrix:
