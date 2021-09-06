@@ -38,6 +38,8 @@ class FaissPostgresSearcher(Executor):
 
         if total_shards is None:
             self.total_shards = getattr(self.runtime_args, 'parallel', None)
+        else:
+            self.total_shards = total_shards
 
         if self.total_shards is None:
             self.logger.warning(
