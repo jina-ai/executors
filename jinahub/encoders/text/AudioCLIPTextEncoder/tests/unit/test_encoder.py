@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import List
 
-import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor
 
@@ -10,9 +9,31 @@ from ...audioclip_text import AudioCLIPTextEncoder
 _EMBEDDING_DIM = 1024
 
 
+@pytest.fixture(scope='module')
+def basic_encoder() -> AudioCLIPTextEncoder:
+    return AudioCLIPTextEncoder()
+
+
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.default_batch_size == 32
+
+
+def test_no_document(basic_encoder: AudioCLIPTextEncoder):
+    basic_encoder.encode(None, {})
+
+
+def test_empty_documents(basic_encoder: AudioCLIPTextEncoder):
+    docs = DocumentArray([])
+    basic_encoder.encode(docs, {})
+    assert len(docs) == 0
+
+
+def test_no_text_documents(basic_encoder: AudioCLIPTextEncoder):
+    docs = DocumentArray([Document()])
+    basic_encoder.encode(docs, {})
+    assert len(docs) == 1
+    assert docs[0].embedding is None
 
 
 def test_encoding_cpu():
@@ -35,81 +56,58 @@ def test_encoding_gpu():
 
 
 @pytest.mark.parametrize(
-    ['docs', 'docs_per_path', 'traversal_path'],
+    'traversal_paths, counts',
     [
-        (pytest.lazy_fixture('docs_with_text'), [['r', 10], ['c', 0], ['cc', 0]], 'r'),
-        (
-            pytest.lazy_fixture('docs_with_chunk_text'),
-            [['r', 0], ['c', 10], ['cc', 0]],
-            'c',
-        ),
-        (
-            pytest.lazy_fixture('docs_with_chunk_chunk_text'),
-            [['r', 0], ['c', 0], ['cc', 100]],
-            'cc',
-        ),
+        (['r'], [['r', 1], ['c', 0], ['cc', 0]]),
+        (['c'], [['r', 0], ['c', 3], ['cc', 0]]),
+        (['cc'], [['r', 0], ['c', 0], ['cc', 2]]),
+        (['cc', 'r'], [['r', 1], ['c', 0], ['cc', 2]]),
     ],
 )
 def test_traversal_path(
-    docs: DocumentArray, docs_per_path: List[List[str]], traversal_path: str
+    traversal_paths: List[str], counts: List, basic_encoder: AudioCLIPTextEncoder
 ):
-    encoder = AudioCLIPTextEncoder(default_traversal_paths=[traversal_path])
-    encoder.encode(docs, {'traversal_paths': [traversal_path]})
+    text = 'blah'
+    docs = DocumentArray([Document(id='root1', text=text)])
+    docs[0].chunks = [
+        Document(id='chunk11', text=text),
+        Document(id='chunk12', text=text),
+        Document(id='chunk13', text=text),
+    ]
+    docs[0].chunks[0].chunks = [
+        Document(id='chunk111', text=text),
+        Document(id='chunk112', text=text),
+    ]
 
-    for path, count in docs_per_path:
-        embeddings = (
-            DocumentArray(docs).traverse_flat([path]).get_attributes('embedding')
-        )
+    basic_encoder.encode(docs=docs, parameters={'traversal_paths': traversal_paths})
+    for path, count in counts:
+        embeddings = docs.traverse_flat([path]).get_attributes('embedding')
         assert len(list(filter(lambda x: x is not None, embeddings))) == count
 
 
-def test_encodes_semantic_meaning():
-    sentences = dict()
-    sentences["A"] = "Hello, my name is Michael."
-    sentences["B"] = "Today we are going to Disney World."
-    sentences["C"] = "There are animals on the road"
-    sentences["D"] = "A dog is running down the road"
+@pytest.mark.parametrize('batch_size', [1, 2, 4, 8])
+def test_batch_size(basic_encoder: AudioCLIPTextEncoder, batch_size: int):
+    docs = DocumentArray([Document(text='hello there') for _ in range(32)])
+    basic_encoder.encode(docs, parameters={'batch_size': batch_size})
 
-    encoder = AudioCLIPTextEncoder()
-
-    embeddings = {}
-    for id_, sentence in sentences.items():
-        docs = DocumentArray([Document(text=sentence)])
-        encoder.encode(docs, parameters={})
-        embeddings[id_] = docs[0].embedding
-
-    def dist(a, b):
-        a_embedding = embeddings[a]
-        b_embedding = embeddings[b]
-        return np.linalg.norm(a_embedding - b_embedding)
-
-    small_distance = dist("C", "D")
-    assert small_distance < dist("C", "B")
-    assert small_distance < dist("C", "A")
-    assert small_distance < dist("B", "A")
-
-
-def test_multiple_traversal_paths():
-    sentences = list()
-    sentences.append('Hello, my name is Michael.')
-    sentences.append('Today we are going to Disney World.')
-    sentences.append('There are animals on the road')
-    sentences.append('A dog is running down the road')
-    docs = DocumentArray([Document(text=sentence) for sentence in sentences])
-    for index, sent in enumerate(sentences):
-        docs[index].chunks.append(Document(text=sent))
-        docs[index].chunks[0].chunks.append(Document(text=sentences[3 - index]))
-
-    encoder = AudioCLIPTextEncoder(default_traversal_paths=['r', 'c', 'cc'])
-
-    encoder.encode(docs, {})
     for doc in docs:
         assert doc.embedding.shape == (_EMBEDDING_DIM,)
-        assert doc.chunks[0].embedding.shape == (_EMBEDDING_DIM,)
-        assert doc.chunks[0].chunks[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
-def test_no_docs():
-    encoder = AudioCLIPTextEncoder()
-    encoder.encode(None, {})
-    encoder.encode(DocumentArray(), {})
+def test_quality_embeddings(basic_encoder: AudioCLIPTextEncoder):
+    docs = DocumentArray(
+        [
+            Document(id='A', text='a furry animal that with a long tail'),
+            Document(id='B', text='a domesticated mammal with four legs'),
+            Document(id='C', text='a type of aircraft that uses rotating wings'),
+            Document(id='D', text='flying vehicle that has fixed wings and engines'),
+        ]
+    )
+
+    basic_encoder.encode(DocumentArray(docs), {})
+
+    # assert semantic meaning is captured in the encoding
+    docs.match(docs)
+    matches = ['B', 'A', 'D', 'C']
+    for i, doc in enumerate(docs):
+        assert doc.matches[1].id == matches[i]

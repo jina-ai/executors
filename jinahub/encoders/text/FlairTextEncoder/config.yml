@@ -1,6 +1,4 @@
 jtype: FlairTextEncoder
-with:
-  {}
 metas:
   py_modules:
     - flair_text.py
