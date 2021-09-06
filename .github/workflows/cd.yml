@@ -66,6 +66,7 @@ jobs:
   push-gpu-executors:
     needs: [ gpu-folders ]
     runs-on: ubuntu-latest
+    if: ${{ needs.gpu-folders.outputs.matrix != '[]' }}
     container:
       image: jinaai/jina:master-standard
       options: "--entrypoint /bin/bash"
