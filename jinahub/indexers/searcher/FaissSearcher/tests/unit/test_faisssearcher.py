@@ -425,6 +425,47 @@ def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
         )
 
 
+@pytest.mark.gpu
+def test_gpu_indexer(tmpdir):
+    train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
+    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
+    np.save(train_data_file, train_data)
+
+    trained_index_file = os.path.join(tmpdir, 'faiss.index')
+    indexer = FaissSearcher(
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        on_gpu=True,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+        prefetch_size=256,
+    )
+    indexer.train(
+        parameters={
+            'train_data_file': train_data_file,
+        }
+    )
+
+    trained_indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        on_gpu=True,
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    query = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query)
+    trained_indexer.search(docs, parameters={'top_k': 4})
+    assert len(docs[0].matches) == 4
+    for d in docs:
+        assert (
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
+        )
+
+
 def test_faiss_delta(metas, tmpdir):
     num_data = 2
     num_dims = 64
