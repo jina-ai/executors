@@ -3,6 +3,7 @@ __license__ = "Apache-2.0"
 
 import gzip
 import os
+import pickle
 from datetime import datetime
 from typing import Callable, Dict, Generator, Iterable, List, Optional, Tuple
 
@@ -108,10 +109,15 @@ class FaissSearcher(Executor):
 
         self._doc_ids = []
         self._doc_id_to_offset = {}
+        self._is_deleted = []
         self._prefetch_data = []
 
         self.logger = get_logger(self)
-        self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
+        is_loaded = False
+        if os.path.exists(self.workspace):
+            is_loaded = self._load(self.workspace)
+        if not is_loaded:
+            self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
 
     def _load_dump(self, dump_path, dump_func, prefetch_size, **kwargs):
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
@@ -157,6 +163,7 @@ class FaissSearcher(Executor):
             vector = id_vector[1]
             self._doc_ids.append(id_)
             self._doc_id_to_offset[id_] = position
+            self._is_deleted.append(0)
             yield np.frombuffer(vector)
 
     def device(self):
@@ -194,27 +201,14 @@ class FaissSearcher(Executor):
 
     def _init_faiss_index(self, num_dim: int, trained_index_file: Optional[str] = None):
         """Initialize a Faiss indexer instance"""
-
-        metric_type = faiss.METRIC_L2
-        if self.metric == 'inner_product':
-            self.logger.warning(
-                'inner_product will be output as distance instead of similarity.'
-            )
-            metric_type = faiss.METRIC_INNER_PRODUCT
-        if self.metric not in {'inner_product', 'l2'}:
-            self.logger.warning(
-                'Invalid distance metric for Faiss'
-                ' index construction. Defaulting to l2 distance'
-            )
-
         if trained_index_file and os.path.exists(trained_index_file):
             index = faiss.read_index(trained_index_file)
-            assert index.metric_type == metric_type
+            assert index.metric_type == self.metric_type
             assert index.ntotal == 0
             assert index.d == self.num_dim
             assert index.is_trained
         else:
-            index = faiss.index_factory(num_dim, self.index_key, metric_type)
+            index = faiss.index_factory(num_dim, self.index_key, self.metric_type)
 
         self._faiss_index = self.to_device(index)
         self._faiss_index.nprobe = self.nprobe
@@ -323,24 +317,34 @@ class FaissSearcher(Executor):
             'traversal_paths', self.default_traversal_paths
         )
 
+        # expand topk number guarantee to return topk results
+        # TODO WARNING: maybe this would degrade the query speed
+        expand_topk = top_k + self.deleted_count
+
         query_docs = docs.traverse_flat(traversal_paths)
 
-        vecs = np.array(query_docs.get_attributes('embedding'))
+        vecs = np.array(query_docs.get_attributes('embedding'), dtype=np.float32)
 
         if self.normalize:
             from faiss import normalize_L2
 
             normalize_L2(vecs)
 
-        dists, ids = self._faiss_index.search(vecs, top_k)
+        dists, ids = self._faiss_index.search(vecs, expand_topk)
 
         if self.metric == 'inner_product':
             dists = 1 - dists
 
         for doc_idx, matches in enumerate(zip(ids, dists)):
+            count = 0
             for m_info in zip(*matches):
                 idx, dist = m_info
-                match = Document(id=self._doc_ids[idx])
+                doc_id = self._doc_ids[idx]
+
+                if self.is_deleted(idx):
+                    continue
+
+                match = Document(id=doc_id)
                 if self.is_distance:
                     match.scores[self.metric] = dist
                 else:
@@ -350,6 +354,57 @@ class FaissSearcher(Executor):
                         match.scores[self.metric] = 1 / (1 + dist)
 
                 query_docs[doc_idx].matches.append(match)
+
+                # early stop as topk results are ready
+                count += 1
+                if count >= top_k:
+                    break
+
+    @requests(on='/save')
+    def save(self, target_path: Optional[str] = None, **kwargs):
+        """
+        Save a snapshot of the current indexer
+        """
+
+        target_path = target_path if target_path else self.workspace
+
+        os.makedirs(target_path, exist_ok=True)
+
+        # dump faiss index
+        faiss.write_index(self._faiss_index, os.path.join(target_path, 'faiss.bin'))
+
+        with open(os.path.join(target_path, 'doc_ids.bin'), "wb") as fp:
+            pickle.dump(self._doc_ids, fp)
+
+        with open(os.path.join(target_path, 'delete_marks.bin'), "wb") as fp:
+            pickle.dump(self._is_deleted, fp)
+
+    def _load(self, from_path: Optional[str] = None):
+        from_path = from_path if from_path else self.workspace
+        self.logger.info(f'Try to load indexer from {from_path}...')
+        try:
+            with open(os.path.join(from_path, 'doc_ids.bin'), 'rb') as fp:
+                self._doc_ids = pickle.load(fp)
+                self._doc_id_to_offset = {v: i for i, v in enumerate(self._doc_ids)}
+
+            with open(os.path.join(from_path, 'delete_marks.bin'), 'rb') as fp:
+                self._is_deleted = pickle.load(fp)
+
+            index = faiss.read_index(os.path.join(from_path, 'faiss.bin'))
+            assert index.metric_type == self.metric_type
+            assert index.is_trained
+            self.num_dim = index.d
+            self._faiss_index = self.to_device(index)
+            self._faiss_index.nprobe = self.nprobe
+        except FileNotFoundError:
+            self.logger.warning(
+                'None snapshot is found, you should build the indexer from scratch'
+            )
+            return False
+        except Exception as ex:
+            raise ex
+
+        return True
 
     @requests(on='/train')
     def train(self, parameters: Dict, **kwargs):
@@ -514,13 +569,60 @@ class FaissSearcher(Executor):
     @property
     def size(self):
         """Return the nr of elements in the index"""
-        return len(self._doc_id_to_offset)
+        return len(self._doc_ids) - self.deleted_count
+
+    @property
+    def deleted_count(self):
+        return sum(self._is_deleted)
+
+    @property
+    def metric_type(self):
+        metric_type = faiss.METRIC_L2
+        if self.metric == 'inner_product':
+            self.logger.warning(
+                'inner_product will be output as distance instead of similarity.'
+            )
+            metric_type = faiss.METRIC_INNER_PRODUCT
+        if self.metric not in {'inner_product', 'l2'}:
+            self.logger.warning(
+                'Invalid distance metric for Faiss index construction. Defaulting to l2 distance'
+            )
+        return metric_type
+
+    def is_deleted(self, idx):
+        return self._is_deleted[idx]
+
+    def _append_vecs_and_ids(self, doc_ids: List[str], vecs: np.ndarray):
+        assert len(doc_ids) == vecs.shape[0]
+        for doc_id in doc_ids:
+            self._doc_id_to_offset[doc_id] = len(self._doc_ids)
+            self._doc_ids.append(doc_id)
+            self._is_deleted.append(0)
+        self._index(vecs)
 
     def _add_delta(self, delta: Generator[Tuple[str, bytes, datetime], None, None]):
         """
         Adding the delta data to the indexer
-
         :param delta: a generator yielding (id, doc_vec_bytes, last_updated)
         """
-        # TODO implement using a soft delete
-        pass
+        for doc_id, vec_buffer, _ in delta:
+            idx = self._doc_id_to_offset.get(doc_id)
+            if idx is None:  # add new item
+                if vec_buffer is None:
+                    continue
+                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
+                    1, -1
+                )  # shape [1, D]
+
+                self._append_vecs_and_ids([doc_id], vec)
+            elif vec_buffer is None:  # soft delete
+                self._is_deleted[idx] = 1
+            else:  # update
+                # first soft delete
+                self._is_deleted[idx] = 1
+
+                # then add the updated doc
+                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
+                    1, -1
+                )  # shape [1, D]
+                self._append_vecs_and_ids([doc_id], vec)
