@@ -1,10 +1,17 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Optional, Sequence
 
-import numpy as np
+import flair
 import torch
+from flair.data import Sentence
+from flair.embeddings import (
+    BytePairEmbeddings,
+    DocumentPoolEmbeddings,
+    FlairEmbeddings,
+    WordEmbeddings,
+)
 from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
 
@@ -12,82 +19,83 @@ from jina_commons.batching import get_docs_batch_generator
 class FlairTextEncoder(Executor):
     """Encode text into embeddings using models from the flair library.
 
+    This module provides a subset sentence embedding functionality from the flair
+    library, namely it allows you classical word embeddings, byte-pair embeddings and
+    flair embeddings, and create sentence embeddings from a combtination of these models
+    using document pool embeddings.
+
+    Due to different interfaces of all these embedding models, using custom pre-trained
+    models (not part of the library), or other embedding models is not possible. For
+    that, we recommend that you create a custom executor.
+
     :param embeddings: the name of the embeddings. Supported models include
         - ``word:[ID]``: the classic word embedding model, the ``[ID]`` are listed at
         https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/CLASSIC_WORD_EMBEDDINGS.md
         - ``flair:[ID]``: the contextual embedding model, the ``[ID]`` are listed at
         https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/FLAIR_EMBEDDINGS.md
-        - ``pooledflair:[ID]``: the pooled version of the contextual embedding model,
-        the ``[ID]`` are listed at
-        https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/FLAIR_EMBEDDINGS.md
         - ``byte-pair:[ID]``: the subword-level embedding model, the ``[ID]`` are listed at
         https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/BYTE_PAIR_EMBEDDINGS.md
-        - ``Example``: ('word:glove', 'flair:news-forward', 'flair:news-backward')
-    :param default_batch_size: size of each batch
-    :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+
+        Example: ``('word:glove', 'flair:news-forward', 'flair:news-backward')``
+    :param default_batch_size: Default batch size, used if ``batch_size`` is not
+        provided as a parameter in the request
+    :param default_traversal_paths: Default traversal paths, used if ``traversal_paths``
+        are not provided as a parameter in the request.
     :param device: The device (cpu or gpu) that the model should be on.
-    :param pooling_strategy: the strategy to merge the word embeddings into the chunk embedding.
-        Supported strategies include ``mean``, ``min``, ``max``.
+    :param pooling_strategy: the strategy to merge the word embeddings into the sentence
+        embedding. Supported strategies are ``'mean'``, ``'min'`` and ``'max'``.
     """
 
     def __init__(
         self,
-        embeddings: Union[Tuple[str], List[str]] = ('word:glove',),
+        embeddings: Sequence[str] = ('word:glove',),
         pooling_strategy: str = 'mean',
-        on_gpu: bool = False,
+        device: str = 'cpu',
         default_batch_size: int = 32,
-        default_traversal_paths: Optional[List[str]] = None,
+        default_traversal_paths: Sequence[str] = ('r',),
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.embeddings = embeddings
-        self.pooling_strategy = pooling_strategy
-        self.max_length = -1  # reserved variable for future usages
-        self.on_gpu = on_gpu
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths or ['r']
-        self._post_set_device = False
-        self.device = torch.device('cuda:0') if self.on_gpu else torch.device('cpu')
 
-        import flair
+        if isinstance(embeddings, str):
+            raise ValueError(
+                'embeddings can not be a string, you need to pass a tuple or a list'
+            )
+
+        if pooling_strategy not in ['min', 'max', 'mean']:
+            raise ValueError(
+                'pooling_strategy has to be one of "min", "max" or "mean", got'
+                f'{pooling_strategy}'
+            )
+
+        self.pooling_strategy = pooling_strategy
+        self.default_batch_size = default_batch_size
+        self.default_traversal_paths = default_traversal_paths
+        self.device = torch.device(device)
 
         flair.device = self.device
         embeddings_list = []
-        for e in self.embeddings:
+        for e in embeddings:
             model_name, model_id = e.split(':', maxsplit=1)
-            emb = None
+            model_dict = {
+                'flair': FlairEmbeddings,
+                'word': WordEmbeddings,
+                'byte-pair': BytePairEmbeddings,
+            }
+
             try:
-                if model_name == 'flair':
-                    from flair.embeddings import FlairEmbeddings
+                model_class = model_dict[model_name]
+            except KeyError:
+                raise ValueError(
+                    f'The model name {model_name} not recognized, valid model names'
+                    ' are "flair", "word" and "byte-pair"'
+                )
+            embeddings_list.append(model_class(model_id))
 
-                    emb = FlairEmbeddings(model_id)
-                elif model_name == 'pooledflair':
-                    from flair.embeddings import PooledFlairEmbeddings
-
-                    emb = PooledFlairEmbeddings(model_id)
-                elif model_name == 'word':
-                    from flair.embeddings import WordEmbeddings
-
-                    emb = WordEmbeddings(model_id)
-                elif model_name == 'byte-pair':
-                    from flair.embeddings import BytePairEmbeddings
-
-                    emb = BytePairEmbeddings(model_id)
-            except ValueError:
-                # self.logger.error(f'embedding not found: {e}')
-                continue
-            if emb is not None:
-                embeddings_list.append(emb)
-        if embeddings_list:
-            from flair.embeddings import DocumentPoolEmbeddings
-
-            self.model = DocumentPoolEmbeddings(
-                embeddings_list, pooling=self.pooling_strategy
-            )
-            # self.logger.info(f'flair encoder initialized with embeddings: {self.embeddings}')
-        else:
-            print('flair encoder initialization failed.')
+        self.model = DocumentPoolEmbeddings(
+            embeddings_list, pooling=self.pooling_strategy
+        )
 
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: dict, *args, **kwargs):
@@ -110,19 +118,10 @@ class FlairTextEncoder(Executor):
                 needs_attr='text',
             )
 
-            self._create_embeddings(document_batches_generator)
-
-    def _create_embeddings(self, document_batches_generator: Iterable):
         for document_batch in document_batches_generator:
-            from flair.data import Sentence
 
             c_batch = [Sentence(d.text) for d in document_batch]
 
             self.model.embed(c_batch)
             for document, c_text in zip(document_batch, c_batch):
                 document.embedding = c_text.embedding.cpu().numpy()
-
-    def tensor2array(self, tensor):
-        if isinstance(tensor, np.ndarray):
-            return tensor
-        return tensor.cpu().numpy() if self.on_gpu else tensor.numpy()
