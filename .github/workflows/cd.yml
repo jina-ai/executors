@@ -6,7 +6,7 @@ on:
       - main
   workflow_dispatch:
   # comment this out to test in CI
-  pull_request:
+  #pull_request:
 
 
 jobs:
