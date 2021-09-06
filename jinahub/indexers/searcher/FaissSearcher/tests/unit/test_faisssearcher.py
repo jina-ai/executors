@@ -205,10 +205,14 @@ def test_faiss_indexer_known(metas, tmpdir):
 
 
 def test_faiss_indexer_known_big(metas, tmpdir):
-    """Let's try to have some real test. We will have an index with 10k vectors of random values between 5 and 10. # noqa: 501
-    We will change tweak some specific vectors that we expect to be retrieved at query time. We will tweak vector
-    at index [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], this will also be the query vectors.
-    Then the keys will be assigned shifted to test the proper usage of `int2ext_id` and `ext2int_id`
+    """Let's try to have some real test. We will have an index with 10k vectors of
+    random values between 5 and 10. # noqa: 501
+    We will change tweak some specific vectors that we expect to be retrieved at
+    query time. We will tweak vector
+    at index [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], this will
+    also be the query vectors.
+    Then the keys will be assigned shifted to test the proper usage of `int2ext_id`
+    and `ext2int_id`
     """
     vectors = np.random.uniform(low=5.0, high=10.0, size=(10000, 1024)).astype(
         'float32'
@@ -419,3 +423,168 @@ def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
             d.matches[0].scores[indexer.metric].value
             >= d.matches[1].scores[indexer.metric].value
         )
+
+
+@pytest.mark.gpu
+def test_gpu_indexer(metas, tmpdir, tmpdir_dump):
+    train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
+    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
+    np.save(train_data_file, train_data)
+
+    trained_index_file = os.path.join(tmpdir, 'faiss.index')
+    indexer = FaissSearcher(
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        on_gpu=True,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+        prefetch_size=256,
+    )
+    indexer.train(
+        parameters={
+            'train_data_file': train_data_file,
+        }
+    )
+
+    trained_indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='IVF10,PQ2',
+        trained_index_file=trained_index_file,
+        on_gpu=True,
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    query = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query)
+    trained_indexer.search(docs, parameters={'top_k': 4})
+    assert len(docs[0].matches) == 4
+    for d in docs:
+        assert (
+            d.matches[0].scores[indexer.metric].value
+            >= d.matches[1].scores[indexer.metric].value
+        )
+
+
+def test_faiss_delta(metas, tmpdir):
+    num_data = 2
+    num_dims = 64
+
+    vecs = np.zeros((num_data, num_dims))
+    vecs[:, 0] = 2
+    vecs[0, 1] = 3
+    keys = np.arange(0, num_data).astype(str)
+
+    dump_path = os.path.join(tmpdir, 'dump')
+    export_dump_streaming(
+        dump_path,
+        1,
+        len(keys),
+        zip(keys, vecs, [b'' for _ in range(len(vecs))]),
+    )
+
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='Flat',
+        normalize=True,
+        requires_training=True,
+        metas=metas,
+        dump_path=dump_path,
+        runtime_args={'pea_id': 0},
+    )
+    assert indexer.size == 2
+
+    def _generate_add_delta():
+        for i in range(2, 6):
+            x = np.zeros((1, num_dims), dtype=np.float32)
+            yield f'{i}', x.tobytes(), None
+
+    indexer._add_delta(_generate_add_delta())
+    assert indexer.size == 6
+    assert indexer._is_deleted == [0, 0, 0, 0, 0, 0]
+    assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5']
+
+    def _generate_delete_delta():
+        for i in range(2, 4):
+            yield f'{i}', None, None
+
+    indexer._add_delta(_generate_delete_delta())
+    assert indexer.size == 4
+    assert indexer._is_deleted == [0, 0, 1, 1, 0, 0]
+    assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5']
+
+    def _generate_update_delta():
+        for i in range(4, 6):
+            x = np.zeros((1, num_dims), dtype=np.float32)
+            yield f'{i}', x.tobytes(), None
+
+    indexer._add_delta(_generate_update_delta())
+    assert indexer.size == 4
+    assert indexer._is_deleted == [0, 0, 1, 1, 1, 1, 0, 0]
+    assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5', '4', '5']
+
+    # update the deleted docs take the same effect of adding new items
+    def _generate_update_delta():
+        for i in range(2, 4):
+            x = np.zeros((1, num_dims), dtype=np.float32)
+            yield f'{i}', x.tobytes(), None
+
+    indexer._add_delta(_generate_update_delta())
+    assert indexer.size == 6
+    assert indexer._is_deleted == [0, 0, 1, 1, 1, 1, 0, 0, 0, 0]
+    assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5', '4', '5', '2', '3']
+
+    query = np.zeros((1, num_dims))
+    query[0, 0] = 5
+    docs = _get_docs_from_vecs(query.astype('float32'))
+    indexer.search(docs, parameters={'top_k': 2})
+    dist = docs.traverse_flat(['m']).get_attributes('scores')
+    assert dist[0]['l2'].value == 1.0
+
+
+def test_faiss_save(metas, tmpdir):
+    num_data = 2
+    num_dims = 64
+
+    vecs = np.zeros((num_data, num_dims))
+    vecs[:, 0] = 2
+    vecs[0, 1] = 3
+    keys = np.arange(0, num_data).astype(str)
+
+    dump_path = os.path.join(tmpdir, 'dump')
+    export_dump_streaming(
+        dump_path,
+        1,
+        len(keys),
+        zip(keys, vecs, [b'' for _ in range(len(vecs))]),
+    )
+
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='Flat',
+        normalize=True,
+        requires_training=True,
+        metas=metas,
+        dump_path=dump_path,
+        runtime_args={'pea_id': 0},
+    )
+
+    indexer.save()
+
+    new_indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='Flat',
+        normalize=True,
+        requires_training=True,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+
+    assert new_indexer.size == 2
+
+    query = np.zeros((1, num_dims))
+    query[0, 0] = 5
+    docs = _get_docs_from_vecs(query.astype('float32'))
+    new_indexer.search(docs, parameters={'top_k': 2})
+    dist = docs.traverse_flat(['m']).get_attributes('scores')
+    assert dist[0]['l2'].value == 1.0

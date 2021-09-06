@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor, Flow
 from jina.logging.profile import TimeContext
-from jina_commons.indexers.dump import import_vectors, import_metas
+from jina_commons.indexers.dump import import_metas, import_vectors
 
 from ..postgres_indexer import PostgreSQLStorage
 from ..postgreshandler import doc_without_embedding
@@ -15,12 +15,14 @@ from ..postgreshandler import doc_without_embedding
 @pytest.fixture()
 def docker_compose(request):
     os.system(
-        f"docker-compose -f {request.param} --project-directory . up  --build -d --remove-orphans"
+        f"docker-compose -f {request.param} --project-directory . up  --build -d "
+        f"--remove-orphans"
     )
     time.sleep(5)
     yield
     os.system(
-        f"docker-compose -f {request.param} --project-directory . down --remove-orphans"
+        f"docker-compose -f {request.param} --project-directory . down "
+        f"--remove-orphans"
     )
 
 
@@ -87,7 +89,8 @@ def validate_db_side(postgres_indexer, expected_data):
     with postgres_indexer.handler as handler:
         cursor = handler.connection.cursor()
         cursor.execute(
-            f'SELECT doc_id, embedding, doc from {postgres_indexer.table} ORDER BY doc_id::int'
+            f'SELECT doc_id, embedding, doc from {postgres_indexer.table} ORDER BY '
+            f'doc_id::int'
         )
         record = cursor.fetchall()
         for i in range(len(expected_data)):
@@ -179,3 +182,115 @@ def test_return_embeddings(docker_compose):
     query2 = DocumentArray([Document(id=doc.id)])
     indexer.search(query2, parameters={"return_embeddings": False})
     assert query2[0].embedding is None
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+@pytest.mark.parametrize('psql_virtual_shards', [44, 128])
+@pytest.mark.parametrize('real_shards', [1, 5])
+def test_snapshot(docker_compose, psql_virtual_shards, real_shards):
+    postgres_indexer = PostgreSQLStorage(virtual_shards=psql_virtual_shards)
+
+    def _assert_snapshot_shard_distribution(func, nr_shards, total_docs_expected):
+        total_docs = 0
+        for i in range(nr_shards):
+            data = func(shard_id=i, total_shards=nr_shards)
+            docs_this_shard = len(list(data))
+            assert docs_this_shard >= postgres_indexer.virtual_shards // real_shards
+            total_docs += docs_this_shard
+
+        np.testing.assert_equal(total_docs, total_docs_expected)
+
+    NR_SHARDS = real_shards
+    NR_DOCS = postgres_indexer.virtual_shards * 2 + 3
+    original_docs = DocumentArray(
+        list(get_documents(nr=NR_DOCS, chunks=0, same_content=False))
+    )
+
+    NR_NEW_DOCS = 30
+    new_docs = DocumentArray(
+        list(
+            get_documents(
+                nr=NR_NEW_DOCS, index_start=NR_DOCS, chunks=0, same_content=False
+            )
+        )
+    )
+
+    # make sure to cleanup if the PSQL instance is kept running
+    postgres_indexer.delete(original_docs, {})
+    postgres_indexer.delete(new_docs, {})
+
+    # indexing the documents
+    postgres_indexer.add(original_docs, {})
+    np.testing.assert_equal(postgres_indexer.size, NR_DOCS)
+
+    # create a snapshot
+    postgres_indexer.snapshot()
+
+    # data added the snapshot will not be part of the export
+    postgres_indexer.add(new_docs, {})
+
+    np.testing.assert_equal(postgres_indexer.size, NR_DOCS + NR_NEW_DOCS)
+    np.testing.assert_equal(postgres_indexer.snapshot_size, NR_DOCS)
+
+    _assert_snapshot_shard_distribution(
+        postgres_indexer.get_snapshot, NR_SHARDS, NR_DOCS
+    )
+
+    # create another snapshot
+    postgres_indexer.snapshot()
+    timestamp = postgres_indexer.last_snapshot_timestamp
+
+    # docs for the delta resolving
+    NR_DOCS_DELTA = 33
+    docs_delta = DocumentArray(
+        list(
+            get_documents(
+                nr=NR_DOCS_DELTA,
+                index_start=NR_DOCS + NR_NEW_DOCS,
+                chunks=0,
+                same_content=False,
+            )
+        )
+    )
+    time.sleep(3)
+    postgres_indexer.add(docs_delta, {})
+
+    np.testing.assert_equal(
+        postgres_indexer.size, NR_DOCS + NR_NEW_DOCS + NR_DOCS_DELTA
+    )
+    np.testing.assert_equal(postgres_indexer.snapshot_size, NR_DOCS + NR_NEW_DOCS)
+
+    NR_DOCS_DELTA_DELETED = 10
+    docs_delta_deleted = DocumentArray(
+        list(
+            get_documents(
+                nr=NR_DOCS_DELTA_DELETED, index_start=0, chunks=0, same_content=False
+            )
+        )
+    )
+    postgres_indexer.delete(docs_delta_deleted, {'soft_delete': True})
+
+    _assert_snapshot_shard_distribution(
+        postgres_indexer.get_snapshot,
+        NR_SHARDS,
+        NR_DOCS + NR_NEW_DOCS,
+    )
+
+    # we use total_shards=1 in order to guarantee getting all the data in the delta
+    deltas = postgres_indexer._get_delta(
+        shard_id=0, total_shards=1, timestamp=timestamp
+    )
+    deltas = list(deltas)
+    np.testing.assert_equal(len(deltas), NR_DOCS_DELTA + NR_DOCS_DELTA_DELETED)
+
+    # TODO delta is then passed to the indexer
+    # after soft-deletion is added to Faiss
+
+
+def test_postgres_shard_distribution():
+    assert ['0'] == PostgreSQLStorage._vshards_to_get(0, 3, 5)
+    assert ['1'] == PostgreSQLStorage._vshards_to_get(1, 3, 5)
+    assert ['2', '3', '4'] == PostgreSQLStorage._vshards_to_get(2, 3, 5)
+    assert [str(s) for s in range(5)] == PostgreSQLStorage._vshards_to_get(0, 1, 5)
+    with pytest.raises(ValueError):
+        PostgreSQLStorage._vshards_to_get(1, 1, 5)
