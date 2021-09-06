@@ -319,7 +319,7 @@ class FaissSearcher(Executor):
 
         # expand topk number guarantee to return topk results
         # TODO WARNING: maybe this would degrade the query speed
-        expand_topk = top_k + self.delted_count
+        expand_topk = top_k + self.deleted_count
 
         query_docs = docs.traverse_flat(traversal_paths)
 
@@ -569,10 +569,10 @@ class FaissSearcher(Executor):
     @property
     def size(self):
         """Return the nr of elements in the index"""
-        return len(self._doc_ids) - self.delted_count
+        return len(self._doc_ids) - self.deleted_count
 
     @property
-    def delted_count(self):
+    def deleted_count(self):
         return sum(self._is_deleted)
 
     @property
