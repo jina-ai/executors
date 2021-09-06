@@ -426,7 +426,7 @@ def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
 
 
 @pytest.mark.gpu
-def test_gpu_indexer(tmpdir):
+def test_gpu_indexer(metas, tmpdir, tmpdir_dump):
     train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
     np.save(train_data_file, train_data)
