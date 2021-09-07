@@ -2,3 +2,4 @@ psycopg2-binary==2.8.6
 git+https://github.com/jina-ai/executors
 faiss-cpu==1.6.5
 git+https://github.com/jina-ai/jina-commons
+git+https://github.com/jina-ai/jina.git@v2.0.23#egg=jina[hub]

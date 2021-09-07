@@ -6,6 +6,7 @@ import datetime
 import functools
 from typing import Dict, Optional
 
+import numpy as np
 from jina import DocumentArray, Executor, requests
 from jina_commons import get_logger
 
@@ -64,7 +65,8 @@ class FaissPostgresSearcher(Executor):
             self.sync(parameters=startup_sync_args)
 
     def _init_executors(self, dump_path, kwargs, startup_sync_args):
-        kv_indexer = PostgreSQLStorage(**kwargs)
+        # float32 because that's what faiss expects
+        kv_indexer = PostgreSQLStorage(dump_dtype=np.float32, **kwargs)
         vec_indexer = FaissSearcher(dump_path=dump_path, **kwargs)
 
         if dump_path is None and startup_sync_args is None:
@@ -195,6 +197,12 @@ class FaissPostgresSearcher(Executor):
     @requests(on='/delete')
     def delete(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
-        Delete docs from PSQL, based on id
+        Delete docs from PSQL, based on id.
+
+        By default, it will be a soft delete, where the entry is left in the DB,
+        but its data will be set to None
         """
+        if 'soft_delete' not in parameters:
+            parameters['soft_delete'] = True
+
         self._kv_indexer.delete(docs, parameters, **kwargs)

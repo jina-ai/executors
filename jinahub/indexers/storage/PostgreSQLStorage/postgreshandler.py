@@ -364,7 +364,12 @@ class PostgreSQLHandler:
                 (shards_quoted,),
             )
             for rec in cursor:
-                yield rec[0], rec[1]
+                vec = (
+                    np.frombuffer(rec[1], dtype=self.dump_dtype)
+                    if rec[1] is not None
+                    else None
+                )
+                yield rec[0], vec
         except (Exception, psycopg2.Error) as error:
             self.logger.error(f'Error importing snapshot: {error}')
             self.connection.rollback()
@@ -421,7 +426,12 @@ class PostgreSQLHandler:
             (shards_quoted, timestamp),
         )
         for rec in cursor:
-            yield rec[0], rec[1], rec[2]
+            second_val = (
+                np.frombuffer(rec[1], dtype=self.dump_dtype)
+                if rec[1] is not None
+                else None
+            )
+            yield rec[0], second_val, rec[2]
         self._close_connection(connection)
 
     def get_snapshot_size(self):
