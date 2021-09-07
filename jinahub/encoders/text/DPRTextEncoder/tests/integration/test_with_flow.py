@@ -1,10 +1,11 @@
-__copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
-__license__ = "Apache-2.0"
+import subprocess
 
 import pytest
 from jina import Document, DocumentArray, Flow
 
 from ...dpr_text import DPRTextEncoder
+
+_EMBEDDING_DIM = 768
 
 
 @pytest.mark.parametrize('request_size', [1, 10, 50, 100])
@@ -23,5 +24,19 @@ def test_integration(request_size: int):
     assert sum(len(resp_batch.docs) for resp_batch in resp) == 50
     for r in resp:
         for doc in r.docs:
-            assert doc.embedding is not None
-            assert doc.embedding.shape == (768,)
+            assert doc.embedding.shape == (_EMBEDDING_DIM,)
+
+
+@pytest.mark.docker
+def test_docker_runtime(build_docker_image: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'executor',
+                f'--uses=docker://{build_docker_image}',
+                '--volumes=.cache:/workspace/.cache',
+            ],
+            timeout=30,
+            check=True,
+        )

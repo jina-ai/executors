@@ -1,5 +1,5 @@
-import copy
 from pathlib import Path
+from typing import List
 
 import clip
 import numpy as np
@@ -48,6 +48,16 @@ def test_compute_tokens(encoder: CLIPTextEncoder):
 
 def test_encoding_cpu():
     encoder = CLIPTextEncoder(device="cpu")
+    input_data = DocumentArray([Document(text="hello world")])
+
+    encoder.encode(docs=input_data, parameters={})
+
+    assert input_data[0].embedding.shape == (512,)
+
+
+@pytest.mark.gpu
+def test_encoding_gpu():
+    encoder = CLIPTextEncoder(device="cuda")
     input_data = DocumentArray([Document(text="hello world")])
 
     encoder.encode(docs=input_data, parameters={})
@@ -110,7 +120,7 @@ def test_openai_embed_match():
         txt_to_ndarray[d.text] = d.embedding
 
     # assert same results with OpenAI's implementation
-    model, preprocess = clip.load("ViT-B/32", device="cpu")
+    model, _ = clip.load("ViT-B/32", device="cpu")
     assert len(txt_to_ndarray) == 5
     for text, actual_embedding in txt_to_ndarray.items():
         with torch.no_grad():
@@ -120,31 +130,31 @@ def test_openai_embed_match():
         np.testing.assert_almost_equal(actual_embedding, expected_embedding, 5)
 
 
-def test_traversal_path():
-    text = "blah"
-    docs = DocumentArray([Document(id="root1", text=text)])
+@pytest.mark.parametrize(
+    'traversal_paths, counts',
+    [
+        (['r'], [['r', 1], ['c', 0], ['cc', 0]]),
+        (['c'], [['r', 0], ['c', 3], ['cc', 0]]),
+        (['cc'], [['r', 0], ['c', 0], ['cc', 2]]),
+        (['cc', 'r'], [['r', 1], ['c', 0], ['cc', 2]]),
+    ],
+)
+def test_traversal_path(
+    traversal_paths: List[str], counts: List, encoder: CLIPTextEncoder
+):
+    text = 'blah'
+    docs = DocumentArray([Document(id='root1', text=text)])
     docs[0].chunks = [
-        Document(id="chunk11", text=text),
-        Document(id="chunk12", text=text),
-        Document(id="chunk13", text=text),
+        Document(id='chunk11', text=text),
+        Document(id='chunk12', text=text),
+        Document(id='chunk13', text=text),
     ]
     docs[0].chunks[0].chunks = [
-        Document(id="chunk111", text=text),
-        Document(id="chunk112", text=text),
+        Document(id='chunk111', text=text),
+        Document(id='chunk112', text=text),
     ]
 
-    encoder = CLIPTextEncoder(default_traversal_paths=["c"], model_name="ViT-B/32")
-
-    original_docs = copy.deepcopy(docs)
-    encoder.encode(docs=docs, parameters={}, return_results=True)
-    for path, count in [["r", 0], ["c", 3], ["cc", 0]]:
-        assert len(docs.traverse_flat([path]).get_attributes("embedding")) == count
-
-    encoder.encode(
-        docs=original_docs, parameters={"traversal_paths": ["cc"]}, return_results=True
-    )
-    for path, count in [["r", 0], ["c", 0], ["cc", 2]]:
-        assert (
-            len(original_docs.traverse_flat([path]).get_attributes("embedding"))
-            == count
-        )
+    encoder.encode(docs=docs, parameters={'traversal_paths': traversal_paths})
+    for path, count in counts:
+        embeddings = docs.traverse_flat([path]).get_attributes('embedding')
+        assert len(list(filter(lambda x: x is not None, embeddings))) == count
