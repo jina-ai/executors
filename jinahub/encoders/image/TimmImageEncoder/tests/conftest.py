@@ -21,7 +21,7 @@ def test_images(test_dir: str) -> Dict[str, np.ndarray]:
 
     image_dict = {
         file_name: np.array(Image.open(get_path(file_name)))[:, :, 0:3]
-        for file_name in ["airplane", "banana1", "banana2", "satellite", "studio"]
+        for file_name in ["airplane", "banana1", "banana2", "studio"]
     }
     return image_dict
 

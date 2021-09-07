@@ -2,30 +2,9 @@ import subprocess
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray, Flow
+from jina import Document, Flow
 
 from ...timm_encoder import TimmImageEncoder
-
-
-@pytest.mark.parametrize(
-    "arr_in",
-    [
-        (np.ones((224, 224, 3), dtype=np.uint8)),
-        (np.ones((100, 100, 3), dtype=np.uint8)),
-        (np.ones((50, 40, 3), dtype=np.uint8)),
-    ],
-)
-def test_no_batch(arr_in: np.ndarray):
-    flow = Flow().add(uses=TimmImageEncoder)
-    with flow:
-        resp = flow.post(
-            on="/test", inputs=[Document(blob=arr_in)], return_results=True
-        )
-
-    results_arr = DocumentArray(resp[0].data.docs)
-    assert len(results_arr) == 1
-    assert results_arr[0].embedding is not None
-    assert results_arr[0].embedding.shape == (512,)
 
 
 def test_with_batch():

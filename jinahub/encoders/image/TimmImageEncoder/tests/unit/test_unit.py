@@ -46,37 +46,28 @@ def test_encode_image_returns_correct_length(
     encoder.encode(docs=docs, parameters={})
 
     for doc in docs.traverse_flat(traversal_paths):
-        assert doc.embedding is not None
         assert doc.embedding.shape == (512,)
 
 
-@pytest.mark.parametrize(
-    "model_name", ["resnet50", "mobilenetv3_large_100", "efficientnet_b1"]
-)
-def test_encodes_semantic_meaning(test_images: Dict[str, np.array], model_name: str):
-    encoder = TimmImageEncoder(model_name=model_name)
-    embeddings = {}
+def test_embeddings_quality(test_images: Dict[str, np.array]):
+    encoder = TimmImageEncoder()
+    doc_list = []
 
     for name, image_arr in test_images.items():
-        docs = DocumentArray([Document(blob=image_arr)])
-        encoder.encode(docs, parameters={})
-        embeddings[name] = docs[0].embedding
+        print(name)
+        doc_list.append(Document(id=name, blob=image_arr))
 
-    def dist(a, b):
-        a_embedding = embeddings[a]
-        b_embedding = embeddings[b]
-        return np.linalg.norm(a_embedding - b_embedding)
+    docs = DocumentArray(doc_list)
+    encoder.encode(docs, parameters={})
 
-    small_distance = dist("banana1", "banana2")
-    assert small_distance < dist("banana1", "airplane")
-    assert small_distance < dist("banana1", "satellite")
-    assert small_distance < dist("banana1", "studio")
-    assert small_distance < dist("banana2", "airplane")
-    assert small_distance < dist("banana2", "satellite")
-    assert small_distance < dist("banana2", "studio")
-    assert small_distance < dist("airplane", "studio")
-    assert small_distance < dist("airplane", "satellite")
-    assert small_distance < dist("studio", "satellite")
+    docs.match(docs)
+    matches = ["studio", "banana2", "banana1", "airplane"]
+
+    for i, doc in enumerate(docs):
+        print(doc.matches[1].id)
+
+    for i, doc in enumerate(docs):
+        assert doc.matches[1].id == matches[i]
 
 
 def test_no_preprocessing():
@@ -101,10 +92,6 @@ def test_empty_doc_array():
     assert len(docs) == 0
 
 
-def test_docs_array_with_no_text():
-    docs = DocumentArray([Document(text="hello world")])
+def test_none_docs():
     encoder = TimmImageEncoder()
-
-    encoder.encode(docs, parameters={})
-
-    assert docs[0].embedding is None
+    encoder.encode(docs=None, parameters={})

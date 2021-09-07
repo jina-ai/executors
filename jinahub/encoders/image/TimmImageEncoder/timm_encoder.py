@@ -13,11 +13,12 @@ from timm.data.transforms_factory import create_transform
 class TimmImageEncoder(Executor):
     """
     :class:`TimmImageEncoder` encodes ``Document`` blobs of type `ndarray`
-    (`float32`) and shape `H x W x C` into `ndarray` of `D`.
+    (`float32`) and shape `H x W x 3` into `ndarray` of `D`.
     Where `D` is the Dimension of the embedding.
+    Input image in Document should be in RGB format.
 
     If `use_default_preprocessing=False`, the expected input shape is
-    `C x H x W` with `float32` dtype.
+    `3 x H x W` with `float32` dtype.
 
     Internally, :class:`TimmImageEncoder` wraps the pre-trained models from
     `Timm library`.
@@ -25,9 +26,11 @@ class TimmImageEncoder(Executor):
 
     :param model_name: the name of the model. Models listed on:
         https://rwightman.github.io/pytorch-image-models/models/
-    :param device: Which device the model runs on. Can be 'cpu' or 'cuda'.
-    :param default_traversal_paths: Used in the encode method an defines traversal on the received `DocumentArray`.
-    :param default_batch_size: Defines the batch size for inference on the loaded PyTorch model.
+    :param device: Which device the model runs on. For example 'cpu' or 'cuda'.
+    :param default_traversal_paths: Defines traversal path through the docs.
+        Default input is the tuple ('r',) and can be overwritten.
+    :param default_batch_size: Defines the batch size for inference on the loaded Timm model.
+        Default batch size is 32 and can be updated by passing an int value.
     :param use_default_preprocessing: Should the input be preprocessed with default configuration.
     :param args:  Additional positional arguments.
     :param kwargs: Additional keyword arguments.
@@ -37,7 +40,7 @@ class TimmImageEncoder(Executor):
         self,
         model_name: str = "resnet18",
         device: str = "cpu",
-        default_traversal_path: Tuple = ("r",),
+        default_traversal_path: Tuple[str] = ("r",),
         default_batch_size: Optional[int] = 32,
         use_default_preprocessing: bool = True,
         *args,
@@ -50,9 +53,6 @@ class TimmImageEncoder(Executor):
         self.use_default_preprocessing = use_default_preprocessing
 
         self.default_traversal_path = default_traversal_path
-
-        # axis 0 is the batch
-        self._default_channel_axis = 1
 
         self._model = create_model(model_name, pretrained=True, num_classes=0)
         self._model.eval()
@@ -87,16 +87,13 @@ class TimmImageEncoder(Executor):
             for document_batch in docs_batch_generator:
                 blob_batch = [d.blob for d in document_batch]
                 if self.use_default_preprocessing:
-                    images = np.stack(self._preprocess_image(blob_batch))
+                    images = np.stack([self._preprocess(img) for img in blob_batch])
                 else:
                     images = np.stack(blob_batch)
 
                 tensor = torch.from_numpy(images).to(self.device)
                 features = self._model(tensor)
-                features = features.detach().cpu().numpy()
+                features = features.cpu().numpy()
 
                 for doc, embed in zip(document_batch, features):
                     doc.embedding = embed
-
-    def _preprocess_image(self, images: List[np.array]) -> List[np.ndarray]:
-        return [self._preprocess(img) for img in images]

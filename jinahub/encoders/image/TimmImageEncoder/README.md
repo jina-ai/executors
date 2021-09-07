@@ -2,8 +2,16 @@
 
 **TimmImageEncoder** wraps the models from [timm](https://rwightman.github.io/pytorch-image-models/).
 
-**TimmImageEncoder** encodes `Document` blobs of type a `ndarray` and shape Batch x Height x Width x Channel 
-into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of the `Document`.
+**TimmImageEncoder** encodes `Document` blobs of type a `ndarray` and shape Height x Width x Channel 
+into a `ndarray` of dimension D and stores them in the `embedding` attribute of the `Document`.
+
+The following parameters can be used:
+
+- `model_name` (string, default: "resnet18"): Name of the pre-trained model
+- `device` (string, default: "cpu"): The device in which the model runs on. For example 'cpu' or 'cuda'
+- `default_traversal_paths` (Tuple(str), default: ("r",)): Traversal path through the docs
+- `default_batch_size` (int, default: 32): Defines the batch size for inference on the loaded Timm model
+- `use_default_preprocessing` (bool, default: True): Should the input be preprocessed with default configuration
 
 **Table of Contents**
 
@@ -12,6 +20,16 @@ into a `ndarray` of Batch x Dim and stores them in the `embedding` attribute of 
 - [🎉️ Example](#-example)
 - [🔍️ Reference](#-reference)
 
+
+### Inputs 
+If `use_default_preprocessing=True` (recommended):  
+`Document` with `blob` of shape `H x W x C` and dtype `uint8`.  
+
+If `use_default_preprocessing=False`:  
+`Document` with `blob` of shape `C x H x W` and dtype `float32`.
+
+### Returns
+`Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` (size depends on the model) with `dtype=float32`.
 
 ## 🌱 Prerequisites
 
@@ -77,16 +95,6 @@ encoder.encode(doc_array, parameters={})
 list_embeddings = doc_array.get_attributes('embedding')
 list_embeddings[0].shape, list_embeddings[1].shape
 ```
-
-### Inputs 
-If `use_default_preprocessing=True` (recommended):  
-`Document` with `blob` of shape `H x W x C` and dtype `uint8`.  
-
-If `use_default_preprocessing=False`:  
-`Document` with `blob` of shape `C x H x W` and dtype `float32`.
-
-### Returns
-`Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` (size depends on the model) with `dtype=float32`.
 
 ## 🔍️ Reference
 - [Timm Models](https://rwightman.github.io/pytorch-image-models/models/)
