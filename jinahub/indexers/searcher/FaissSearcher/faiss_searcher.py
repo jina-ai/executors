@@ -607,13 +607,15 @@ class FaissSearcher(Executor):
         """
         for doc_id, vec_buffer, _ in delta:
             idx = self._doc_id_to_offset.get(doc_id)
+
             if idx is None:  # add new item
                 if vec_buffer is None:
                     continue
                 vec = (
-                    np.frombuffer(vec_buffer).astype(np.float32).reshape(1, -1)
+                    np.frombuffer(vec_buffer, dtype=self.dtype)
+                    .astype(np.float32)
+                    .reshape(1, -1)
                 )  # shape [1, D]
-
                 self._append_vecs_and_ids([doc_id], vec)
             elif vec_buffer is None:  # soft delete
                 self._is_deleted[idx] = 1
@@ -623,6 +625,8 @@ class FaissSearcher(Executor):
 
                 # then add the updated doc
                 vec = (
-                    np.frombuffer(vec_buffer).astype(np.float32).reshape(1, -1)
+                    np.frombuffer(vec_buffer, dtype=self.dtype)
+                    .astype(np.float32)
+                    .reshape(1, -1)
                 )  # shape [1, D]
                 self._append_vecs_and_ids([doc_id], vec)

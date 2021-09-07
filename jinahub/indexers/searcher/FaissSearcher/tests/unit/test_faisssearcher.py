@@ -496,7 +496,7 @@ def test_faiss_delta(metas, tmpdir):
 
     def _generate_add_delta():
         for i in range(2, 6):
-            x = np.zeros((1, num_dims), dtype=np.float32)
+            x = np.zeros((1, num_dims))
             yield f'{i}', x.tobytes(), None
 
     indexer._add_delta(_generate_add_delta())
@@ -515,7 +515,7 @@ def test_faiss_delta(metas, tmpdir):
 
     def _generate_update_delta():
         for i in range(4, 6):
-            x = np.zeros((1, num_dims), dtype=np.float32)
+            x = np.zeros((1, num_dims))
             yield f'{i}', x.tobytes(), None
 
     indexer._add_delta(_generate_update_delta())
@@ -526,7 +526,7 @@ def test_faiss_delta(metas, tmpdir):
     # update the deleted docs take the same effect of adding new items
     def _generate_update_delta():
         for i in range(2, 4):
-            x = np.zeros((1, num_dims), dtype=np.float32)
+            x = np.zeros((1, num_dims))
             yield f'{i}', x.tobytes(), None
 
     indexer._add_delta(_generate_update_delta())
