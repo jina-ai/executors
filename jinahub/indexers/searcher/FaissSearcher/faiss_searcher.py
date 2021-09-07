@@ -610,8 +610,8 @@ class FaissSearcher(Executor):
             if idx is None:  # add new item
                 if vec_buffer is None:
                     continue
-                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
-                    1, -1
+                vec = (
+                    np.frombuffer(vec_buffer).astype(np.float32).reshape(1, -1)
                 )  # shape [1, D]
 
                 self._append_vecs_and_ids([doc_id], vec)
@@ -622,7 +622,7 @@ class FaissSearcher(Executor):
                 self._is_deleted[idx] = 1
 
                 # then add the updated doc
-                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
-                    1, -1
+                vec = (
+                    np.frombuffer(vec_buffer).astype(np.float32).reshape(1, -1)
                 )  # shape [1, D]
                 self._append_vecs_and_ids([doc_id], vec)
