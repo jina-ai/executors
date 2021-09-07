@@ -49,6 +49,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
   gpu-folders:
+    needs: [push-executors]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
