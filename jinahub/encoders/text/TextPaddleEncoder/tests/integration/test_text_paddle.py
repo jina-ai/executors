@@ -68,7 +68,7 @@ def test_docker_runtime_gpu(build_docker_image_gpu: str):
                 '--gpus',
                 'all',
                 '--uses-with',
-                'use_gpu:True',
+                'use_gpu:true',
             ],
             timeout=30,
             check=True,
