@@ -108,4 +108,8 @@ class SpacyTextEncoder(Executor):
 
             for doc in filtered_docs:
                 spacy_doc = self.spacy_model(doc.text)
-                doc.embedding = spacy_doc.vector
+                if self.device.startswith('cuda'):
+                    from cupy import asnumpy
+                    doc.embedding = asnumpy(spacy_doc.vector)
+                else:
+                    doc.embedding = spacy_doc.vector
