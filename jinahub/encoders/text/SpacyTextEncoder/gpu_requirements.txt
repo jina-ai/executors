@@ -1,2 +1,2 @@
-spacy[cuda112]==3.1
+spacy[cuda112]==3.1.2
 torch==1.9.0
