@@ -1,0 +1,1 @@
+python -m laserembeddings download-models

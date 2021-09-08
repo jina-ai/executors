@@ -1,10 +1,10 @@
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
 torch==1.9.0
-librosa==0.7.2
+torchvision
 pytorch-ignite==0.3.0
+librosa==0.7.2
 scipy==1.7.1
 termcolor==1.1.0
-torchvision==0.8.2
 tqdm==4.43.0
 visdom==0.1.8.9
 ftfy==6.0.3
