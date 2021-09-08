@@ -1,2 +1,1 @@
-jina[hub]==2.0.7
 pytest==6.2.4
