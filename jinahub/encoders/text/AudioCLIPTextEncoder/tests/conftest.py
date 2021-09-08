@@ -6,57 +6,28 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from jina import Document, DocumentArray
 
 
 @pytest.fixture(scope="session", autouse=True)
 def download_cache():
     subprocess.run(
-        'scripts/download_full.sh', cwd=Path(__file__).parents[1], check=True
+        'scripts/download_full.sh',
+        cwd=Path(__file__).parents[1],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.STDOUT,
     )
     yield
-    shutil.rmtree('.cache')
+    shutil.rmtree(Path(__file__).parents[1] / '.cache')
 
 
 @pytest.fixture(scope='session')
-def build_docker_image() -> str:
-    img_name = Path(__file__).parents[1].stem.lower()
-    subprocess.run(['docker', 'build', '-t', img_name, '.'], check=True)
-
-    return img_name
+def docker_image_name() -> str:
+    return Path(__file__).parents[1].stem.lower()
 
 
-@pytest.fixture()
-def data_generator():
-    def _generator():
-        data_file_path = Path(__file__).parent / 'texts' / 'test_data.txt'
-        with open(data_file_path, 'r') as file:
-            lines = file.readlines()
-        for line in lines:
-            yield Document(text=line.strip())
+@pytest.fixture(scope='session')
+def build_docker_image(docker_image_name: str) -> str:
+    subprocess.run(['docker', 'build', '-t', docker_image_name, '.'], check=True)
 
-    return _generator
-
-
-@pytest.fixture()
-def docs_with_text() -> DocumentArray:
-    return DocumentArray([Document(text='hello world') for _ in range(10)])
-
-
-@pytest.fixture()
-def docs_with_chunk_text() -> DocumentArray:
-    chunks = [Document(text='hello world') for _ in range(10)]
-    return DocumentArray([Document(chunks=chunks)])
-
-
-@pytest.fixture()
-def docs_with_chunk_chunk_text() -> DocumentArray:
-    root = Document()
-    chunks = [Document() for _ in range(10)]
-    chunks_2 = [[Document(text='hello world') for _ in range(10)] for _ in range(10)]
-
-    root.chunks.extend(chunks)
-    for i, chunk in enumerate(root.chunks):
-        chunk.chunks.extend(chunks_2[i])
-
-    return DocumentArray([root])
+    return docker_image_name

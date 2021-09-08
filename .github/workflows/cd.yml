@@ -6,7 +6,7 @@ on:
       - main
   workflow_dispatch:
   # comment this out to test in CI
-  #pull_request:
+  # pull_request:
 
 
 jobs:
@@ -49,6 +49,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
   gpu-folders:
+    needs: [push-executors]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -64,8 +65,9 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
   push-gpu-executors:
-    needs: [ prep-push-bed ]
+    needs: [ gpu-folders ]
     runs-on: ubuntu-latest
+    if: ${{ needs.gpu-folders.outputs.matrix != '[]' }}
     container:
       image: jinaai/jina:master-standard
       options: "--entrypoint /bin/bash"

@@ -2,11 +2,10 @@ import os
 import shutil
 from pathlib import Path
 
-import pytest
 import numpy as np
 import PIL.Image as Image
-
-from jina import DocumentArray, Document, Executor
+import pytest
+from jina import Document, DocumentArray, Executor
 
 from ...big_transfer import BigTransferEncoder
 
@@ -25,7 +24,6 @@ def test_initialization_and_model_download():
     encoder = BigTransferEncoder()
     assert encoder.model_path == 'pretrained'
     assert encoder.model_name == 'Imagenet21k/R50x1'
-    assert not encoder.on_gpu
     assert os.path.exists('pretrained')
     assert os.path.exists(os.path.join('pretrained', 'saved_model.pb'))
     # This call will use the downloaded model
@@ -38,11 +36,6 @@ def test_initialization_and_model_download():
 def test_encoding():
     doc = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
     doc.convert_image_uri_to_blob()
-    img = Image.fromarray(doc.blob.astype('uint8'))
-    img = img.resize((96, 96))
-    img = np.array(img).astype('float32') / 255
-    doc.blob = img
-    assert doc.embedding is None
 
     encoder = BigTransferEncoder()
 
@@ -53,11 +46,6 @@ def test_encoding():
 def test_preprocessing():
     doc = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
     doc.convert_image_uri_to_blob()
-    img = Image.fromarray(doc.blob.astype('uint8'))
-    img = img.resize((96, 96))
-    img = np.array(img).astype('float32') / 255
-    doc.blob = img
-    assert doc.embedding is None
 
     encoder = BigTransferEncoder(target_dim=(256, 256, 3))
 
@@ -71,10 +59,6 @@ def test_encoding_default_chunks():
     for i in range(3):
         doc.chunks.append(chunk)
         doc.chunks[i].convert_image_uri_to_blob()
-        img = Image.fromarray(doc.chunks[i].blob.astype('uint8'))
-        img = img.resize((96, 96))
-        img = np.array(img).astype('float32') / 255
-        doc.chunks[i].blob = img
 
     encoder = BigTransferEncoder(default_traversal_paths=['c'])
 
@@ -90,15 +74,24 @@ def test_encoding_override_chunks():
     for i in range(3):
         doc.chunks.append(chunk)
         doc.chunks[i].convert_image_uri_to_blob()
-        img = Image.fromarray(doc.chunks[i].blob.astype('uint8'))
-        img = img.resize((96, 96))
-        img = np.array(img).astype('float32') / 255
-        doc.chunks[i].blob = img
 
     encoder = BigTransferEncoder()
-    assert encoder.default_traversal_paths == ['r']
+    assert encoder.default_traversal_paths == ('r',)
 
     encoder.encode(DocumentArray([doc]), parameters={'traversal_paths': ['c']})
     assert doc.embedding is None
     for i in range(3):
         assert doc.chunks[i].embedding.shape == (2048,)
+
+
+@pytest.mark.gpu
+def test_encoding_gpu():
+    doc = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
+    doc.convert_image_uri_to_blob()
+
+    assert doc.embedding is None
+
+    encoder = BigTransferEncoder(device='/GPU:0')
+
+    encoder.encode(DocumentArray([doc]), {})
+    assert doc.embedding.shape == (2048,)

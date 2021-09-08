@@ -13,8 +13,6 @@ COPY . /workspace
 WORKDIR /workspace
 
 # install Jina and third-party requirements
-RUN pip install -r requirements.txt
-RUN pip install --upgrade faiss-gpu==1.6.5
-
+RUN pip install -r gpu_requirements.txt
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

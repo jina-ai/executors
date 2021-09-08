@@ -124,9 +124,8 @@ jobs:
       - name: Install requirements
         run: |
           pip install -r tests/requirements.txt
-          export PYTHONPATH=.
       - name: Run integration tests
-        run: pytest -s -v tests/integration
+        run: PYTHONPATH=. pytest -s -v tests/integration
 
   gpu-folders:
     runs-on: ubuntu-latest
@@ -146,6 +145,7 @@ jobs:
   gpu-tests:
     needs: [gpu-folders]
     runs-on: [self-hosted, gpu]
+    if: ${{ needs.gpu-folders.outputs.matrix != '[]' }}
     strategy:
       fail-fast: false
       matrix:

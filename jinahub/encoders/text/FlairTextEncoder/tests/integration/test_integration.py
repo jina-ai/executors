@@ -1,17 +1,42 @@
-from jina import Flow, Document, DocumentArray
+import subprocess
+
+import pytest
+from jina import Document, DocumentArray, Flow
+
 from ...flair_text import FlairTextEncoder
 
-
-def data_generator(num_docs):
-    for i in range(num_docs):
-        doc = Document(
-            text='it is a good day! the dog sits on the floor.')
-        yield doc
+_EMBEDDING_DIM = 100
 
 
-def test_use_in_flow():
-    with Flow.load_config('flow.yml') as flow:
-        data = flow.post(on='/encode', inputs=data_generator(5), return_results=True)
-        docs = data[0].docs
-        for doc in docs:
-            assert doc.embedding.shape == (100,)
+@pytest.mark.parametrize('request_size', [1, 10, 50, 100])
+def test_integration(request_size: int):
+    docs = DocumentArray(
+        [Document(text='just some random text here') for _ in range(50)]
+    )
+    with Flow(return_results=True).add(uses=FlairTextEncoder) as flow:
+        resp = flow.post(
+            on='/index',
+            inputs=docs,
+            request_size=request_size,
+            return_results=True,
+        )
+
+    assert sum(len(resp_batch.docs) for resp_batch in resp) == 50
+    for r in resp:
+        for doc in r.docs:
+            assert doc.embedding.shape == (_EMBEDDING_DIM,)
+
+
+@pytest.mark.docker
+def test_docker_runtime(build_docker_image: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'executor',
+                f'--uses=docker://{build_docker_image}',
+                '--volumes=.cache:/workspace/.cache',
+            ],
+            timeout=30,
+            check=True,
+        )

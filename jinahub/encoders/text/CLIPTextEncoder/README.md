@@ -21,36 +21,6 @@ The following parameters can be passed on initialization:
 - `default_batch_size`: Default batch size for encoding, used if the
         batch size is not passed as a parameter with the request.
 
-
-
-
-
-
-## Usage
-
-```python
-from jina import Flow, Document
-import numpy as np
-	
-f = Flow().add(
-        uses='jinahub+docker://CLIPTextEncoder',
-	)
-	
-def check_emb(resp):
-    for doc in resp.data.docs:
-        if doc.emb:
-            assert doc.emb.shape == (512,)
-	
-with f:
-	f.post(
-	    on='/foo', 
-	    inputs=Document(text='your text'), 
-	    on_done=check_emb
-	)
-	    
-```
-
-
 ### Inputs 
 
 [Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the [`text`](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md#document-attributes) attribute.
@@ -59,7 +29,21 @@ with f:
 
 [Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the `embedding` attribute filled with an `ndarray` of the shape `512` with `dtype=float32`.
 
+## Usage
 
+```python
+from jina import Flow, Document
+import numpy as np
+
+f = Flow().add(uses='jinahub+docker://CLIPTextEncoder')
+
+with f:
+    f.post(
+        on='/foo',
+        inputs=Document(text='your text'),
+        on_done=print
+    )
+```
 
 ## Reference
 

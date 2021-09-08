@@ -3,7 +3,6 @@
 # run the tests in that directory
 set -ex
 
-containers=()
 gpu_folders=()
 root=`pwd`
 
@@ -32,4 +31,5 @@ for changed_file in $CHANGED_FILES; do
 done
 
 #echo will store gpu_folders in output matrix
-echo "::set-output name=matrix::$(printf '%s\n' "${gpu_folders[@]}" | jq -R . | jq -cs .)"
+output=$(jq --compact-output --null-input '$ARGS.positional' --args "${gpu_folders[@]}")
+echo "::set-output name=matrix::${output}"

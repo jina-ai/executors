@@ -2,7 +2,7 @@
 
 **AudioCLIPTextEncoder** is an encoder that encodes text using the [AudioCLIP](https://arxiv.org/abs/2106.13043) model.
 
-This encoder is meant to be used in conjunction with the AudioCLIP image and audio encoders, as it can embedd text, images and audio to the same latent space.
+This encoder is meant to be used in conjunction with the [AudioCLIPImageEncoder](https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/AudioCLIPImageEncoder) and [AudioCLIPEncoder](https://github.com/jina-ai/executors/tree/main/jinahub/encoders/audio/AudioCLIPEncoder), as it can embedd text, images and audio to the same latent space.
 
 You can use either the `Full` (where all three heads were trained) or the `Partial` (where the text and image heads were frozen) version of the model.
 
@@ -13,15 +13,19 @@ The following arguments can be passed on initialization:
 - `default_batch_size`: default batch size (used if not specified in request's parameters)
 - `device`: device that the model is on (should be "cpu", "cuda" or "cuda:X", where X is the index of the GPU on the machine)
 
+#### Inputs 
+
+`Document`s with the `text` attribute.
+
+#### Returns
+
+`Document`s with `embedding` fields filled with an `ndarray` of the shape 1024 with `dtype=float32`.
 
 ## Prerequisites
 
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
 First, you should download the model and the vocabulary, which will be saved into the `.cache` folder inside your current directory (will be created if it does not exist yet).
 
-To do this, copy the `scripts/download_full.sh` script to your current directory (and make it executable):
+Copy paste these commands into your terminal to do that:
 
 ```
 wget https://raw.githubusercontent.com/jina-ai/executors/main/jinahub/encoders/text/AudioCLIPTextEncoder/scripts/download_full.sh && chmod +x download_full.sh
@@ -76,15 +80,6 @@ with f:
     resp = f.post(on='foo', inputs=doc, return_results=True)
     print(resp[0])
 ```
-
-#### Inputs 
-
-`Document` with the `text` attribute.
-
-#### Returns
-
-`Document` with `embedding` fields filled with an `ndarray` of the shape 1024 with `dtype=nfloat32`.
-
 
 ## Reference
 

@@ -28,11 +28,15 @@ The following parameters can be passed on initialization:
 	traversal path is not passed as a parameter with the request.
 - `device`: The device (cpu or gpu) that the model should be on.
 
+### Inputs 
 
+[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the [`text`](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md#document-attributes) attribute. If you are using a context encoder the documents can additionally have a title tag, see initialization parameters.
 
+### Returns
+
+[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the `embedding` attribute filled with an `ndarray` of the shape `768` with `dtype=float32`.
 
 ## Usage 
-
 
 ```python
 from jina import Flow, Document
@@ -47,17 +51,6 @@ with f:
         on_done=print
     )
 ```
-
-
-### Inputs 
-
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the [`text`](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md#document-attributes) attribute. If you are using a context encoder the documents can additionally have a title tag, see initialization parameters.
-
-### Returns
-
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the `embedding` attribute filled with an `ndarray` of the shape `768` with `dtype=float32`.
-
-
 
 ## Reference
 

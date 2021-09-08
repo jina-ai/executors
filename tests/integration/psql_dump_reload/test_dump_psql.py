@@ -1,19 +1,15 @@
 import collections
 import os
+import time
 from collections import OrderedDict
 from pathlib import Path
 from typing import Dict
 
 import numpy as np
 import pytest
-import time
-from jina import Flow, Document, Executor, DocumentArray, requests
+from jina import Document, DocumentArray, Executor, Flow, requests
 from jina.logging.profile import TimeContext
-
-from jina_commons.indexers.dump import (
-    import_vectors,
-    import_metas,
-)
+from jina_commons.indexers.dump import import_metas, import_vectors
 
 METRIC = 'l2'
 
@@ -30,11 +26,6 @@ def docker_compose(request):
     )
 
 
-# noinspection PyUnresolvedReferences
-from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
-    doc_without_embedding,
-)
-
 # required in order to be found by Flow creation
 # noinspection PyUnresolvedReferences
 from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
@@ -42,6 +33,11 @@ from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
 )
 from jinahub.indexers.storage.PostgreSQLStorage.postgres_indexer import (
     PostgreSQLStorage,
+)
+
+# noinspection PyUnresolvedReferences
+from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
+    doc_without_embedding,
 )
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -219,9 +215,6 @@ def test_dump_reload(
             assert len(results[0].docs[0].matches) == top_k
             # TODO score is not deterministic
             assert results[0].docs[0].matches[0].scores[METRIC].value > 0.0
-
-    idx = PostgreSQLStorage()
-    assert idx.size == nr_docs
 
     # assert data dumped is correct
     if not benchmark:
