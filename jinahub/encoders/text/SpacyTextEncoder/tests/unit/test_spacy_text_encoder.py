@@ -36,6 +36,21 @@ def test_spacy_text_encoder():
         assert doc.embedding.shape == (96,)
 
 
+@pytest.mark.gpu
+def test_spacy_text_encoder_gpu():
+    # Input
+    docs = DocumentArray(
+        [
+            Document(text='Jina rocks'),
+        ]
+    )
+    # Encoder embedding
+    encoder = SpacyTextEncoder(device='cuda')
+    encoder.encode(docs, parameters={})
+    assert len(docs) == 1
+    assert docs[0].embedding.shape == (96,)
+
+
 def test_spacy_text_encoder_traversal_paths():
     # Input
     docs = DocumentArray(

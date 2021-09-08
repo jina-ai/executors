@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Any, Dict, Tuple
+from typing import Optional, Dict, Iterable
 
 import numpy as np
 import paddlehub as hub
@@ -40,7 +40,7 @@ class TextPaddleEncoder(Executor):
         model_name: Optional[str] = 'ernie_tiny',
         on_gpu: bool = False,
         default_batch_size: int = 32,
-        default_traversal_paths: Tuple[str] = ('r', ),
+        default_traversal_paths: Iterable[str] = ('r', ),
         *args,
         **kwargs,
     ):

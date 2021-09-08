@@ -30,6 +30,16 @@ def test_tf_batch(docs_generator):
     assert docs[0].embedding.shape == (target_dim,)
 
 
+@pytest.mark.gpu
+def test_encoder_gpu(docs_generator):
+    encoder = TransformerTFTextEncoder(device='/GPU:0')
+    docs = DocumentArray((Document(text='random text')))
+    encoder.encode(docs, {})
+
+    assert len(docs.get_attributes('embedding')) == 1
+    assert docs[0].embedding.shape == (target_dim,)
+
+
 def test_encodes_semantic_meaning():
     sentences = dict()
     sentences['A'] = 'Hello, my name is Michael.'

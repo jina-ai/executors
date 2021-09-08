@@ -1,4 +1,6 @@
 import os
+import subprocess
+import pytest
 
 from jina import Flow, Document, DocumentArray
 from ...tfidf_text_executor import TFIDFTextEncoder  # is implicitly required
@@ -15,3 +17,13 @@ def test_flow_generates_embedding():
     assert responses[0].docs[0].embedding is not None
     # input has 4 different words
     assert responses[0].docs[0].embedding.nnz == 4
+
+
+@pytest.mark.docker
+def test_docker_runtime(build_docker_image: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            ['jina', 'executor', f'--uses=docker://{build_docker_image}'],
+            timeout=30,
+            check=True,
+        )

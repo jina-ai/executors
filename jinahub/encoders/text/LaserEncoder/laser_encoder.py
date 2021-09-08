@@ -26,7 +26,7 @@ class LaserEncoder(Executor):
         Defaults to Laser.DEFAULT_ENCODER_FILE.
     :param default_batch_size: size of each batch
     :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-    :param on_gpu: set to True if using GPU
+    :param device: Device string ('cpu'/'cuda'/'cuda:2')
     :param language: language of the text. Defaults to english(en).
     :param args:  Additional positional arguments
     :param kwargs: Additional keyword arguments
@@ -37,7 +37,7 @@ class LaserEncoder(Executor):
             path_to_bpe_codes: Optional[str] = None,
             path_to_bpe_vocab: Optional[str] = None,
             path_to_encoder: Optional[str] = None,
-            on_gpu: bool = False,
+            device: str = 'cpu',
             default_batch_size: int = 32,
             default_traversal_paths: Optional[List[str]] = None,
             language: str = 'en',
@@ -49,7 +49,7 @@ class LaserEncoder(Executor):
         self._path_to_bpe_codes = path_to_bpe_codes
         self._path_to_bpe_vocab = path_to_bpe_vocab
         self._path_to_encoder = path_to_encoder
-        self.on_gpu = on_gpu
+        self.device = device
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths or ['r']
         self.language = language.lower()
@@ -59,7 +59,7 @@ class LaserEncoder(Executor):
             bpe_vocab=self._path_to_bpe_vocab,
             encoder=self._path_to_encoder,
         )
-        self.device = torch.device('cuda:0') if self.on_gpu else torch.device('cpu')
+        self.device = torch.device(device)
         self.model.bpeSentenceEmbedding.encoder.encoder.to(self.device)
 
     @requests

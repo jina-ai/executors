@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import List, Dict, Optional
+from typing import Iterable, Dict, Optional
 
 import numpy as np
 import torch
@@ -20,7 +20,7 @@ class SpacyTextEncoder(Executor):
         otherwise tok2vec implementation will be chosen,
         by default False.
     :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
-    :param device: device to use for encoding ['cuda', 'cpu] - if not set, the device is detected automatically
+    :param device: device to use for encoding ['cuda', 'cpu', 'cuda:2']
     :param args: Additional positional arguments.
     :param kwargs: Additional positional arguments.
     """
@@ -38,8 +38,8 @@ class SpacyTextEncoder(Executor):
     def __init__(self,
                  lang: str = 'en_core_web_sm',
                  use_default_encoder: bool = False,
-                 default_traversal_paths: List[str] = ['r'],
-                 device: Optional[str] = None,
+                 default_traversal_paths: Iterable[str] = ('r',),
+                 device: str = 'cpu',
                  *args, **kwargs):
         """Set constructor."""
         super().__init__(*args, **kwargs)
@@ -47,10 +47,8 @@ class SpacyTextEncoder(Executor):
         self.use_default_encoder = use_default_encoder
         self.default_traversal_paths = default_traversal_paths
         self.logger = JinaLogger(self.__class__.__name__)
-        if not device:
-            device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
-        if self.device == 'cuda':
+        if self.device.startswith('cuda'):
             spacy.require_gpu()
 
         try:

@@ -28,6 +28,16 @@ def test_flair_batch(docs_generator):
     assert docs[0].embedding.shape == (1024,)
 
 
+@pytest.mark.gpu
+def test_gpu_encoding(docs_generator):
+    encoder = LaserEncoder(device='cuda')
+    docs = DocumentArray((Document(text='random text')))
+    encoder.encode(docs, {})
+
+    assert len(docs.get_attributes('embedding')) == 1
+    assert docs[0].embedding.shape == (1024,)
+
+
 def test_traversal_path():
     text = 'blah'
     docs = DocumentArray([Document(id='root1', text=text)])

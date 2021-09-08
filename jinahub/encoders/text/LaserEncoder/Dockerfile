@@ -1,4 +1,4 @@
-FROM jinaai/jina:2.0
+FROM jinaai/jina:2-py37-perf
 
 # install git
 RUN apt-get -y update && apt-get install -y git
@@ -9,7 +9,7 @@ RUN pip install -r requirements.txt
 RUN python -m laserembeddings download-models
 
 # setup the workspace
-COPY . /workspace
-WORKDIR /workspace
+COPY . /workdir
+WORKDIR /workdir
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

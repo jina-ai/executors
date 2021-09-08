@@ -1,3 +1,4 @@
+import subprocess
 import pytest
 from jina import Document, DocumentArray, Flow
 
@@ -43,3 +44,32 @@ def test_text_paddle(flow, content, document_array, parameters, mocker):
     with flow as f:
         f.index(inputs=document_array, on_done=mock_on_done)
     validate_callback(mock_on_done, validate)
+
+
+@pytest.mark.docker
+def test_docker_runtime(build_docker_image: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            ['jina', 'executor', f'--uses=docker://{build_docker_image}'],
+            timeout=30,
+            check=True,
+        )
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu(build_docker_image_gpu: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                f'--uses=docker://{build_docker_image_gpu}',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'use_gpu:True',
+            ],
+            timeout=30,
+            check=True,
+        )

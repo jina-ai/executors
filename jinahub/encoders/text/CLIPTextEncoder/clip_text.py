@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence
+from typing import Dict, Optional, Sequence, Iterable
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -17,7 +17,7 @@ class CLIPTextEncoder(Executor):
         Defaults to ``pretrained_model_name_or_path`` if None
     :param max_length: Max length argument for the tokenizer.
         All CLIP models use 77 as the max length
-    :param device: Device to be used. Use 'cuda' for GPU.
+    :param device: Device to be used. Use 'cuda' or 'cuda:X' for GPU.
     :param default_traversal_paths: Default traversal paths for encoding, used if the
         traversal path is not passed as a parameter with the request.
     :param default_batch_size: Default batch size for encoding, used if the
@@ -32,7 +32,7 @@ class CLIPTextEncoder(Executor):
         base_tokenizer_model: Optional[str] = None,
         max_length: Optional[int] = 77,
         device: str = 'cpu',
-        default_traversal_paths: Sequence[str] = ['r'],
+        default_traversal_paths: Iterable[str] = ('r',),
         default_batch_size: int = 32,
         *args,
         **kwargs,

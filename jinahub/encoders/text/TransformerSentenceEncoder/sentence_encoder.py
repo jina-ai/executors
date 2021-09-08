@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, Iterable
 
 from jina import Executor, DocumentArray, requests
 from sentence_transformers import SentenceTransformer
@@ -18,8 +18,8 @@ class TransformerSentenceEncoder(Executor):
     def __init__(
         self,
         model_name: str = 'sentence-transformers/paraphrase-mpnet-base-v2',
-        device: str = "cpu",
-        default_traversal_paths: Tuple = ('r', ),
+        device: str = 'cpu',
+        default_traversal_paths: Iterable[str] = ('r', ),
         default_batch_size=32,
         *args,
         **kwargs
