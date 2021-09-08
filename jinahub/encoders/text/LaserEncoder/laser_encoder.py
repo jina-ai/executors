@@ -1,12 +1,12 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Iterable
+from typing import Iterable, List, Optional
 
 import torch
-from jina import Executor, DocumentArray, requests
-from laserembeddings import Laser
+from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
+from laserembeddings import Laser
 
 
 class LaserEncoder(Executor):
@@ -33,16 +33,16 @@ class LaserEncoder(Executor):
     """
 
     def __init__(
-            self,
-            path_to_bpe_codes: Optional[str] = None,
-            path_to_bpe_vocab: Optional[str] = None,
-            path_to_encoder: Optional[str] = None,
-            device: str = 'cpu',
-            default_batch_size: int = 32,
-            default_traversal_paths: Optional[List[str]] = None,
-            language: str = 'en',
-            *args,
-            **kwargs,
+        self,
+        path_to_bpe_codes: Optional[str] = None,
+        path_to_bpe_vocab: Optional[str] = None,
+        path_to_encoder: Optional[str] = None,
+        device: str = 'cpu',
+        default_batch_size: int = 32,
+        default_traversal_paths: Optional[List[str]] = None,
+        language: str = 'en',
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
@@ -76,7 +76,9 @@ class LaserEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+                traversal_path=parameters.get(
+                    'traversal_paths', self.default_traversal_paths
+                ),
                 batch_size=parameters.get('batch_size', self.default_batch_size),
                 needs_attr='text',
             )

@@ -1,13 +1,10 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Iterable, Dict, Optional
+from typing import Dict, Iterable, Optional
 
-import numpy as np
-import torch
 import spacy
-
-from jina import Executor, DocumentArray, requests
+from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
 
@@ -35,12 +32,15 @@ class SpacyTextEncoder(Executor):
         'attribute_ruler',
     ]
 
-    def __init__(self,
-                 lang: str = 'en_core_web_sm',
-                 use_default_encoder: bool = False,
-                 default_traversal_paths: Iterable[str] = ('r',),
-                 device: str = 'cpu',
-                 *args, **kwargs):
+    def __init__(
+        self,
+        lang: str = 'en_core_web_sm',
+        use_default_encoder: bool = False,
+        default_traversal_paths: Iterable[str] = ('r',),
+        device: str = 'cpu',
+        *args,
+        **kwargs,
+    ):
         """Set constructor."""
         super().__init__(*args, **kwargs)
         self.lang = lang
@@ -60,7 +60,9 @@ class SpacyTextEncoder(Executor):
                     self.spacy_model.disable_pipe(comp)
                 except Exception:
                     ignored_components.append(comp)
-            self.logger.info(f'Ignoring {ignored_components} pipelines as it does not available on the model package.')
+            self.logger.info(
+                f'Ignoring {ignored_components} pipelines as it does not available on the model package.'
+            )
         except IOError:
             self.logger.error(
                 f'spaCy model for language {self.lang} can not be found. Please install by referring to the '

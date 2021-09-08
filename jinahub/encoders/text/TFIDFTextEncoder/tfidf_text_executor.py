@@ -1,8 +1,8 @@
 import os
 import pickle
-from typing import Optional, Iterable, Tuple
+from typing import Iterable, Optional, Tuple
 
-from jina import Executor, requests, DocumentArray
+from jina import DocumentArray, Executor, requests
 from jina.excepts import PretrainedModelFileDoesNotExist
 from jina_commons.batching import get_docs_batch_generator
 
@@ -20,7 +20,7 @@ class TFIDFTextEncoder(Executor):
         self,
         path_vectorizer: str = 'model/tfidf_vectorizer.pickle',
         default_batch_size: int = 2048,
-        default_traversal_paths: Tuple[str] = ('r', ),
+        default_traversal_paths: Tuple[str] = ('r',),
         *args,
         **kwargs,
     ):
@@ -51,9 +51,11 @@ class TFIDFTextEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+                traversal_path=parameters.get(
+                    'traversal_paths', self.default_traversal_paths
+                ),
                 batch_size=parameters.get('batch_size', self.default_batch_size),
-                needs_attr='text'
+                needs_attr='text',
             )
             self._create_embeddings(document_batches_generator)
 

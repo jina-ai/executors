@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from jina import DocumentArray, Document, Executor
+from jina import Document, DocumentArray, Executor
 
 from ...sentence_encoder import TransformerSentenceEncoder
 

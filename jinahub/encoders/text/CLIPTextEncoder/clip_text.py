@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence, Iterable
+from typing import Dict, Iterable, Optional, Sequence
 
 import torch
 from jina import DocumentArray, Executor, requests

@@ -2,9 +2,9 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import subprocess
-import pytest
 
-from jina import Document, Flow, DocumentArray
+import pytest
+from jina import Document, DocumentArray, Flow
 
 try:
     from spacy_text_encoder import SpacyTextEncoder
@@ -13,8 +13,13 @@ except:
 
 
 def test_spacy_text_encoder():
-    docs = DocumentArray([Document(text='Han likes eating pizza'), Document(text='Han likes pizza'),
-                          Document(text='Jina rocks')])
+    docs = DocumentArray(
+        [
+            Document(text='Han likes eating pizza'),
+            Document(text='Han likes pizza'),
+            Document(text='Jina rocks'),
+        ]
+    )
     f = Flow().add(uses=SpacyTextEncoder)
     with f:
         resp = f.post(on='/test', inputs=docs, return_results=True)

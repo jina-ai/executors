@@ -1,4 +1,5 @@
 import os
+
 import scipy
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -6,6 +7,7 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 def load_data():
     from sklearn.datasets import fetch_20newsgroups
+
     newsgroups_train = fetch_20newsgroups(subset='train')
     return newsgroups_train.data
 

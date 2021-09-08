@@ -2,16 +2,16 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import subprocess
-import pytest
 
-from jina import Flow, Document
+import pytest
+from jina import Document, Flow
+
 from ...laser_encoder import LaserEncoder
 
 
 def data_generator(num_docs):
     for i in range(num_docs):
-        doc = Document(
-            text='it is a good day! the dog sits on the floor.')
+        doc = Document(text='it is a good day! the dog sits on the floor.')
         yield doc
 
 

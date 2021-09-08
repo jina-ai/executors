@@ -2,8 +2,8 @@ from pathlib import Path
 
 import numpy as np
 import scipy
-
 from jina import Document, DocumentArray, Executor
+
 from ...tfidf_text_executor import TFIDFTextEncoder
 
 

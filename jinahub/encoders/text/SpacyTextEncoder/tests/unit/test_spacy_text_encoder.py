@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 import spacy
-
 from jina import Document, DocumentArray, Executor
 
 from ...spacy_text_encoder import SpacyTextEncoder

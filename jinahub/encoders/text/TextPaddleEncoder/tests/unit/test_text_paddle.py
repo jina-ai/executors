@@ -1,8 +1,8 @@
 from pathlib import Path
 
-import pytest
 import numpy as np
 import paddlehub as hub
+import pytest
 from jina import Document, DocumentArray, Executor
 
 from ...text_paddle import TextPaddleEncoder

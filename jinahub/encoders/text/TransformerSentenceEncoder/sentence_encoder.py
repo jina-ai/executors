@@ -1,11 +1,11 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, Dict, Iterable
+from typing import Dict, Iterable, Optional
 
-from jina import Executor, DocumentArray, requests
-from sentence_transformers import SentenceTransformer
+from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
+from sentence_transformers import SentenceTransformer
 
 
 class TransformerSentenceEncoder(Executor):
@@ -19,7 +19,7 @@ class TransformerSentenceEncoder(Executor):
         self,
         model_name: str = 'sentence-transformers/paraphrase-mpnet-base-v2',
         device: str = 'cpu',
-        default_traversal_paths: Iterable[str] = ('r', ),
+        default_traversal_paths: Iterable[str] = ('r',),
         default_batch_size=32,
         *args,
         **kwargs
@@ -37,10 +37,12 @@ class TransformerSentenceEncoder(Executor):
         :param parameters: Any additional parameters for the `encode` function.
         """
         for batch in get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
-                needs_attr='text'
+            docs,
+            traversal_path=parameters.get(
+                'traversal_paths', self.default_traversal_paths
+            ),
+            batch_size=parameters.get('batch_size', self.default_batch_size),
+            needs_attr='text',
         ):
             texts = batch.get_attributes("text")
             embeddings = self.model.encode(texts)

@@ -1,8 +1,9 @@
 import os
 import subprocess
-import pytest
 
-from jina import Flow, Document, DocumentArray
+import pytest
+from jina import Document, DocumentArray, Flow
+
 from ...tfidf_text_executor import TFIDFTextEncoder  # is implicitly required
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
