@@ -11,6 +11,16 @@ from jina import Document, DocumentArray, Executor, Flow, requests
 from jina.logging.profile import TimeContext
 from jina_commons.indexers.dump import import_metas, import_vectors
 
+from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
+    FaissPostgresSearcher,
+)
+from jinahub.indexers.storage.PostgreSQLStorage.postgres_indexer import (
+    PostgreSQLStorage,
+)
+from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
+    doc_without_embedding,
+)
+
 METRIC = 'l2'
 
 
@@ -42,20 +52,6 @@ def docker_compose(request):
         f"--remove-orphans"
     )
 
-
-# required in order to be found by Flow creation
-# noinspection PyUnresolvedReferences
-from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
-    FaissPostgresSearcher,
-)
-from jinahub.indexers.storage.PostgreSQLStorage.postgres_indexer import (
-    PostgreSQLStorage,
-)
-
-# noinspection PyUnresolvedReferences
-from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
-    doc_without_embedding,
-)
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.join(cur_dir, 'docker-compose.yml')
@@ -182,7 +178,6 @@ def test_psql_import(
     )
     if not benchmark:
         docs = DocumentArray(flatten(docs))
-        assert len(docs) == nr_docs
 
     os.environ['STORAGE_WORKSPACE'] = os.path.join(str(tmpdir), 'index_ws')
     os.environ['SHARDS'] = str(shards)
@@ -287,3 +282,76 @@ def test_start_up(docker_compose):
             return_results=True,
         )
         assert len(results[0].docs[0].matches) == len(docs)
+
+
+@pytest.mark.parametrize('shards', [1])
+@pytest.mark.parametrize('nr_docs', [100])
+@pytest.mark.parametrize('emb_size', [10])
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_psql_sync_delta(
+    tmpdir,
+    nr_docs,
+    emb_size,
+    shards,
+    docker_compose,
+):
+    # for psql to start
+    time.sleep(2)
+
+    top_k = 5
+    batch_size = min(1000, nr_docs)
+    docs_original = get_batch_iterator(
+        batches=nr_docs // batch_size, batch_size=batch_size, emb_size=emb_size
+    )
+    docs_original = DocumentArray(flatten(docs_original))
+    assert len(docs_original) == nr_docs
+
+    os.environ['STORAGE_WORKSPACE'] = os.path.join(str(tmpdir), 'index_ws')
+    os.environ['SHARDS'] = str(shards)
+    uses_after = 'Pass'
+
+    with _flow(uses_after=uses_after, total_shards=shards, startup_args={}) as flow:
+        flow.post(on='/index', inputs=docs_original)
+
+        # we first sync by snapshot and then by delta
+        flow.post(
+            on='/snapshot',
+        )
+
+        flow.post(
+            on='/sync',
+        )
+
+        # delta syncing
+        # we delete some old data
+        nr_docs_to_delete = 90
+        flow.post(on='/delete', inputs=docs_original[:nr_docs_to_delete])
+        # update rest of the data with perfect matches of
+        docs_search = DocumentArray(
+            list(
+                get_documents(
+                    nr_docs - nr_docs_to_delete,
+                    index_start=nr_docs_to_delete,
+                    emb_size=emb_size,
+                )
+            )
+        )
+
+        flow.post(on='/update', inputs=docs_search)
+        # call sync with delta
+        flow.post(on='/sync', parameters={'use_delta': True})
+        results = flow.post(
+            on='/search',
+            inputs=docs_search,
+            parameters={'top_k': len(docs_search)},
+            return_results=True,
+        )
+        # then we assert the contents include the latest
+        # perfect matches
+        assert len(results[0].docs) > 0
+        for d in results[0].docs:
+            np.testing.assert_almost_equal(d.matches[0].embedding, d.embedding)
+
+    idx = PostgreSQLStorage()
+    # size stays the same because it was only soft delete
+    assert idx.size == nr_docs

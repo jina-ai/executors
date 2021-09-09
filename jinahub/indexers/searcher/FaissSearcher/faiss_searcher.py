@@ -14,6 +14,10 @@ from jina.helper import batch_iterator
 from jina_commons import get_logger
 from jina_commons.indexers.dump import import_vectors
 
+GENERATOR_DELTA = Generator[
+    Tuple[str, Optional[np.ndarray], Optional[datetime]], None, None
+]
+
 
 class FaissSearcher(Executor):
     """Faiss-powered vector indexer
@@ -74,6 +78,7 @@ class FaissSearcher(Executor):
 
     def __init__(
         self,
+        # exhaustive search, which corresponds to what NumpySearcher was doing
         index_key: str = 'Flat',
         trained_index_file: Optional[str] = None,
         max_num_training_points: Optional[int] = None,
@@ -164,7 +169,11 @@ class FaissSearcher(Executor):
             self._doc_ids.append(id_)
             self._doc_id_to_offset[id_] = position
             self._is_deleted.append(0)
-            yield np.frombuffer(vector)
+            if vector is not None:
+                # this should already be a np.array, NOT bytes
+                yield vector
+            else:
+                yield None
 
     def device(self):
         """
@@ -585,7 +594,8 @@ class FaissSearcher(Executor):
             metric_type = faiss.METRIC_INNER_PRODUCT
         if self.metric not in {'inner_product', 'l2'}:
             self.logger.warning(
-                'Invalid distance metric for Faiss index construction. Defaulting to l2 distance'
+                'Invalid distance metric for Faiss index construction. Defaulting '
+                'to l2 distance'
             )
         return metric_type
 
@@ -600,29 +610,27 @@ class FaissSearcher(Executor):
             self._is_deleted.append(0)
         self._index(vecs)
 
-    def _add_delta(self, delta: Generator[Tuple[str, bytes, datetime], None, None]):
+    def _add_delta(self, delta: GENERATOR_DELTA):
         """
         Adding the delta data to the indexer
-        :param delta: a generator yielding (id, doc_vec_bytes, last_updated)
+        :param delta: a generator yielding (id, np.ndarray, last_updated)
         """
-        for doc_id, vec_buffer, _ in delta:
+        for doc_id, vec_array, _ in delta:
             idx = self._doc_id_to_offset.get(doc_id)
             if idx is None:  # add new item
-                if vec_buffer is None:
+                if vec_array is None:
                     continue
-                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
-                    1, -1
-                )  # shape [1, D]
+                # shape [1, D]
+                vec = vec_array.reshape(1, -1).astype(np.float32)
 
                 self._append_vecs_and_ids([doc_id], vec)
-            elif vec_buffer is None:  # soft delete
+            elif vec_array is None:  # soft delete
                 self._is_deleted[idx] = 1
             else:  # update
                 # first soft delete
                 self._is_deleted[idx] = 1
 
                 # then add the updated doc
-                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
-                    1, -1
-                )  # shape [1, D]
+                # shape [1, D]
+                vec = vec_array.reshape(1, -1).astype(np.float32)
                 self._append_vecs_and_ids([doc_id], vec)
