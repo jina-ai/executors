@@ -1,8 +1,8 @@
 import os
 import time
 
-from jina import Document, DocumentArray
 import pytest
+from jina import Document, DocumentArray
 
 from ..redis_storage import RedisStorage
 
@@ -26,7 +26,9 @@ def docker_compose(request):
 
 @pytest.fixture(scope='function')
 def docs():
-    return DocumentArray([
-        Document(content=value)
-        for value in ['cat', 'dog', 'crow', 'pikachu', 'magikarp']
-    ])
+    return DocumentArray(
+        [
+            Document(content=value)
+            for value in ['cat', 'dog', 'crow', 'pikachu', 'magikarp']
+        ]
+    )
