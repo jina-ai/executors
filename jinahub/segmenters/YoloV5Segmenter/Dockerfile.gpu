@@ -1,7 +1,7 @@
 FROM jinaai/jina:2-py37-perf
 
 # install git
-RUN apt-get -y update && apt-get install -y git gcc ffmpeg libsm6 libxext6
+RUN apt-get -y update && apt-get install -y git gcc ffmpeg libsm6 libxext6 python3-config
 
 # install requirements before copying the workspace
 COPY gpu_requirements.txt /gpu_requirements.txt
