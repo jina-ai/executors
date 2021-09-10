@@ -1,4 +1,5 @@
 -f https://download.pytorch.org/whl/torch_stable.html
 torch==1.9.0+cpu
+torchvision==0.10.0
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
 yolov5==5.0.7
