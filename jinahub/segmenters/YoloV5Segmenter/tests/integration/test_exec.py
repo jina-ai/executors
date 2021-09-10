@@ -5,7 +5,7 @@ import os
 import subprocess
 
 import pytest
-from jina import Document, DocumentArray, Flow
+from jina import Flow
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
