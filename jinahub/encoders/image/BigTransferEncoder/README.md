@@ -1,4 +1,4 @@
-# ✨ Big Transfer Image Encoder
+# Big Transfer Image Encoder
 
 **Big Transfer Image Encoder** is a class that uses the Big Transfer models presented by Google [here]((https://github.com/google-research/big_transfer)).
 It uses a pretrained version of a BiT model to encode an image from an array of shape 
@@ -9,49 +9,16 @@ The following parameters can be used:
 - `model_path` (string, default: "pretrained"): The folder where the downloaded pretrained Big Transfer model is located
 - `model_name` (string, default: "R50x1"): The model to be downloaded when the model_path is empty. Choose from ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
 - `channel_axis` (int): The axis where the channel of the images needs to be (model-dependent)
-- `on_gpu` (bool): Specifies whether the model should be used on GPU or CPU. To use GPU,
-  put into one batch (limited by the request_size)
-  either the GPU docker container needs to be used or you need to install CUDA 11.3 and cudnn8 (similar versions might also work)
+- `device` (string, default: '/CPU:0'): Specify the device to run the model on. Examples are '/CPU:0', '/GPU:0', '/GPU:2'.
 - `default_traversal_paths` (List[str], defaults to ['r']): Traversal path through the docs
 - `default_batch_size` (int): Batch size to be used in the encoder model. If not specified, all the documents are
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+## Usage
 
-No prerequisites are required to run this executor. The executor automatically
-downloads the BiT model specified by `model_name`! Alternatively, you could also 
-download the model in advance and use the `model_path` parameter.
 
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-To verify the installation works:
-```
-pytest tests
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://BigTransferEncoder')
-```
 
 or in the `.yml` config.
 
@@ -80,7 +47,7 @@ pods:
 
 The prebuilt images do currently not support GPU.  
 
-#### using source code
+
 Use the source code from JinaHub in your Python code:
 
 ```python
@@ -102,10 +69,31 @@ jtype: Flow
 pods:
   - name: encoder
     uses: 'jinahub://BigTransferEncoder'
-    uses_with:
-      on_gpu: true
 ```
 
+#### GPU usage
+
+You can use the GPU via the source code. Therefore, you need a matching CUDA version
+and GPU drivers installed on your system. 
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub://BigTransferEncoder'
+    uses_with:
+      device: '/GPU:0'
+```
+Alternatively, use the jinahub gpu docker container. Therefore, you need GPU
+drivers installed on your system and nvidia-docker installed.
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub+docker://BigTransferEncoder/gpu'
+    gpus: all
+    uses_with:
+      device: '/GPU:0'
+```
 
 ## 🎉️ Example
 
@@ -128,6 +116,6 @@ with f:
 `Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` (model-dependent) with `dtype=nfloat32`.
 
 
-## 🔍️ Reference
+## Reference
 - https://github.com/google-research/big_transfer
 - https://tfhub.dev/google/collections/bit/1

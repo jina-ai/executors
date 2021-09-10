@@ -2,10 +2,11 @@ from pathlib import Path
 from typing import List
 
 import pytest
-import torch
 from jina import Document, DocumentArray, Executor
 
 from ...dpr_text import DPRTextEncoder
+
+_EMBEDDING_DIM = 768
 
 
 @pytest.fixture(scope='session')
@@ -24,10 +25,7 @@ def basic_encoder_ctx() -> DPRTextEncoder:
 
 def test_config():
     encoder = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert encoder.default_batch_size == 32
-    assert encoder.default_traversal_paths == ('r',)
     assert encoder.encoder_type == 'question'
-    assert encoder.title_tag_key is None
 
 
 def test_no_document(basic_encoder: DPRTextEncoder):
@@ -55,7 +53,7 @@ def test_context_encoder_doc_no_title(basic_encoder_ctx: DPRTextEncoder):
 
 def test_wrong_encoder_type():
     with pytest.raises(ValueError, match='The ``encoder_type`` parameter'):
-        encoder = DPRTextEncoder(encoder_type='worng_type')
+        DPRTextEncoder(encoder_type='worng_type')
 
 
 def test_encoding_cpu():
@@ -63,42 +61,43 @@ def test_encoding_cpu():
     encoder = DPRTextEncoder(device='cpu')
     encoder.encode(docs, {})
 
-    assert docs[0].embedding.shape == (768,)
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
 def test_encoding_question_type(basic_encoder: DPRTextEncoder):
     docs = DocumentArray([Document(text='hello there')])
     basic_encoder.encode(docs, {})
 
-    assert docs[0].embedding.shape == (768,)
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
 def test_encoding_context_type(basic_encoder_ctx: DPRTextEncoder):
     docs = DocumentArray([Document(text='hello there', tags={'title': 'greeting'})])
     basic_encoder_ctx.encode(docs, {})
 
-    assert docs[0].embedding.shape == (768,)
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='GPU is needed for this test')
+@pytest.mark.gpu
 def test_encoding_gpu():
     docs = DocumentArray([Document(text='hello there')])
     encoder = DPRTextEncoder(device='cuda')
     encoder.encode(docs, {})
 
-    assert docs[0].embedding.shape == (768,)
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
 
 
 @pytest.mark.parametrize(
-    'traversal_path, counts',
+    'traversal_paths, counts',
     [
-        ('r', [['r', 1], ['c', 0], ['cc', 0]]),
-        ('c', [['r', 0], ['c', 3], ['cc', 0]]),
-        ('cc', [['r', 0], ['c', 0], ['cc', 2]]),
+        (['r'], [['r', 1], ['c', 0], ['cc', 0]]),
+        (['c'], [['r', 0], ['c', 3], ['cc', 0]]),
+        (['cc'], [['r', 0], ['c', 0], ['cc', 2]]),
+        (['cc', 'r'], [['r', 1], ['c', 0], ['cc', 2]]),
     ],
 )
 def test_traversal_path(
-    traversal_path: str, counts: List, basic_encoder: DPRTextEncoder
+    traversal_paths: List[str], counts: List, basic_encoder: DPRTextEncoder
 ):
     text = 'blah'
     docs = DocumentArray([Document(id='root1', text=text)])
@@ -112,11 +111,10 @@ def test_traversal_path(
         Document(id='chunk112', text=text),
     ]
 
-    basic_encoder.encode(
-        docs=docs, parameters={'traversal_paths': [traversal_path]}, return_results=True
-    )
+    basic_encoder.encode(docs=docs, parameters={'traversal_paths': traversal_paths})
     for path, count in counts:
-        assert len(docs.traverse_flat([path]).get_attributes('embedding')) == count
+        embeddings = docs.traverse_flat([path]).get_attributes('embedding')
+        assert len(list(filter(lambda x: x is not None, embeddings))) == count
 
 
 @pytest.mark.parametrize('batch_size', [1, 2, 4, 8])
@@ -125,7 +123,7 @@ def test_batch_size(basic_encoder: DPRTextEncoder, batch_size: int):
     basic_encoder.encode(docs, parameters={'batch_size': batch_size})
 
     for doc in docs:
-        assert doc.embedding.shape == (768,)
+        assert doc.embedding.shape == (_EMBEDDING_DIM,)
 
 
 def test_quality_embeddings(basic_encoder: DPRTextEncoder):

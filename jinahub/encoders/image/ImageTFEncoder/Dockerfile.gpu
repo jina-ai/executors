@@ -1,15 +1,12 @@
-FROM nvidia/cuda:11.3.1-cudnn8-runtime as base
+FROM nvidia/cuda:11.2.1-cudnn8-runtime
 
-RUN apt update && apt install -y python3.8 python3-pip
+RUN apt update && apt install -y python3.8 python3-pip git
+RUN JINA_PIP_INSTALL_PERF=1 pip install --no-cache-dir jina~=2.0
 
-COPY . ./tf_encoder/
-WORKDIR ./tf_encoder
+COPY gpu_requirements.txt gpu_requirements.txt
+RUN pip install --no-cache-dir -r gpu_requirements.txt
 
-RUN pip install -r requirements.txt
+COPY . /workdir/
+WORKDIR /workdir
 
-FROM base
-RUN pip install -r tests/requirements.txt
-RUN pytest -s -v tests
-
-FROM base
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

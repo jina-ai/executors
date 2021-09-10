@@ -1,28 +1,19 @@
-# ✨ LightGBMRanker
+# LightGBMRanker
 
 **LightGBMRanker** is a Jina ranker, using the [LightGBM](https://github.com/microsoft/LightGBM) library, mode specifically, the `LightGBMRanker` is used for learning-to-rank.
 
 `LightGBMRanker` retrieves `query_features`, `match_features` and `relevance_label` stored inside `Document` object from `DocumentArray`, and builds a feature-label dataset to train the model.
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#%EF%B8%8F-example)
-- [🔍️ Reference](#%EF%B8%8F-reference)
 
 
-## 🌱 Prerequisites
 
-- This Executor works on Python 3.7, 3.8 and 3.9. 
-- While developing locally, make sure to install the [requirements](requirements.txt)
-- Refer to LightGBM [documentation](https://github.com/microsoft/LightGBM/tree/master/examples/lambdarank) to learn how to use LightGBM to train a ranker.
 
-## 🚀 Usages
 
-### 🚚 Via JinaHub
+Refer to LightGBM [documentation](https://github.com/microsoft/LightGBM/tree/master/examples/lambdarank) to learn how to use LightGBM to train a ranker.
 
-#### using docker images
+## Usage
+
+
 
 Use the prebuilt images from JinaHub in your Python code: 
 
@@ -38,54 +29,6 @@ f = Flow().add(
     }
 )
 ```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: ranker
-    uses: 'jinahub+docker://LightGBMRanker'
-    with:
-      model_path: model.txt
-      query_features: ['query_price', 'query_brand']
-      match_features: ['match_price', 'match_brand']
-      relevance_label: 'relevance'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(
-    uses='jinahub://LightGBMRanker',
-    overwride_with={
-        'query_features': ['query_price', 'query_size'],
-        'match_features': ['match_price', 'match_size'],
-        'relevance_level': 'relevance'
-    }
-)
-```
-
-The above code make use of the `tags` stored in `Document` and it's `matches`,
-and create a feature value list for each query-match pair.
-All features will be combined into a `np.ndarray` as training data.
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: ranker
-    uses: 'jinahub://LightGBMRanker'
-```
-
-
-	
-
-## 🎉️ Example 
 
 ```python
 from jina import Flow, DocumentArray

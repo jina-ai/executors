@@ -1,0 +1,20 @@
+[tool.isort]
+profile = "black"
+skip_glob = [
+    "*/audio_clip/*",
+    "*/vggish/*"
+]
+
+[tool.black]
+skip_string_normalization = true
+extend_exclude = '''
+(
+    audio_clip/|vggish/
+)
+'''
+
+[tool.pytest.ini_options]
+markers = [
+    "gpu: test that can only be executed on a machine with a GPU",
+    "docker: tests that test the docker image of the executor"
+]

@@ -2,12 +2,12 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 import lightgbm
 import numpy as np
+from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
-from jina import Executor, DocumentArray, requests
 
 
 class LightGBMRanker(Executor):

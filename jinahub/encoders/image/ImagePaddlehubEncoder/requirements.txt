@@ -1,6 +1,7 @@
-jina~=2.0
 paddlehub==1.8.2
-paddlepaddle==1.8.5
+paddlepaddle==2.0
 six==1.15.0
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
 pillow==8.2
+opencv-python-headless
+scipy

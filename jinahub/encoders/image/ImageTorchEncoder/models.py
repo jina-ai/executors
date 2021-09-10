@@ -1,19 +1,18 @@
 """ Helper module to manage torch vision models """
 from typing import Optional
 
-import torch
-import torchvision.models as models
-import torch.nn as nn
 import numpy as np
-
-from torchvision.models.resnet import __all__ as all_resnet_models
+import torch
+import torch.nn as nn
+import torchvision.models as models
 from torchvision.models.alexnet import __all__ as all_alexnet_models
-from torchvision.models.vgg import __all__ as all_vgg_models
-from torchvision.models.squeezenet import __all__ as all_squeezenet_models
 from torchvision.models.densenet import __all__ as all_densenet_models
+from torchvision.models.googlenet import __all__ as all_googlenet_models
 from torchvision.models.mnasnet import __all__ as all_mnasnet_models
 from torchvision.models.mobilenet import __all__ as all_mobilenet_models
-from torchvision.models.googlenet import __all__ as all_googlenet_models
+from torchvision.models.resnet import __all__ as all_resnet_models
+from torchvision.models.squeezenet import __all__ as all_squeezenet_models
+from torchvision.models.vgg import __all__ as all_vgg_models
 
 
 class EmbeddingModelWrapper:
@@ -25,14 +24,15 @@ class EmbeddingModelWrapper:
                        use `resnet_18` instead of `ResNet`.
     :param device: Which device the model runs on. Can be 'cpu' or 'cuda'
     """
+
     def __init__(self, model_name: str, device: Optional[str] = None):
         if not device:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = device
 
         self._layer_name = _ModelCatalogue.get_layer_name(model_name)
         self._model = getattr(models, model_name)(pretrained=True)
-
-        self.device = device
+        self._model.to(torch.device(self.device))
 
         self._pooling_layer = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         self._pooling_layer.to(torch.device(self.device))
@@ -57,7 +57,7 @@ class EmbeddingModelWrapper:
         tensor = torch.from_numpy(images).to(self.device)
         features = self.get_features(tensor)
         features = self._pooling_function(features)
-        features = features.detach().numpy()
+        features = features.detach().cpu().numpy()
         return features
 
 
@@ -88,9 +88,14 @@ class _ModelCatalogue:
         :param model_name: Name of the layer
         """
         if not cls.is_model_supported(model_name):
-            raise ValueError(f'Model with name {model_name} is not supported. '
-                             f'Supported models are: {cls.all_supported_models_to_layer_mapping.keys()}')
+            raise ValueError(
+                f'Model with name {model_name} is not supported. '
+                f'Supported models are: {cls.all_supported_models_to_layer_mapping.keys()}'
+            )
 
-        for model_names, layer_name in cls.all_supported_models_to_layer_mapping.items():
+        for (
+            model_names,
+            layer_name,
+        ) in cls.all_supported_models_to_layer_mapping.items():
             if model_name in model_names:
                 return layer_name

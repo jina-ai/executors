@@ -1,4 +1,4 @@
-# ✨ TextPaddleEncoder
+# TextPaddleEncoder
 
 **TextPaddleEncoder** is a class that wraps the text embedding functionality from the **PaddlePaddle** and **PaddleHub**.
 
@@ -6,71 +6,9 @@
 `TextPaddleEncoder` encode text stored in the `text` attribute of the [**Document**](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) and saves the encoding in the embedding attribute.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
-
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
-
-#### Using docker images
-
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub+docker://TextPaddleEncoder',
-               volumes='/your_home_folder/.paddlehub:/root/.paddlehub')
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://TextPaddleEncoder'
-    volumes: '/your_home_folder/.paddlehub:/root/.paddlehub'
-```
-
-#### Using source code
-
-Use the source code from JinaHub in your Python code,
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://TextPaddleEncoder',
-			   volumes= '/your_home_folder/.paddlehub:/root/.paddlehub')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://TextPaddleEncoder'
-	volumes: '/your_home_folder/.paddlehub:/root/.paddlehub'
-```
-	
 
 
-## 🎉️ Example
+## Usage
 
 ```python
 from jina import Flow, Document
@@ -103,5 +41,5 @@ with f:
 
 
 
-## 🔍️ Reference
+## Reference
 - https://www.paddlepaddle.org.cn/hublist?filter=en_category&value=SemanticModel

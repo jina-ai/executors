@@ -1,4 +1,4 @@
-# ✨ Transformer Torch Encoder
+# Transformer Torch Encoder
 
 **Transformer Torch Encoder** is a class that encodes sentences into embeddings.
 
@@ -15,29 +15,12 @@ The following parameters can be used:
 - `default_batch_size` (int, default 32): Defines the batch size for inference on the loaded PyTorch model.
 
 
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
 
 
-## 🌱 Prerequisites
+
+## Usage
 
 
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
-
-#### using docker images
 Use the prebuilt images from JinaHub in your Python code: 
 
 ```python
@@ -60,30 +43,33 @@ pods:
 ``` 
 This does not support GPU at the moment.
 
-#### using source code
-Use the source code from JinaHub in your Python code:
 
-```python
-from jina import Flow, Document
+#### GPU usage
 
-f = Flow().add(uses='jinahub://TransformerTorchEncoder')
-
-with f:
-    resp = f.post(on='foo', inputs=Document(text='hello Jina'), return_results=True)
-    print(f'{resp[0].docs[0].embedding.shape}')
-```
-
-or in the `.yml` config.
-
+You can use the GPU via the source code. Therefore, you need a matching CUDA version
+and GPU drivers installed on your system. 
 ```yaml
 jtype: Flow
 pods:
   - name: encoder
     uses: 'jinahub://TransformerTorchEncoder'
+    uses_with:
+      device: 'cuda'
+```
+Alternatively, use the jinahub gpu docker container. Therefore, you need GPU
+drivers installed on your system and nvidia-docker installed.
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub+docker://TransformerTorchEncoder/gpu'
+    gpus: all
+    uses_with:
+      device: 'cuda'
 ```
 
 
-## 🎉️ Example
+## Usage
 
 ```python
 from jina import Flow, Document
@@ -104,6 +90,6 @@ with f:
 `Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` (model-dependent) with `dtype=nfloat32`.
 
 
-## 🔍️ Reference
+## Reference
 - Available models: https://huggingface.co/transformers/pretrained_models.html
 - More available models: https://huggingface.co/sentence-transformers

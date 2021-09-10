@@ -1,4 +1,4 @@
-# ✨ CLIPTextEncoder
+# CLIPTextEncoder
 
  **CLIPTextEncoder** is a class that wraps the text embedding functionality using the **CLIP** model from huggingface transformers
 
@@ -21,91 +21,6 @@ The following parameters can be passed on initialization:
 - `default_batch_size`: Default batch size for encoding, used if the
         batch size is not passed as a parameter with the request.
 
-
-**Table of Contents**
-
-- [🌱 Prerequisites](#-prerequisites)
-- [🚀 Usages](#-usages)
-- [🎉️ Example](#-example)
-- [🔍️ Reference](#-reference)
-
-
-## 🌱 Prerequisites
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
-
-In case you want to install the dependencies locally run 
-```
-pip install -r requirements.txt
-```
-
-## 🚀 Usages
-
-### 🚚 Via JinaHub
-
-#### using docker images
-Use the prebuilt images from JinaHub in your python codes, 
-
-```python
-from jina import Flow
-	
-f = Flow().add(
-        uses='jinahub+docker://CLIPTextEncoder',
-	)
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://CLIPTextEncoder'
-```
-
-#### using source code
-Use the source code from JinaHub in your Python code:
-
-```python
-from jina import Flow
-	
-f = Flow().add(uses='jinahub://CLIPTextEncoder')
-```
-
-or in the `.yml` config.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://CLIPTextEncoder'
-```
-
-## 🎉️ Example
-
-```python
-from jina import Flow, Document
-import numpy as np
-	
-f = Flow().add(
-        uses='jinahub+docker://CLIPTextEncoder',
-	)
-	
-def check_emb(resp):
-    for doc in resp.data.docs:
-        if doc.emb:
-            assert doc.emb.shape == (512,)
-	
-with f:
-	f.post(
-	    on='/foo', 
-	    inputs=Document(text='your text'), 
-	    on_done=check_emb
-	)
-	    
-```
-
-
 ### Inputs 
 
 [Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the [`text`](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md#document-attributes) attribute.
@@ -114,9 +29,23 @@ with f:
 
 [Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with the `embedding` attribute filled with an `ndarray` of the shape `512` with `dtype=float32`.
 
+## Usage
 
+```python
+from jina import Flow, Document
+import numpy as np
 
-## 🔍️ Reference
+f = Flow().add(uses='jinahub+docker://CLIPTextEncoder')
+
+with f:
+    f.post(
+        on='/foo',
+        inputs=Document(text='your text'),
+        on_done=print
+    )
+```
+
+## Reference
 
 - [CLIP blog post](https://openai.com/blog/clip/)
 - [CLIP paper](https://arxiv.org/abs/2103.00020)

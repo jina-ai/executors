@@ -1,9 +1,10 @@
-FROM jinaai/jina:2.0.8-standard
+FROM jinaai/jina:2-py37-perf
 RUN apt-get update && apt-get install -y git
 
-COPY . /big_transfer/
-WORKDIR /big_transfer
+COPY requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install -r requirements.txt
+COPY . /workdir/
+WORKDIR /workdir
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

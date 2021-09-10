@@ -1,0 +1,10 @@
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
+resampy==0.2.2
+tensorflow==2.6.0
+numpy==1.19.3
+tf_slim==1.1.0
+six==1.15.0
+soundfile==0.10.3.post1
+librosa==0.7
+numba==0.48
+requests

@@ -5,4 +5,7 @@ metas:
   py_modules:
     - faiss_searcher.py
   name: faiss_searcher
+  workspace: workspace/
+runtime_args:
+  name: faiss_searcher
 
