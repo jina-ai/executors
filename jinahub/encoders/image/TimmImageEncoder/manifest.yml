@@ -1,7 +1,5 @@
 manifest_version: 1
 name: TimmImageEncoder
-description: '`TimmImageEncoder` encodes data from a `ndarray` into a d-dimensional vector space. It encodes `Document` blobs of shape Height x Width x Channel 
-into a `ndarray` of dimension d and stores them in the `embedding` attribute of the `Document`. The available models is listed in Timm documentation 
-https://rwightman.github.io/pytorch-image-models/ '
+description: '`TimmImageEncoder` uses models from Timm library to encode data from a `ndarray` into a d-dimensional vector space.'
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/TimmImageEncoder
 keywords: [CNN, pytorch, timm, Computer Vision, image, encode]

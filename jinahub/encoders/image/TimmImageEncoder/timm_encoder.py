@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 import numpy as np
 import torch
@@ -55,6 +55,7 @@ class TimmImageEncoder(Executor):
         self.default_traversal_path = default_traversal_path
 
         self._model = create_model(model_name, pretrained=True, num_classes=0)
+        self._model = self._model.to(device)
         self._model.eval()
 
         config = resolve_data_config({}, model=self._model)

@@ -7,11 +7,11 @@ into a `ndarray` of dimension D and stores them in the `embedding` attribute of 
 
 The following parameters can be used:
 
-- `model_name` (string, default: "resnet18"): Name of the pre-trained model
-- `device` (string, default: "cpu"): The device in which the model runs on. For example 'cpu' or 'cuda'
-- `default_traversal_paths` (Tuple(str), default: ("r",)): Traversal path through the docs
-- `default_batch_size` (int, default: 32): Defines the batch size for inference on the loaded Timm model
-- `use_default_preprocessing` (bool, default: True): Should the input be preprocessed with default configuration
+- `model_name` (default: "resnet18"): Name of the pre-trained model
+- `device` (default: "cpu"): The device in which the model runs on. For example 'cpu' or 'cuda'
+- `default_traversal_paths` (default: ("r",)): Traversal path through the docs
+- `default_batch_size` (default: 32): Defines the batch size for inference on the loaded Timm model
+- `use_default_preprocessing` (default: True): Should the input be preprocessed with default configuration
 
 **Table of Contents**
 
@@ -78,22 +78,6 @@ with f:
     
     
 print('\n\nembedding:\n\n', resp[0].docs[0].embedding)
-```
-
-Example using the class the class `TimmImageEncoder` directly
-
-```python
-import numpy as np
-
-from jina import Document, DocumentArray
-from jinahub.image.encoder.timm_encoder import TimmImageEncoder
-
-doc = Document(blob=np.ones((224, 224, 3), dtype=np.uint8))
-encoder = TimmImageEncoder()
-doc_array = DocumentArray([doc, doc])
-encoder.encode(doc_array, parameters={})
-list_embeddings = doc_array.get_attributes('embedding')
-list_embeddings[0].shape, list_embeddings[1].shape
 ```
 
 ## 🔍️ Reference

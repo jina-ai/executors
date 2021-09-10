@@ -83,6 +83,36 @@ def test_no_preprocessing():
     assert docs[0].embedding.shape == (512,)
 
 
+def test_docs_array_with_text():
+    docs = DocumentArray([Document(text="hello world")])
+    encoder = TimmImageEncoder()
+
+    encoder.encode(docs, parameters={})
+
+    assert docs[0].embedding is None
+
+
+@pytest.mark.parametrize(
+    ["model_name", "out_shape"],
+    [
+        ("resnet50", (2048,)),
+        ("mobilenetv3_large_100", (1280,)),
+        ("efficientnet_b1", (1280,)),
+    ],
+)
+def test_available_models(model_name: str, out_shape: Tuple):
+    encoder = TimmImageEncoder(model_name=model_name)
+
+    # without pre-processing the user needs to provide the
+    # right shape for the model directly
+    arr_in = np.ones((224, 224, 3), dtype=np.uint8)
+    docs = DocumentArray([Document(blob=arr_in)])
+
+    encoder.encode(docs=docs, parameters={})
+
+    assert docs[0].embedding.shape == out_shape
+
+
 def test_empty_doc_array():
     docs = DocumentArray()
     encoder = TimmImageEncoder()
