@@ -1,0 +1,4 @@
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
+torch==1.9.0
+yolov5==5.0.7
+

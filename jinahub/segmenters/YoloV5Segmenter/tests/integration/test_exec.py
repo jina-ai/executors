@@ -2,8 +2,10 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
+import subprocess
 
-from jina import Flow, Document, DocumentArray
+import pytest
+from jina import Document, DocumentArray, Flow
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -20,3 +22,32 @@ def test_chunks_exists(build_da):
             assert chunk.blob.ndim == 3
             assert chunk.tags.get('label')
             assert chunk.tags.get('conf')
+
+
+@pytest.mark.docker
+def test_docker_runtime(build_docker_image: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            ['jina', 'executor', f'--uses=docker://{build_docker_image}'],
+            timeout=30,
+            check=True,
+        )
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu(build_docker_image_gpu: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                f'--uses=docker://{build_docker_image_gpu}',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'device:cuda',
+            ],
+            timeout=30,
+            check=True,
+        )
