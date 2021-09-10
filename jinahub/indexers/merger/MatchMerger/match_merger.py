@@ -3,7 +3,7 @@ __license__ = "Apache-2.0"
 
 from typing import List, Tuple
 
-from jina import Executor, requests, DocumentArray
+from jina import DocumentArray, Executor, requests
 
 
 class MatchMerger(Executor):
@@ -21,7 +21,9 @@ class MatchMerger(Executor):
 
     @requests
     def merge(self, docs_matrix: List[DocumentArray], parameters: dict, **kwargs):
-        traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
+        traversal_paths = parameters.get(
+            'traversal_paths', self.default_traversal_paths
+        )
         results = {}
         for docs in docs_matrix:
             self._merge_shard(results, docs, traversal_paths)

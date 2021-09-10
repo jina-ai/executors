@@ -2,12 +2,9 @@ import os
 from typing import Dict, List
 
 import lmdb
-from jina import Executor, Document, DocumentArray, requests
+from jina import Document, DocumentArray, Executor, requests
 from jina_commons import get_logger
-from jina_commons.indexers.dump import (
-    export_dump_streaming,
-    import_metas,
-)
+from jina_commons.indexers.dump import export_dump_streaming, import_metas
 
 
 class _LMDBHandler:

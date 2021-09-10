@@ -85,13 +85,13 @@ def test_metric(tmpdir, metric, is_distance):
     for i in range(len(docs[0].matches) - 1):
         if not is_distance:
             assert (
-                    docs[0].matches[i].scores[metric].value
-                    >= docs[0].matches[i + 1].scores[metric].value
+                docs[0].matches[i].scores[metric].value
+                >= docs[0].matches[i + 1].scores[metric].value
             )
         else:
             assert (
-                    docs[0].matches[i].scores[metric].value
-                    <= docs[0].matches[i + 1].scores[metric].value
+                docs[0].matches[i].scores[metric].value
+                <= docs[0].matches[i + 1].scores[metric].value
             )
 
 
