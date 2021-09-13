@@ -6,16 +6,15 @@ The TFIDF model is a classic vector representation for [information retrieval](h
 
 `TfidfTextEncoder` encodes data from a `DocumentArray` and updates the `doc.embedding` attributes with a  `scipy.csr_matrix`of floating point values for each doc in DocumentArray.
 
+### Inputs
 
+`Document`s with `text` attribute.  
 
+### Returns
+
+`Document`s with `embedding` fields filled with an `scipy.sparse.csr_matrix` of the shape `n_vocabulary`.
 
 ## Prerequisites
-
-
-
-You also need a TF-IDF vectorizer pretrained.
-
-### Pretraining a TF-IDF Vectorizer
 
 The `TFIDFTextEncoder`  uses a `sklearn.feature_extraction.text.TfidfVectorizer`object that needs to be fitted and stored as a pickle object which the `TFIDFTextEncoder` will load from `path_vectorizer`. By default `path_vectorizer='model/tfidf_vectorizer.pickle'` .
 
@@ -37,7 +36,6 @@ if __name__ == '__main__':
     pickle.dump(tfidf_vectorizer, open('tfidf_vectorizer.pickle', 'wb'))
 ```
 
-
 ## Usage 
 
 ```python
@@ -46,20 +44,10 @@ from jina import Flow, Document
 f = Flow().add(uses='jinahub+docker://TFIDFTextEncoder')
 
 with f:
-    resp = f.index(inputs=Document(text='Han eats pizza'), return_results=True)
-	print(f'{resp}')
+    f.index(inputs=Document(text='Han eats pizza'), on_done=print)
 ```
-
-### Inputs
-
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with `text`. By default, the input `text`must be a unicode string.  
-
-### Returns
-
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with `embedding` fields filled with an `scipy.sparse.csr_matrix` of the shape `n_vocabulary`.
-
-
 
 ## Reference
 
 - https://en.wikipedia.org/wiki/Tf-idf
+- [`sklearn.feature_extraction.text.TfidfVectorizer`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html)

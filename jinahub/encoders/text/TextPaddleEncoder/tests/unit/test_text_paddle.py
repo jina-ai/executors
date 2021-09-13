@@ -13,21 +13,6 @@ def model():
     return hub.Module(name='ernie_tiny')
 
 
-@pytest.fixture(scope='function')
-def content():
-    return 'hello world'
-
-
-@pytest.fixture(scope='function')
-def document_array(content):
-    return DocumentArray([Document(content=content)])
-
-
-@pytest.fixture(scope='function')
-def parameters():
-    return {'traverse_paths': ['r'], 'batch_size': 10}
-
-
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.default_batch_size == 32

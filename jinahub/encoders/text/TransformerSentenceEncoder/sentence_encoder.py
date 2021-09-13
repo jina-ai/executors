@@ -1,11 +1,12 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, Dict, List, Tuple
+from typing import Dict, Iterable, Optional
 
-from jina import Executor, DocumentArray, requests
-from sentence_transformers import SentenceTransformer
+import torch
+from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
+from sentence_transformers import SentenceTransformer
 
 
 class TransformerSentenceEncoder(Executor):
@@ -17,10 +18,10 @@ class TransformerSentenceEncoder(Executor):
 
     def __init__(
         self,
-        model_name: str = 'sentence-transformers/paraphrase-mpnet-base-v2',
-        device: str = "cpu",
-        default_traversal_paths: Tuple = ('r', ),
-        default_batch_size=32,
+        model_name: str = 'all-MiniLM-L6-v2',
+        device: str = 'cpu',
+        default_traversal_paths: Iterable[str] = ('r',),
+        default_batch_size: int = 32,
         *args,
         **kwargs
     ):
@@ -32,17 +33,24 @@ class TransformerSentenceEncoder(Executor):
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
-        Encode all docs with images and store the encodings in the embedding attribute of the docs.
-        :param docs: documents sent to the encoder. The docs must have `blob` of the shape `256`.
+        Encode all docs with text and store the encodings in the ``embedding`` attribute
+        of the docs.
+
+        :param docs: Documents to send to the encoder. They need to have the ``text``
+            attribute get an embedding.
         :param parameters: Any additional parameters for the `encode` function.
         """
         for batch in get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
-                needs_attr='text'
+            docs,
+            traversal_path=parameters.get(
+                'traversal_paths', self.default_traversal_paths
+            ),
+            batch_size=parameters.get('batch_size', self.default_batch_size),
+            needs_attr='text',
         ):
-            texts = batch.get_attributes("text")
-            embeddings = self.model.encode(texts)
-            for doc, embedding in zip(batch, embeddings):
-                doc.embedding = embedding
+            texts = batch.get_attributes('text')
+
+            with torch.no_grad():
+                embeddings = self.model.encode(texts)
+                for doc, embedding in zip(batch, embeddings):
+                    doc.embedding = embedding
