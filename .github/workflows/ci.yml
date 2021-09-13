@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: "3.7"
       - name: Pre-test script
         run: |
           if [[ -f "tests/pre_test.sh" ]]; then
@@ -78,7 +78,7 @@ jobs:
       - name: Create Dockerfile, if needed
         run: |
           if [[ ! -f "Dockerfile" ]]; then
-            normalizer . --jina-version=2; fi
+            docker run --entrypoint="normalizer" -v "$(pwd):/workspace" jinahub/hubble-normalizer:latest . --jina-version=2; fi
       - name: Run unit tests
         run: pytest -s -v -m "not gpu"
       # - name: Print image size
