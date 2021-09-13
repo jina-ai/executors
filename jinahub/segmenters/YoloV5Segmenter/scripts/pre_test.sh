@@ -1,1 +1,1 @@
-pip install cython
+pip install cython wheel
