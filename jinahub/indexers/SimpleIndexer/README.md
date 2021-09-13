@@ -9,10 +9,6 @@
 
 ## Usage
 
-#### using docker images (not recommended)
-
-> This method is currently not recommended for the SimpleIndexer because there is a bug corrupting the indexed data. We recommend using this executor from source code instead! See 'using source code' section below)
-
 
 ```python
 from jina import Flow, Document
