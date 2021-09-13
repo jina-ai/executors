@@ -30,7 +30,7 @@ def test_load():
 )
 def test_model_name_or_path(build_da, model_path):
     da = build_da()
-    segmenter = YoloV5Segmenter(model_name_or_path=model_path)
+    segmenter = YoloV5Segmenter(model_name_or_path=model_path, device='cpu')
     segmenter.segment(da, parameters={})
     for doc in da:
         assert len(doc.chunks) > 0
@@ -55,7 +55,7 @@ def test_model_name_or_path(build_da, model_path):
 )
 def test_n_detections(build_da, model_path, expected_detections):
     da = build_da()
-    segmenter = YoloV5Segmenter(model_name_or_path=model_path)
+    segmenter = YoloV5Segmenter(model_name_or_path=model_path, device='cpu')
     segmenter.segment(da, parameters={})
     for doc in da:
         assert len(doc.chunks) == expected_detections[doc.tags['filename']]
@@ -74,6 +74,7 @@ def test_confidence_threshold(build_da, confidence_threshold, expected_detection
     segmenter = YoloV5Segmenter(
         model_name_or_path=os.path.join(cur_dir, '../data/models/yolov5m.pt'),
         default_confidence_threshold=confidence_threshold,
+        device='cpu',
     )
     segmenter.segment(da, parameters={})
     for doc in da:
@@ -92,7 +93,8 @@ def test_traversal_paths():
     )
 
     segmenter = YoloV5Segmenter(
-        model_name_or_path=os.path.join(cur_dir, '../data/models/yolov5m.pt')
+        model_name_or_path=os.path.join(cur_dir, '../data/models/yolov5m.pt'),
+        device='cpu',
     )
     segmenter.segment(da, parameters={})
 
