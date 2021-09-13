@@ -1,28 +1,24 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Any, Iterable, Dict, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 import torch
 import torch.nn as nn
-
 import torchvision.models.video as models
-from torchvision import transforms
-
-from jina import Executor, DocumentArray, requests
+from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
-
+from torchvision import transforms
 
 # https://github.com/pytorch/vision/blob/d391a0e992a35d7fb01e11110e2ccf8e445ad8a0/references/video_classification/transforms.py#L13
 
-class ConvertFHWCtoFCHW(nn.Module):
 
+class ConvertFHWCtoFCHW(nn.Module):
     def forward(self, vid: torch.Tensor) -> torch.Tensor:
         return vid.permute(0, 3, 1, 2)
 
 
 class ConvertFCHWtoCFHW(nn.Module):
-
     def forward(self, vid: torch.Tensor) -> torch.Tensor:
         return vid.permute(1, 0, 2, 3)
 
@@ -45,20 +41,28 @@ class VideoTorchEncoder(Executor):
         Defaults to ['r'], i.e. root level traversal.
     """
 
-    def __init__(self,
-                 model_name: str = 'r3d_18',
-                 use_default_preprocessing: bool = True,
-                 device: Optional[str] = None,
-                 default_batch_size: int = 32,
-                 default_traversal_paths: Tuple = ('r', ),
-                 *args, **kwargs):
+    def __init__(
+        self,
+        model_name: str = 'r3d_18',
+        use_default_preprocessing: bool = True,
+        device: Optional[str] = None,
+        default_batch_size: int = 32,
+        default_traversal_paths: Tuple = ('r',),
+        download_progress=True,
+        *args,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         if not device:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
-        self.model = getattr(models, model_name)(pretrained=True).eval().to(self.device)
+        self.model = (
+            getattr(models, model_name)(pretrained=True, progress=download_progress)
+            .eval()
+            .to(self.device)
+        )
         self.use_default_preprocessing = use_default_preprocessing
         if self.use_default_preprocessing:
             # https://github.com/pytorch/vision/blob/master/references/video_classification/train.py
@@ -67,17 +71,20 @@ class VideoTorchEncoder(Executor):
             std = (0.22803, 0.22145, 0.216989)
             resize_size = (128, 171)
             crop_size = (112, 112)
-            self.transforms = transforms.Compose([
-                ConvertFHWCtoFCHW(),
-                transforms.ConvertImageDtype(torch.float32),
-                transforms.Resize(resize_size),
-                transforms.Normalize(mean=mean, std=std),
-                transforms.CenterCrop(crop_size),
-                ConvertFCHWtoCFHW()
-            ])
+            self.transforms = transforms.Compose(
+                [
+                    ConvertFHWCtoFCHW(),
+                    transforms.ConvertImageDtype(torch.float32),
+                    transforms.Resize(resize_size),
+                    transforms.Normalize(mean=mean, std=std),
+                    transforms.CenterCrop(crop_size),
+                    ConvertFCHWtoCFHW(),
+                ]
+            )
 
     def _get_embeddings(self, x) -> torch.Tensor:
         embeddings = None
+
         def get_activation(model, model_input, output):
             nonlocal embeddings
             embeddings = output
@@ -101,9 +108,11 @@ class VideoTorchEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+                traversal_path=parameters.get(
+                    'traversal_paths', self.default_traversal_paths
+                ),
                 batch_size=parameters.get('batch_size', self.default_batch_size),
-                needs_attr='blob'
+                needs_attr='blob',
             )
             self._create_embeddings(document_batches_generator)
 
@@ -111,11 +120,18 @@ class VideoTorchEncoder(Executor):
         with torch.no_grad():
             for document_batch in document_batches_generator:
                 if self.use_default_preprocessing:
-                    tensors = [self.transforms(torch.Tensor(d.blob).to(dtype=torch.uint8)) for d in document_batch]
+                    tensors = [
+                        self.transforms(torch.Tensor(d.blob).to(dtype=torch.uint8))
+                        for d in document_batch
+                    ]
                     tensor = torch.stack(tensors).to(self.device)
                 else:
-                    tensor = torch.stack([torch.Tensor(d.blob) for d in document_batch]).to(self.device)
+                    tensor = torch.stack(
+                        [torch.Tensor(d.blob) for d in document_batch]
+                    ).to(self.device)
                 embedding_batch = self._get_embeddings(tensor)
                 numpy_embedding_batch = embedding_batch.cpu().numpy()
-                for document, numpy_embedding in zip(document_batch, numpy_embedding_batch):
+                for document, numpy_embedding in zip(
+                    document_batch, numpy_embedding_batch
+                ):
                     document.embedding = numpy_embedding
