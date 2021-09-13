@@ -119,7 +119,7 @@ class FaissSearcher(Executor):
 
         self.logger = get_logger(self)
         is_loaded = False
-        if os.path.exists(self.workspace):
+        if self._faiss_index_exist(self.workspace):
             is_loaded = self._load(self.workspace)
         if not is_loaded:
             self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
@@ -387,6 +387,10 @@ class FaissSearcher(Executor):
 
         with open(os.path.join(target_path, 'delete_marks.bin'), "wb") as fp:
             pickle.dump(self._is_deleted, fp)
+
+    def _faiss_index_exist(self, folder_path: str):
+        index_path = os.path.join(folder_path, 'faiss.bin')
+        return os.path.exists(index_path)
 
     def _load(self, from_path: Optional[str] = None):
         from_path = from_path if from_path else self.workspace
