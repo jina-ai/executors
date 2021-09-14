@@ -16,9 +16,9 @@ from jina import Flow
 flow = Flow().add(uses='jinahub+docker://ImageTorchEncoder')
 ```
 ### Encoding example
-After creating a flow, prepare your Documents to encode. The should have the blob attribute set with shape 
-Height x Width x Channel. Then, we can start the flow and encode the Documents. By default, any endpoint will encode 
-the document:
+After creating a Flow, prepare your Documents to encode. They should have the blob attribute set with shape 
+Height x Width x Channel. Then, we can start the Flow and encode the Documents. By default, any endpoint will encode 
+the Documents:
 
 ```python
 import numpy as np
@@ -40,7 +40,7 @@ print('\n\nembedding:\n\n', resp[0].docs[0].embedding)
 ### Set `volumes`:
 
 With the `volumes` attribute, you can map the torch cache directory to your local cache directory, in order to avoid downloading 
-the model each time you start the flow.
+the model each time you start the Flow.
 
 ```python
 from jina import Flow
@@ -76,10 +76,10 @@ If `use_default_preprocessing=False`:
 `Document` with `blob` of shape `Channel x Height x Width` and dtype `float32`.
 
 ### Returns
-`Document` with `embedding` fields filled with an `ndarray` of the shape `embedding_dim` (size depends on the model) with `dtype=float32`.
+`Document` with `embedding` fields filled with an `ndarray` of shape `embedding_dim` (size depends on the model) with `dtype=float32`.
 
 ### Supported models:
-You can specify the model to use using the parameter `model_name`:
+You can specify the model to use with the parameter `model_name`:
 ```python
 import numpy as np
 
