@@ -1,6 +1,6 @@
 # DocCache
 
-DocCache is an Executor that can cache documents that it has seen before, by different combination of fields (or just one field). It then removes the Document that has the same combination of values in those fields from the DocumentArray, so it will not reach the following Executors in your Flow. 
+**DocCache** is an Executor that can cache documents that it has seen before, by different combination of fields (or just one field). It then removes the Document that has the same combination of values in those fields from the DocumentArray, so it will not reach the following Executors in your Flow. 
 
 This is useful for continuously indexing Documents, and not having to worry about indexing the same Document twice.
 
