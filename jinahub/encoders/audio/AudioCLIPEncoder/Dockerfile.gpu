@@ -1,0 +1,17 @@
+FROM jinaai/jina:2-py37-perf
+
+# install git
+RUN apt-get -y update && apt-get install -y git wget ffmpeg libsndfile-dev
+
+# install requirements before copying the workspace
+COPY gpu_requirements.txt gpu_requirements.txt
+RUN pip install -r gpu_requirements.txt
+
+# setup the workspace
+COPY . /workdir
+WORKDIR /workdir
+
+
+RUN ./scripts/download_model.sh
+
+ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

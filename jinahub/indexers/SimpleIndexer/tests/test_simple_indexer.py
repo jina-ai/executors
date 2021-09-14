@@ -1,8 +1,8 @@
 from copy import deepcopy
 from pathlib import Path
 
-import pytest
 import numpy as np
+import pytest
 from jina import Document, DocumentArray, Executor, Flow
 
 from ..simple_indexer import SimpleIndexer
@@ -205,12 +205,16 @@ def test_simple_indexer_update(tmpdir, docs, update_docs, new_docs):
     assert_document_arrays_equal(docs_indexer._docs, new_docs)
 
 
-@pytest.mark.parametrize('distance_metric', ['euclidean', 'cosine', 'sqeuclidean', 'hamming'])
+@pytest.mark.parametrize(
+    'distance_metric', ['euclidean', 'cosine', 'sqeuclidean', 'hamming']
+)
 def test_simple_indexer_search(tmpdir, distance_metric, docs):
     metas = {'workspace': str(tmpdir)}
 
     # test general/normal case
-    indexer = SimpleIndexer(index_file_name='search_normal', distance_metric=distance_metric, metas=metas)
+    indexer = SimpleIndexer(
+        index_file_name='search_normal', distance_metric=distance_metric, metas=metas
+    )
     indexer.index(docs)
     search_docs = deepcopy(docs)
     indexer.search(search_docs)
@@ -255,11 +259,14 @@ def test_simple_indexer_search(tmpdir, distance_metric, docs):
 def test_simple_indexer_key_length(key_length, expected, tmpdir):
     metas = {'workspace': str(tmpdir)}
 
-    indexer = SimpleIndexer(index_file_name='search_normal', key_length=key_length, metas=metas)
+    indexer = SimpleIndexer(
+        index_file_name='search_normal', key_length=key_length, metas=metas
+    )
     with indexer:
         docs = DocumentArray([Document(id='aab'), Document(id='aac')])
         indexer.index(docs)
         assert len(indexer._docs) == 2
-    indexer2 = SimpleIndexer(index_file_name='search_normal', key_length=key_length, metas=metas)
+    indexer2 = SimpleIndexer(
+        index_file_name='search_normal', key_length=key_length, metas=metas
+    )
     assert len(indexer2._docs) == expected
-

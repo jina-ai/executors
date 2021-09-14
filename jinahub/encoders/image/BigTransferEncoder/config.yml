@@ -1,6 +1,4 @@
 jtype: BigTransferEncoder
-with:
-  on_gpu: true
 metas:
   py_modules:
     - big_transfer.py

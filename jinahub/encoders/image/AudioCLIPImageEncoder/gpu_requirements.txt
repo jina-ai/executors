@@ -1,0 +1,11 @@
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
+torch==1.9.0
+torchvision
+pytorch-ignite==0.3.0
+termcolor==1.1.0
+tqdm==4.43.0
+visdom==0.1.8.9
+ftfy==6.0.3
+librosa==0.8.0
+regex==2021.7.6
+ffmpeg

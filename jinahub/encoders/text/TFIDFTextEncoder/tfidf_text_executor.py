@@ -1,5 +1,6 @@
 import os
 import pickle
+from pathlib import Path
 from typing import Optional, Tuple
 
 from jina import DocumentArray, Executor, requests
@@ -20,13 +21,18 @@ class TFIDFTextEncoder(Executor):
 
     def __init__(
         self,
-        path_vectorizer: str = 'model/tfidf_vectorizer.pickle',
+        path_vectorizer: Optional[str] = None,
         default_batch_size: int = 2048,
         default_traversal_paths: Tuple[str] = ('r',),
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        if path_vectorizer is None:
+            path_vectorizer = str(
+                Path(__file__).parent / 'model/tfidf_vectorizer.pickle'
+            )
+
         self.path_vectorizer = path_vectorizer
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths

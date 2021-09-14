@@ -5,7 +5,9 @@ import numpy as np
 import pytest
 import scipy
 from jina import Document, DocumentArray, Executor
-from tfidf_text_executor import TFIDFTextEncoder
+from jina.excepts import PretrainedModelFileDoesNotExist
+
+from ...tfidf_text_executor import TFIDFTextEncoder
 
 _EMBEDDING_DIM = 130107
 
@@ -21,7 +23,8 @@ def test_config():
 
 
 def test_error_no_file():
-    pass
+    with pytest.raises(PretrainedModelFileDoesNotExist):
+        TFIDFTextEncoder(path_vectorizer='does/not/exist')
 
 
 def test_no_document(basic_encoder: TFIDFTextEncoder):

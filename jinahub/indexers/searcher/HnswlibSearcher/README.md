@@ -28,9 +28,9 @@ with:
 ...
 ```
 
-- from the `Flow.rolling_update` method. See [README](../../../../README.md).
+- from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/fundamentals/executor/indexers/).
 
-The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../README.md).
+The folder needs to contain the data exported from your Indexer. Again, see [docs](https://docs.jina.ai/fundamentals/executor/indexers/).
 
 
 ```python

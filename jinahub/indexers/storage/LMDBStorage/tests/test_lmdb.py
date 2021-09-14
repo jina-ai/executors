@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor, Flow
 from jina.logging.profile import TimeContext
-
 from jina_commons.indexers.dump import import_metas, import_vectors
+
 from ..lmdb_storage import LMDBStorage
 
 np.random.seed(0)

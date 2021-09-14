@@ -6,9 +6,9 @@ from typing import Tuple
 
 import numpy as np
 import pytest
+from jina import Document, DocumentArray, Executor
 from PIL import Image
 
-from jina import Document, DocumentArray, Executor
 from ...audioclip_image import AudioCLIPImageEncoder
 
 
@@ -42,8 +42,8 @@ def nested_docs() -> DocumentArray:
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.default_batch_size == 32
-    assert ex.default_traversal_paths == ['r']
-    assert ex.use_default_preprocessing == True
+    assert ex.default_traversal_paths == ('r',)
+    assert ex.use_default_preprocessing
 
 
 def test_no_documents(basic_encoder):
@@ -75,6 +75,16 @@ def test_err_no_preprocessing(basic_encoder_no_pre):
 
     with pytest.raises(ValueError, match='If `use_default_preprocessing=False`'):
         basic_encoder_no_pre.encode(docs, {})
+
+
+@pytest.mark.gpu
+def test_single_image_gpu():
+    encoder = AudioCLIPImageEncoder(device='cuda')
+    docs = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
+    encoder.encode(docs, {})
+
+    assert docs[0].embedding.shape == (1024,)
+    assert docs[0].embedding.dtype == np.float32
 
 
 def test_single_image(basic_encoder):
@@ -133,10 +143,8 @@ def test_traversal_path(
 ):
     basic_encoder.encode(nested_docs, parameters={'traversal_paths': [path]})
     for path_check, count in expected_counts:
-        assert (
-            len(nested_docs.traverse_flat([path_check]).get_attributes('embedding'))
-            == count
-        )
+        embeddings = nested_docs.traverse_flat([path_check]).get_attributes('embedding')
+        assert len([em for em in embeddings if em is not None]) == count
 
 
 @pytest.mark.parametrize("batch_size", [1, 2, 4, 8])

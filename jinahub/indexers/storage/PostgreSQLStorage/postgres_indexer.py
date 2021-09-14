@@ -3,6 +3,7 @@ __license__ = "Apache-2.0"
 
 from typing import Dict, List
 
+import numpy as np
 from jina import Document, DocumentArray, Executor, requests
 from jina_commons import get_logger
 from jina_commons.indexers.dump import export_dump_streaming
@@ -48,6 +49,7 @@ class PostgreSQLStorage(Executor):
         default_return_embeddings: bool = True,
         dry_run: bool = False,
         virtual_shards: int = 128,
+        dump_dtype: type = np.float64,
         *args,
         **kwargs,
     ):
@@ -71,6 +73,7 @@ class PostgreSQLStorage(Executor):
             max_connections=max_connections,
             dry_run=dry_run,
             virtual_shards=virtual_shards,
+            dump_dtype=dump_dtype,
         )
         self.default_return_embeddings = default_return_embeddings
 

@@ -6,4 +6,5 @@ metas:
     - __init__.py
   workspace: workspace/
   name: faiss_postgres_searcher
-
+runtime_args:
+  name: faiss_postgres_searcher

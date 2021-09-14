@@ -1,9 +1,9 @@
 import hashlib
 import os
 import pickle
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-from jina import Executor, DocumentArray, requests, Document
+from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
 
@@ -16,22 +16,22 @@ class _CacheHandler:
 
     def __init__(self, path, logger):
         self.path = path
-        self.id_to_hash_fn = path + '.ids'
-        self.hash_to_id_fn = path + '.cache'
+        self.id_to_hash_fn = path + ".ids"
+        self.hash_to_id_fn = path + ".cache"
         try:
-            self.id_to_hash = pickle.load(open(self.id_to_hash_fn, 'rb'))
-            self.hash_to_id = pickle.load(open(self.hash_to_id_fn, 'rb'))
+            self.id_to_hash = pickle.load(open(self.id_to_hash_fn, "rb"))
+            self.hash_to_id = pickle.load(open(self.hash_to_id_fn, "rb"))
         except FileNotFoundError as e:
             logger.warning(
-                f'File path did not exist : {path}.ids or {path}.cache: {e!r}. Creating new CacheHandler...'
+                f"File path did not exist : {path}.ids or {path}.cache: {e!r}. Creating new CacheHandler..."
             )
             self.id_to_hash = dict()
             self.hash_to_id = dict()
 
     def close(self):
         """Flushes the in-memory cache to pickle files."""
-        pickle.dump(self.id_to_hash, open(self.id_to_hash_fn, 'wb'))
-        pickle.dump(self.hash_to_id, open(self.hash_to_id_fn, 'wb'))
+        pickle.dump(self.id_to_hash, open(self.id_to_hash_fn, "wb"))
+        pickle.dump(self.hash_to_id, open(self.hash_to_id_fn, "wb"))
 
 
 class DocCache(Executor):
@@ -50,16 +50,16 @@ class DocCache(Executor):
     ):
         super().__init__(*args, **kwargs)
         if fields is None:
-            fields = ('content_hash', ),
+            fields = (("content_hash",),)
         self.fields = fields
-        self.logger = JinaLogger(getattr(self.metas, 'name', self.__class__.__name__))
+        self.logger = JinaLogger(getattr(self.metas, "name", self.__class__.__name__))
         if not os.path.exists(self.workspace):
             os.makedirs(self.workspace)
         self.cache_handler = _CacheHandler(
-            os.path.join(self.workspace, 'cache'), self.logger
+            os.path.join(self.workspace, "cache"), self.logger
         )
 
-    @requests(on='/index')
+    @requests(on="/index")
     def index_or_remove_from_request(self, docs: DocumentArray, **kwargs):
         """Index Documents in the cache, by hashing self.fields
 
@@ -87,7 +87,7 @@ class DocCache(Executor):
         for i in indices_to_remove:
             del docs[i]
         self.logger.info(
-            f'Finished index op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
+            f"Finished index op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}"
         )
 
     def close(self) -> None:
@@ -104,10 +104,10 @@ class DocCache(Executor):
         values = doc.get_attributes(*fields)
         if not isinstance(values, list):
             values = [values]
-        data = ''
+        data = ""
         for field, value in zip(fields, values):
-            data += f'{field}:{value};'
-        digest = hashlib.sha256(bytes(data.encode('utf8'))).digest()
+            data += f"{field}:{value};"
+        digest = hashlib.sha256(bytes(data.encode("utf8"))).digest()
         return digest
 
     @property
@@ -123,7 +123,7 @@ class DocCache(Executor):
         """Return the nr of distinct hashes"""
         return len(self.cache_handler.hash_to_id)
 
-    @requests(on='/update')
+    @requests(on="/update")
     def update(self, docs: DocumentArray, **kwargs):
         """Update the documents in the cache with the new content, by id"""
         for i, d in enumerate(docs):
@@ -143,10 +143,10 @@ class DocCache(Executor):
 
                 self.cache_handler.hash_to_id[new_doc_hash] = d.id
         self.logger.info(
-            f'Finished update op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
+            f"Finished update op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}"
         )
 
-    @requests(on='/delete')
+    @requests(on="/delete")
     def delete(self, docs: DocumentArray, **kwargs):
         for i, d in enumerate(docs):
             exists = d.id in self.cache_handler.id_to_hash.keys()
@@ -155,10 +155,10 @@ class DocCache(Executor):
                 old_cache_value = self.cache_handler.id_to_hash[d.id]
                 try:
                     del self.cache_handler.hash_to_id[old_cache_value]
-                except KeyError as e:
+                except KeyError:
                     # no guarantee
                     pass
                 del self.cache_handler.id_to_hash[d.id]
         self.logger.info(
-            f'Finished delete op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
+            f"Finished delete op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}"
         )

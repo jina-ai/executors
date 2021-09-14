@@ -3,7 +3,6 @@
 # run the tests in that directory
 set -ex
 
-containers=()
 gpu_folders=()
 root=`pwd`
 

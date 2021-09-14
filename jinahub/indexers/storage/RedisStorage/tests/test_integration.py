@@ -1,7 +1,7 @@
 import os
 
 import pytest as pytest
-from jina import Flow, DocumentArray, Document
+from jina import Document, DocumentArray, Flow
 
 from ..redis_storage import RedisStorage
 
@@ -14,7 +14,11 @@ def test_flow(docs, docker_compose):
     f = Flow().add(uses=RedisStorage)
     with f:
         f.post(on='/index', inputs=docs)
-        resp = f.post(on='/search', inputs=DocumentArray([Document(id=doc.id) for doc in docs]), return_results=True)
+        resp = f.post(
+            on='/search',
+            inputs=DocumentArray([Document(id=doc.id) for doc in docs]),
+            return_results=True,
+        )
 
     assert len(resp[0].docs) == len(docs)
     assert all(doc_a.id == doc_b.id for doc_a, doc_b in zip(resp[0].docs, docs))

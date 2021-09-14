@@ -8,7 +8,7 @@ from jina import Document, DocumentArray, Flow
 
 from ...spacy_text_encoder import SpacyTextEncoder
 
-_EMBEDDING_DIM = 384
+_EMBEDDING_DIM = 96
 
 
 @pytest.mark.parametrize('request_size', [1, 10, 50, 100])

@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 import pytest
-from jina import DocumentArray, Document, Executor, Flow
+from jina import Document, DocumentArray, Executor, Flow
 
 from ..doc_cache import DocCache
 
