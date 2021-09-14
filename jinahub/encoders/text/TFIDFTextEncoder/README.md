@@ -6,14 +6,9 @@ The TFIDF model is a classic vector representation for [information retrieval](h
 
 `TfidfTextEncoder` encodes data from a `DocumentArray` and updates the `doc.embedding` attributes with a  `scipy.csr_matrix`of floating point values for each doc in DocumentArray.
 
-
-
-
 ## Prerequisites
 
 You need a TF-IDF vectorizer pretrained.
-
-### Pretraining a TF-IDF Vectorizer
 
 The `TFIDFTextEncoder`  uses a `sklearn.feature_extraction.text.TfidfVectorizer`object that needs to be fitted and stored as a pickle object which the `TFIDFTextEncoder` will load from `path_vectorizer`. By default `path_vectorizer='model/tfidf_vectorizer.pickle'` .
 
@@ -38,3 +33,4 @@ if __name__ == '__main__':
 ## Reference
 
 - https://en.wikipedia.org/wiki/Tf-idf
+- [`sklearn.feature_extraction.text.TfidfVectorizer`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html)

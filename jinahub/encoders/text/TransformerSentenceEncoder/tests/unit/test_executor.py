@@ -1,29 +1,26 @@
-__copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
-__license__ = "Apache-2.0"
-
 from pathlib import Path
 from typing import List
 
 import pytest
 from jina import Document, DocumentArray, Executor
 
-from ...spacy_text_encoder import SpacyTextEncoder
+from ...sentence_encoder import TransformerSentenceEncoder
 
-_EMBEDDING_DIM = 96
+_EMBEDDING_DIM = 384
 
 
 @pytest.fixture(scope='session')
-def basic_encoder() -> SpacyTextEncoder:
-    return SpacyTextEncoder()
+def basic_encoder() -> TransformerSentenceEncoder:
+    return TransformerSentenceEncoder()
 
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.__class__.__name__ == 'SpacyTextEncoder'
+    assert ex.__class__.__name__ == 'TransformerSentenceEncoder'
 
 
 def test_encoding_cpu():
-    enc = SpacyTextEncoder(require_gpu=False)
+    enc = TransformerSentenceEncoder(device='cpu')
     input_data = DocumentArray([Document(text='hello world')])
 
     enc.encode(docs=input_data, parameters={})
@@ -33,7 +30,7 @@ def test_encoding_cpu():
 
 @pytest.mark.gpu
 def test_encoding_gpu():
-    enc = SpacyTextEncoder(require_gpu=True)
+    enc = TransformerSentenceEncoder(device='cuda')
     input_data = DocumentArray([Document(text='hello world')])
 
     enc.encode(docs=input_data, parameters={})
@@ -44,13 +41,13 @@ def test_encoding_gpu():
 @pytest.mark.parametrize(
     'model_name, emb_dim',
     [
-        ('en_core_web_sm', 96),
-        ('en_core_web_lg', 300),
-        ('es_core_news_sm', 96),
+        ('sentence-transformers/multi-qa-MiniLM-L6-cos-v1', 384),
+        ('sentence-transformers/msmarco-distilbert-base-tas-b', 768),
+        ('distilbert-base-uncased', 768),
     ],
 )
 def test_models(model_name: str, emb_dim: int):
-    encoder = SpacyTextEncoder(model_name)
+    encoder = TransformerSentenceEncoder(model_name)
     input_data = DocumentArray([Document(text='hello world')])
 
     encoder.encode(docs=input_data, parameters={})
@@ -68,7 +65,7 @@ def test_models(model_name: str, emb_dim: int):
     ],
 )
 def test_traversal_path(
-    traversal_paths: List[str], counts: List, basic_encoder: SpacyTextEncoder
+    traversal_paths: List[str], counts: List, basic_encoder: TransformerSentenceEncoder
 ):
     text = 'blah'
     docs = DocumentArray([Document(id='root1', text=text)])
@@ -89,7 +86,7 @@ def test_traversal_path(
 
 
 @pytest.mark.parametrize('batch_size', [1, 2, 4, 8])
-def test_batch_size(basic_encoder: SpacyTextEncoder, batch_size: int):
+def test_batch_size(basic_encoder: TransformerSentenceEncoder, batch_size: int):
     docs = DocumentArray([Document(text='hello there') for _ in range(32)])
     basic_encoder.encode(docs, parameters={'batch_size': batch_size})
 
@@ -97,7 +94,7 @@ def test_batch_size(basic_encoder: SpacyTextEncoder, batch_size: int):
         assert doc.embedding.shape == (_EMBEDDING_DIM,)
 
 
-def test_quality_embeddings(basic_encoder: SpacyTextEncoder):
+def test_quality_embeddings(basic_encoder: TransformerSentenceEncoder):
     docs = DocumentArray(
         [
             Document(id='A', text='a furry animal that with a long tail'),
