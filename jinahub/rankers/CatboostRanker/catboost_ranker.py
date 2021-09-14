@@ -6,7 +6,6 @@ from typing import Dict, List, Optional
 
 import numpy as np
 from catboost import CatBoostRanker, Pool
-
 from jina import DocumentArray, Executor, requests
 
 
