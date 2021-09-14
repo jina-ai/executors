@@ -1,6 +1,6 @@
 import random
-import pytest
 
+import pytest
 from jina import Document, DocumentArray
 
 
