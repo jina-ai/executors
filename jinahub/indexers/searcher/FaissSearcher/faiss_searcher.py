@@ -317,6 +317,9 @@ class FaissSearcher(Executor):
 
         :param docs: the DocumentArray containing the documents to search with
         :param parameters: the parameters for the request
+
+        :return: Attaches matches to the Documents sent as inputs, with the id of the
+            match, and its embedding.
         """
         if not hasattr(self, '_faiss_index'):
             self.logger.warning('Querying against an empty Index')
