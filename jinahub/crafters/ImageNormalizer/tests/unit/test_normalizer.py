@@ -144,8 +144,8 @@ def test_crafting_image(
     if manual_convert:
         docs = DocumentArray([doc])
     else:
-        docs = DocumentArray([test_image_uri_doc])
-        docs[0].chunks.extend(DocumentArray([test_image_uri_doc]))
+        docs = DocumentArray([Document(test_image_uri_doc, copy=True)])
+        docs[0].chunks.extend(DocumentArray([Document(test_image_uri_doc, copy=True)]))
     processed_docs = norm.craft(docs, parameters={}).traverse_flat(
         default_traversal_paths
     )
