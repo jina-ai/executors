@@ -1,1 +1,1 @@
-sudo apt-get update && sudo apt-get install -y wget libsndfile1
+sudo apt-get update && sudo apt-get install -y wget ffmpeg libsndfile1
