@@ -3,9 +3,8 @@ from typing import List
 
 import pytest
 import torch
+from dpr_reader import DPRReaderRanker
 from jina import Document, DocumentArray, Executor
-
-from ...dpr_reader import DPRReaderRanker
 
 
 @pytest.fixture(scope='session')

@@ -6,9 +6,8 @@ from typing import List
 
 import numpy as np
 import pytest
+from image_tf_encoder import ImageTFEncoder
 from jina import Document, DocumentArray, Flow
-
-from ...image_tf_encoder import ImageTFEncoder
 
 input_dim = 336
 target_output_dim = 1280
@@ -108,7 +107,7 @@ def test_docker_runtime_gpu(build_docker_image_gpu: str):
         subprocess.run(
             [
                 'jina',
-                'pea',
+                'executor',
                 f'--uses=docker://{build_docker_image_gpu}',
                 '--gpus',
                 'all',

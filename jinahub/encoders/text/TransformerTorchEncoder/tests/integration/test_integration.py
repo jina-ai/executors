@@ -5,8 +5,7 @@ import subprocess
 
 import pytest
 from jina import Document, DocumentArray, Flow
-
-from ...transform_encoder import TransformerTorchEncoder
+from transform_encoder import TransformerTorchEncoder
 
 _EMBEDDING_DIM = 768
 

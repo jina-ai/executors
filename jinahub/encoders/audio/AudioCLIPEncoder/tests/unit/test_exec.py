@@ -6,10 +6,9 @@ from pathlib import Path
 import librosa
 import numpy as np
 import pytest
+from executor.audio_clip_encoder import AudioCLIPEncoder
 from jina import Document, DocumentArray, Executor
 from jina.excepts import BadDocType
-
-from ...audio_clip_encoder import AudioCLIPEncoder
 
 
 def test_config():

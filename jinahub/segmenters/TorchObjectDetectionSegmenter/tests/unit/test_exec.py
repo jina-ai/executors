@@ -4,14 +4,12 @@ __license__ = "Apache-2.0"
 
 import os
 from pathlib import Path
-
-import numpy as np
-from PIL import Image
 from unittest.mock import patch
 
+import numpy as np
 from jina import Document, DocumentArray, Executor
-from ...torch_object_detection_segmenter import TorchObjectDetectionSegmenter
-
+from PIL import Image
+from torch_object_detection_segmenter import TorchObjectDetectionSegmenter
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

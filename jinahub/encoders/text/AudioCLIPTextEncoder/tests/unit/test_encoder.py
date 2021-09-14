@@ -2,9 +2,8 @@ from pathlib import Path
 from typing import List
 
 import pytest
+from executor.audioclip_text import AudioCLIPTextEncoder
 from jina import Document, DocumentArray, Executor
-
-from ...audioclip_text import AudioCLIPTextEncoder
 
 _EMBEDDING_DIM = 1024
 

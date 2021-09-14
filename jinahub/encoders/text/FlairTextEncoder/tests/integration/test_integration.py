@@ -1,9 +1,8 @@
 import subprocess
 
 import pytest
+from flair_text import FlairTextEncoder
 from jina import Document, DocumentArray, Flow
-
-from ...flair_text import FlairTextEncoder
 
 _EMBEDDING_DIM = 100
 

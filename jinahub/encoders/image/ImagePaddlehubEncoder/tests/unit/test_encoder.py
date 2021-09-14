@@ -4,8 +4,7 @@ from typing import Dict
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor
-
-from ...paddle_image import ImagePaddlehubEncoder
+from paddle_image import ImagePaddlehubEncoder
 
 input_dim = 224
 target_output_dim = 2048

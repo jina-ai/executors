@@ -3,9 +3,9 @@ __license__ = "Apache-2.0"
 
 import os
 
-from PIL import Image
 from jina import Flow
-from ...pdf_segmenter import PDFSegmenter
+from pdf_segmenter import PDFSegmenter
+from PIL import Image
 
 
 def test_flow(test_dir, doc_generator_img_text, expected_text):
@@ -13,17 +13,15 @@ def test_flow(test_dir, doc_generator_img_text, expected_text):
     doc_array = doc_generator_img_text
     for doc in doc_array:
         with flow:
-            results = flow.post(
-                on='/test',
-                inputs=doc,
-                return_results=True
-            )
+            results = flow.post(on='/test', inputs=doc, return_results=True)
 
             assert len(results[0].docs) == 1
             chunks = results[0].docs[0].chunks
             assert len(chunks) == 3
             for idx, c in enumerate(chunks[:2]):
-                with Image.open(os.path.join(test_dir, f'data/test_img_{idx}.jpg')) as img:
+                with Image.open(
+                    os.path.join(test_dir, f'data/test_img_{idx}.jpg')
+                ) as img:
                     blob = chunks[idx].blob
                     assert chunks[idx].mime_type == 'image/*'
                     assert blob.shape[1], blob.shape[0] == img.size

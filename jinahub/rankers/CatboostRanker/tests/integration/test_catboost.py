@@ -1,16 +1,15 @@
 import os
 
 import pytest
+from catboost_ranker import CatboostRanker
 from jina import Flow
-
-from ...catboost_ranker import CatboostRanker
 
 
 @pytest.fixture
 def flow():
     return Flow().add(
         uses=CatboostRanker,
-        uses_with={
+        override_with={
             'query_features': ['brand', 'price'],
             'match_features': ['brand', 'price'],
             'relevance_label': 'relevance',

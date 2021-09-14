@@ -6,8 +6,7 @@ from typing import List
 
 import pytest
 from jina import Document, DocumentArray, Executor
-
-from ...spacy_text_encoder import SpacyTextEncoder
+from spacy_text_encoder import SpacyTextEncoder
 
 _EMBEDDING_DIM = 96
 

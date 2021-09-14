@@ -2,8 +2,7 @@ import random
 
 import pytest
 from jina import Document, DocumentArray
-
-from ..lightgbm_ranker import LightGBMRanker
+from lightgbm_ranker import LightGBMRanker
 
 NUM_DOCS = 1000
 NUM_MATCHES = 5

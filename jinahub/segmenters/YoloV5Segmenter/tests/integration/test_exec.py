@@ -3,7 +3,7 @@ __license__ = "Apache-2.0"
 
 import os
 
-from jina import Flow, Document, DocumentArray
+from jina import Document, DocumentArray, Flow
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

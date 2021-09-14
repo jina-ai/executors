@@ -5,8 +5,7 @@ import subprocess
 
 import pytest
 from jina import Document, DocumentArray, Flow
-
-from ...sentence_encoder import TransformerSentenceEncoder
+from sentence_encoder import TransformerSentenceEncoder
 
 _EMBEDDING_DIM = 384
 

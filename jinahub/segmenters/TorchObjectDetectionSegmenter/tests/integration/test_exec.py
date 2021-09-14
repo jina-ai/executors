@@ -1,8 +1,8 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from jina import Flow, Document
-from ...torch_object_detection_segmenter import TorchObjectDetectionSegmenter
+from jina import Document, Flow
+from torch_object_detection_segmenter import TorchObjectDetectionSegmenter
 
 
 def test_exec():

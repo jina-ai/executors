@@ -2,9 +2,9 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from itertools import groupby
-from typing import Iterable, Dict
+from typing import Dict, Iterable
 
-from jina import Executor, requests, DocumentArray
+from jina import DocumentArray, Executor, requests
 
 
 class SimpleRanker(Executor):
@@ -63,7 +63,7 @@ class SimpleRanker(Executor):
                 match.id = chunk_match_list[0].parent_id
                 if self.ranking in ['mean_min', 'mean_max']:
                     scores = [el.scores[self.metric].value for el in chunk_match_list]
-                    match.scores[self.metric] = sum(scores)/len(scores)
+                    match.scores[self.metric] = sum(scores) / len(scores)
                 doc.matches.append(match)
             if self.ranking in ['min', 'mean_min']:
                 doc.matches.sort(key=lambda d: d.scores[self.metric].value)

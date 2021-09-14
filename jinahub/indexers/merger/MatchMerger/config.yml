@@ -1,6 +1,4 @@
 jtype: MatchMerger
-with:
-  {}
 metas:
   py_modules:
     - match_merger.py
