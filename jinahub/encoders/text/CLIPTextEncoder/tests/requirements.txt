@@ -1,2 +1,1 @@
-clip @ git+https://github.com/openai/CLIP.git
 pytest==6.2.4
