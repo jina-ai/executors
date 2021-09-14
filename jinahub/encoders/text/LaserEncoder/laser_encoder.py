@@ -28,7 +28,10 @@ class LaserEncoder(Executor):
         production setting (where you should already have the data on disk), as it can
         lead to large startup times.
     :param default_language: The default language of the text. Can be overriden by a
-        request parameter.
+        request parameter. The full list of possible values can be found at
+        [LASER](https://github.com/facebookresearch/LASER#supported-languages)
+        with the language code
+        ([ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
     :param cpu: if True, forces the use of the CPU even when a GPU is available.
     :param default_batch_size: size of each batch
     :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
@@ -81,8 +84,8 @@ class LaserEncoder(Executor):
 
         :param docs: documents sent to the encoder. The docs must have the ``text``
             attribute.
-        :param parameters: dictionary to define the ``traversal_path`` and the
-            ``batch_size``. For example,
+        :param parameters: dictionary to define the ``traversal_path``, the
+            ``batch_size`` and ``language``. For example,
             ``{'traversal_paths': ['r'], 'batch_size': 10}``. This will override the
             default parameters set at init.
         """
