@@ -20,6 +20,9 @@ class ImageTorchEncoder(Executor):
     Where `D` is the Dimension of the embedding.
     If `use_default_preprocessing=False`, the expected input shape is `C x H x W` with `float32` dtype.
 
+    :class:`ImageTorchEncoder` fills the `embedding` fields of `Documents` with an `ndarray` of shape `embedding_dim`
+    (size depends on the model) with `dtype=float32`.
+
     Internally, :class:`ImageTorchEncoder` wraps the models from
     `torchvision.models`.
     https://pytorch.org/vision/stable/models.html

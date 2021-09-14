@@ -37,7 +37,7 @@ with f:
 print('\n\nembedding:\n\n', resp[0].docs[0].embedding)
 ```
 
-### Set `volumes`:
+### Set `volumes`
 
 With the `volumes` attribute, you can map the torch cache directory to your local cache directory, in order to avoid downloading 
 the model each time you start the Flow.
@@ -45,8 +45,10 @@ the model each time you start the Flow.
 ```python
 from jina import Flow
 
-flow = Flow().add(uses='jinahub+docker://ImageTorchEncoder',
-                  volumes='/your_home_folder/.cache/torch:/root/.cache/torch')
+flow = Flow().add(
+    uses='jinahub+docker://ImageTorchEncoder',
+    volumes='/your_home_folder/.cache/torch:/root/.cache/torch'
+)
 ```
 
 Alternatively, you can reference the docker image in the `yml` config and specify the `volumes` configuration.
@@ -68,13 +70,6 @@ from jina import Flow
 flow = Flow().add(uses='flow.yml')
 ```
 
-### Inputs 
-If `use_default_preprocessing=True` (recommended):  
-`Document` with `blob` of shape `Height x Width x Channel` and dtype `uint8`.  
-
-If `use_default_preprocessing=False`:  
-`Document` with `blob` of shape `Channel x Height x Width` and dtype `float32`.
-
 ### Returns
 `Document` with `embedding` fields filled with an `ndarray` of shape `embedding_dim` (size depends on the model) with `dtype=float32`.
 
@@ -85,8 +80,10 @@ import numpy as np
 
 from jina import Flow, Document
 
-f = Flow().add(uses='jinahub+docker://ImageTorchEncoder',
-               uses_with={'model_name': 'alexnet'})
+f = Flow().add(
+    uses='jinahub+docker://ImageTorchEncoder',
+    uses_with={'model_name': 'alexnet'}
+)
 
 doc = Document(blob=np.ones((224, 224, 3), dtype=np.uint8))
 
