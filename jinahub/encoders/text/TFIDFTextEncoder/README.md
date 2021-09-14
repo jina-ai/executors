@@ -11,9 +11,7 @@ The TFIDF model is a classic vector representation for [information retrieval](h
 
 ## Prerequisites
 
-
-
-You also need a TF-IDF vectorizer pretrained.
+You need a TF-IDF vectorizer pretrained.
 
 ### Pretraining a TF-IDF Vectorizer
 
@@ -36,29 +34,6 @@ if __name__ == '__main__':
     tfidf_vectorizer.fit(X)
     pickle.dump(tfidf_vectorizer, open('tfidf_vectorizer.pickle', 'wb'))
 ```
-
-
-## Usage 
-
-```python
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub+docker://TFIDFTextEncoder')
-
-with f:
-    resp = f.index(inputs=Document(text='Han eats pizza'), return_results=True)
-	print(f'{resp}')
-```
-
-### Inputs
-
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with `text`. By default, the input `text`must be a unicode string.  
-
-### Returns
-
-[Documents](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md) with `embedding` fields filled with an `scipy.sparse.csr_matrix` of the shape `n_vocabulary`.
-
-
 
 ## Reference
 
