@@ -118,7 +118,9 @@ You can check the models [here](https://pytorch.org/vision/stable/models.html)
 To enable GPU, you can set the `device` parameter to a cuda device.
 Make sure your machine is cuda-compatible.
 If you're using a docker container, make sure to add the `gpu` tag and enable 
-GPU access to docker with `gpus='all'`.
+GPU access to Docker with `gpus='all'`.
+Furthermore, make sure you satisfy the prerequisites mentioned in 
+[Executor on GPU tutorial](https://docs.jina.ai/tutorials/gpu_executor/#prerequisites).
 
 ```python
 import numpy as np
