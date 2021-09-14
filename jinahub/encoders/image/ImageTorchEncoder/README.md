@@ -9,13 +9,20 @@ The `blob` attribute represents the image to be encoded by **ImageTorchEncoder**
 
 ## Usage
 
-
 Use the prebuilt images from Jina Hub in your Python codes, add it to your Flow and encode an image:
-```python
-from jina import Flow
 
-flow = Flow().add(uses='jinahub+docker://ImageTorchEncoder')
+```python
+from jina import Flow, Document
+
+f = Flow().add(uses='jinahub+docker://ImageTorchEncoder', uses_with={'model_name': 'resnet50'})
+
+doc = Document(uri='my_image.png')
+doc.convert_image_uri_to_blob()
+
+with f:
+    f.post(on='/index', inputs=doc, on_done=lambda resp: print(resp.docs[0].embedding))
 ```
+
 ### Encoding example
 After creating a Flow, prepare your Documents to encode. They should have the blob attribute set with shape 
 Height x Width x Channel. Then, we can start the Flow and encode the Documents. By default, any endpoint will encode 
