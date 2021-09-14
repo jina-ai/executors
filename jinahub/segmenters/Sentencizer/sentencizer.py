@@ -1,10 +1,10 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Dict
 import re
+from typing import Dict, List, Optional
 
-from jina import Executor, DocumentArray, requests, Document
+from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
 
@@ -27,13 +27,17 @@ class Sentencizer(Executor):
     :param args:  Additional positional arguments
     :param kwargs: Additional keyword arguments
     """
-    def __init__(self,
-                 min_sent_len: int = 1,
-                 max_sent_len: int = 512,
-                 punct_chars: Optional[List[str]] = None,
-                 uniform_weight: bool = True,
-                 default_traversal_path: Optional[List[str]] = None,
-                 *args, **kwargs):
+
+    def __init__(
+        self,
+        min_sent_len: int = 1,
+        max_sent_len: int = 512,
+        punct_chars: Optional[List[str]] = None,
+        uniform_weight: bool = True,
+        default_traversal_path: Optional[List[str]] = None,
+        *args,
+        **kwargs
+    ):
         """Set constructor."""
         super().__init__(*args, **kwargs)
         self.min_sent_len = min_sent_len
@@ -43,12 +47,40 @@ class Sentencizer(Executor):
         self.logger = JinaLogger(self.__class__.__name__)
         self.default_traversal_path = default_traversal_path or ['r']
         if not punct_chars:
-            self.punct_chars = ['!', '.', '?', '։', '؟', '۔', '܀', '܁', '܂', '‼', '‽', '⁇', '⁈', '⁉', '⸮', '﹖', '﹗',
-                                '！', '．', '？', '｡', '。', '\n']
+            self.punct_chars = [
+                '!',
+                '.',
+                '?',
+                '։',
+                '؟',
+                '۔',
+                '܀',
+                '܁',
+                '܂',
+                '‼',
+                '‽',
+                '⁇',
+                '⁈',
+                '⁉',
+                '⸮',
+                '﹖',
+                '﹗',
+                '！',
+                '．',
+                '？',
+                '｡',
+                '。',
+                '\n',
+            ]
         if self.min_sent_len > self.max_sent_len:
-            self.logger.warning('the min_sent_len (={}) should be smaller or equal to the max_sent_len (={})'.format(
-                self.min_sent_len, self.max_sent_len))
-        self._slit_pat = re.compile('\s*([^{0}]+)(?<!\s)[{0}]*'.format(''.join(set(self.punct_chars))))
+            self.logger.warning(
+                'the min_sent_len (={}) should be smaller or equal to the max_sent_len (={})'.format(
+                    self.min_sent_len, self.max_sent_len
+                )
+            )
+        self._slit_pat = re.compile(
+            r'\s*([^{0}]+)(?<!\s)[{0}]*'.format(''.join(set(self.punct_chars)))
+        )
 
     @requests
     def segment(self, docs: DocumentArray, parameters: Dict, **kwargs):
@@ -63,18 +95,21 @@ class Sentencizer(Executor):
         flat_docs = docs.traverse_flat(traversal_path)
         for doc in flat_docs:
             text = doc.text
-            ret = [(m.group(0), m.start(), m.end()) for m in
-                   re.finditer(self._slit_pat, text)]
+            ret = [
+                (m.group(0), m.start(), m.end())
+                for m in re.finditer(self._slit_pat, text)
+            ]
             if not ret:
                 ret = [(text, 0, len(text))]
             for ci, (r, s, e) in enumerate(ret):
                 f = re.sub('\n+', ' ', r).strip()
-                f = f[:self.max_sent_len]
+                f = f[: self.max_sent_len]
                 if len(f) > self.min_sent_len:
                     doc.chunks.append(
                         Document(
                             text=f,
                             offset=ci,
                             weight=1.0 if self.uniform_weight else len(f) / len(text),
-                            location=[s, e])
+                            location=[s, e],
+                        )
                     )

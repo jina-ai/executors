@@ -4,7 +4,7 @@ __license__ = 'Apache-2.0'
 from pathlib import Path
 
 import pytest
-from jina import Flow, Document, DocumentArray
+from jina import Flow
 
 
 @pytest.mark.parametrize('_type', ['wav', 'mp3', 'blob'])

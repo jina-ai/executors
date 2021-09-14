@@ -4,11 +4,11 @@ __license__ = 'Apache-2.0'
 from pathlib import Path
 from typing import Optional, Tuple
 
+import librosa as lr
+import numpy as np
 import torch
 import torchaudio
-import numpy as np
-import librosa as lr
-from jina import Executor, Document, DocumentArray, requests
+from jina import Document, DocumentArray, Executor, requests
 from jina.excepts import BadDocType
 
 
