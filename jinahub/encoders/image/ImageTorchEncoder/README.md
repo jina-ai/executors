@@ -118,8 +118,10 @@ import numpy as np
 
 from jina import Flow, Document
 
-f = Flow().add(uses='jinahub+docker://ImageTorchEncoder/gpu',
-               uses_with={'device': 'cuda'}, gpus='all')
+f = Flow().add(
+    uses='jinahub+docker://ImageTorchEncoder/gpu',
+    uses_with={'device': 'cuda'}, gpus='all'
+)
 
 doc = Document(blob=np.ones((224, 224, 3), dtype=np.uint8))
 
