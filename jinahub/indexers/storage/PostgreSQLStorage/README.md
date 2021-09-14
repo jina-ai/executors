@@ -23,29 +23,8 @@ Use `host.docker.internal` to access localhost on the host machine. You can pass
 to the `PostgresSQLStorage` storage by using `uses_with={'hostname': 'host.docker.internal''}` when
 calling the `flow.add(...)` function.
 
-## Usage
 
 This indexer assumes a PRIMARY KEY on the `id` field, thus you cannot add two `Document` of the same id. Make sure you clean up any existing data if you want to start fresh.
-
-
-
-```python
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub://PostgreSQLStorage')
-
-with f:
-    resp = f.post(on='/index', inputs=Document(), return_results=True)
-    print(f'{resp}')
-```
-
-### Inputs 
-
-Any type of `Document`.
-
-### Returns
-
-Nothing. The `Documents`s are stored.
 
 ## Reference
 

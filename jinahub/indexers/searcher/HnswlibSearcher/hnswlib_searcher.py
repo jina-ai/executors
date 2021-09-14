@@ -85,6 +85,15 @@ class HnswlibSearcher(Executor):
 
     @requests(on='/search')
     def search(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
+        """
+
+        :param docs: `Document` with `.embedding` the same shape as the `Documents`
+            it has stored.
+        :param parameters: dictionary to define the `traversal_paths` and the `top_k`.
+
+        :return: Attaches matches to the Documents sent as inputs, with the id of the
+            match, and its embedding.
+        """
         if docs is None:
             return
         if not hasattr(self, '_indexer'):
