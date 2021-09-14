@@ -1,6 +1,6 @@
 FROM jinaai/jina:latest-perf
 
-RUN apt-get -y update && apt-get install -y libsndfile1
+RUN apt-get -y update && apt-get install -y ffmpeg libsndfile1
 
 # install requirements before copying the workspace
 COPY requirements.txt /requirements.txt

@@ -1,6 +1,5 @@
-FROM jinaai/jina:master
+FROM jinaai/jina:latest-perf
 
-# install git
 RUN apt-get -y update && apt-get install -y git gcc ffmpeg libsm6 libxext6
 
 # install requirements before copying the workspace
