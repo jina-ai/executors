@@ -74,9 +74,11 @@ jobs:
       - name: Python requirements
         run: pip install -r requirements.txt -r tests/requirements.txt
       - name: Create Dockerfile, if needed
-        run: |
-          if [[ ! -f "Dockerfile" ]]; then
-            docker run --entrypoint="normalizer" -v "$(pwd):/workspace" jinahub/hubble-normalizer:latest . --jina-version=2; sudo chown -R $(id -u ${USER}):$(id -g ${USER}) . ; fi
+          run: |
+            if [[ ! -f "Dockerfile" ]]; then
+              docker run --entrypoint="normalizer" -v "$(pwd):/workspace" \
+              jinahub/hubble-normalizer:v0.1.0 . --jina-version=2
+              sudo chown -R $(id -u ${USER}):$(id -g ${USER}) . ; fi
       - name: Run unit tests
         run: pytest -s -v -m "not gpu"
       # - name: Print image size
