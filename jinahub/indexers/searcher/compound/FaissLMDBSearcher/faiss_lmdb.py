@@ -11,6 +11,17 @@ from jinahub.indexers.storage.LMDBStorage import LMDBStorage
 
 
 class FaissLMDBSearcher(Executor):
+    """
+    `Document` with `.embedding` the same shape as the `Documents` stored in the
+    `FaissSearcher`. The ids of the `Documents` stored in `FaissSearcher` need to
+    exist in the `FileSearcher`. Otherwise you will not get back the original metadata.
+
+    The `FaissSearcher` attaches matches to the `Documents` sent as inputs, with the id of
+    the match, and its embedding. Then, the `FileSearcher` retrieves the full metadata
+    (original text or image blob) and attaches those to the `Document`. You receive back
+    the full `Document`.
+    """
+
     def __init__(self, dump_path=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._vec_indexer = FaissSearcher(dump_path=dump_path, *args, **kwargs)

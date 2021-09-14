@@ -2,7 +2,6 @@ from typing import Iterable, List, Optional, Tuple
 
 import numpy as np
 import torch
-
 from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator

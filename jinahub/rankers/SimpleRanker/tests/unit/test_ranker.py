@@ -2,13 +2,20 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import pytest
+
 from ...simpleranker import SimpleRanker
 
 
 @pytest.mark.parametrize('default_traversal_paths', [['r'], ['c']])
 @pytest.mark.parametrize('ranking', ['min', 'max'])
-def test_ranking(documents_chunk, documents_chunk_chunk, default_traversal_paths, ranking):
-    ranker = SimpleRanker(metric='cosine', ranking=ranking, default_traversal_paths=default_traversal_paths)
+def test_ranking(
+    documents_chunk, documents_chunk_chunk, default_traversal_paths, ranking
+):
+    ranker = SimpleRanker(
+        metric='cosine',
+        ranking=ranking,
+        default_traversal_paths=default_traversal_paths,
+    )
     if default_traversal_paths == ['r']:
         ranking_docs = documents_chunk
     else:
@@ -29,16 +36,19 @@ def test_ranking(documents_chunk, documents_chunk_chunk, default_traversal_paths
                 )
             else:
                 assert (
-                        match.scores['cosine'].value
-                        >= doc.matches[i + 1].scores['cosine'].value
+                    match.scores['cosine'].value
+                    >= doc.matches[i + 1].scores['cosine'].value
                 )
 
 
 @pytest.mark.parametrize('ranking', ['mean_min', 'mean_max'])
 def test_mean_ranking(documents_chunk, ranking):
     default_traversal_paths = ['r']
-    ranker = SimpleRanker(metric='cosine', ranking=ranking,
-                          default_traversal_paths=default_traversal_paths)
+    ranker = SimpleRanker(
+        metric='cosine',
+        ranking=ranking,
+        default_traversal_paths=default_traversal_paths,
+    )
     ranking_docs = documents_chunk
 
     mean_scores = []
@@ -46,7 +56,7 @@ def test_mean_ranking(documents_chunk, ranking):
         scores = []
         for match in doc.matches:
             scores.append(match.scores['cosine'].value)
-        mean_scores.append(sum(scores)/10)
+        mean_scores.append(sum(scores) / 10)
     mean_scores.sort(reverse=ranking == 'mean_max')
     ranker.rank(ranking_docs, parameters={})
     assert ranking_docs
