@@ -1,11 +1,7 @@
-> ⚠️ Please do **not** commit your new Executor to this repository. This repository is **only** for Jina engineers to better manage in-house executors in a centralized way. You *may* submit PRs to fix bugs/add features to the existing ones.
+> ⚠️ Please do **not** commit your new Executor to this repository. This repository is **only** for Jina engineers to better manage in-house executors in a centralized way. You *may* submit PRs to fix bugs/add features.
+> To develop your own Executor, please use [`jina hub new`](https://docs.jina.ai/advanced/hub/create-hub-executor/) and **create your own Executor repo**. Check the complete guide [here](https://docs.jina.ai/advanced/hub/)
 
-
-# Executors (internal-only)
-
-To develop your own Executor, please use [`jina hub new`](https://docs.jina.ai/advanced/hub/create-hub-executor/) and **create your own Executor repo**.
-
-Here is the complete guide: https://docs.jina.ai/advanced/hub/
+# Executors
 
 ## Remark to Internal Developers
 
@@ -15,7 +11,7 @@ Notice that we have a `setup.py` in this repository.
 This is **NOT recommended** practice for **external developers** of Executors. 
 We added this in order to ease local development for **internal developers**.
 
-This file, along with the `__init__.py`s in each of the folders, do not matter when using the Executors via the `jinahub://` syntax, [above](#jinahub).
+This file, along with the `__init__.py`s in each of the folders, do **not** matter when using the Executors via the `jinahub://` syntax, [above](#jinahub).
 
 ### CompoundExecutors
 
