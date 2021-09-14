@@ -3,11 +3,11 @@ __license__ = "Apache-2.0"
 
 import torch
 
-from typing import Optional, Tuple, Dict, Iterable, List
+from typing import Dict, Iterable, Optional, Tuple
 
-from jina import Executor, DocumentArray, requests, Document
-from jina_commons.batching import get_docs_batch_generator
+from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
+from jina_commons.batching import get_docs_batch_generator
 
 class YoloV5Segmenter(Executor):
     """

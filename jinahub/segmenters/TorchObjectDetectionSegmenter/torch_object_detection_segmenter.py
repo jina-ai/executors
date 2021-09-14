@@ -126,5 +126,5 @@ class TorchObjectDetectionSegmenter(Executor):
                                 f'detected {label_name} with confidence {score} at position {(top, left)} and size {target_size}')
 
                             # a chunk is created for each of the objects detected for each image
-                            d = Document(offset=0, weight=1., blob = _img, location=[top, left], tags={'label': label_name})
+                            d = Document(offset=0, weight=1., blob=_img, location=[top, left], tags={'label': label_name})
                             doc.chunks.append(d)

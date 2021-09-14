@@ -1,5 +1,4 @@
 import pytest
-import os
 from typing import Callable
 from pathlib import Path
 

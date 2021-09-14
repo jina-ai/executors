@@ -2,9 +2,9 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from itertools import groupby
-from typing import Iterable, Dict
+from typing import Dict, Iterable
 
-from jina import Executor, requests, DocumentArray
+from jina import DocumentArray, Executor, requests
 
 
 class SimpleRanker(Executor):

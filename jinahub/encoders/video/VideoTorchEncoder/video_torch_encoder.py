@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Any, Iterable, Dict, Tuple
+from typing import Optional, Iterable, Dict, Tuple
 
 import torch
 import torch.nn as nn
