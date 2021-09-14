@@ -1,4 +1,4 @@
-FROM jinaai/jina:latest-perf
+FROM jinaai/jina:2-py37-perf
 
 RUN apt-get -y update && apt-get install -y git gcc ffmpeg libsm6 libxext6
 
