@@ -65,7 +65,7 @@ class ImageTorchEncoder(Executor):
 
         self._preprocess = T.Compose(
             [
-                T.ToPILImage(),
+                T.ToPILImage('RGB'),
                 T.Resize(256),
                 T.CenterCrop(224),
                 T.ToTensor(),
