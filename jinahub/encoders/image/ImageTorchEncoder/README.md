@@ -2,14 +2,15 @@
 
 **ImageTorchEncoder** wraps the models from [torchvision](https://pytorch.org/vision/stable/index.html).
 
-**ImageTorchEncoder** encodes `Document` blobs of type `ndarray` and shape Height x Width x Channel 
-into an `ndarray` of shape `embedding_dim` and stores them in the `embedding` attribute of the `Document`.
+**ImageTorchEncoder** receives `Documents` with `blob` attributes of type `ndarray` and shape Height x Width x Channel.
+The `blob` attribute represents the image to be encoded by **ImageTorchEncoder**. This Executor will encode each 
+`blob` into an `ndarray` of shape `embedding_dim` and store them in the `embedding` attribute of the `Document`.
 
 
 ## Usage
 
 
-Use the prebuilt images from Jina Hub in your Python codes and add it to your Flow:
+Use the prebuilt images from Jina Hub in your Python codes, add it to your Flow and encode an image:
 ```python
 from jina import Flow
 
@@ -30,11 +31,7 @@ f = Flow().add(uses='jinahub+docker://ImageTorchEncoder')
 doc = Document(blob=np.ones((224, 224, 3), dtype=np.uint8))
 
 with f:
-    resp = f.post(on='/index', inputs=doc, return_results=True)
-    print(f'{resp}')
-    
-    
-print('\n\nembedding:\n\n', resp[0].docs[0].embedding)
+    f.post(on='/index', inputs=doc, on_done=lambda resp: print(resp.docs[0].embedding))
 ```
 
 ### Set `volumes`
@@ -88,10 +85,7 @@ f = Flow().add(
 doc = Document(blob=np.ones((224, 224, 3), dtype=np.uint8))
 
 with f:
-    resp = f.post(on='/index', inputs=doc, return_results=True)
-    print(f'{resp}')
-
-print('\n\nembedding:\n\n', resp[0].docs[0].embedding)
+    f.post(on='/index', inputs=doc, on_done=lambda resp: print(resp.docs[0].embedding))
 ```
 
 `ImageTorchEncoder` supports the following models: 
@@ -130,10 +124,7 @@ f = Flow().add(uses='jinahub+docker://ImageTorchEncoder/gpu',
 doc = Document(blob=np.ones((224, 224, 3), dtype=np.uint8))
 
 with f:
-    resp = f.post(on='/index', inputs=doc, return_results=True)
-    print(f'{resp}')
-
-print('\n\nembedding:\n\n', resp[0].docs[0].embedding)
+    f.post(on='/index', inputs=doc, on_done=lambda resp: print(resp.docs[0].embedding))
 ```
 
 ## Reference
