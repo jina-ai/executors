@@ -2,9 +2,13 @@
 
 **SpacyTextEncoder** is a class that encodes text with spaCy models.
 
+#### Inputs 
 
+`Document` with `text`.
 
+#### Returns
 
+`Document` with `embedding` field filled with spacy vector.
 
 ## Usage 
 
@@ -18,15 +22,6 @@ with f:
     resp = f.post(on='foo', inputs=Document(), return_results=True)
 	print(f'{resp}')
 ```
-
-
-#### Inputs 
-
-`Document` with `text`.
-
-#### Returns
-
-`Document` with `embedding` field filled with spacy vector.
 
 ## Reference
 - https://spacy.io/models/
