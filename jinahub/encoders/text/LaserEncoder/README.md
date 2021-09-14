@@ -36,5 +36,5 @@ from jina import Flow, Document
 
 f = Flow().add(uses='jinahub+docker://LaserEncoder')
 with f:
-    resp = f.post(on='foo', inputs=Document(text='hello Jina'), on_done=print)
+    f.post(on='foo', inputs=Document(text='hello Jina'), on_done=print)
 ```
