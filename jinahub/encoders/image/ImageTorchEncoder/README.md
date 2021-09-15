@@ -71,7 +71,7 @@ And then use it like so:
 ```python
 from jina import Flow
 
-flow = Flow().add(uses='flow.yml')
+flow = Flow.load_config('flow.yml')
 ```
 
 ### Returns
