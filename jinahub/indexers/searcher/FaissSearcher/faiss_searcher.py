@@ -18,6 +18,10 @@ GENERATOR_DELTA = Generator[
     Tuple[str, Optional[np.ndarray], Optional[datetime]], None, None
 ]
 
+DELETE_MARKS_FILENAME = 'delete_marks.bin'
+DOC_IDS_FILENAME = 'doc_ids.bin'
+FAISS_INDEX_FILENAME = 'faiss.bin'
+
 
 class FaissSearcher(Executor):
     """Faiss-powered vector indexer
@@ -119,7 +123,7 @@ class FaissSearcher(Executor):
 
         self.logger = get_logger(self)
         is_loaded = False
-        if os.path.exists(self.workspace):
+        if self._faiss_index_exist(self.workspace):
             is_loaded = self._load(self.workspace)
         if not is_loaded:
             self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
@@ -313,6 +317,9 @@ class FaissSearcher(Executor):
 
         :param docs: the DocumentArray containing the documents to search with
         :param parameters: the parameters for the request
+
+        :return: Attaches matches to the Documents sent as inputs, with the id of the
+            match, and its embedding.
         """
         if not hasattr(self, '_faiss_index'):
             self.logger.warning('Querying against an empty Index')
@@ -380,26 +387,32 @@ class FaissSearcher(Executor):
         os.makedirs(target_path, exist_ok=True)
 
         # dump faiss index
-        faiss.write_index(self._faiss_index, os.path.join(target_path, 'faiss.bin'))
+        faiss.write_index(
+            self._faiss_index, os.path.join(target_path, FAISS_INDEX_FILENAME)
+        )
 
-        with open(os.path.join(target_path, 'doc_ids.bin'), "wb") as fp:
+        with open(os.path.join(target_path, DOC_IDS_FILENAME), "wb") as fp:
             pickle.dump(self._doc_ids, fp)
 
-        with open(os.path.join(target_path, 'delete_marks.bin'), "wb") as fp:
+        with open(os.path.join(target_path, DELETE_MARKS_FILENAME), "wb") as fp:
             pickle.dump(self._is_deleted, fp)
+
+    def _faiss_index_exist(self, folder_path: str):
+        index_path = os.path.join(folder_path, FAISS_INDEX_FILENAME)
+        return os.path.exists(index_path)
 
     def _load(self, from_path: Optional[str] = None):
         from_path = from_path if from_path else self.workspace
         self.logger.info(f'Try to load indexer from {from_path}...')
         try:
-            with open(os.path.join(from_path, 'doc_ids.bin'), 'rb') as fp:
+            with open(os.path.join(from_path, DOC_IDS_FILENAME), 'rb') as fp:
                 self._doc_ids = pickle.load(fp)
                 self._doc_id_to_offset = {v: i for i, v in enumerate(self._doc_ids)}
 
-            with open(os.path.join(from_path, 'delete_marks.bin'), 'rb') as fp:
+            with open(os.path.join(from_path, DELETE_MARKS_FILENAME), 'rb') as fp:
                 self._is_deleted = pickle.load(fp)
 
-            index = faiss.read_index(os.path.join(from_path, 'faiss.bin'))
+            index = faiss.read_index(os.path.join(from_path, FAISS_INDEX_FILENAME))
             assert index.metric_type == self.metric_type
             assert index.is_trained
             self.num_dim = index.d

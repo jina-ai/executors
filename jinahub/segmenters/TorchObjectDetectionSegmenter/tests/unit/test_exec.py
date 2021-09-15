@@ -1,7 +1,6 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-
 import os
 from pathlib import Path
 from unittest.mock import patch
@@ -9,7 +8,8 @@ from unittest.mock import patch
 import numpy as np
 from jina import Document, DocumentArray, Executor
 from PIL import Image
-from torch_object_detection_segmenter import TorchObjectDetectionSegmenter
+
+from ...torch_object_detection_segmenter import TorchObjectDetectionSegmenter
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

@@ -13,14 +13,6 @@ The following arguments can be passed on initialization:
 - `default_batch_size`: default batch size (used if not specified in request's parameters)
 - `device`: device that the model is on (should be "cpu", "cuda" or "cuda:X", where X is the index of the GPU on the machine)
 
-#### Inputs 
-
-`Document`s with the `text` attribute.
-
-#### Returns
-
-`Document`s with `embedding` fields filled with an `ndarray` of the shape 1024 with `dtype=float32`.
-
 ## Prerequisites
 
 First, you should download the model and the vocabulary, which will be saved into the `.cache` folder inside your current directory (will be created if it does not exist yet).

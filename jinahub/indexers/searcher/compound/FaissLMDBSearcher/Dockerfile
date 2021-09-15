@@ -1,4 +1,4 @@
-FROM jinaai/jina:master-py37-perf as base
+FROM jinaai/jina:2-py37-perf as base
 
 # install the third-party requirements
 RUN apt-get update && apt-get install --no-install-recommends -y gcc build-essential git

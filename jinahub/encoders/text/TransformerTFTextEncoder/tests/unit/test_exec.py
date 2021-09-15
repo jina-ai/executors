@@ -66,12 +66,12 @@ def test_encodes_semantic_meaning():
         ),
         (
             pytest.lazy_fixture("docs_with_chunk_text"),
-            [[['r'], 0], [['c'], 10], [['cc'], 0]],
+            [[['r'], 1], [['c'], 10], [['cc'], 0]],
             ['c'],
         ),
         (
             pytest.lazy_fixture("docs_with_chunk_chunk_text"),
-            [[['r'], 0], [['c'], 0], [['cc'], 10]],
+            [[['r'], 1], [['c'], 1], [['cc'], 10]],
             ['cc'],
         ),
     ],

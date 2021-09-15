@@ -13,26 +13,7 @@ _DEFAULT_MODEL = 'sentence-transformers/distilbert-base-nli-stsb-mean-tokens'
 
 
 class TransformerTorchEncoder(Executor):
-    """
-    The transformer torch encoder encodes sentences into embeddings.
-
-    :param pretrained_model_name_or_path: Name of the pretrained model or path to the
-        model
-    :param base_tokenizer_model: Base tokenizer model
-    :param pooling_strategy: The pooling strategy to be used. The allowed values are
-        ``'mean'``, ``'min'``, ``'max'`` and ``'cls'``.
-    :param layer_index: Index of the layer which contains the embeddings
-    :param max_length: Max length argument for the tokenizer, used for truncation. By
-        default the max length supported by the model will be used.
-    :param embedding_fn_name: Function to call on the model in order to get output
-    :param device: Torch device to put the model on (e.g. 'cpu', 'cuda', 'cuda:1')
-    :param default_traversal_paths: Used in the encode method an define traversal on the
-         received `DocumentArray`
-    :param default_batch_size: Defines the batch size for inference on the loaded
-        PyTorch model.
-    :param args: Arguments
-    :param kwargs: Keyword Arguments
-    """
+    """The TransformerTorchEncoder encodes sentences into embeddings using transformers models."""
 
     def __init__(
         self,
@@ -48,6 +29,26 @@ class TransformerTorchEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        The transformer torch encoder encodes sentences into embeddings.
+
+        :param pretrained_model_name_or_path: Name of the pretrained model or path to the
+            model
+        :param base_tokenizer_model: Base tokenizer model
+        :param pooling_strategy: The pooling strategy to be used. The allowed values are
+            ``'mean'``, ``'min'``, ``'max'`` and ``'cls'``.
+        :param layer_index: Index of the layer which contains the embeddings
+        :param max_length: Max length argument for the tokenizer, used for truncation. By
+            default the max length supported by the model will be used.
+        :param embedding_fn_name: Function to call on the model in order to get output
+        :param device: Torch device to put the model on (e.g. 'cpu', 'cuda', 'cuda:1')
+        :param default_traversal_paths: Used in the encode method an define traversal on the
+             received `DocumentArray`
+        :param default_batch_size: Defines the batch size for inference on the loaded
+            PyTorch model.
+        :param args: Arguments
+        :param kwargs: Keyword Arguments
+        """
         super().__init__(*args, **kwargs)
 
         self.default_traversal_paths = default_traversal_paths

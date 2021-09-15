@@ -1,9 +1,6 @@
-__copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
-__license__ = "Apache-2.0"
-
 import os
 
-from jina import Document, DocumentArray, Flow
+from jina import Flow
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

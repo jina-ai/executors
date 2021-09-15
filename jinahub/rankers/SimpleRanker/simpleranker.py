@@ -9,13 +9,15 @@ from jina import DocumentArray, Executor, requests
 
 class SimpleRanker(Executor):
     """
-    :class:`SimpleRanker` aggregates the score of the matched doc from the matched chunks.
-    For each matched doc, the score is aggregated from all the matched chunks belonging to that doc.
-    The score of the document is the minimum score (min distance) among the chunks.
-    The aggregated matches are sorted by score (ascending).
+    :class:`SimpleRanker` aggregates the score of the matched doc from the
+        matched chunks. For each matched doc, the score is aggregated from all the
+        matched chunks belonging to that doc. The score of the document is the minimum
+        score (min distance) among the chunks. The aggregated matches are sorted by
+        score (ascending).
 
     :param metric: the distance metric used in `scores`
-    :param renking: The ranking function that the executor uses. There are multiple options:
+    :param renking: The ranking function that the executor uses. There are multiple
+        options:
         - min: Select minimum score/distance and sort by minimum
         - max: Select maximum score/distance and sort by maximum
         - mean_min: Calculate mean score/distance and sort by minimum mean
