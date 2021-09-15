@@ -85,7 +85,6 @@ Furthermore, make sure you satisfy the prerequisites mentioned in
 [Executor on GPU tutorial](https://docs.jina.ai/tutorials/gpu_executor/#prerequisites).
 
 ```python
-import numpy as np
 
 from jina import Flow, Document
 
