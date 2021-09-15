@@ -2,7 +2,7 @@
 
 **TransformerTorchEncoder** wraps the torch-version of transformers from huggingface, encodes data from an array of string in size `B` into an ndarray in size `B x D`
 
-**TransformerTorchEncoder** receives `Documents` with `text` attributes.
+**TransformerTorchEncoder** receives [`Documents`](https://docs.jina.ai/fundamentals/document/) with `text` attributes.
 The `text` attribute represents the text to be encoded. This Executor will encode each `text` into an `ndarray` of shape `embedding_dim` and store them in the `embedding` attribute of the `Document`.
 
 
