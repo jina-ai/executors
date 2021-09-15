@@ -76,7 +76,7 @@ with f:
 
 You can check the supported pre-trained models [here](https://huggingface.co/transformers/pretrained_models.html)
 
-### GPU usage:
+### Use GPUs
 To enable GPU, you can set the `device` parameter to a cuda device.
 Make sure your machine is cuda-compatible.
 If you're using a docker container, make sure to add the `gpu` tag and enable 
