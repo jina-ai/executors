@@ -10,24 +10,6 @@ from transformers import CLIPFeatureExtractor, CLIPModel
 class CLIPImageEncoder(Executor):
     """
     Encode image into embeddings.
-
-    :param pretrained_model_name_or_path: Can be either:
-        - A string, the model id of a pretrained CLIP model hosted
-            inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
-        - A path to a directory containing model weights saved, e.g.,
-            ./my_model_directory/
-    :param base_feature_extractor: Base feature extractor for images.
-        Defaults to ``pretrained_model_name_or_path`` if None
-    :param use_default_preprocessing: Whether to use the `base_feature_extractor` on
-        images (blobs) before encoding them. If you disable this, you must ensure
-        that the images you pass in have the correct format, see the ``encode`` method
-        for details.
-    :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
-        where X is the index of the GPU on the machine)
-    :param default_batch_size: fallback batch size in case there is no batch size
-        sent in the request
-    :param default_traversal_paths: fallback traversal path in case there is no
-        traversal path sent in the request
     """
 
     def __init__(
@@ -41,6 +23,25 @@ class CLIPImageEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param pretrained_model_name_or_path: Can be either:
+            - A string, the model id of a pretrained CLIP model hosted
+                inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
+            - A path to a directory containing model weights saved, e.g.,
+                ./my_model_directory/
+        :param base_feature_extractor: Base feature extractor for images.
+            Defaults to ``pretrained_model_name_or_path`` if None
+        :param use_default_preprocessing: Whether to use the `base_feature_extractor` on
+            images (blobs) before encoding them. If you disable this, you must ensure
+            that the images you pass in have the correct format, see the ``encode`` method
+            for details.
+        :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
+            where X is the index of the GPU on the machine)
+        :param default_batch_size: fallback batch size in case there is no batch size
+            sent in the request
+        :param default_traversal_paths: fallback traversal path in case there is no
+            traversal path sent in the request
+        """
         super().__init__(*args, **kwargs)
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths

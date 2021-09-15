@@ -19,20 +19,6 @@ class TextPaddleEncoder(Executor):
     https://github.com/PaddlePaddle/PaddleHub
     For models' details refer to
         https://www.paddlepaddle.org.cn/hublist?filter=en_category&value=SemanticModel
-
-    :param model_name: the name of the model. Supported models include
-        ``ernie``, ``ernie_tiny``, ``ernie_v2_eng_base``, ``ernie_v2_eng_large``,
-        ``bert_chinese_L-12_H-768_A-12``, ``bert_multi_cased_L-12_H-768_A-12``,
-        ``bert_multi_uncased_L-12_H-768_A-12``, ``bert_uncased_L-12_H-768_A-12``,
-        ``bert_uncased_L-24_H-1024_A-16``, ``chinese-bert-wwm``,
-        ``chinese-bert-wwm-ext``, ``chinese-electra-base``,
-        ``chinese-electra-small``, ``chinese-roberta-wwm-ext``,
-        ``chinese-roberta-wwm-ext-large``, ``rbt3``, ``rbtl3``
-    :param on_gpu: If use gpu to get the output.
-    :param default_batch_size: fallback batch size in case there is not batch size sent in the request
-    :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
-    :param args:  Additional positional arguments
-    :param kwargs: Additional keyword arguments
     """
 
     def __init__(
@@ -44,6 +30,21 @@ class TextPaddleEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param model_name: the name of the model. Supported models include
+            ``ernie``, ``ernie_tiny``, ``ernie_v2_eng_base``, ``ernie_v2_eng_large``,
+            ``bert_chinese_L-12_H-768_A-12``, ``bert_multi_cased_L-12_H-768_A-12``,
+            ``bert_multi_uncased_L-12_H-768_A-12``, ``bert_uncased_L-12_H-768_A-12``,
+            ``bert_uncased_L-24_H-1024_A-16``, ``chinese-bert-wwm``,
+            ``chinese-bert-wwm-ext``, ``chinese-electra-base``,
+            ``chinese-electra-small``, ``chinese-roberta-wwm-ext``,
+            ``chinese-roberta-wwm-ext-large``, ``rbt3``, ``rbtl3``
+        :param on_gpu: If use gpu to get the output.
+        :param default_batch_size: fallback batch size in case there is not batch size sent in the request
+        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param args:  Additional positional arguments
+        :param kwargs: Additional keyword arguments
+        """
         super().__init__(*args, **kwargs)
         self.on_gpu = on_gpu
         self.model = hub.Module(name=model_name)

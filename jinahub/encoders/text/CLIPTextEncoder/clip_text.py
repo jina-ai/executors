@@ -8,22 +8,6 @@ from transformers import CLIPModel, CLIPTokenizer
 
 class CLIPTextEncoder(Executor):
     """Encode text into embeddings using a CLIP model.
-
-    :param pretrained_model_name_or_path: Can be either:
-        - A string, the model id of a pretrained CLIP model hosted
-            inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
-        - A path to a directory containing model weights saved, e.g., ./my_model_directory/
-    :param base_tokenizer_model: Base tokenizer model.
-        Defaults to ``pretrained_model_name_or_path`` if None
-    :param max_length: Max length argument for the tokenizer.
-        All CLIP models use 77 as the max length
-    :param device: Device to be used. Use 'cuda' for GPU.
-    :param default_traversal_paths: Default traversal paths for encoding, used if the
-        traversal path is not passed as a parameter with the request.
-    :param default_batch_size: Default batch size for encoding, used if the
-        batch size is not passed as a parameter with the request.
-    :param args: Arguments
-    :param kwargs: Keyword Arguments
     """
 
     def __init__(
@@ -37,6 +21,23 @@ class CLIPTextEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param pretrained_model_name_or_path: Can be either:
+            - A string, the model id of a pretrained CLIP model hosted
+                inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
+            - A path to a directory containing model weights saved, e.g., ./my_model_directory/
+        :param base_tokenizer_model: Base tokenizer model.
+            Defaults to ``pretrained_model_name_or_path`` if None
+        :param max_length: Max length argument for the tokenizer.
+            All CLIP models use 77 as the max length
+        :param device: Device to be used. Use 'cuda' for GPU.
+        :param default_traversal_paths: Default traversal paths for encoding, used if the
+            traversal path is not passed as a parameter with the request.
+        :param default_batch_size: Default batch size for encoding, used if the
+            batch size is not passed as a parameter with the request.
+        :param args: Arguments
+        :param kwargs: Keyword Arguments
+        """
         super().__init__(*args, **kwargs)
         self.default_traversal_paths = default_traversal_paths
         self.default_batch_size = default_batch_size

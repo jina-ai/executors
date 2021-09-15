@@ -21,16 +21,6 @@ _EXCLUDE_COMPONENTS = [
 class SpacyTextEncoder(Executor):
     """
     :class:`SpacyTextEncoder` encodes ``Document`` using models offered by Spacy
-
-    :param model_name: pre-trained spaCy language pipeline name
-    :param require_gpu: device to use for encoding ['cuda', 'cpu] - if not set,
-        the device is detected automatically
-    :param default_batch_size: Default batch size, used if ``batch_size`` is not
-        provided as a parameter in the request
-    :param default_traversal_paths: Default traversal paths, used if ``traversal_paths``
-        are not provided as a parameter in the request.
-    :param args: Additional positional arguments.
-    :param kwargs: Additional positional arguments.
     """
 
     def __init__(
@@ -43,6 +33,17 @@ class SpacyTextEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param model_name: pre-trained spaCy language pipeline name
+        :param require_gpu: device to use for encoding ['cuda', 'cpu] - if not set,
+            the device is detected automatically
+        :param default_batch_size: Default batch size, used if ``batch_size`` is not
+            provided as a parameter in the request
+        :param default_traversal_paths: Default traversal paths, used if ``traversal_paths``
+            are not provided as a parameter in the request.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional positional arguments.
+        """
         super().__init__(*args, **kwargs)
 
         self.default_batch_size = default_batch_size

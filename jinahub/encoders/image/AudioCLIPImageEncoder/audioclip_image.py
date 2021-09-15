@@ -20,18 +20,6 @@ _IMAGE_STD = 0.26862954, 0.26130258, 0.27577711
 class AudioCLIPImageEncoder(Executor):
     """
     Encode image data with the AudioCLIP model
-
-    :param model_path: path of the pre-trained AudioCLIP model.
-    :param default_traversal_paths: default traversal path (used if not specified in
-        request's parameters)
-    :param default_batch_size: default batch size (used if not specified in
-        request's parameters)
-    :param use_default_preprocessing: Whether to use the default preprocessing on
-        images (blobs) before encoding them. If you disable this, you must ensure
-        that the images you pass in have the correct format, see the ``encode`` method
-        for details.
-    :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
-        where X is the index of the GPU on the machine)
     """
 
     def __init__(
@@ -44,6 +32,19 @@ class AudioCLIPImageEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param model_path: path of the pre-trained AudioCLIP model.
+        :param default_traversal_paths: default traversal path (used if not specified in
+            request's parameters)
+        :param default_batch_size: default batch size (used if not specified in
+            request's parameters)
+        :param use_default_preprocessing: Whether to use the default preprocessing on
+            images (blobs) before encoding them. If you disable this, you must ensure
+            that the images you pass in have the correct format, see the ``encode`` method
+            for details.
+        :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
+            where X is the index of the GPU on the machine)
+        """
         super().__init__(*args, **kwargs)
 
         self.device = device

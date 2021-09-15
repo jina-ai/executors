@@ -16,27 +16,6 @@ class LaserEncoder(Executor):
 
     This encoder is suitable for producing multi-lingual sentence embeddings, enabling
     you to have sentences from multiple languages in the same latent space.
-
-    :param path_to_bpe_codes: path to bpe codes from Laser. Defaults to
-        ``Laser.DEFAULT_BPE_CODES_FILE.``
-    :param path_to_bpe_vocab: path to bpe vocabs from Laser. Defaults to
-        ``Laser.DEFAULT_BPE_VOCAB_FILE``.
-    :param path_to_encoder: path to the encoder from Laser. Defaults to
-        ``Laser.DEFAULT_ENCODER_FILE``.
-    :param download_data: Whether data should be downloaded on initialization. This is
-        convenient when just trying out the encoder, but should be turned off in a
-        production setting (where you should already have the data on disk), as it can
-        lead to large startup times.
-    :param default_language: The default language of the text. Can be overriden by a
-        request parameter. The full list of possible values can be found at
-        [LASER](https://github.com/facebookresearch/LASER#supported-languages)
-        with the language code
-        ([ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
-    :param cpu: if True, forces the use of the CPU even when a GPU is available.
-    :param default_batch_size: size of each batch
-    :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-    :param args:  Additional positional arguments
-    :param kwargs: Additional keyword arguments
     """
 
     def __init__(
@@ -52,6 +31,28 @@ class LaserEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param path_to_bpe_codes: path to bpe codes from Laser. Defaults to
+            ``Laser.DEFAULT_BPE_CODES_FILE.``
+        :param path_to_bpe_vocab: path to bpe vocabs from Laser. Defaults to
+            ``Laser.DEFAULT_BPE_VOCAB_FILE``.
+        :param path_to_encoder: path to the encoder from Laser. Defaults to
+            ``Laser.DEFAULT_ENCODER_FILE``.
+        :param download_data: Whether data should be downloaded on initialization. This is
+            convenient when just trying out the encoder, but should be turned off in a
+            production setting (where you should already have the data on disk), as it can
+            lead to large startup times.
+        :param default_language: The default language of the text. Can be overriden by a
+            request parameter. The full list of possible values can be found at
+            [LASER](https://github.com/facebookresearch/LASER#supported-languages)
+            with the language code
+            ([ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
+        :param cpu: if True, forces the use of the CPU even when a GPU is available.
+        :param default_batch_size: size of each batch
+        :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param args:  Additional positional arguments
+        :param kwargs: Additional keyword arguments
+        """
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)
 

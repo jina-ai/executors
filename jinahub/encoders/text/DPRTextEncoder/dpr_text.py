@@ -20,26 +20,6 @@ class DPRTextEncoder(Executor):
     For context encoders it is recommened to encode them together with the title,
     by setting the ``title_tag_key`` property. This is in order to match the
     encoding method used in model training.
-
-    :param pretrained_model_name_or_path: Can be either:
-        - the model id of a pretrained model hosted inside a model repo
-          on [huggingface.co](huggingface.co).
-        - A path to a directory containing model weights, saved using
-          the transformers model's ``save_pretrained()`` method
-    :param encoder_type: Either ``'context'`` or ``'question'``. Make sure this
-        matches the model that you are using.
-    :param base_tokenizer_model: Base tokenizer model. The possible values are
-        the same as for the ``pretrained_model_name_or_path`` parameters. If not
-        provided, the ``pretrained_model_name_or_path`` parameter value will be used
-    :param title_tag_key: The key under which the titles are saved in the documents'
-        tag property. It is recommended to set this property for context encoders,
-        to match the model pre-training. It has no effect for question encoders.
-    :param max_length: Max length argument for the tokenizer
-    :param default_batch_size: Default batch size for encoding, used if the
-        batch size is not passed as a parameter with the request.
-    :param default_traversal_paths: Default traversal paths for encoding, used if the
-        traversal path is not passed as a parameter with the request.
-    :param device: The device (cpu or gpu) that the model should be on.
     """
 
     def __init__(
@@ -55,6 +35,27 @@ class DPRTextEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param pretrained_model_name_or_path: Can be either:
+            - the model id of a pretrained model hosted inside a model repo
+              on [huggingface.co](huggingface.co).
+            - A path to a directory containing model weights, saved using
+              the transformers model's ``save_pretrained()`` method
+        :param encoder_type: Either ``'context'`` or ``'question'``. Make sure this
+            matches the model that you are using.
+        :param base_tokenizer_model: Base tokenizer model. The possible values are
+            the same as for the ``pretrained_model_name_or_path`` parameters. If not
+            provided, the ``pretrained_model_name_or_path`` parameter value will be used
+        :param title_tag_key: The key under which the titles are saved in the documents'
+            tag property. It is recommended to set this property for context encoders,
+            to match the model pre-training. It has no effect for question encoders.
+        :param max_length: Max length argument for the tokenizer
+        :param default_batch_size: Default batch size for encoding, used if the
+            batch size is not passed as a parameter with the request.
+        :param default_traversal_paths: Default traversal paths for encoding, used if the
+            traversal path is not passed as a parameter with the request.
+        :param device: The device (cpu or gpu) that the model should be on.
+        """
         super().__init__(*args, **kwargs)
         self.device = device
         self.max_length = max_length

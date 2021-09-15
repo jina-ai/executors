@@ -30,15 +30,6 @@ class VideoTorchEncoder(Executor):
 
     Internally, :class:`VideoTorchEncoder` wraps the models from
     `torchvision.models`: https://pytorch.org/docs/stable/torchvision/models.html
-    :param model_name: the name of the model.
-        Supported models include ``r3d_18``, ``mc3_18``, ``r2plus1d_18``
-        Default is ``r3d_18``.
-    :param use_default_preprocessing: if True, the same preprocessing is used which got used during training
-        - prevents training-serving gap.
-    :param device: device to use for encoding ['cuda', 'cpu] - if not set, the device is detected automatically
-    :param default_batch_size: fallback batch size in case there is not batch size sent in the request
-    :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request.
-        Defaults to ['r'], i.e. root level traversal.
     """
 
     def __init__(
@@ -51,6 +42,17 @@ class VideoTorchEncoder(Executor):
         *args,
         **kwargs
     ):
+        """
+        :param model_name: the name of the model.
+            Supported models include ``r3d_18``, ``mc3_18``, ``r2plus1d_18``
+            Default is ``r3d_18``.
+        :param use_default_preprocessing: if True, the same preprocessing is used which got used during training
+            - prevents training-serving gap.
+        :param device: device to use for encoding ['cuda', 'cpu] - if not set, the device is detected automatically
+        :param default_batch_size: fallback batch size in case there is not batch size sent in the request
+        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request.
+            Defaults to ['r'], i.e. root level traversal.
+        """
         super().__init__(*args, **kwargs)
         if not device:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'

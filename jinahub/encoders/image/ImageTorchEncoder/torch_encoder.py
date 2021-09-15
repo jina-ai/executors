@@ -26,17 +26,6 @@ class ImageTorchEncoder(Executor):
     Internally, :class:`ImageTorchEncoder` wraps the models from
     `torchvision.models`.
     https://pytorch.org/vision/stable/models.html
-
-    :param model_name: the name of the model. Some of the models:
-        ``alexnet``, `squeezenet1_0``,  ``vgg16``,
-        ``densenet161``, ``inception_v3``, ``googlenet``,
-        ``shufflenet_v2_x1_0``, ``mobilenet_v2``,
-        ``mnasnet1_0``, ``resnet18``. See full list above.
-    :param device: Which device the model runs on. Can be 'cpu' or 'cuda'
-    :param default_traversal_paths: Used in the encode method an defines traversal on the received `DocumentArray`
-    :param default_batch_size: Defines the batch size for inference on the loaded PyTorch model.
-    :param args:  Additional positional arguments
-    :param kwargs: Additional keyword arguments
     """
 
     def __init__(
@@ -49,6 +38,18 @@ class ImageTorchEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param model_name: the name of the model. Some of the models:
+            ``alexnet``, `squeezenet1_0``,  ``vgg16``,
+            ``densenet161``, ``inception_v3``, ``googlenet``,
+            ``shufflenet_v2_x1_0``, ``mobilenet_v2``,
+            ``mnasnet1_0``, ``resnet18``. See full list above.
+        :param device: Which device the model runs on. Can be 'cpu' or 'cuda'
+        :param default_traversal_paths: Used in the encode method an defines traversal on the received `DocumentArray`
+        :param default_batch_size: Defines the batch size for inference on the loaded PyTorch model.
+        :param args:  Additional positional arguments
+        :param kwargs: Additional keyword arguments
+        """
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)
 

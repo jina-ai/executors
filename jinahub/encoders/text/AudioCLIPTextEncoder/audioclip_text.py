@@ -13,14 +13,6 @@ from .audio_clip.model import AudioCLIP
 class AudioCLIPTextEncoder(Executor):
     """
     Encode text data with the AudioCLIP model
-
-    :param model_path: path to the pre-trained AudioCLIP model.
-    :param default_traversal_paths: default traversal path (used if not specified in
-        request's parameters)
-    :param default_batch_size: default batch size (used if not specified in
-        request's parameters)
-    :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
-        where X is the index of the GPU on the machine)
     """
 
     def __init__(
@@ -32,6 +24,15 @@ class AudioCLIPTextEncoder(Executor):
         *args,
         **kwargs
     ):
+        """
+        :param model_path: path to the pre-trained AudioCLIP model.
+        :param default_traversal_paths: default traversal path (used if not specified in
+            request's parameters)
+        :param default_batch_size: default batch size (used if not specified in
+            request's parameters)
+        :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
+            where X is the index of the GPU on the machine)
+        """
         super().__init__(*args, **kwargs)
 
         self.model = AudioCLIP(pretrained=model_path).to(device).eval()

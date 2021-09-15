@@ -26,34 +26,6 @@ class BigTransferEncoder(Executor):
     B x (Height x Width x Channels) into a ndarray of `B x D`.
     Internally, :class:`BigTransferEncoder` wraps the models from
     https://storage.googleapis.com/bit_models/.
-
-    :param model_path: the path of the model in the `SavedModel` format.
-    :param model_name: includes ``Imagenet1k/R50x1``, ``Imagenet1k/R101x1``,
-        ``Imagenet1k/R50x3``, ``Imagenet1k/R101x3``, ``Imagenet1k/R152x4``,
-        ``Imagenet21k/R50x1``, ``Imagenet21k/R101x1``, ``Imagenet21k/R50x3``,
-        ``Imagenet21k/R101x3``, ``Imagenet21k/R152x4``
-
-    This encoder checks if the specified model_path exists.
-    If it does exist, the model in this folder is used.
-    If it does not exist, the model specified in the model_name will be
-    downloaded into this path and the downloaded model is used.
-
-    In the end, the `model_path` should be a directory path,
-    which has the following structure:
-
-    .. highlight:: bash
-     .. code-block:: bash
-        .
-        ├── saved_model.pb
-        └── variables
-            ├── variables.data-00000-of-00001
-            └── variables.index
-    :param: device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
-    :param target_dim: preprocess the data image into shape of `target_dim`,
-        (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
-    :param default_traversal_paths: Traversal path through the docs
-    :param default_batch_size: Batch size to be used in the encoder model
-
     """
 
     def __init__(
@@ -67,6 +39,34 @@ class BigTransferEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param model_path: the path of the model in the `SavedModel` format.
+        :param model_name: includes ``Imagenet1k/R50x1``, ``Imagenet1k/R101x1``,
+            ``Imagenet1k/R50x3``, ``Imagenet1k/R101x3``, ``Imagenet1k/R152x4``,
+            ``Imagenet21k/R50x1``, ``Imagenet21k/R101x1``, ``Imagenet21k/R50x3``,
+            ``Imagenet21k/R101x3``, ``Imagenet21k/R152x4``
+
+        This encoder checks if the specified model_path exists.
+        If it does exist, the model in this folder is used.
+        If it does not exist, the model specified in the model_name will be
+        downloaded into this path and the downloaded model is used.
+
+        In the end, the `model_path` should be a directory path,
+        which has the following structure:
+
+        .. highlight:: bash
+         .. code-block:: bash
+            .
+            ├── saved_model.pb
+            └── variables
+                ├── variables.data-00000-of-00001
+                └── variables.index
+        :param: device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
+        :param target_dim: preprocess the data image into shape of `target_dim`,
+            (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
+        :param default_traversal_paths: Traversal path through the docs
+        :param default_batch_size: Batch size to be used in the encoder model
+        """
         super().__init__(*args, **kwargs)
         self.model_path = model_path
         self.model_name = model_name
