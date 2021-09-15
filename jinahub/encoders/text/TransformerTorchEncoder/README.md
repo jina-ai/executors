@@ -10,7 +10,7 @@ The `text` attribute represents the text to be encoded. This Executor will encod
 
 ### Encoding example
 
-Use the prebuilt images from Jina Hub in your Python codes, add it to your Flow and encode an image:
+Use the prebuilt images from Jina Hub in your Flow and encode an image:
 
 ```python
 from jina import Flow, Document
