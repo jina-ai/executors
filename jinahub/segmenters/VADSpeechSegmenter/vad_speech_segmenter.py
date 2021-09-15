@@ -14,7 +14,7 @@ from jina.excepts import BadDocType
 
 class VADSpeechSegmenter(Executor):
     """
-     Segment the speech audio using Silero's Voice Activity Detector (VAD)
+    Segment the speech audio using Silero's Voice Activity Detector (VAD)
     """
 
     TARGET_SAMPLE_RATE = 16000

@@ -18,8 +18,7 @@ def doc_without_embedding(d: Document):
 
 
 class PostgreSQLStorage(Executor):
-    """:class:`PostgreSQLStorage` PostgreSQL-based Storage Indexer.
-    """
+    """:class:`PostgreSQLStorage` PostgreSQL-based Storage Indexer."""
 
     def __init__(
         self,

@@ -8,8 +8,7 @@ from jina.logging.logger import JinaLogger
 
 
 class _CacheHandler:
-    """A handler for loading and serializing the in-memory cache of the DocCache.
-    """
+    """A handler for loading and serializing the in-memory cache of the DocCache."""
 
     def __init__(self, path, logger):
         """

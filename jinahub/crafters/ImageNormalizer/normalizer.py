@@ -12,6 +12,7 @@ from jina.logging.logger import JinaLogger
 
 class ImageNormalizer(Executor):
     """`ImageNormalizer` resizes, crops and normalizes images stored in Document blobs."""
+
     def __init__(
         self,
         target_size: Union[Iterable[int], int] = 224,

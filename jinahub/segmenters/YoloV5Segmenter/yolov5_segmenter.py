@@ -11,7 +11,7 @@ from jina_commons.batching import get_docs_batch_generator
 
 class YoloV5Segmenter(Executor):
     """
-     Segment the image into bounding boxes, append them to chunks and set labels in the document tags
+    Segment the image into bounding boxes, append them to chunks and set labels in the document tags
     """
 
     def __init__(
