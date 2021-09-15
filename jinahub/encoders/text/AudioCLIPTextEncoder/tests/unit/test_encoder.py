@@ -2,20 +2,34 @@ from pathlib import Path
 from typing import List
 
 import pytest
+from executor.audioclip_text import AudioCLIPTextEncoder
 from jina import Document, DocumentArray, Executor
-
-from ...audioclip_text import AudioCLIPTextEncoder
 
 _EMBEDDING_DIM = 1024
 
 
 @pytest.fixture(scope='module')
 def basic_encoder() -> AudioCLIPTextEncoder:
-    return AudioCLIPTextEncoder()
+    return AudioCLIPTextEncoder(
+        model_path=str(Path(__file__).parents[2] / '.cache/AudioCLIP-Full-Training.pt'),
+        tokenizer_path=str(
+            Path(__file__).parents[2] / '.cache/bpe_simple_vocab_16e6.txt.gz'
+        ),
+    )
 
 
 def test_config():
-    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+    ex = Executor.load_config(
+        str(Path(__file__).parents[2] / 'config.yml'),
+        override_with={
+            'model_path': str(
+                Path(__file__).parents[2] / '.cache/AudioCLIP-Full-Training.pt'
+            ),
+            'tokenizer_path': str(
+                Path(__file__).parents[2] / '.cache/bpe_simple_vocab_16e6.txt.gz'
+            ),
+        },
+    )
     assert ex.default_batch_size == 32
 
 

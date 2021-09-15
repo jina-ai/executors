@@ -9,12 +9,7 @@ import torch
 import torchvision.models.video as models
 from jina import Document, DocumentArray, Executor
 from torchvision import transforms
-
-from ...video_torch_encoder import (
-    ConvertFCHWtoCFHW,
-    ConvertFHWCtoFCHW,
-    VideoTorchEncoder,
-)
+from video_torch_encoder import ConvertFCHWtoCFHW, ConvertFHWCtoFCHW, VideoTorchEncoder
 
 
 def test_config():

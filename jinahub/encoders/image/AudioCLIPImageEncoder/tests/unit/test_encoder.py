@@ -6,10 +6,9 @@ from typing import Tuple
 
 import numpy as np
 import pytest
+from executor.audioclip_image import AudioCLIPImageEncoder
 from jina import Document, DocumentArray, Executor
 from PIL import Image
-
-from ...audioclip_image import AudioCLIPImageEncoder
 
 
 @pytest.fixture(scope="module")

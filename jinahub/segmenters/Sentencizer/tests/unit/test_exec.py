@@ -1,8 +1,7 @@
 from pathlib import Path
 
 from jina import Document, DocumentArray, Executor
-
-from ...sentencizer import Sentencizer
+from sentencizer import Sentencizer
 
 
 def test_config():

@@ -5,8 +5,7 @@ import subprocess
 
 import pytest
 from jina import Document, DocumentArray, Flow
-
-from ...spacy_text_encoder import SpacyTextEncoder
+from spacy_text_encoder import SpacyTextEncoder
 
 _EMBEDDING_DIM = 96
 

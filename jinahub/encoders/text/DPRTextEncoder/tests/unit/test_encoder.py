@@ -2,9 +2,8 @@ from pathlib import Path
 from typing import List
 
 import pytest
+from dpr_text import DPRTextEncoder
 from jina import Document, DocumentArray, Executor
-
-from ...dpr_text import DPRTextEncoder
 
 _EMBEDDING_DIM = 768
 

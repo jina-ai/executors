@@ -77,7 +77,7 @@ jobs:
         run: |
           if [[ ! -f "Dockerfile" ]]; then
             docker run --entrypoint="normalizer" -v "$(pwd):/workspace" \
-            jinahub/hubble-normalizer:v0.1.0 . --jina-version=2
+            jinahub/hubble-normalizer:v0.1.1 . --jina-version=2
             sudo chown -R $(id -u ${USER}):$(id -g ${USER}) . ; fi
       - name: Run unit tests
         run: pytest -s -v -m "not gpu"

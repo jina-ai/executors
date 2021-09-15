@@ -4,9 +4,8 @@ __license__ = "Apache-2.0"
 import os
 
 from jina import Flow
+from pdf_segmenter import PDFSegmenter
 from PIL import Image
-
-from ...pdf_segmenter import PDFSegmenter
 
 
 def test_flow(test_dir, doc_generator_img_text, expected_text):

@@ -4,8 +4,7 @@ __license__ = "Apache-2.0"
 import pytest
 from jina import Document, DocumentArray, Flow, requests
 from jina.executors import BaseExecutor
-
-from ...match_merger import MatchMerger
+from match_merger import MatchMerger
 
 
 class MockShard(BaseExecutor):

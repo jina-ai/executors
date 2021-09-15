@@ -5,9 +5,8 @@ import clip
 import numpy as np
 import pytest
 import torch
+from clip_text import CLIPTextEncoder
 from jina import Document, DocumentArray, Executor
-
-from ...clip_text import CLIPTextEncoder
 
 
 @pytest.fixture(scope="module")

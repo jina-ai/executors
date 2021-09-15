@@ -1,6 +1,5 @@
 from jina import Document, Flow
-
-from ...sentencizer import Sentencizer
+from sentencizer import Sentencizer
 
 
 def test_exec():

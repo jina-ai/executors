@@ -2,8 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import pytest
-
-from ...simpleranker import SimpleRanker
+from simpleranker import SimpleRanker
 
 
 @pytest.mark.parametrize('default_traversal_paths', [['r'], ['c']])
