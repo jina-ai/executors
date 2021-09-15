@@ -26,7 +26,7 @@ with f:
 
 ### Set `volumes`
 
-With the `volumes` attribute, you can map the torch cache directory to your local cache directory, in order to avoid downloading 
+With the `volumes` attribute, you can map the cache directory to your local cache directory, in order to avoid downloading 
 the model each time you start the Flow.
 
 ```python
