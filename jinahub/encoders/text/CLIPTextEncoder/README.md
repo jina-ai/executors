@@ -46,7 +46,7 @@ Here's how you would modify the example above to use a GPU
 
 ```python
 f = Flow().add(
-    uses='jinahub+docker://CLIPTextEncoder',
+    uses='jinahub+docker://CLIPTextEncoder/gpu',
     uses_with={'device': 'cuda'},
     gpus='all',
     volumes='/your/home/dir/.cache/huggingface:/root/.cache/huggingface' 

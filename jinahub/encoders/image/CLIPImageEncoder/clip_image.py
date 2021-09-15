@@ -16,8 +16,8 @@ class CLIPImageEncoder(Executor):
         base_feature_extractor: Optional[str] = None,
         use_default_preprocessing: bool = True,
         device: str = "cpu",
-        default_batch_size: int = 32,
-        default_traversal_paths: Tuple = ("r",),
+        batch_size: int = 32,
+        traversal_paths: Tuple = ("r",),
         *args,
         **kwargs,
     ):
@@ -34,14 +34,14 @@ class CLIPImageEncoder(Executor):
             that the images you pass in have the correct format, see the ``encode``
             method for details.
         :param device: Pytorch device to put the model on, e.g. 'cpu', 'cuda', 'cuda:1'
-        :param default_traversal_paths: Default traversal paths for encoding, used if
+        :param traversal_paths: Default traversal paths for encoding, used if
             the traversal path is not passed as a parameter with the request.
-        :param default_batch_size: Default batch size for encoding, used if the
+        :param batch_size: Default batch size for encoding, used if the
             batch size is not passed as a parameter with the request.
         """
         super().__init__(*args, **kwargs)
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.default_batch_size = batch_size
+        self.default_traversal_paths = traversal_paths
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.use_default_preprocessing = use_default_preprocessing
         self.base_feature_extractor = (
