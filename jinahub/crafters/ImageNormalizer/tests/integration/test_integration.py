@@ -3,12 +3,11 @@ from pydoc import locate
 
 import numpy as np
 import pytest
+from jina import Document, Flow
 from PIL.Image import fromarray
-from jina import Flow, Document
-
-from ...normalizer import ImageNormalizer
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 @pytest.fixture
 def numpy_image_uri(tmpdir):
@@ -33,7 +32,9 @@ def dtype(request):
     del os.environ['DTYPE']
 
 
-@pytest.mark.parametrize('dtype', ['numpy.uint8', 'numpy.float32', 'numpy.float64'], indirect=['dtype'])
+@pytest.mark.parametrize(
+    'dtype', ['numpy.uint8', 'numpy.float32', 'numpy.float64'], indirect=['dtype']
+)
 def test_use_in_flow(numpy_image_uri, dtype):
     dtype = os.environ['DTYPE']
     with Flow.load_config('flow.yml') as flow:

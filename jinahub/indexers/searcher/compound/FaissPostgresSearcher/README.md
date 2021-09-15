@@ -1,8 +1,6 @@
 # FaissPostgresSearcher
 
-**FaissPostgresSearcher** is a compound Searcher Executor for Jina, made up of [FaissSearcher](../../FaissSearcher) for performing similarity search on the embeddings, and of [PostgresSearcher](../../keyvalue/PostgresSearcher) for retrieving the metadata of the Documents. 
-
-
+**FaissPostgresSearcher** is a compound Searcher Executor for Jina, made up of [FaissSearcher](https://hub.jina.ai/executor/gilkzt3f) for performing similarity search on the embeddings, and of [PostgreSQLStorage](https://hub.jina.ai/executor/d45rawx6) for retrieving the metadata of the Documents. 
 
 
 Additionally, you will need a running PostgreSQL database. This can be a local instance, a Docker image, or a virtual machine in the cloud. Make sure you have the credentials and connection parameters.
@@ -15,7 +13,7 @@ docker run -e POSTGRES_PASSWORD=123456  -p 127.0.0.1:5432:5432/tcp postgres:13.2
 
 ## Usage
 
-Check [integration tests](../../../../../tests/integration/psql_dump_reload) for an example on how to use it.
+Check [integration tests](https://github.com/jina-ai/executors/tree/main/tests/integration/psql_dump_reload) for an example on how to use it.
 
 ### Loading data
 
@@ -32,28 +30,17 @@ with:
 ...
 ```
 
-- from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/fundamentals/executor/indexers/).
+- from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/advanced/experimental/indexers/).
 
-The folder needs to contain the data exported from your Indexer. Again, see [docs](https://docs.jina.ai/fundamentals/executor/indexers/).
+The folder needs to contain the data exported from your Indexer. Again, see [docs](https://docs.jina.ai/advanced/experimental/indexers/).
 
 #### Direct import from PSQL
 
-Alternatively, you can use the import from PSQL feature. Check the [integration test](../../../../../tests/integration/psql_import).
+Alternatively, you can use the import from PSQL feature. Check the [integration test](https://github.com/jina-ai/executors/tree/main/tests/integration/psql_import).
 
-
-```python
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub+docker://FaissPostgresSearcher')
-
-with f:
-    resp = f.post(on='/search', inputs=Document(), return_results=True)
-    print(f'{resp}')
-```
 
 ### Inputs 
 
-`Document` with `.embedding` the same shape as the `Documents` stored in the `FaissSearcher`. The ids of the `Documents` stored in `FaissSearcher` need to exist in the `PostgresSearcher`. Otherwise you will not get back the original metadata. 
 
 ### Returns
 

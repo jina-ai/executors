@@ -1,4 +1,4 @@
-FROM jinaai/jina:2.0.18 as base
+FROM jinaai/jina:2-py37-perf as base
 
 # install git
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*

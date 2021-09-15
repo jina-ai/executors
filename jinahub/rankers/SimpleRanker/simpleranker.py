@@ -2,20 +2,22 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from itertools import groupby
-from typing import Iterable, Dict
+from typing import Dict, Iterable
 
-from jina import Executor, requests, DocumentArray
+from jina import DocumentArray, Executor, requests
 
 
 class SimpleRanker(Executor):
     """
-    :class:`SimpleRanker` aggregates the score of the matched doc from the matched chunks.
-    For each matched doc, the score is aggregated from all the matched chunks belonging to that doc.
-    The score of the document is the minimum score (min distance) among the chunks.
-    The aggregated matches are sorted by score (ascending).
+    :class:`SimpleRanker` aggregates the score of the matched doc from the
+        matched chunks. For each matched doc, the score is aggregated from all the
+        matched chunks belonging to that doc. The score of the document is the minimum
+        score (min distance) among the chunks. The aggregated matches are sorted by
+        score (ascending).
 
     :param metric: the distance metric used in `scores`
-    :param renking: The ranking function that the executor uses. There are multiple options:
+    :param renking: The ranking function that the executor uses. There are multiple
+        options:
         - min: Select minimum score/distance and sort by minimum
         - max: Select maximum score/distance and sort by maximum
         - mean_min: Calculate mean score/distance and sort by minimum mean
@@ -63,7 +65,7 @@ class SimpleRanker(Executor):
                 match.id = chunk_match_list[0].parent_id
                 if self.ranking in ['mean_min', 'mean_max']:
                     scores = [el.scores[self.metric].value for el in chunk_match_list]
-                    match.scores[self.metric] = sum(scores)/len(scores)
+                    match.scores[self.metric] = sum(scores) / len(scores)
                 doc.matches.append(match)
             if self.ranking in ['min', 'mean_min']:
                 doc.matches.sort(key=lambda d: d.scores[self.metric].value)
