@@ -22,25 +22,6 @@ class DPRReaderRanker(Executor):
     This executor uses the DPR Reader model to re-rank documents based on
     cross-attention between the question (main document text) and the answer
     passages (text of the matches + their titles, if specified).
-
-    :param pretrained_model_name_or_path: Can be either:
-        - the model id of a pretrained model hosted inside a model repo
-          on huggingface.co.
-        - A path to a directory containing model weights, saved using
-          the transformers model's ``save_pretrained()`` method
-    :param base_tokenizer_model: Base tokenizer model. The possible values are
-        the same as for the ``pretrained_model_name_or_path`` parameters. If not
-        provided, the ``pretrained_model_name_or_path`` parameter value will be used
-    :param title_tag_key: The key of the tag that contains document title in the
-        match documents. Specify it if you want the text of the matches to be combined
-        with their titles (to mirror the method used in training of the original model)
-    :param num_spans_per_match: Number of spans to extract per match
-    :param max_length: Max length argument for the tokenizer
-    :param default_batch_size: Default batch size for processing documents, used if the
-        batch size is not passed as a parameter with the request.
-    :param default_traversal_paths: Default traversal paths for processing documents,
-        used if the traversal path is not passed as a parameter with the request.
-    :param device: The device (cpu or gpu) that the model should be on.
     """
 
     def __init__(
@@ -56,6 +37,26 @@ class DPRReaderRanker(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param pretrained_model_name_or_path: Can be either:
+            - the model id of a pretrained model hosted inside a model repo
+              on huggingface.co.
+            - A path to a directory containing model weights, saved using
+              the transformers model's ``save_pretrained()`` method
+        :param base_tokenizer_model: Base tokenizer model. The possible values are
+            the same as for the ``pretrained_model_name_or_path`` parameters. If not
+            provided, the ``pretrained_model_name_or_path`` parameter value will be used
+        :param title_tag_key: The key of the tag that contains document title in the
+            match documents. Specify it if you want the text of the matches to be combined
+            with their titles (to mirror the method used in training of the original model)
+        :param num_spans_per_match: Number of spans to extract per match
+        :param max_length: Max length argument for the tokenizer
+        :param default_batch_size: Default batch size for processing documents, used if the
+            batch size is not passed as a parameter with the request.
+        :param default_traversal_paths: Default traversal paths for processing documents,
+            used if the traversal path is not passed as a parameter with the request.
+        :param device: The device (cpu or gpu) that the model should be on.
+        """
         super().__init__(*args, **kwargs)
         self.title_tag_key = title_tag_key
         self.device = device

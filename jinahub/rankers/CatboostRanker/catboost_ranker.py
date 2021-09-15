@@ -10,17 +10,9 @@ from jina import DocumentArray, Executor, requests
 
 
 class CatboostRanker(Executor):
-    """CatboostRanker helps user train a learning-to-rank model with Catboost, or make search
+    """
+    CatboostRanker helps user train a learning-to-rank model with Catboost, or make search
     with pre-trained :class:`CatBoostRanker`.
-
-    :param query_features: List of feature names, the feature values will be extracted from the query documents.
-    :param match_features: List of feature names, the feature values will be extracted from the match documents.
-    :param relevance_label: Name of the label used for model training, label should be stored in match documents.
-        i.e. each query-match pair consist of a relevance degree.
-    :param model_path: The directory to load or dump model.
-    :param catboost_parameters: Parameters for model training.
-    :param args: Additional arguments.
-    :param kwargs: Additional keyword value arguments.
     """
 
     def __init__(
@@ -40,6 +32,16 @@ class CatboostRanker(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param query_features: List of feature names, the feature values will be extracted from the query documents.
+        :param match_features: List of feature names, the feature values will be extracted from the match documents.
+        :param relevance_label: Name of the label used for model training, label should be stored in match documents.
+            i.e. each query-match pair consist of a relevance degree.
+        :param model_path: The directory to load or dump model.
+        :param catboost_parameters: Parameters for model training.
+        :param args: Additional arguments.
+        :param kwargs: Additional keyword value arguments.
+        """
         super().__init__(*args, **kwargs)
         self.q_features = query_features
         self.m_features = match_features

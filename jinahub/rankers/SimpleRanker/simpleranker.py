@@ -14,17 +14,6 @@ class SimpleRanker(Executor):
         matched chunks belonging to that doc. The score of the document is the minimum
         score (min distance) among the chunks. The aggregated matches are sorted by
         score (ascending).
-
-    :param metric: the distance metric used in `scores`
-    :param renking: The ranking function that the executor uses. There are multiple
-        options:
-        - min: Select minimum score/distance and sort by minimum
-        - max: Select maximum score/distance and sort by maximum
-        - mean_min: Calculate mean score/distance and sort by minimum mean
-        - mean_max: Calculate mean score/distance and sort by maximum mean
-    :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
-    :param args:  Additional positional arguments
-    :param kwargs: Additional keyword arguments
     """
 
     def __init__(
@@ -35,6 +24,18 @@ class SimpleRanker(Executor):
         *args,
         **kwargs
     ):
+        """
+        :param metric: the distance metric used in `scores`
+        :param renking: The ranking function that the executor uses. There are multiple
+            options:
+            - min: Select minimum score/distance and sort by minimum
+            - max: Select maximum score/distance and sort by maximum
+            - mean_min: Calculate mean score/distance and sort by minimum mean
+            - mean_max: Calculate mean score/distance and sort by maximum mean
+        :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
+        :param args:  Additional positional arguments
+        :param kwargs: Additional keyword arguments
+        """
         super().__init__(*args, **kwargs)
         self.metric = metric
         assert ranking in ['min', 'max', 'mean_min', 'mean_max']
