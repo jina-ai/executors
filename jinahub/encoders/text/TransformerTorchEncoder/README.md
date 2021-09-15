@@ -61,8 +61,6 @@ flow = Flow.load_config('flow.yml')
 ### Supported models:
 You can specify the model to use with the parameter `model_name`:
 ```python
-import numpy as np
-
 from jina import Flow, Document
 
 f = Flow().add(
