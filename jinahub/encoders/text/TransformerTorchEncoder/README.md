@@ -8,7 +8,6 @@ The `text` attribute represents the text to be encoded. This Executor will encod
 
 ## Usage
 
-### Encoding example
 
 Use the prebuilt images from Jina Hub in your Flow and encode an image:
 
