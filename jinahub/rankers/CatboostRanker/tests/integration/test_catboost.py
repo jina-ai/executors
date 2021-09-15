@@ -9,7 +9,7 @@ from jina import Flow
 def flow():
     return Flow().add(
         uses=CatboostRanker,
-        override_with={
+        uses_with={
             'query_features': ['brand', 'price'],
             'match_features': ['brand', 'price'],
             'relevance_label': 'relevance',
