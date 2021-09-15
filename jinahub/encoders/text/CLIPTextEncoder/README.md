@@ -58,3 +58,6 @@ f = Flow().add(
 - [CLIP blog post](https://openai.com/blog/clip/)
 - [CLIP paper](https://arxiv.org/abs/2103.00020)
 - [Huggingface transformers CLIP model documentation](https://huggingface.co/transformers/model_doc/clip.html)
+- [AudioCLIPEncoder](https://hub.jina.ai/executor/f4d22e1r)
+- [AudioCLIPTextEncoder](https://hub.jina.ai/executor/jfe8kovq)
+- [AudioCLIPImageEncoder](https://hub.jina.ai/executor/3atsazub)
