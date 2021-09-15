@@ -2,6 +2,7 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
+import subprocess
 
 import pytest
 from jina import Document, Flow
@@ -31,3 +32,32 @@ def test_video_torch_encoder(kinects_videos):
         )
         assert resp[0].docs[0].embedding.shape == (512,)
         assert resp[0].docs[1].embedding.shape == (512,)
+
+
+@pytest.mark.docker
+def test_docker_runtime(build_docker_image: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            ['jina', 'executor', f'--uses=docker://{build_docker_image}'],
+            timeout=30,
+            check=True,
+        )
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu(build_docker_image_gpu: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'pea',
+                f'--uses=docker://{build_docker_image_gpu}',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'device:cuda',
+            ],
+            timeout=30,
+            check=True,
+        )
