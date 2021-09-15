@@ -48,6 +48,7 @@ class VideoTorchEncoder(Executor):
         device: Optional[str] = None,
         default_batch_size: int = 32,
         default_traversal_paths: Tuple = ('r',),
+        download_progress=True,
         *args,
         **kwargs
     ):
@@ -57,7 +58,11 @@ class VideoTorchEncoder(Executor):
         self.device = device
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
-        self.model = getattr(models, model_name)(pretrained=True).eval().to(self.device)
+        self.model = (
+            getattr(models, model_name)(pretrained=True, progress=download_progress)
+            .eval()
+            .to(self.device)
+        )
         self.use_default_preprocessing = use_default_preprocessing
         if self.use_default_preprocessing:
             # https://github.com/pytorch/vision/blob/master/references/video_classification/train.py
