@@ -59,7 +59,7 @@ flow = Flow.load_config('flow.yml')
 
 
 ### Use other pre-trained models
-You can specify the model to use with the parameter `model_name`:
+You can specify the model to use with the parameter `pretrained_model_name_or_path`:
 ```python
 from jina import Flow, Document
 
