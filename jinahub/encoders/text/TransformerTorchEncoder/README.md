@@ -57,8 +57,6 @@ from jina import Flow
 flow = Flow.load_config('flow.yml')
 ```
 
-### Returns
-`Document` with `embedding` fields filled with an `ndarray` of shape `embedding_dim` (size depends on the model) with `dtype=float32`.
 
 ### Supported models:
 You can specify the model to use with the parameter `model_name`:
