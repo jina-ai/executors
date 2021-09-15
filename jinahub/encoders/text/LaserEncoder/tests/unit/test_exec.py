@@ -6,8 +6,7 @@ from typing import List
 
 import pytest
 from jina import Document, DocumentArray, Executor
-
-from ...laser_encoder import LaserEncoder
+from laser_encoder import LaserEncoder
 
 _EMBEDDING_DIM = 1024
 

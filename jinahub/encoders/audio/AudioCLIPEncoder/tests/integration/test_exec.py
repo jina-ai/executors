@@ -6,9 +6,8 @@ import subprocess
 
 import librosa
 import pytest
+from executor.audio_clip_encoder import AudioCLIPEncoder
 from jina import Document, DocumentArray, Flow
-
-from ... import AudioCLIPEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -47,7 +46,7 @@ def test_docker_runtime_gpu(build_docker_image_gpu: str):
         subprocess.run(
             [
                 'jina',
-                'pea',
+                'executor',
                 f'--uses=docker://{build_docker_image_gpu}',
                 '--gpus',
                 'all',

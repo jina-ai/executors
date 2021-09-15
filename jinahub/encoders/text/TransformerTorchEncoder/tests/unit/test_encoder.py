@@ -5,8 +5,7 @@ import numpy as np
 import pytest
 import torch
 from jina import Document, DocumentArray, Executor
-
-from ...transform_encoder import TransformerTorchEncoder
+from transform_encoder import TransformerTorchEncoder
 
 _EMBEDDING_DIM = 768
 

@@ -4,6 +4,7 @@ from pydoc import locate
 import numpy as np
 import pytest
 from jina import Document, Flow
+from normalizer import ImageNormalizer
 from PIL.Image import fromarray
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))

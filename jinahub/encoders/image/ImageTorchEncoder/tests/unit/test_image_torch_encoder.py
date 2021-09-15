@@ -6,9 +6,8 @@ from typing import Dict, Tuple
 
 import numpy as np
 import pytest
+from executor.torch_encoder import ImageTorchEncoder
 from jina import Document, DocumentArray, Executor
-
-from ...torch_encoder import ImageTorchEncoder
 
 
 def test_config():

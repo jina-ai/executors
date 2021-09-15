@@ -4,8 +4,7 @@ __license__ = "Apache-2.0"
 import numpy as np
 import pytest
 import torch
-
-from ...models import EmbeddingModelWrapper, _ModelCatalogue
+from executor.models import EmbeddingModelWrapper, _ModelCatalogue
 
 
 @pytest.mark.parametrize(

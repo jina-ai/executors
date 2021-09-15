@@ -7,8 +7,7 @@ from typing import List
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Flow
-
-from ...paddle_image import ImagePaddlehubEncoder
+from paddle_image import ImagePaddlehubEncoder
 
 
 @pytest.mark.parametrize(
@@ -101,7 +100,7 @@ def test_docker_runtime_gpu(build_docker_image_gpu: str):
         subprocess.run(
             [
                 'jina',
-                'pea',
+                'executor',
                 f'--uses=docker://{build_docker_image_gpu}',
                 '--gpus',
                 'all',

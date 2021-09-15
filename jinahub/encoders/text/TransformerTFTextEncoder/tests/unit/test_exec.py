@@ -6,8 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor
-
-from ...transformer_tf_text_encode import TransformerTFTextEncoder
+from transformer_tf_text_encode import TransformerTFTextEncoder
 
 target_dim = 768
 

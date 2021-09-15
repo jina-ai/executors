@@ -5,9 +5,8 @@ import subprocess
 
 import numpy as np
 import pytest
+from executor.audioclip_image import AudioCLIPImageEncoder
 from jina import Document, DocumentArray, Flow
-
-from ...audioclip_image import AudioCLIPImageEncoder
 
 
 @pytest.mark.parametrize("request_size", [1, 10, 50, 100])
@@ -55,7 +54,7 @@ def test_docker_runtime_gpu(build_docker_image_gpu: str):
         subprocess.run(
             [
                 'jina',
-                'pea',
+                'executor',
                 f'--uses=docker://{build_docker_image_gpu}',
                 '--gpus',
                 'all',

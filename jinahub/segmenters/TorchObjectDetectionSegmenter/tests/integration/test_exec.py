@@ -5,8 +5,7 @@ import subprocess
 
 import pytest
 from jina import Document, Flow
-
-from ...torch_object_detection_segmenter import TorchObjectDetectionSegmenter
+from torch_object_detection_segmenter import TorchObjectDetectionSegmenter
 
 
 def test_exec():

@@ -1,9 +1,8 @@
 import subprocess
 
 import pytest
+from clip_text import CLIPTextEncoder
 from jina import Document, DocumentArray, Flow
-
-from ...clip_text import CLIPTextEncoder
 
 _EMBEDDING_DIM = 512
 

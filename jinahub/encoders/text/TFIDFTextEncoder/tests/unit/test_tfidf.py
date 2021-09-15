@@ -6,8 +6,7 @@ import pytest
 import scipy
 from jina import Document, DocumentArray, Executor
 from jina.excepts import PretrainedModelFileDoesNotExist
-
-from ...tfidf_text_executor import TFIDFTextEncoder
+from tfidf_text_executor import TFIDFTextEncoder
 
 _EMBEDDING_DIM = 130107
 

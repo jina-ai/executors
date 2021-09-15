@@ -4,8 +4,7 @@ from pathlib import Path
 import cv2
 import pytest
 from jina import Document, DocumentArray, Executor
-
-from ...yolov5_segmenter import YoloV5Segmenter
+from yolov5_segmenter import YoloV5Segmenter
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

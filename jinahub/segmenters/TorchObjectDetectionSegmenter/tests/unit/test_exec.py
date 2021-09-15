@@ -9,8 +9,7 @@ import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor
 from PIL import Image
-
-from ...torch_object_detection_segmenter import TorchObjectDetectionSegmenter
+from torch_object_detection_segmenter import TorchObjectDetectionSegmenter
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

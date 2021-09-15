@@ -4,8 +4,6 @@ import pytest
 from jina import Document, DocumentArray, Executor
 from jina.excepts import BadDocType
 
-from ...vad_speech_segmenter import VADSpeechSegmenter
-
 
 def test_load():
     segmenter = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))

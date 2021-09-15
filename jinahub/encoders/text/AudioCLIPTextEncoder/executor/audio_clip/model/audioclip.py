@@ -16,50 +16,49 @@ from typing import Optional
 ClipFeatures = Tuple[
     Optional[torch.Tensor],  # audio
     Optional[torch.Tensor],  # image
-    Optional[torch.Tensor]   # audio
+    Optional[torch.Tensor],  # audio
 ]
 
 
 ClipLogits = Tuple[
     Optional[torch.Tensor],  # audio x image
     Optional[torch.Tensor],  # audio x text
-    Optional[torch.Tensor]   # image x text
+    Optional[torch.Tensor],  # image x text
 ]
 
 
-ClipOutput = Tuple[
-    Tuple[ClipFeatures, ClipLogits],
-    Optional[torch.Tensor]   # loss
-]
+ClipOutput = Tuple[Tuple[ClipFeatures, ClipLogits], Optional[torch.Tensor]]  # loss
 
 
 class AudioCLIP(CLIP):
-
-    def __init__(self,
-                 embed_dim: int = 1024,
-                 # vision
-                 image_resolution: int = 224,
-                 vision_layers: Union[Tuple[int, int, int, int], int] = (3, 4, 6, 3),
-                 vision_width: int = 64,
-                 vision_patch_size: Optional[int] = None,
-                 # text
-                 context_length: int = 77,
-                 vocab_size: int = 49408,
-                 transformer_width: int = 512,
-                 transformer_heads: int = 8,
-                 transformer_layers: int = 12,
-                 # audio
-                 n_fft: int = 2048,
-                 hop_length: Optional[int] = 561,
-                 win_length: Optional[int] = 1654,
-                 window: Optional[str] = 'blackmanharris',
-                 normalized: bool = True,
-                 onesided: bool = True,
-                 spec_height: int = -1,
-                 spec_width: int = -1,
-                 apply_attention: bool = True,
-                 multilabel: bool = True,
-                 pretrained: Union[bool, str] = True):
+    def __init__(
+        self,
+        embed_dim: int = 1024,
+        # vision
+        image_resolution: int = 224,
+        vision_layers: Union[Tuple[int, int, int, int], int] = (3, 4, 6, 3),
+        vision_width: int = 64,
+        vision_patch_size: Optional[int] = None,
+        # text
+        context_length: int = 77,
+        vocab_size: int = 49408,
+        transformer_width: int = 512,
+        transformer_heads: int = 8,
+        transformer_layers: int = 12,
+        # audio
+        n_fft: int = 2048,
+        hop_length: Optional[int] = 561,
+        win_length: Optional[int] = 1654,
+        window: Optional[str] = 'blackmanharris',
+        normalized: bool = True,
+        onesided: bool = True,
+        spec_height: int = -1,
+        spec_width: int = -1,
+        apply_attention: bool = True,
+        multilabel: bool = True,
+        pretrained: Union[bool, str] = True,
+        bpe_path: str = '.cache/bpe_simple_vocab_16e6.txt.gz',
+    ):
 
         super(AudioCLIP, self).__init__(
             embed_dim=embed_dim,
@@ -71,9 +70,9 @@ class AudioCLIP(CLIP):
             vocab_size=vocab_size,
             transformer_width=transformer_width,
             transformer_heads=transformer_heads,
-            transformer_layers=transformer_layers
+            transformer_layers=transformer_layers,
         )
-        init_tokenizer()
+        init_tokenizer(bpe_path)
 
         self.audio = ESResNeXtFBSP(
             n_fft=n_fft,
@@ -86,7 +85,7 @@ class AudioCLIP(CLIP):
             spec_width=spec_width,
             num_classes=embed_dim,
             apply_attention=apply_attention,
-            pretrained=False
+            pretrained=False,
         )
 
         self.multilabel = multilabel
@@ -96,18 +95,36 @@ class AudioCLIP(CLIP):
         self.logit_scale_at = torch.nn.Parameter(torch.log(torch.ones([]) * 100))
 
         if isinstance(self.pretrained, str):
-            self.load_state_dict(torch.load(self.pretrained, map_location='cpu'), strict=False)
+            self.load_state_dict(
+                torch.load(self.pretrained, map_location='cpu'), strict=False
+            )
         elif self.pretrained:
-            self.load_state_dict(torch.load(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'CLIP.pt'),
-                map_location='cpu'
-            ), strict=False)
+            self.load_state_dict(
+                torch.load(
+                    os.path.join(
+                        os.path.dirname(os.path.abspath(__file__)),
+                        '..',
+                        'assets',
+                        'CLIP.pt',
+                    ),
+                    map_location='cpu',
+                ),
+                strict=False,
+            )
             print('Image & Text weights loaded')
             try:
-                self.audio.load_state_dict(torch.load(
-                    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'ESRNXFBSP.pt'),
-                    map_location='cpu'
-                ), strict=False)
+                self.audio.load_state_dict(
+                    torch.load(
+                        os.path.join(
+                            os.path.dirname(os.path.abspath(__file__)),
+                            '..',
+                            'assets',
+                            'ESRNXFBSP.pt',
+                        ),
+                        map_location='cpu',
+                    ),
+                    strict=False,
+                )
             except RuntimeError as ex:
                 print(ex)
                 print('Audio weights loaded')
@@ -121,27 +138,31 @@ class AudioCLIP(CLIP):
     def encode_audio(self, audio: torch.Tensor) -> torch.Tensor:
         return self.audio(audio.to(self.device))
 
-    def encode_text(self,
-                    text: List[List[str]],
-                    base_str: str = '{}',
-                    batch_indices: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def encode_text(
+        self,
+        text: List[List[str]],
+        base_str: str = '{}',
+        batch_indices: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
 
         if batch_indices is not None:
             text = [text[idx] for idx in batch_indices]
 
         text_joined = [', '.join(entities) for entities in text]
-        text_tokens = torch.cat([
-            tokenize(base_str.format(entities)) for entities in text_joined
-        ])
+        text_tokens = torch.cat(
+            [tokenize(base_str.format(entities)) for entities in text_joined]
+        )
         text_tokens = text_tokens.to(self.device)
 
         return super(AudioCLIP, self).encode_text(text_tokens)
 
-    def forward(self,
-                audio: Optional[torch.Tensor] = None,
-                image: Optional[torch.Tensor] = None,
-                text: Optional[List[List[str]]] = None,
-                batch_indices: Optional[torch.Tensor] = None) -> ClipOutput:
+    def forward(
+        self,
+        audio: Optional[torch.Tensor] = None,
+        image: Optional[torch.Tensor] = None,
+        text: Optional[List[List[str]]] = None,
+        batch_indices: Optional[torch.Tensor] = None,
+    ) -> ClipOutput:
 
         audio_features = None
         image_features = None
@@ -158,16 +179,24 @@ class AudioCLIP(CLIP):
 
         if text is not None:
             if batch_indices is None:
-                batch_indices = torch.arange(len(text), dtype=torch.int64, device=self.device)
+                batch_indices = torch.arange(
+                    len(text), dtype=torch.int64, device=self.device
+                )
 
             text_features = self.encode_text(text, '{}', batch_indices)
             text_features = text_features / text_features.norm(dim=-1, keepdim=True)
 
             if hasattr(self, 'class_weights') and hasattr(self, 'label_to_class_idx'):
-                sample_weights = torch.stack([
-                    sum(self.class_weights[self.label_to_class_idx[label]] for label in entities)
-                    for idx, entities in enumerate(text) if idx in batch_indices
-                ])
+                sample_weights = torch.stack(
+                    [
+                        sum(
+                            self.class_weights[self.label_to_class_idx[label]]
+                            for label in entities
+                        )
+                        for idx, entities in enumerate(text)
+                        if idx in batch_indices
+                    ]
+                )
 
         features: ClipFeatures = (audio_features, image_features, text_features)
 
@@ -196,7 +225,9 @@ class AudioCLIP(CLIP):
 
         return (features, logits), loss
 
-    def loss_fn(self, logits: ClipLogits, sample_weights: Optional[torch.Tensor] = None) -> Optional[torch.Tensor]:
+    def loss_fn(
+        self, logits: ClipLogits, sample_weights: Optional[torch.Tensor] = None
+    ) -> Optional[torch.Tensor]:
         logits_audio_image, logits_audio_text, logits_image_text = logits
 
         if logits_audio_image is not None:
@@ -208,11 +239,7 @@ class AudioCLIP(CLIP):
         else:
             return None
 
-        reference = torch.arange(
-            batch_size,
-            dtype=torch.int64,
-            device=self.device
-        )
+        reference = torch.arange(batch_size, dtype=torch.int64, device=self.device)
 
         loss = torch.tensor(0.0, dtype=self.dtype, device=self.device)
 

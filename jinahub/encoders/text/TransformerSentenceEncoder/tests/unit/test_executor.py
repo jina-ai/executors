@@ -3,8 +3,7 @@ from typing import List
 
 import pytest
 from jina import Document, DocumentArray, Executor
-
-from ...sentence_encoder import TransformerSentenceEncoder
+from sentence_encoder import TransformerSentenceEncoder
 
 _EMBEDDING_DIM = 384
 

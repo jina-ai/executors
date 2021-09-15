@@ -1,6 +1,4 @@
 jtype: ImageTorchEncoder
-with:
-  {}
 metas:
   py_modules:
-    - __init__.py
+    - executor/__init__.py

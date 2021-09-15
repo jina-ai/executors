@@ -2,9 +2,8 @@ from pathlib import Path
 from typing import List
 
 import pytest
+from flair_text import FlairTextEncoder
 from jina import Document, DocumentArray, Executor
-
-from ...flair_text import FlairTextEncoder
 
 _EMBEDDING_DIM = 100
 

@@ -1,9 +1,8 @@
 import subprocess
 
 import pytest
+from dpr_text import DPRTextEncoder
 from jina import Document, DocumentArray, Flow
-
-from ...dpr_text import DPRTextEncoder
 
 _EMBEDDING_DIM = 768
 

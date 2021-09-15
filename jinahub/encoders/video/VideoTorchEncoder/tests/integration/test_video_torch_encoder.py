@@ -6,8 +6,7 @@ import subprocess
 
 import pytest
 from jina import Document, Flow
-
-from ...video_torch_encoder import VideoTorchEncoder
+from video_torch_encoder import VideoTorchEncoder
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 

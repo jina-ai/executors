@@ -4,9 +4,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor
+from normalizer import ImageNormalizer
 from PIL.Image import Image, fromarray
-
-from ...normalizer import ImageNormalizer
 
 
 @pytest.fixture

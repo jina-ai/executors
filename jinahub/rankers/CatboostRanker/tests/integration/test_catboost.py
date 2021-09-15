@@ -1,9 +1,8 @@
 import os
 
 import pytest
+from catboost_ranker import CatboostRanker
 from jina import Flow
-
-from ...catboost_ranker import CatboostRanker
 
 
 @pytest.fixture

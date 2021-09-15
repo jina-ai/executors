@@ -5,10 +5,9 @@ import clip
 import numpy as np
 import pytest
 import torch
+from clip_image import CLIPImageEncoder
 from jina import Document, DocumentArray, Executor
 from PIL import Image
-
-from ...clip_image import CLIPImageEncoder
 
 _EMBEDDING_DIM = 512
 

@@ -26,6 +26,7 @@ class AudioCLIPTextEncoder(Executor):
     def __init__(
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
+        tokenizer_path: str = '.cache/bpe_simple_vocab_16e6.txt.gz',
         default_traversal_paths: Iterable[str] = ('r',),
         default_batch_size: int = 32,
         device: str = 'cpu',
@@ -33,8 +34,14 @@ class AudioCLIPTextEncoder(Executor):
         **kwargs
     ):
         super().__init__(*args, **kwargs)
-
-        self.model = AudioCLIP(pretrained=model_path).to(device).eval()
+        self.model = (
+            AudioCLIP(
+                pretrained=model_path,
+                bpe_path=tokenizer_path,
+            )
+            .to(device)
+            .eval()
+        )
         self.default_traversal_paths = default_traversal_paths
         self.default_batch_size = default_batch_size
 
