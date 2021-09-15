@@ -5,7 +5,7 @@
 **FaissSearch** is defined as a vector searcher,
 These usually implement a form of similarity search,
 based on the embeddings created by the encoders you have chosen in your Flow.
-Vector search is meant to be used together with a **Storage**.
+Vector searcher is meant to be used together with a **Storage**.
 To understand Jina's storage-search workflow,
 please read the documentation [here](https://docs.jina.ai/advanced/experimental/indexers/).
 
