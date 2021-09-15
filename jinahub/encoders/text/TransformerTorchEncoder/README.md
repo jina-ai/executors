@@ -47,7 +47,7 @@ jtype: Flow
 pods:
   - name: encoder
     uses: 'jinahub+docker://TransformerTorchEncoder'
-    volumes: '/your_home_folder/.cache/torch:/root/.cache/torch'
+    volumes: '/your_home_folder/.cache/huggingface:/root/.cache/huggingface'
 ```
 
 And then use it like so:
