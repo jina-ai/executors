@@ -1,28 +1,13 @@
 repos:
-- repo: https://github.com/terrencepreilly/darglint
-  rev: v1.5.8
-  hooks:
-  - id: darglint
-    files: jina/
-    exclude: ^(jina/helloworld/|jina/proto/jina_pb2.py|docs/|jina/resources/)
-    args:
-    - --message-template={path}:{line} {msg_id} {msg}
-    - -s=sphinx
-    - -z=full
-    - -v=2
-- repo: https://github.com/pycqa/pydocstyle
-  rev: 5.1.1  # pick a git hash / tag to point to
-  hooks:
-  -   id: pydocstyle
-      files: jina/
-      exclude: ^(jina/helloworld/|jina/proto/jina_pb2.py|docs/|jina/resources/)
-      args:
-      - --select=D101,D102,D103
-- repo: https://github.com/ambv/black
-  rev: 20.8b1
-  hooks:
-  - id: black
-    types: [python]
-    exclude: ^(jina/proto/jina_pb2.py|docs/|jina/resources/)
-    args:
-      - -S
+  - repo: https://github.com/psf/black
+    rev: 21.7b0
+    hooks:
+      - id: black
+  - repo: https://github.com/pycqa/flake8
+    rev: "3.9.2"
+    hooks:
+      - id: flake8
+  - repo: https://github.com/pycqa/isort
+    rev: "5.8.0"
+    hooks:
+      - id: isort
