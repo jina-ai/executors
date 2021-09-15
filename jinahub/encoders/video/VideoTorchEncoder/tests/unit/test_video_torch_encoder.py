@@ -3,19 +3,17 @@ __license__ = "Apache-2.0"
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
-
 import torchvision.models.video as models
+from jina import Document, DocumentArray, Executor
 from torchvision import transforms
 
-from jina import Document, DocumentArray, Executor
-
 from ...video_torch_encoder import (
-    VideoTorchEncoder,
-    ConvertFHWCtoFCHW,
     ConvertFCHWtoCFHW,
+    ConvertFHWCtoFCHW,
+    VideoTorchEncoder,
 )
 
 
@@ -26,7 +24,9 @@ def test_config():
 
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
 def test_video_torch_encoder(model_name):
-    ex = VideoTorchEncoder(model_name=model_name, use_default_preprocessing=False)
+    ex = VideoTorchEncoder(
+        model_name=model_name, use_default_preprocessing=False, download_progress=False
+    )
     da = DocumentArray(
         [Document(blob=np.random.random((3, 2, 224, 224))) for _ in range(10)]
     )
@@ -38,7 +38,7 @@ def test_video_torch_encoder(model_name):
 
 @pytest.mark.parametrize('batch_size', [1, 3, 10])
 def test_video_torch_encoder_traversal_paths(batch_size):
-    ex = VideoTorchEncoder(use_default_preprocessing=False)
+    ex = VideoTorchEncoder(use_default_preprocessing=False, download_progress=False)
 
     def _create_doc_with_video_chunks():
         d = Document(blob=np.random.random((3, 2, 112, 112)))
@@ -57,7 +57,9 @@ def test_video_torch_encoder_traversal_paths(batch_size):
 
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
 def test_video_torch_encoder_use_default_preprocessing(model_name):
-    ex = VideoTorchEncoder(model_name=model_name, use_default_preprocessing=True)
+    ex = VideoTorchEncoder(
+        model_name=model_name, use_default_preprocessing=True, download_progress=False
+    )
     da = DocumentArray(
         [Document(blob=np.random.random((10, 270, 480, 3))) for _ in range(10)]
     )
@@ -83,13 +85,17 @@ def test_with_dataset_video(model_name, kinects_videos):
         [Document(blob=video.detach().numpy()) for video in kinects_videos]
     )
 
-    ex = VideoTorchEncoder(use_default_preprocessing=True, model_name=model_name)
+    ex = VideoTorchEncoder(
+        use_default_preprocessing=True,
+        model_name=model_name,
+        download_progress=False,
+    )
     ex.encode(da, {})
     assert len(da) == 2
     for doc in da:
         assert doc.embedding.shape == (512,)
 
-    model = getattr(models, model_name)(pretrained=True).eval()
+    model = getattr(models, model_name)(pretrained=True, progress=False).eval()
     mean = (0.43216, 0.394666, 0.37645)
     std = (0.22803, 0.22145, 0.216989)
     resize_size = (128, 171)
@@ -123,3 +129,22 @@ def test_with_dataset_video(model_name, kinects_videos):
         np.testing.assert_almost_equal(
             doc.embedding, expected_torch_embedding.detach().numpy()
         )
+
+
+@pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
+@pytest.mark.gpu
+def test_video_torch_encoder_use_default_preprocessing_gpu(model_name):
+    ex = VideoTorchEncoder(
+        model_name=model_name,
+        use_default_preprocessing=True,
+        device='cuda',
+        download_progress=False,
+    )
+    da = DocumentArray(
+        [Document(blob=np.random.random((10, 270, 480, 3))) for _ in range(10)]
+    )
+    assert ex.device == 'cuda'
+    ex.encode(da, {})
+    assert len(da) == 10
+    for doc in da:
+        assert doc.embedding.shape == (512,)

@@ -35,7 +35,6 @@ def test_docker_runtime(build_docker_image: str):
                 'jina',
                 'executor',
                 f'--uses=docker://{build_docker_image}',
-                '--volumes=.cache:/workspace/.cache',
             ],
             timeout=30,
             check=True,

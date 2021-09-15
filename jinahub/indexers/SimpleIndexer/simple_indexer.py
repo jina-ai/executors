@@ -1,6 +1,6 @@
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
-from jina import Executor, DocumentArray, requests
+from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from jina.types.arrays.memmap import DocumentArrayMemmap
 
@@ -14,13 +14,13 @@ class SimpleIndexer(Executor):
     """
 
     def __init__(
-            self,
-            index_file_name: str,
-            default_traversal_paths: Optional[List[str]] = None,
-            default_top_k: int = 5,
-            distance_metric: str = 'cosine',
-            key_length: Optional[int] = None,
-            **kwargs,
+        self,
+        index_file_name: str,
+        default_traversal_paths: Optional[List[str]] = None,
+        default_top_k: int = 5,
+        distance_metric: str = 'cosine',
+        key_length: Optional[int] = None,
+        **kwargs,
     ):
         """
         Initializer function for the simple indexer
@@ -36,7 +36,9 @@ class SimpleIndexer(Executor):
         """
         super().__init__(**kwargs)
         extra_kwargs = {'key_length': key_length} if key_length is not None else {}
-        self._docs = DocumentArrayMemmap(self.workspace + f'/{index_file_name}', **extra_kwargs)
+        self._docs = DocumentArrayMemmap(
+            self.workspace + f'/{index_file_name}', **extra_kwargs
+        )
         self.default_traversal_paths = default_traversal_paths or ['r']
         self.default_top_k = default_top_k
         self._distance = distance_metric
@@ -49,10 +51,10 @@ class SimpleIndexer(Executor):
 
     @requests(on='/index')
     def index(
-            self,
-            docs: Optional['DocumentArray'] = None,
-            parameters: Optional[Dict] = {},
-            **kwargs,
+        self,
+        docs: Optional['DocumentArray'] = None,
+        parameters: Optional[Dict] = {},
+        **kwargs,
     ):
         """All Documents to the DocumentArray
         :param docs: the docs to add
@@ -68,10 +70,10 @@ class SimpleIndexer(Executor):
 
     @requests(on='/search')
     def search(
-            self,
-            docs: Optional['DocumentArray'] = None,
-            parameters: Optional[Dict] = {},
-            **kwargs,
+        self,
+        docs: Optional['DocumentArray'] = None,
+        parameters: Optional[Dict] = {},
+        **kwargs,
     ):
         """Perform a vector similarity search and retrieve the full Document match
 
@@ -99,7 +101,9 @@ class SimpleIndexer(Executor):
         )
 
     @requests(on='/delete')
-    def delete(self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs):
+    def delete(
+        self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs
+    ):
         """Delete entries from the index by id
 
         :param docs: the documents to delete
@@ -116,7 +120,9 @@ class SimpleIndexer(Executor):
                 del self._docs[idx]
 
     @requests(on='/update')
-    def update(self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs):
+    def update(
+        self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs
+    ):
         """Update doc with the same id
 
         :param docs: the documents to update

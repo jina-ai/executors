@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor
+
 from ...transformer_tf_text_encode import TransformerTFTextEncoder
 
 target_dim = 768
@@ -66,12 +67,12 @@ def test_encodes_semantic_meaning():
         ),
         (
             pytest.lazy_fixture("docs_with_chunk_text"),
-            [[['r'], 0], [['c'], 10], [['cc'], 0]],
+            [[['r'], 1], [['c'], 10], [['cc'], 0]],
             ['c'],
         ),
         (
             pytest.lazy_fixture("docs_with_chunk_chunk_text"),
-            [[['r'], 0], [['c'], 0], [['cc'], 10]],
+            [[['r'], 1], [['c'], 1], [['cc'], 10]],
             ['cc'],
         ),
     ],

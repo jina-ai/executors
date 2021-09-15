@@ -2,7 +2,6 @@ from typing import Iterable, List, Optional, Tuple
 
 import numpy as np
 import torch
-
 from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
@@ -154,7 +153,7 @@ class DPRReaderRanker(Executor):
         if self.title_tag_key:
             titles = matches.get_attributes(f'tags__{self.title_tag_key}')
 
-            if len(titles) != len(matches):
+            if len(titles) != len(matches) or None in titles:
                 raise ValueError(
                     f'All matches are required to have the {self.title_tag_key}'
                     ' tag, but found some matches without it.'

@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Any, Iterable
+from typing import Any, Iterable, List, Optional
 
 import numpy as np
 import tensorflow as tf
@@ -11,7 +11,7 @@ from jina.logging.logger import JinaLogger
 
 def _batch_generator(data: List[Any], batch_size: int):
     for i in range(0, len(data), batch_size):
-        yield data[i:i + batch_size]
+        yield data[i : i + batch_size]
 
 
 class TransformerTFTextEncoder(Executor):
@@ -40,21 +40,23 @@ class TransformerTFTextEncoder(Executor):
     """
 
     def __init__(
-            self,
-            pretrained_model_name_or_path: str = 'distilbert-base-uncased',
-            base_tokenizer_model: Optional[str] = None,
-            pooling_strategy: str = 'mean',
-            layer_index: int = -1,
-            max_length: Optional[int] = None,
-            default_batch_size: int = 32,
-            default_traversal_paths: List[str] = None,
-            on_gpu: bool = False,
-            *args,
-            **kwargs,
+        self,
+        pretrained_model_name_or_path: str = 'distilbert-base-uncased',
+        base_tokenizer_model: Optional[str] = None,
+        pooling_strategy: str = 'mean',
+        layer_index: int = -1,
+        max_length: Optional[int] = None,
+        default_batch_size: int = 32,
+        default_traversal_paths: List[str] = None,
+        on_gpu: bool = False,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
-        self.base_tokenizer_model = base_tokenizer_model or pretrained_model_name_or_path
+        self.base_tokenizer_model = (
+            base_tokenizer_model or pretrained_model_name_or_path
+        )
         self.pooling_strategy = pooling_strategy
         self.layer_index = layer_index
         self.max_length = max_length
@@ -77,20 +79,24 @@ class TransformerTFTextEncoder(Executor):
             )
             raise NotImplementedError
 
-        from transformers import TFAutoModel, AutoTokenizer
+        from transformers import AutoTokenizer, TFAutoModel
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.base_tokenizer_model)
         self.model = TFAutoModel.from_pretrained(
             self.pretrained_model_name_or_path, output_hidden_states=True
         )
 
         import tensorflow as tf
+
         cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
         if self.on_gpu and len(gpus) > 0:
             cpus.append(gpus[0])
         if self.on_gpu and len(gpus) == 0:
-            self.logger.warning('You tried to use a GPU but no GPU was found on'
-                                ' your system. Defaulting to CPU!')
+            self.logger.warning(
+                'You tried to use a GPU but no GPU was found on'
+                ' your system. Defaulting to CPU!'
+            )
         tf.config.experimental.set_visible_devices(devices=cpus)
 
     @requests
@@ -150,7 +156,9 @@ class TransformerTFTextEncoder(Executor):
             ind = tf.experimental.numpy.nonzero(input_tokens['input_ids'] == CLS)
             output = tf.gather_nd(layer, tf.stack(ind, axis=1))
         elif self.pooling_strategy == 'mean':
-            output = tf.reduce_sum(layer, 1) / tf.reduce_sum(tf.cast(attn_mask, tf.float32), 1)
+            output = tf.reduce_sum(layer, 1) / tf.reduce_sum(
+                tf.cast(attn_mask, tf.float32), 1
+            )
         elif self.pooling_strategy == 'max':
             output = tf.reduce_max(layer, 1)
         elif self.pooling_strategy == 'min':
@@ -167,7 +175,9 @@ class TransformerTFTextEncoder(Executor):
                 document.embedding = embedding
 
     def _get_input_data(self, docs: DocumentArray, parameters: dict):
-        traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
+        traversal_paths = parameters.get(
+            'traversal_paths', self.default_traversal_paths
+        )
         batch_size = parameters.get('batch_size', self.default_batch_size)
 
         # traverse thought all documents which have to be processed

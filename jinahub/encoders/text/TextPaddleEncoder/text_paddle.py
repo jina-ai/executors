@@ -1,11 +1,11 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Any, Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 import paddlehub as hub
-from jina import Executor, DocumentArray, requests
+from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
 
 
@@ -40,7 +40,7 @@ class TextPaddleEncoder(Executor):
         model_name: Optional[str] = 'ernie_tiny',
         on_gpu: bool = False,
         default_batch_size: int = 32,
-        default_traversal_paths: Tuple[str] = ('r', ),
+        default_traversal_paths: Tuple[str] = ('r',),
         *args,
         **kwargs,
     ):
@@ -62,9 +62,11 @@ class TextPaddleEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+                traversal_path=parameters.get(
+                    'traversal_paths', self.default_traversal_paths
+                ),
                 batch_size=parameters.get('batch_size', self.default_batch_size),
-                needs_attr='text'
+                needs_attr='text',
             )
             for batch_of_docs in document_batches_generator:
                 pooled_features = []

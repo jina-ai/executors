@@ -1,18 +1,19 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from pathlib import Path
 import os
+from pathlib import Path
 
-from PIL import Image
 from jina import Executor
 from jina.executors import BaseExecutor
+from PIL import Image
+
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
 
 
-def test_io_images_and_text(test_dir,doc_generator_img_text, expected_text):
+def test_io_images_and_text(test_dir, doc_generator_img_text, expected_text):
     crafter = BaseExecutor.load_config('config.yml')
     doc_array = doc_generator_img_text
     for doc in doc_array:
