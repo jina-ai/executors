@@ -13,7 +13,7 @@ class CLIPTextEncoder(Executor):
         self,
         pretrained_model_name_or_path: str = 'openai/clip-vit-base-patch32',
         base_tokenizer_model: Optional[str] = None,
-        max_length: Optional[int] = 77,
+        max_length: int = 77,
         device: str = 'cpu',
         traversal_paths: Sequence[str] = ['r'],
         batch_size: int = 32,
@@ -56,7 +56,7 @@ class CLIPTextEncoder(Executor):
         Encode all documents with the `text` attribute and store the embeddings in the
         `embedding` attribute.
 
-        :param docs: Documents to be encoded
+        :param docs: DocumentArray containing the Documents to be encoded
         :param parameters: A dictionary that contains parameters to control encoding.
             The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
             absence their corresponding default values are used.
