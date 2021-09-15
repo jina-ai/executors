@@ -171,7 +171,7 @@ class DPRReaderRanker(Executor):
             texts=contexts,
             padding='longest',
             return_tensors='pt',
-        )
+        ).to(self.device)
         outputs = self.model(**encoded_inputs)
 
         # For each context, extract num_spans_per_match best spans
@@ -185,8 +185,10 @@ class DPRReaderRanker(Executor):
         new_matches = []
         for span in best_spans:
             new_match = Document(text=span.text)
-            new_match.scores['relevance_score'] = _logistic_fn(span.relevance_score)
-            new_match.scores['span_score'] = _logistic_fn(span.span_score)
+            new_match.scores['relevance_score'] = _logistic_fn(
+                span.relevance_score.cpu()
+            )
+            new_match.scores['span_score'] = _logistic_fn(span.span_score.cpu())
             if titles:
                 new_match.tags['title'] = titles[span.doc_id]
             new_matches.append(new_match)
