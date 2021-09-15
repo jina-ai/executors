@@ -84,14 +84,6 @@ f = Flow().add(
 )
 ```
 
-### Inputs 
-
-`Document` with `.embedding` the same shape as the `Documents` it has stored.
-
-### Returns
-
-Attaches matches to the Documents sent as inputs, with the id of the match, and its embedding. For retrieving the full metadata (original text or image blob), use a [key-value searcher](./../../keyvalue).
-
 
 ## Reference
 

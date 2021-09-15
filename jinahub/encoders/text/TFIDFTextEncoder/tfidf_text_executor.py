@@ -11,12 +11,6 @@ from jina_commons.batching import get_docs_batch_generator
 class TFIDFTextEncoder(Executor):
     """
     Encode text into tf-idf sparse embeddings
-
-    :param path_vectorizer: path of the pre-trained tfidf sklearn vectorizer
-    :param default_batch_size: Default batch size, used if ``batch_size`` is not
-        provided as a parameter in the request
-    :param default_traversal_paths: Default traversal paths, used if ``traversal_paths``
-        are not provided as a parameter in the request.
     """
 
     def __init__(
@@ -27,6 +21,11 @@ class TFIDFTextEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param path_vectorizer: path of the pre-trained tfidf sklearn vectorizer
+        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param default_batch_size: fallback batch size in case there is not batch size sent in the request
+        """
         super().__init__(*args, **kwargs)
         if path_vectorizer is None:
             path_vectorizer = str(

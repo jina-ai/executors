@@ -15,8 +15,8 @@ from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 
 
 class FaissPostgresSearcher(Executor):
-    """A Compound Indexer made up of a FaissSearcher (for vectors) and a Postgres
-    Indexer
+    """A Compound Indexer made up of a FaissSearcher (for vectors) and a
+    PostgreSQLStorage
 
     :param dump_path: a path to a dump folder containing
     the dump data obtained by calling jina_commons.dump_docs
@@ -153,6 +153,19 @@ class FaissPostgresSearcher(Executor):
     def search(self, docs: 'DocumentArray', parameters: Dict = None, **kwargs):
         """
         Search the vec embeddings in Faiss and then lookup the metadata in PSQL
+
+        :param docs: `Document` with `.embedding` the same shape as the
+            `Documents` stored in the `FaissSearcher`. The ids of the `Documents`
+            stored in `FaissSearcher` need to exist in the `PostgreSQLStorage`.
+            Otherwise you will not get back the original metadata.
+        :param parameters: dictionary to define the ``traversal_paths``. This will
+            override the default parameters set at init.
+
+        :return: The `FaissSearcher` attaches matches to the `Documents` sent as inputs,
+            with the id of the match, and its embedding. Then, the `PostgreSQLStorage`
+            retrieves the full metadata (original text or image blob) and attaches
+            those to the Document. You receive back the full Document.
+
         """
         if self._kv_indexer and self._vec_indexer:
             self._vec_indexer.search(docs, parameters)

@@ -6,15 +6,9 @@ The TFIDF model is a classic vector representation for [information retrieval](h
 
 `TfidfTextEncoder` encodes data from a `DocumentArray` and updates the `doc.embedding` attributes with a  `scipy.csr_matrix`of floating point values for each doc in DocumentArray.
 
-### Inputs
-
-`Document`s with `text` attribute.  
-
-### Returns
-
-`Document`s with `embedding` fields filled with an `scipy.sparse.csr_matrix` of the shape `n_vocabulary`.
-
 ## Prerequisites
+
+You need a TF-IDF vectorizer pretrained.
 
 The `TFIDFTextEncoder`  uses a `sklearn.feature_extraction.text.TfidfVectorizer`object that needs to be fitted and stored as a pickle object which the `TFIDFTextEncoder` will load from `path_vectorizer`. By default `path_vectorizer='model/tfidf_vectorizer.pickle'` .
 
@@ -34,17 +28,6 @@ if __name__ == '__main__':
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_vectorizer.fit(X)
     pickle.dump(tfidf_vectorizer, open('tfidf_vectorizer.pickle', 'wb'))
-```
-
-## Usage 
-
-```python
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub+docker://TFIDFTextEncoder')
-
-with f:
-    f.index(inputs=Document(text='Han eats pizza'), on_done=print)
 ```
 
 ## Reference

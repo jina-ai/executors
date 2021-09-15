@@ -1,7 +1,7 @@
 import random
-import pytest
 
-from jina import DocumentArray, Document
+import pytest
+from jina import Document, DocumentArray
 
 
 @pytest.fixture

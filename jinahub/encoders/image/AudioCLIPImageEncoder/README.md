@@ -16,8 +16,7 @@ The following arguments can be passed on initialization:
 
 ## Prerequisites
 
-
-> These are only needed if you download the source code and directly use the class. Not needed if you use the Jina Hub method below.
+> These are only needed if you use `jinahub://AudioCLIPTextEncoder`. 
 
 First, you should download the model and the vocabulary, which will be saved into the `.cache` folder inside your current directory (will be created if it does not exist yet).
 
@@ -36,60 +35,6 @@ wget https://raw.githubusercontent.com/jina-ai/executors/main/jinahub/encoders/i
 ```
 
 And then you will also need to pass the argument `model_path='.cache/AudioCLIP-Partial-Training.pt'` when you initialize the executor.
-
-## Usage
-
-Use the prebuilt images from JinaHub in your Python code: 
-
-```python
-from jina import Flow
-	
-f = Flow().add(
-	uses='jinahub+docker://AudioCLIPImageEncoder',
-	volumes='/path/to/pwd/.cache:/workspace/.cache'
-)
-```
-
-or in the `.yml` config.
-	
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://AudioCLIPImageEncoder'
-    volumes: '/path/to/pwd/.cache:/workspace/.cache'
-```
- 
-
-Here's a basic example demonstrating the use of this encoder
-
-```python
-import numpy as np
-from jina import Flow, Document
-
-f = Flow().add(
-	uses='jinahub+docker://AudioCLIPImageEncoder',
-	volumes='/path/to/pwd/.cache:/workspace/.cache'
-)
-
-with f:
-	fake_image = np.ones((100, 100, 3), dtype=np.uint8)
-	doc = Document(blob=fake_image)
-	resp = f.post(on='foo', inputs=doc, return_results=True)
-	print(resp[0])
-```
-
-#### Inputs 
-
-`Document` with the `blob` attribute, where `blob` is an `np.ndarray` of dtype ``np.uint8`` (unless you set ``use_default_preprocessing=True``, then they can also be of a float type).
-
-If you set `use_default_preprocessing=True` when creating this encoder, then the image arrays should have the shape `[H, W, C]`, and be in the RGB color format.
-
-If you set `use_default_preprocessing=False` when creating this encoder, then you need to ensure that the images you pass in are already pre-processed. This means that they are all the same size (for batching) - the CLIP model was trained on `224 x 224` images, and that they are of the shape `[C, H, W]` (in the RGB color format). They should also be normalized.
-
-#### Returns
-
-`Document` with `embedding` field filled with an `ndarray` of the shape `(1024,)` with `dtype=nfloat32`.
 
 
 ## Reference
