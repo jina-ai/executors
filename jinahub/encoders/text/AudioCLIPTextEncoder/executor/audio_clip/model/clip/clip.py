@@ -23,9 +23,6 @@ _MODELS = {
 }
 
 
-
-
-
 def _download(url: str, root: str = os.path.expanduser("~/.cache/clip")):
     os.makedirs(root, exist_ok=True)
     filename = os.path.basename(url)
@@ -37,13 +34,23 @@ def _download(url: str, root: str = os.path.expanduser("~/.cache/clip")):
         raise RuntimeError(f"{download_target} exists and is not a regular file")
 
     if os.path.isfile(download_target):
-        if hashlib.sha256(open(download_target, "rb").read()).hexdigest() == expected_sha256:
+        if (
+            hashlib.sha256(open(download_target, "rb").read()).hexdigest()
+            == expected_sha256
+        ):
             return download_target
         else:
-            warnings.warn(f"{download_target} exists, but the SHA256 checksum does not match; re-downloading the file")
+            warnings.warn(
+                f"{download_target} exists, but the SHA256 checksum does not match; re-downloading the file"
+            )
 
     with urllib.request.urlopen(url) as source, open(download_target, "wb") as output:
-        with tqdm(total=int(source.info().get("Content-Length")), ncols=80, unit='iB', unit_scale=True) as loop:
+        with tqdm(
+            total=int(source.info().get("Content-Length")),
+            ncols=80,
+            unit='iB',
+            unit_scale=True,
+        ) as loop:
             while True:
                 buffer = source.read(8192)
                 if not buffer:
@@ -52,20 +59,30 @@ def _download(url: str, root: str = os.path.expanduser("~/.cache/clip")):
                 output.write(buffer)
                 loop.update(len(buffer))
 
-    if hashlib.sha256(open(download_target, "rb").read()).hexdigest() != expected_sha256:
-        raise RuntimeError(f"Model has been downloaded but the SHA256 checksum does not not match")
+    if (
+        hashlib.sha256(open(download_target, "rb").read()).hexdigest()
+        != expected_sha256
+    ):
+        raise RuntimeError(
+            "Model has been downloaded but the SHA256 checksum does not not match"
+        )
 
     return download_target
 
 
 def _transform(n_px):
-    return Compose([
-        Resize(n_px, interpolation=Image.BICUBIC),
-        CenterCrop(n_px),
-        lambda image: image.convert("RGB"),
-        ToTensor(),
-        Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
-    ])
+    return Compose(
+        [
+            Resize(n_px, interpolation=Image.BICUBIC),
+            CenterCrop(n_px),
+            lambda image: image.convert("RGB"),
+            ToTensor(),
+            Normalize(
+                (0.48145466, 0.4578275, 0.40821073),
+                (0.26862954, 0.26130258, 0.27577711),
+            ),
+        ]
+    )
 
 
 def available_models() -> List[str]:
@@ -73,7 +90,11 @@ def available_models() -> List[str]:
     return list(_MODELS.keys())
 
 
-def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu", jit=True):
+def load(
+    name: str,
+    device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu",
+    jit=True,
+):
     """Load a CLIP model
 
     Parameters
@@ -100,7 +121,9 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
     elif os.path.isfile(name):
         model_path = name
     else:
-        raise RuntimeError(f"Model {name} not found; available models = {available_models()}")
+        raise RuntimeError(
+            f"Model {name} not found; available models = {available_models()}"
+        )
 
     try:
         # loading JIT archive
@@ -109,7 +132,9 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
     except RuntimeError:
         # loading saved state dict
         if jit:
-            warnings.warn(f"File {model_path} is not a JIT archive. Loading as a state dict instead")
+            warnings.warn(
+                f"File {model_path} is not a JIT archive. Loading as a state dict instead"
+            )
             jit = False
         state_dict = torch.load(model_path, map_location="cpu")
 
@@ -120,8 +145,14 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
         return model, _transform(model.visual.input_resolution)
 
     # patch the device names
-    device_holder = torch.jit.trace(lambda: torch.ones([]).to(torch.device(device)), example_inputs=[])
-    device_node = [n for n in device_holder.graph.findAllNodes("prim::Constant") if "Device" in repr(n)][-1]
+    device_holder = torch.jit.trace(
+        lambda: torch.ones([]).to(torch.device(device)), example_inputs=[]
+    )
+    device_node = [
+        n
+        for n in device_holder.graph.findAllNodes("prim::Constant")
+        if "Device" in repr(n)
+    ][-1]
 
     def patch_device(module):
         graphs = [module.graph] if hasattr(module, "graph") else []
@@ -130,7 +161,9 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
 
         for graph in graphs:
             for node in graph.findAllNodes("prim::Constant"):
-                if "value" in node.attributeNames() and str(node["value"]).startswith("cuda"):
+                if "value" in node.attributeNames() and str(node["value"]).startswith(
+                    "cuda"
+                ):
                     node.copyAttributes(device_node)
 
     model.apply(patch_device)
@@ -139,7 +172,9 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
 
     # patch dtype to float32 on CPU
     if str(device) == "cpu":
-        float_holder = torch.jit.trace(lambda: torch.ones([]).float(), example_inputs=[])
+        float_holder = torch.jit.trace(
+            lambda: torch.ones([]).float(), example_inputs=[]
+        )
         float_input = list(float_holder.graph.findNode("aten::to").inputs())[1]
         float_node = float_input.node()
 
@@ -151,7 +186,10 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
             for graph in graphs:
                 for node in graph.findAllNodes("aten::to"):
                     inputs = list(node.inputs())
-                    for i in [1, 2]:  # dtype can be the second or third argument to aten::to()
+                    for i in [
+                        1,
+                        2,
+                    ]:  # dtype can be the second or third argument to aten::to()
                         if inputs[i].node()["value"] == 5:
                             inputs[i].node().copyAttributes(float_node)
 
@@ -164,13 +202,15 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
     return model, _transform(model.input_resolution.item())
 
 
-def init_tokenizer():
+def init_tokenizer(bpe_path: str):
     global _tokenizer
     if _tokenizer is None:
-        _tokenizer = _Tokenizer()
+        _tokenizer = _Tokenizer(bpe_path)
 
 
-def tokenize(texts: Union[str, List[str]], context_length: int = 77) -> torch.LongTensor:
+def tokenize(
+    texts: Union[str, List[str]], context_length: int = 77
+) -> torch.LongTensor:
     """
     Returns the tokenized representation of given input string(s)
 
@@ -197,7 +237,9 @@ def tokenize(texts: Union[str, List[str]], context_length: int = 77) -> torch.Lo
 
     for i, tokens in enumerate(all_tokens):
         if len(tokens) > context_length:
-            raise RuntimeError(f"Input {texts[i]} is too long for context length {context_length}")
-        result[i, :len(tokens)] = torch.tensor(tokens)
+            raise RuntimeError(
+                f"Input {texts[i]} is too long for context length {context_length}"
+            )
+        result[i, : len(tokens)] = torch.tensor(tokens)
 
     return result
