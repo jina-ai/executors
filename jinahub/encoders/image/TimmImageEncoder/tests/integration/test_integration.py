@@ -3,8 +3,7 @@ import subprocess
 import numpy as np
 import pytest
 from jina import Document, Flow
-
-from ...timm_encoder import TimmImageEncoder
+from timm_encoder import TimmImageEncoder
 
 
 def test_with_batch():

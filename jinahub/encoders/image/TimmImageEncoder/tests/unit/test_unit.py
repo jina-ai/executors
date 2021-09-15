@@ -4,8 +4,7 @@ from typing import Dict, Tuple
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor
-
-from ...timm_encoder import TimmImageEncoder
+from timm_encoder import TimmImageEncoder
 
 
 def test_config():

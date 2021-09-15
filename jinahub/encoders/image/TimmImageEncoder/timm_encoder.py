@@ -38,9 +38,9 @@ class TimmImageEncoder(Executor):
 
     def __init__(
         self,
-        model_name: str = "resnet18",
-        device: str = "cpu",
-        default_traversal_path: Tuple[str] = ("r",),
+        model_name: str = 'resnet18',
+        device: str = 'cpu',
+        default_traversal_path: Tuple[str] = ('r',),
         default_batch_size: Optional[int] = 32,
         use_default_preprocessing: bool = True,
         *args,
@@ -76,10 +76,10 @@ class TimmImageEncoder(Executor):
             docs_batch_generator = get_docs_batch_generator(
                 docs,
                 traversal_path=parameters.get(
-                    "traversal_paths", self.default_traversal_path
+                    'traversal_paths', self.default_traversal_path
                 ),
-                batch_size=parameters.get("batch_size", self.default_batch_size),
-                needs_attr="blob",
+                batch_size=parameters.get('batch_size', self.default_batch_size),
+                needs_attr='blob',
             )
             self._compute_embeddings(docs_batch_generator)
 
