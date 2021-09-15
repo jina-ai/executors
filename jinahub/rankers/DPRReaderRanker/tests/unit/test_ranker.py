@@ -121,6 +121,7 @@ def test_spans_title_match(
 def test_ranking_gpu(example_docs: DocumentArray):
 
     ranker = DPRReaderRanker(device='cuda')
+    assert ranker.model.device.type == 'cuda'
     ranker.rank(example_docs, {})
 
     assert len(example_docs[0].matches) == 20
