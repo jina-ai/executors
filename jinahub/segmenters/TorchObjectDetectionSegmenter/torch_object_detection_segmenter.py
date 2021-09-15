@@ -150,9 +150,13 @@ class TorchObjectDetectionSegmenter(Executor):
         self.label_name_map = (
             label_name_map or TorchObjectDetectionSegmenter.COCO_INSTANCE_CATEGORY_NAMES
         )
-        self.model = getattr(detection_models, self.model_name)(
-            pretrained=True, pretrained_backbone=True
-        ).eval()
+        self.model = (
+            getattr(detection_models, self.model_name)(
+                pretrained=True, pretrained_backbone=True
+            )
+            .to('cuda' if self.on_gpu else 'cpu')
+            .eval()
+        )
 
     def _predict(self, batch: List[np.ndarray]) -> 'np.ndarray':
         """
