@@ -8,6 +8,8 @@ The `text` attribute represents the text to be encoded. This Executor will encod
 
 ## Usage
 
+### Encoding example
+
 Use the prebuilt images from Jina Hub in your Python codes, add it to your Flow and encode an image:
 
 ```python
@@ -21,23 +23,6 @@ with f:
     f.post(on='/index', inputs=doc, on_done=lambda resp: print(resp.docs[0].embedding))
 ```
 
-### Encoding example
-After creating a Flow, prepare your Documents to encode. They should have the text attributes.
-Then, we can start the Flow and encode the Documents. By default, any endpoint will encode 
-the Documents:
-
-```python
-import numpy as np
-
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub+docker://TransformerTorchEncoder')
-
-doc = Document(text='this is a sentence to be encoded')
-
-with f:
-    f.post(on='/index', inputs=doc, on_done=lambda resp: print(resp.docs[0].embedding))
-```
 
 ### Set `volumes`
 
