@@ -11,17 +11,7 @@ from jina_commons.batching import get_docs_batch_generator
 
 class YoloV5Segmenter(Executor):
     """
-     Segment the image into bounding boxes and set labels
-
-     :param model_name_or_path: the yolov5 model to use, can be a model name specified in ultralytics/yolov5's hubconf.py
-     file, a custom model path or url
-    :param default_batch_size: default batch size
-    :param default_traversal_paths: default traversal path
-    :param device: device to be used. Use 'cuda' for GPU
-    :param size: image size used to perform inference
-    :param augment: augment images during inference
-    :param default_confidence_threshold: default confidence threshold
-
+     Segment the image into bounding boxes, append them to chunks and set labels in the document tags
     """
 
     def __init__(
@@ -36,6 +26,16 @@ class YoloV5Segmenter(Executor):
         *args,
         **kwargs
     ):
+        """
+        :param model_name_or_path: the yolov5 model to use, can be a model name specified in ultralytics/yolov5's
+        hubconf.py file, a custom model path or url
+        :param default_batch_size: default batch size
+        :param default_traversal_paths: default traversal path
+        :param device: device to be used. Use 'cuda' for GPU
+        :param size: image size used to perform inference
+        :param augment: augment images during inference
+        :param default_confidence_threshold: default confidence threshold
+        """
         super().__init__(*args, **kwargs)
         self.model_name_or_path = model_name_or_path
         self.default_batch_size = default_batch_size

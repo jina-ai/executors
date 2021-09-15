@@ -15,11 +15,6 @@ from jina.excepts import BadDocType
 class VADSpeechSegmenter(Executor):
     """
      Segment the speech audio using Silero's Voice Activity Detector (VAD)
-
-    :param normalize: a bool to specify whether to normalize the audio
-     by the sample rate
-    :param dump: a bool to specify whether to dump the segmented audio
-
     """
 
     TARGET_SAMPLE_RATE = 16000
@@ -31,6 +26,12 @@ class VADSpeechSegmenter(Executor):
         *args,
         **kwargs,
     ):
+        """
+        Segment the speech audio using Silero's Voice Activity Detector (VAD)
+        :param normalize: a bool to specify whether to normalize the audio
+         by the sample rate
+        :param dump: a bool to specify whether to dump the segmented audio
+        """
         super().__init__(*args, **kwargs)
         # TODO: remove the following temporary fix for torch hub
         torch.hub._validate_not_a_forked_repo = lambda *args: True
