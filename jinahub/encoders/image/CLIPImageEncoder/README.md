@@ -27,7 +27,7 @@ def print_result(resp):
     print(f'Embedded image to {doc.embedding.shape[0]}-dimensional vector')
 
 with f:
-    doc = Document(blob=np.asarray(Image.open('myimage.png')))
+    doc = Document(blob=np.asarray(Image.open('myimage.png')convert('RGB')))
     f.post(on='/foo', inputs=doc, on_done=print_result)
 ```
 
