@@ -71,7 +71,7 @@ f = Flow().add(
 doc = Document(content='this is a sentence to be encoded')
 
 with f:
-    f.post(on='/index', inputs=doc, on_done=lambda resp: print(resp.docs[0].embedding))
+    f.post(on='/foo', inputs=doc, on_done=lambda resp: print(resp.docs[0].embedding))
 ```
 
 You can check the supported pre-trained models [here](https://huggingface.co/transformers/pretrained_models.html)
