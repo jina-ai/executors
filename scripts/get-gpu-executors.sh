@@ -17,6 +17,9 @@ for changed_file in $CHANGED_FILES; do
   if [ $(basename $(dirname "$file_base_dir")) = "tests" ]; then
     file_base_dir=$(dirname $(dirname "$file_base_dir"))
   fi
+  if [ -d $file_base_dir ]; then
+    continue
+  fi
   cd $file_base_dir
 
   if [[ ! " ${gpu_folders[@]} " =~ " ${file_base_dir} " ]]; then
