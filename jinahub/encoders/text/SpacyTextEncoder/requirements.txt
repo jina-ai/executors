@@ -1,2 +1,2 @@
-spacy==3.0.6
-torch==1.9.0
+spacy==3.1.2
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons

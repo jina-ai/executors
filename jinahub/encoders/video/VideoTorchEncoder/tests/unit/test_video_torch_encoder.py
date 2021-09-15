@@ -3,19 +3,17 @@ __license__ = "Apache-2.0"
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
-
 import torchvision.models.video as models
+from jina import Document, DocumentArray, Executor
 from torchvision import transforms
 
-from jina import Document, DocumentArray, Executor
-
 from ...video_torch_encoder import (
-    VideoTorchEncoder,
-    ConvertFHWCtoFCHW,
     ConvertFCHWtoCFHW,
+    ConvertFHWCtoFCHW,
+    VideoTorchEncoder,
 )
 
 

@@ -1,7 +1,7 @@
 import random
 
-import pytest
 import numpy as np
+import pytest
 from jina import Document, DocumentArray
 
 from ..catboost_ranker import CatboostRanker

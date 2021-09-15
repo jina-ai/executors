@@ -33,24 +33,12 @@ with:
 The folder needs to contain the data exported from your Indexer. Again, see [docs](https://docs.jina.ai/fundamentals/executor/indexers/).
 
 
-```python
-import numpy as np
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub+docker://HnswlibSearcher')
-
-with f:
-    resp = f.post(on='/search', inputs=Document(embedding=np.array([1,2,3])), return_results=True)
-    print(f'{resp}')
-```
-
 ### Inputs 
 
-`Document` with `.embedding` the same shape as the `Documents` it has stored.
 
 ### Returns
 
-Attaches matches to the Documents sent as inputs, with the id of the match, and its embedding. For retrieving the full metadata (original text or image blob), use a [key-value searcher](./../../keyvalue).
+Attaches matches to the Documents sent as inputs, with the id of the match, and its embedding. 
 
 
 ## Reference

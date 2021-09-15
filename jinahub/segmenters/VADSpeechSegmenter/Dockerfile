@@ -1,6 +1,7 @@
-FROM jinaai/jina:latest-perf
+FROM jinaai/jina:2-py37-perf
 
-RUN apt-get -y update && apt-get install -y libsndfile1
+
+RUN apt-get -y update && apt-get install -y ffmpeg libsndfile1
 
 # install requirements before copying the workspace
 COPY requirements.txt /requirements.txt

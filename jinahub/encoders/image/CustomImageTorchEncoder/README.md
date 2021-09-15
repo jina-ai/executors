@@ -4,16 +4,6 @@
 It relies on having a [`state_dict`](https://pytorch.org/tutorials/beginner/saving_loading_models.html#what-is-a-state-dict) stored
 together with a `python` file and `class` name to load the model from.
 
-The following parameters can be passed on initialization:
-- `layer_name` (string, default: `'features'`): The layer name from which to extract the feature maps
-- `device` (string, default: `'cuda'` if available, otherwise `'cpu'` ): The device where the model should be loaded onto.
-- `default_batch_size` (integer, default: `32`): fallback batch size in case there is not batch size sent in the request. Defaults to 32 if not specified.
-- `default_traversal_paths` (tuple, default: `('r',)`): fallback traversal path in case there is no traversal path sent in the request
-- `model_state_dict_path` (string, default: None): The path where the model state dict is stored
-- `model_definition_file` (string, default: None): The python file path where the model class is defined
-- `model_class_name` (string, default: None): The model class name to instantiate with the `state_dict` in `model_state_dict_path`
-
-
 
 
 ## Usage
@@ -70,16 +60,6 @@ with f:
     resp = f.post(on='foo', inputs=Document(blob=np.random.rand(3, 224, 224)), return_results=True)
     assert resp[0].docs[0].embedding.shape == (10, )
 ```
-
-### Inputs 
-
-`Documents` must have `blob` content as images. There is no explicit requirement in the shape of the `arrays` contained by the `Documents`.
-The input must be the one accepted by the model offered as pretrained. User may need to pay attention to the required preprocessing needed
-at inference time for the images.
-
-### Returns
-
-`Documents` with `embedding` field
 
 
 ## Reference
