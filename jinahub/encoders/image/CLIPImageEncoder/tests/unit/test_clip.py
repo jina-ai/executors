@@ -43,10 +43,6 @@ def nested_docs() -> DocumentArray:
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.default_batch_size == 32
-    assert len(ex.default_traversal_paths) == 1
-    assert ex.default_traversal_paths[0] == "r"
-    assert ex.device == "cpu"
-    assert ex.is_updated is False
 
 
 def test_no_documents(encoder: CLIPImageEncoder):
