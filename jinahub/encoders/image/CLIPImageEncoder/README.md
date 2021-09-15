@@ -7,13 +7,13 @@ resulting image embedding in the `embedding` attribute. You can store original i
 the `blob` attribute, and they should be in the RGB format and have a shape `[H, W, 3]`). You
 can also choose to pass in already pre-processed images (see the class documentation).
 
-The **CLIP** model was originally proposed in [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020), and is trained to embedd images and text to the same latent
-spance. The corresponding text encoder is **[CLIPTextEncoder](https://hub.jina.ai/executor/livtkbkg)**,
+The **CLIP** model was originally proposed in [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020), and is trained to embed images and text to the same latent
+space. The corresponding text encoder is **[CLIPTextEncoder](https://hub.jina.ai/executor/livtkbkg)**,
 using both encoders together works well in multi-modal or cross-modal search applications.
 
 ## Usage
 
-Here's a simple example of how to use CLIPImageEncoder in a Flow. We are 
+Here's a simple example of how to use CLIPImageEncoder in a Flow. We are embedding an image called `myimage.png`, stored in your working directory - this can be any image you like.
 
 ```python
 import numpy as np
@@ -44,7 +44,7 @@ f = Flow().add(
 
 ### With GPU
 
-This encoder also offers a GPU version under the `gpu` tag. To use it, make sure to pass `device='cuda'`, as the initialization parameter, and `gpus='all'` when adding the containerized Executor to the Flow. See the [Executor on GPU](https://docs.jina.ai/tutorials/gpu_executor/) part of Jina documentation for more details.
+This encoder also offers a GPU version under the `gpu` tag. To use it, make sure to pass `device='cuda'`, as the initialization parameter, and `gpus='all'` when adding the containerized Executor to the Flow. See the [Executor on GPU](https://docs.jina.ai/tutorials/gpu_executor/) section of Jina documentation for more details.
 
 Here's how you would modify the example above to use a GPU
 

@@ -3,10 +3,10 @@
 **CLIPTextEncoder** is a text encoder that wraps the text embedding functionality using the **CLIP** model from huggingface transformers.
 
 It takes `Document`s with text stored in the `text` attribute as inputs, and stores the
-resulting image embedding in the `embedding` attribute.
+resulting embedding in the `embedding` attribute.
 
-The **CLIP** model was originally proposed in [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020), and is trained to embedd images and text to the same latent
-spance. The corresponding image encoder is **[CLIPImageEncoder](https://hub.jina.ai/executor/0hnlmu3q)**,
+The **CLIP** model was originally proposed in [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020), and is trained to embed images and text to the same latent
+space. The corresponding image encoder is **[CLIPImageEncoder](https://hub.jina.ai/executor/0hnlmu3q)**,
 using both encoders together works well in multi-modal or cross-modal search applications.
 
 ## Usage
@@ -19,7 +19,7 @@ from jina import Flow, Document
 f = Flow().add(uses='jinahub+docker://CLIPTextEncoder')
 
 def print_result(resp):
-    doc = resp[0].docs[0]
+    doc = resp.docs[0]
     print(f'Embedded "{doc.text}" to {doc.embedding.shape[0]}-dimensional vector')
 
 with f:
@@ -40,7 +40,7 @@ f = Flow().add(
 
 ### With GPU
 
-This encoder also offers a GPU version under the `gpu` tag. To use it, make sure to pass `device='cuda'`, as the initialization parameter, and `gpus='all'` when adding the containerized Executor to the Flow. See the [Executor on GPU](https://docs.jina.ai/tutorials/gpu_executor/) part of Jina documentation for more details.
+This encoder also offers a GPU version under the `gpu` tag. To use it, make sure to pass `device='cuda'`, as the initialization parameter, and `gpus='all'` when adding the containerized Executor to the Flow. See the [Executor on GPU](https://docs.jina.ai/tutorials/gpu_executor/) section of Jina documentation for more details.
 
 Here's how you would modify the example above to use a GPU
 
