@@ -17,14 +17,6 @@ from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 class FaissPostgresSearcher(Executor):
     """A Compound Indexer made up of a FaissSearcher (for vectors) and a
     PostgreSQLStorage
-
-    :param dump_path: a path to a dump folder containing
-    the dump data obtained by calling jina_commons.dump_docs
-    :param startup_sync_args: the arguments to be passed to the self.sync call on
-    startup
-    :param total_shards: the total nr of shards that this shard is part of.
-
-        NOTE: This is REQUIRED in k8s, since there `runtime_args.parallel` is always 1
     """
 
     def __init__(
@@ -34,6 +26,15 @@ class FaissPostgresSearcher(Executor):
         total_shards: Optional[int] = None,
         **kwargs,
     ):
+        """
+        :param dump_path: a path to a dump folder containing
+        the dump data obtained by calling jina_commons.dump_docs
+        :param startup_sync_args: the arguments to be passed to the self.sync call on
+        startup
+        :param total_shards: the total nr of shards that this shard is part of.
+
+            NOTE: This is REQUIRED in k8s, since there `runtime_args.parallel` is always 1
+        """
         super().__init__(**kwargs)
         self.logger = get_logger(self)
 

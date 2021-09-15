@@ -30,38 +30,6 @@ class FaissSearcher(Executor):
     supported parameters and installation problems, please consult:
         - https://github.com/facebookresearch/faiss
 
-    :param trained_index_file: the index file dumped from a trained
-     index, e.g., ``faiss.index``. If none is provided, `indexed` data will be used
-        to train the Indexer (In that case, one must be careful when sharding
-         is enabled, because every shard will be trained with its own part of data).
-    :param index_key: index type supported
-        by ``faiss.index_factory``
-    :param train_filepath: the training data file path,
-        e.g ``faiss.tgz`` or `faiss.npy`. The data file is expected
-        to be either `.npy` file from `numpy.save()` or a `.tgz` file
-        from `NumpyIndexer`. If none is provided, `indexed` data will be used
-        to train the Indexer (In that case, one must be careful when sharding
-        is enabled, because every shard will be trained with its own part of data).
-        The data will only be loaded if `requires_training` is set to True.
-    :param max_num_training_points: Optional argument to consider only a subset of
-    training points to training data from `train_filepath`.
-        The points will be selected randomly from the available points
-    :param prefetch_size: the number of data to pre-load into RAM
-    :param requires_training: Boolean flag indicating if the index type
-        requires training to be run before building index.
-    :param metric: 'l2' or 'inner_product' accepted. Determines which distances to
-        optimize by FAISS. l2...smaller is better, inner_product...larger is better
-    :param normalize: whether or not to normalize the vectors e.g. for the cosine
-        similarity
-        https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how
-        -can-i-index-vectors-for-cosine-similarity
-    :param nprobe: Number of clusters to consider at search time.
-    :param is_distance: Boolean flag that describes if distance metric need to be
-        reinterpreted as similarities.
-    :param make_direct_map: Boolean flag that describes if direct map has to be
-        computed after building the index. Useful if you need to call `fill_embedding`
-        endpoint and reconstruct vectors by id
-
     .. highlight:: python
     .. code-block:: python
         # generate a training file in `.tgz`
@@ -100,6 +68,39 @@ class FaissSearcher(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param trained_index_file: the index file dumped from a trained
+            index, e.g., ``faiss.index``. If none is provided, `indexed` data will be used
+            to train the Indexer (In that case, one must be careful when sharding
+            is enabled, because every shard will be trained with its own part of data).
+        :param index_key: index type supported
+            by ``faiss.index_factory``
+        :param train_filepath: the training data file path,
+            e.g ``faiss.tgz`` or `faiss.npy`. The data file is expected
+            to be either `.npy` file from `numpy.save()` or a `.tgz` file
+            from `NumpyIndexer`. If none is provided, `indexed` data will be used
+            to train the Indexer (In that case, one must be careful when sharding
+            is enabled, because every shard will be trained with its own part of data).
+            The data will only be loaded if `requires_training` is set to True.
+        :param max_num_training_points: Optional argument to consider only a subset of
+        training points to training data from `train_filepath`.
+            The points will be selected randomly from the available points
+        :param prefetch_size: the number of data to pre-load into RAM
+        :param requires_training: Boolean flag indicating if the index type
+            requires training to be run before building index.
+        :param metric: 'l2' or 'inner_product' accepted. Determines which distances to
+            optimize by FAISS. l2...smaller is better, inner_product...larger is better
+        :param normalize: whether or not to normalize the vectors e.g. for the cosine
+            similarity
+            https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how
+            -can-i-index-vectors-for-cosine-similarity
+        :param nprobe: Number of clusters to consider at search time.
+        :param is_distance: Boolean flag that describes if distance metric need to be
+            reinterpreted as similarities.
+        :param make_direct_map: Boolean flag that describes if direct map has to be
+            computed after building the index. Useful if you need to call `fill_embedding`
+            endpoint and reconstruct vectors by id
+        """
         super().__init__(*args, **kwargs)
         self.index_key = index_key
         self.requires_training = requires_training
