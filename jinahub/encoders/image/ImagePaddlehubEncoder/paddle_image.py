@@ -52,9 +52,7 @@ class ImagePaddlehubEncoder(Executor):
         :param channel_axis: The axis of the color channel, default is -3
         :param default_batch_size: size of each batch
         :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-        :param device: Device to run the model on (e.b. 'cpu'/'cuda'/'cuda:2')
-        :param args:  Additional positional arguments
-        :param kwargs: Additional keyword arguments
+        :param device: Device to run the model on (e.g. 'cpu'/'cuda'/'cuda:2')
         """
         super().__init__(*args, **kwargs)
         self.pool_strategy = pool_strategy

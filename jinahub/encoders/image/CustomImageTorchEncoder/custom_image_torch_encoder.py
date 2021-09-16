@@ -51,8 +51,6 @@ class CustomImageTorchEncoder(Executor):
             sent in the request
         :param default_traversal_paths: fallback traversal path in case there is no
             traversal path sent in the request
-        :param args:  Additional positional arguments.
-        :param kwargs: Additional keyword arguments.
         """
         super().__init__(*args, **kwargs)
         self.layer_name = layer_name
