@@ -20,28 +20,6 @@ class ImageTFEncoder(Executor):
     The :class:`ImageTFEncoder` wraps the models from
     `tensorflow.keras.applications`.
     <https://www.tensorflow.org/api_docs/python/tf/keras/applications>`_
-
-    :param model_name: the name of the model. Supported models include
-        ``DenseNet121``, ``DenseNet169``, ``DenseNet201``,
-        ``InceptionResNetV2``, ``InceptionV3``, ``MobileNet``,
-        ``MobileNetV2``, ``NASNetLarge``, ``NASNetMobile``,
-        ``ResNet101``, ``ResNet152``, ``ResNet50``, ``ResNet101V2``,
-        ``ResNet152V2``, ``ResNet50V2``, ``VGG16``, ``VGG19``,
-        ``Xception`` and etc. A full list can be find at
-        <https://www.tensorflow.org/api_docs/python/tf/keras/applications#functions>`_
-    :param img_shape: The shape of the image to be encoded.
-    :param pool_strategy: the pooling strategy. Options are:
-        - `None`: Means that the output of the model will be the 4D tensor
-            output of the last convolutional block.
-        - `avg`: ;eans that global average pooling will be applied to the
-            output of the last convolutional block, and thus the output of
-            the model will be a 2D tensor.
-        - `max`: Means that global max pooling will be applied.
-    :param default_batch_size: size of each batch
-    :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-    :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
-    :param args: additional positional arguments.
-    :param kwargs: additional positional arguments.
     """
 
     def __init__(
@@ -55,6 +33,27 @@ class ImageTFEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param model_name: the name of the model. Supported models include
+            ``DenseNet121``, ``DenseNet169``, ``DenseNet201``,
+            ``InceptionResNetV2``, ``InceptionV3``, ``MobileNet``,
+            ``MobileNetV2``, ``NASNetLarge``, ``NASNetMobile``,
+            ``ResNet101``, ``ResNet152``, ``ResNet50``, ``ResNet101V2``,
+            ``ResNet152V2``, ``ResNet50V2``, ``VGG16``, ``VGG19``,
+            ``Xception`` and etc. A full list can be find at
+            <https://www.tensorflow.org/api_docs/python/tf/keras/applications#functions>`_
+        :param img_shape: The shape of the image to be encoded.
+        :param pool_strategy: the pooling strategy. Options are:
+            - `None`: Means that the output of the model will be the 4D tensor
+                output of the last convolutional block.
+            - `avg`: ;eans that global average pooling will be applied to the
+                output of the last convolutional block, and thus the output of
+                the model will be a 2D tensor.
+            - `max`: Means that global max pooling will be applied.
+        :param default_batch_size: size of each batch
+        :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
+        """
         super().__init__(*args, **kwargs)
         if default_traversal_paths is None:
             default_traversal_paths = ['r']
@@ -89,8 +88,8 @@ class ImageTFEncoder(Executor):
         B` is the batch size and `D` is the Dimension.
 
         :param docs: DocumentArray containing blob as image data.
-        :param args: additional positional arguments.
-        :param kwargs: additional positional arguments.
+        :param parameters: parameters dictionary.
+        :param kwargs: additional keyword arguments.
         :return: Encoded result as a `BatchSize x D` numpy ``ndarray``,
             `D` is the output dimension
         """

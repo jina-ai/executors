@@ -20,18 +20,6 @@ _IMAGE_STD = 0.26862954, 0.26130258, 0.27577711
 class AudioCLIPImageEncoder(Executor):
     """
     Encode image data with the AudioCLIP model
-
-    :param model_path: path of the pre-trained AudioCLIP model.
-    :param default_traversal_paths: default traversal path (used if not specified in
-        request's parameters)
-    :param default_batch_size: default batch size (used if not specified in
-        request's parameters)
-    :param use_default_preprocessing: Whether to use the default preprocessing on
-        images (blobs) before encoding them. If you disable this, you must ensure
-        that the images you pass in have the correct format, see the ``encode`` method
-        for details.
-    :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
-        where X is the index of the GPU on the machine)
     """
 
     def __init__(
@@ -44,6 +32,19 @@ class AudioCLIPImageEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param model_path: path of the pre-trained AudioCLIP model.
+        :param default_traversal_paths: default traversal path (used if not specified in
+            request's parameters)
+        :param default_batch_size: default batch size (used if not specified in
+            request's parameters)
+        :param use_default_preprocessing: Whether to use the default preprocessing on
+            images (blobs) before encoding them. If you disable this, you must ensure
+            that the images you pass in have the correct format, see the ``encode`` method
+            for details.
+        :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
+            where X is the index of the GPU on the machine)
+        """
         super().__init__(*args, **kwargs)
 
         self.device = device
@@ -83,7 +84,7 @@ class AudioCLIPImageEncoder(Executor):
             pre-processed. This means that they are all the same size (for batching) -
             the CLIP model was trained on ``224 x 224`` images, and that they are of
             the shape ``[C, H, W]`` (in the RGB color format). They should also be
-            normalized.
+            normalized (values between 0 and 1).
         :param parameters: A dictionary that contains parameters to control encoding.
             The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
             absence their corresponding default values are used.

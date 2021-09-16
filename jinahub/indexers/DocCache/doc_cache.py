@@ -8,13 +8,13 @@ from jina.logging.logger import JinaLogger
 
 
 class _CacheHandler:
-    """A handler for loading and serializing the in-memory cache of the DocCache.
-
-    :param path: Path to the file from which to build the actual paths.
-    :param logger: Instance of logger.
-    """
+    """A handler for loading and serializing the in-memory cache of the DocCache."""
 
     def __init__(self, path, logger):
+        """
+        :param path: Path to the file from which to build the actual paths.
+        :param logger: Instance of logger.
+        """
         self.path = path
         self.id_to_hash_fn = path + ".ids"
         self.hash_to_id_fn = path + ".cache"

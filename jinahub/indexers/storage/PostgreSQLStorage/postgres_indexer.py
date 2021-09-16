@@ -18,23 +18,7 @@ def doc_without_embedding(d: Document):
 
 
 class PostgreSQLStorage(Executor):
-    """:class:`PostgreSQLStorage` PostgreSQL-based Storage Indexer.
-
-    Initialize the PostgreSQLStorage.
-
-    :param hostname: hostname of the machine
-    :param port: the port
-    :param username: the username to authenticate
-    :param password: the password to authenticate
-    :param database: the database name
-    :param table: the table name to use
-    :param default_return_embeddings: whether to return embeddings on search or not
-    :param dry_run: If True, no database connection will be build.
-    :param virtual_shards: the number of shards to distribute
-     the data (used when rolling update on Searcher side)
-    :param args: other arguments
-    :param kwargs: other keyword arguments
-    """
+    """:class:`PostgreSQLStorage` PostgreSQL-based Storage Indexer."""
 
     def __init__(
         self,
@@ -53,6 +37,20 @@ class PostgreSQLStorage(Executor):
         *args,
         **kwargs,
     ):
+        """
+        Initialize the PostgreSQLStorage.
+
+        :param hostname: hostname of the machine
+        :param port: the port
+        :param username: the username to authenticate
+        :param password: the password to authenticate
+        :param database: the database name
+        :param table: the table name to use
+        :param default_return_embeddings: whether to return embeddings on search or not
+        :param dry_run: If True, no database connection will be build.
+        :param virtual_shards: the number of shards to distribute
+         the data (used when rolling update on Searcher side)
+        """
         super().__init__(*args, **kwargs)
         self.default_traversal_paths = default_traversal_paths
         self.hostname = hostname

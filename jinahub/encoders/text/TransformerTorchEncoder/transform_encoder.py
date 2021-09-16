@@ -46,8 +46,6 @@ class TransformerTorchEncoder(Executor):
              received `DocumentArray`
         :param default_batch_size: Defines the batch size for inference on the loaded
             PyTorch model.
-        :param args: Arguments
-        :param kwargs: Keyword Arguments
         """
         super().__init__(*args, **kwargs)
 

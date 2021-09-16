@@ -24,20 +24,6 @@ class CustomImageTorchEncoder(Executor):
     Internally, :class:`CustomImageTorchEncoder` wraps any custom torch
     model not part of models from `torchvision.models`.
     https://pytorch.org/docs/stable/torchvision/models.html
-    :param model_state_dict_path: The path where the model state dict is stored.
-    :param model_definition_file: The python file path where the model class is defined
-    :param model_class_name: The model class name to instantiate with the `state_dict`
-        in `model_state_dict_path`
-    :param layer_name: The layer name from which to extract the feature maps.
-        These feature maps will then be fed into an `AdaptiveAvgPool2d` layer
-    to extract the embeddings
-    :param device: The device where to load the model.
-    :param default_batch_size: fallback batch size in case there is not batch size
-        sent in the request
-    :param default_traversal_paths: fallback traversal path in case there is no
-        traversal path sent in the request
-    :param args:  Additional positional arguments.
-    :param kwargs: Additional keyword arguments.
     """
 
     def __init__(
@@ -52,6 +38,20 @@ class CustomImageTorchEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param model_state_dict_path: The path where the model state dict is stored.
+        :param model_definition_file: The python file path where the model class is defined
+        :param model_class_name: The model class name to instantiate with the `state_dict`
+            in `model_state_dict_path`
+        :param layer_name: The layer name from which to extract the feature maps.
+            These feature maps will then be fed into an `AdaptiveAvgPool2d` layer
+        to extract the embeddings
+        :param device: The device where to load the model.
+        :param default_batch_size: fallback batch size in case there is not batch size
+            sent in the request
+        :param default_traversal_paths: fallback traversal path in case there is no
+            traversal path sent in the request
+        """
         super().__init__(*args, **kwargs)
         self.layer_name = layer_name
         self.logger = JinaLogger(self.__class__.__name__)

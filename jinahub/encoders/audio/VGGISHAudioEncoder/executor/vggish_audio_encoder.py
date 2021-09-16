@@ -23,11 +23,6 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 class VggishAudioEncoder(Executor):
     """
     Encode audio data with Vggish embeddings
-
-    :param model_path: path of the models directory
-    :param default_traversal_paths: fallback batch size in case there is not
-        batch size sent in the request
-    :param device: device to run the model on e.g. '/CPU:0','/GPU:0','/GPU:2'
     """
 
     def __init__(
@@ -38,6 +33,12 @@ class VggishAudioEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param model_path: path of the models directory
+        :param default_traversal_paths: fallback batch size in case there is not
+            batch size sent in the request
+        :param device: device to run the model on e.g. '/CPU:0','/GPU:0','/GPU:2'
+        """
 
         super().__init__(*args, **kwargs)
         self.default_traversal_paths = default_traversal_paths or ['r']

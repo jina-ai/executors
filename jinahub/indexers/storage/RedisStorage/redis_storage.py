@@ -13,17 +13,6 @@ from redis import Redis
 class RedisStorage(Executor):
     """
     :class:`RedisStorage` redis-based Storage Indexer.
-
-    Initialize the RedisStorage.
-
-    :param hostname: hostname of the redis server
-    :param port: the redis port
-    :param db: the database number
-    :param default_traversal_paths: default traversal paths
-    :param default_batch_size: default batch size
-    :param default_return_embeddings: whether to return embeddings on search or not
-    :param args: other arguments
-    :param kwargs: other keyword arguments
     """
 
     def __init__(
@@ -38,6 +27,16 @@ class RedisStorage(Executor):
         *args,
         **kwargs,
     ):
+        """
+        Initialize the RedisStorage.
+
+        :param hostname: hostname of the redis server
+        :param port: the redis port
+        :param db: the database number
+        :param default_traversal_paths: default traversal paths
+        :param default_batch_size: default batch size
+        :param default_return_embeddings: whether to return embeddings on search or not
+        """
         super().__init__(*args, **kwargs)
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths

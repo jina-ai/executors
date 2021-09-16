@@ -11,6 +11,8 @@ from jina.logging.logger import JinaLogger
 
 
 class ImageNormalizer(Executor):
+    """`ImageNormalizer` resizes, crops and normalizes images stored in Document blobs."""
+
     def __init__(
         self,
         target_size: Union[Iterable[int], int] = 224,
@@ -24,7 +26,18 @@ class ImageNormalizer(Executor):
         *args,
         **kwargs,
     ):
-        """Set Constructor."""
+        """
+        :param target_size: desired output size. If size is a sequence like
+            (h, w), the output size will be matched to this. If size is an int,
+            the output will have the same height and width as the `target_size`
+        :param img_mean: mean value to be subtracted from the image during normalization
+        :param img_std: standard deviation to be removed during normalization
+        :param resize_dim: target dimensions to which the image will be resized
+        :param channel_axis: channel axis
+        :param target_channel_axis: target channel axis
+        :param target_dtype:  dtype which the image will be converted to
+        :param default_traversal_paths: default traversal paths
+        """
         super().__init__(*args, **kwargs)
         self.target_size = target_size
         self.resize_dim = resize_dim

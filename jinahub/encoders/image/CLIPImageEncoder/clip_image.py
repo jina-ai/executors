@@ -23,10 +23,10 @@ class CLIPImageEncoder(Executor):
     ):
         """
         :param pretrained_model_name_or_path: Can be either:
-        - A string, the model id of a pretrained CLIP model hosted
-            inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
-        - A path to a directory containing model weights saved, e.g.
-            `./my_model_directory/`
+            - A string, the model id of a pretrained CLIP model hosted
+                inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
+            - A path to a directory containing model weights saved, e.g.,
+                ./my_model_directory/
         :param base_feature_extractor: Base feature extractor for images.
             Defaults to ``pretrained_model_name_or_path`` if None
         :param use_default_preprocessing: Whether to use the `base_feature_extractor` on
@@ -60,24 +60,23 @@ class CLIPImageEncoder(Executor):
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: dict, **kwargs):
         """
-        Encode all Documents with images (stored in the `blob` attribute) and store the
-        embeddings in the `embedding` attribute of the Documents.
+        Encode all Documents with images (stored in the ``blob`` attribute) and store the
+        embeddings in the ``embedding`` attribute of the Documents.
 
-        :param docs: Documents sent to the encoder. The docs must have `blob` of the
+        :param docs: Documents sent to the encoder. The docs must have ``blob`` of the
             shape ``Height x Width x 3``. By default, the input ``blob`` must
             be an ``ndarray`` with ``dtype=uint8`` or ``dtype=float32``.
-            The ``Height`` and ``Width`` can have arbitrary values.
 
             If you set ``use_default_preprocessing=True`` when creating this encoder,
-            then the image arrays should have the shape ``[H, W, 3]``, and be in the
-            RGB color format.
+            then the ``blob`` arrays should have the shape ``[H, W, 3]``, and be in the
+            RGB color format with ``dtype=uint8``.
 
             If you set ``use_default_preprocessing=False`` when creating this encoder,
             then you need to ensure that the images you pass in are already
             pre-processed. This means that they are all the same size (for batching) -
-            the CLIP model was trained on ``224 x 224`` images, and that they are of
-            the shape ``[3 H, W]`` (in the RGB color format). They should also be
-            normalized.
+            the CLIP model was trained on images of the size ``224 x 224``, and that they are of
+            the shape ``[3, H, W]``  with ``dtype=float32``. They should also be
+            normalized (values between 0 and 1).
         :param parameters: A dictionary that contains parameters to control encoding.
             The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
             absence their corresponding default values are used.

@@ -39,8 +39,6 @@ class AnnoySearcher(Executor):
         :param dump_path: the path to load ids and vecs
         :param traverse_path: traverse path on docs, e.g. ['r'], ['c']
         :param is_distance: Boolean flag that describes if distance metric need to be reinterpreted as similarities.
-        :param args:
-        :param kwargs:
         """
         super().__init__(**kwargs)
         self.default_top_k = default_top_k

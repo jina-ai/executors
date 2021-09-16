@@ -15,17 +15,6 @@ class Sentencizer(Executor):
     The text is split by the punctuation characters listed in ``punct_chars``.
     The sentences that are shorter than the ``min_sent_len``
     or longer than the ``max_sent_len`` after stripping will be discarded.
-    :param min_sent_len: the minimal number of characters,
-        (including white spaces) of the sentence, by default 1.
-    :param max_sent_len: the maximal number of characters,
-        (including white spaces) of the sentence, by default 512.
-    :param punct_chars: the punctuation characters to split on,
-        whatever is in the list will be used,
-        for example ['!', '.', '?'] will use '!', '.' and '?'
-    :param uniform_weight: the definition of it should have
-        uniform weight or should be calculated
-    :param args:  Additional positional arguments
-    :param kwargs: Additional keyword arguments
     """
 
     def __init__(
@@ -38,7 +27,17 @@ class Sentencizer(Executor):
         *args,
         **kwargs
     ):
-        """Set constructor."""
+        """
+        :param min_sent_len: the minimal number of characters,
+            (including white spaces) of the sentence, by default 1.
+        :param max_sent_len: the maximal number of characters,
+            (including white spaces) of the sentence, by default 512.
+        :param punct_chars: the punctuation characters to split on,
+            whatever is in the list will be used,
+            for example ['!', '.', '?'] will use '!', '.' and '?'
+        :param uniform_weight: the definition of it should have
+            uniform weight or should be calculated
+        """
         super().__init__(*args, **kwargs)
         self.min_sent_len = min_sent_len
         self.max_sent_len = max_sent_len

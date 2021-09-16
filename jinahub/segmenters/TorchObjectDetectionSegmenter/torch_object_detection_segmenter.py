@@ -19,18 +19,8 @@ class TorchObjectDetectionSegmenter(Executor):
     """
     :class:`TorchObjectDetectionSegmenter` detects objects
     from an image using `torchvision detection models`
-    and crops the images according tothe detected bounding boxes
+    and crops the images according to the detected bounding boxes
     of the objects with a confidence higher than a threshold.
-    :param on_gpu: set to True if using GPU
-    :param model_name: the name of the model. Supported models include
-        ``fasterrcnn_resnet50_fpn``, ``maskrcnn_resnet50_fpn`
-    :param confidence_threshold: confidence value from which it
-        considers a positive detection and therefore the object detected will be cropped and returned
-    :param label_name_map: A Dict mapping from label index to label name, by default will be
-        COCO_INSTANCE_CATEGORY_NAMES
-    :param args:  Additional positional arguments
-    :param kwargs: Additional keyword arguments
-        TODO: Allow changing the backbone
     """
 
     COCO_INSTANCE_CATEGORY_NAMES = [
@@ -138,7 +128,16 @@ class TorchObjectDetectionSegmenter(Executor):
         *args,
         **kwargs,
     ):
-        """Set constructor"""
+        """
+        :param on_gpu: set to True if using GPU
+        :param model_name: the name of the model. Supported models include
+            ``fasterrcnn_resnet50_fpn``, ``maskrcnn_resnet50_fpn`
+        :param confidence_threshold: confidence value from which it
+            considers a positive detection and therefore the object detected will be cropped and returned
+        :param label_name_map: A Dict mapping from label index to label name, by default will be
+            COCO_INSTANCE_CATEGORY_NAMES
+            TODO: Allow changing the backbone
+        """
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)
         self.on_gpu = on_gpu

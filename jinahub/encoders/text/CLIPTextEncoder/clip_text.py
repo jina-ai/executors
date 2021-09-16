@@ -22,10 +22,9 @@ class CLIPTextEncoder(Executor):
     ):
         """
         :param pretrained_model_name_or_path: Can be either:
-        - A string, the model id of a pretrained CLIP model hosted
-            inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
-        - A path to a directory containing model weights saved, e.g.
-            `./my_model_directory/`
+            - A string, the model id of a pretrained CLIP model hosted
+                inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
+            - A path to a directory containing model weights saved, e.g., ./my_model_directory/
         :param base_tokenizer_model: Base tokenizer model.
             Defaults to ``pretrained_model_name_or_path`` if None
         :param max_length: Max length argument for the tokenizer.

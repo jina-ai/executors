@@ -34,6 +34,7 @@ class PDFSegmenter(Executor):
         or if it's the file in bytes.
         It will then extract the data from the file, creating a list for images,
         and text.
+
         :param docs: Array of Documents.
         """
         for doc in docs:

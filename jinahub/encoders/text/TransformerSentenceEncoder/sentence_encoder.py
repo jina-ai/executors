@@ -12,8 +12,6 @@ from sentence_transformers import SentenceTransformer
 class TransformerSentenceEncoder(Executor):
     """
     Encode the Document text into embedding.
-
-    :param embedding_dim: the output dimensionality of the embedding
     """
 
     def __init__(
@@ -25,6 +23,12 @@ class TransformerSentenceEncoder(Executor):
         *args,
         **kwargs
     ):
+        """
+        :param model_name: The name of the sentence transformer to be used
+        :param device: Torch device to put the model on (e.g. 'cpu', 'cuda', 'cuda:1')
+        :param default_traversal_paths: Default traversal paths
+        :param default_batch_size: Batch size to be used in the encoder model
+        """
         super().__init__(*args, **kwargs)
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths

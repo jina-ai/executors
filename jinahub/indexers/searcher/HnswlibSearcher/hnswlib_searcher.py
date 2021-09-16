@@ -44,8 +44,6 @@ class HnswlibSearcher(Executor):
         :param ef_construction: defines a construction time/accuracy trade-off
         :param ef_query:  sets the query time accuracy/speed trade-off
         :param max_connection: defines tha maximum number of outgoing connections in the graph
-        :param args:
-        :param kwargs:
         """
         super().__init__(*args, **kwargs)
         self.default_top_k = default_top_k
