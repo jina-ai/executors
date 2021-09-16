@@ -129,9 +129,6 @@ class TorchObjectDetectionSegmenter(Executor):
         **kwargs,
     ):
         """
-        :class:`TorchObjectDetectionSegmenter` detects objects
-        from an image using `torchvision detection models`
-        and crops the images into bounding boxes stored in the chunks
         :param on_gpu: set to True if using GPU
         :param model_name: the name of the model. Supported models include
             ``fasterrcnn_resnet50_fpn``, ``maskrcnn_resnet50_fpn`

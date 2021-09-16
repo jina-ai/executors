@@ -28,11 +28,6 @@ class Sentencizer(Executor):
         **kwargs
     ):
         """
-        :class:`Sentencizer` split the text on the doc-level
-        into sentences on the chunk-level with a rule-base strategy.
-        The text is split by the punctuation characters listed in ``punct_chars``.
-        The sentences that are shorter than the ``min_sent_len``
-        or longer than the ``max_sent_len`` after stripping will be discarded.
         :param min_sent_len: the minimal number of characters,
             (including white spaces) of the sentence, by default 1.
         :param max_sent_len: the maximal number of characters,

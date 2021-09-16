@@ -89,7 +89,7 @@ class ImageTFEncoder(Executor):
 
         :param docs: DocumentArray containing blob as image data.
         :param parameters: parameters dictionary.
-        :param kwargs: additional positional arguments.
+        :param kwargs: additional keyword arguments.
         :return: Encoded result as a `BatchSize x D` numpy ``ndarray``,
             `D` is the output dimension
         """

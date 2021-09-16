@@ -27,7 +27,6 @@ class VADSpeechSegmenter(Executor):
         **kwargs,
     ):
         """
-        Segment the speech audio using Silero's Voice Activity Detector (VAD)
         :param normalize: a bool to specify whether to normalize the audio
          by the sample rate
         :param dump: a bool to specify whether to dump the segmented audio

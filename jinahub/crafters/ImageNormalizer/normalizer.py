@@ -27,7 +27,6 @@ class ImageNormalizer(Executor):
         **kwargs,
     ):
         """
-        `ImageNormalizer` resizes, crops and normalizes images stored in Document blobs.
         :param target_size: desired output size. If size is a sequence like
             (h, w), the output size will be matched to this. If size is an int,
             the output will have the same height and width as the `target_size`
