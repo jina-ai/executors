@@ -47,8 +47,8 @@ class BigTransferEncoder(Executor):
             ``Imagenet21k/R101x3``, ``Imagenet21k/R152x4``
 
         This encoder checks if the specified model_path exists.
-        If it does exist, the model in this folder is used.
-        If it does not exist, the model specified in the model_name will be
+        If it exists, the model in this folder is used.
+        If it does not exist, the model specified in the `model_name` will be
         downloaded into this path and the downloaded model is used.
 
         In the end, the `model_path` should be a directory path,
@@ -61,7 +61,7 @@ class BigTransferEncoder(Executor):
             └── variables
                 ├── variables.data-00000-of-00001
                 └── variables.index
-        :param: device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
+        :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
         :param target_dim: preprocess the data image into shape of `target_dim`,
             (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
         :param default_traversal_paths: Traversal path through the docs
