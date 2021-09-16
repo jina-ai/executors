@@ -42,8 +42,6 @@ class TextPaddleEncoder(Executor):
         :param on_gpu: If use gpu to get the output.
         :param default_batch_size: fallback batch size in case there is not batch size sent in the request
         :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
-        :param args:  Additional positional arguments
-        :param kwargs: Additional keyword arguments
         """
         super().__init__(*args, **kwargs)
         self.on_gpu = on_gpu

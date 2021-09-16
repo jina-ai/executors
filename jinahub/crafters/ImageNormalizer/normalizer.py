@@ -38,8 +38,6 @@ class ImageNormalizer(Executor):
         :param target_channel_axis: target channel axis
         :param target_dtype:  dtype which the image will be converted to
         :param default_traversal_paths: default traversal paths
-        :param args: Additional arguments
-        :param kwargs: Additional keyword arguments
         """
         super().__init__(*args, **kwargs)
         self.target_size = target_size

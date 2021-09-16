@@ -50,8 +50,6 @@ class LaserEncoder(Executor):
         :param cpu: if True, forces the use of the CPU even when a GPU is available.
         :param default_batch_size: size of each batch
         :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-        :param args:  Additional positional arguments
-        :param kwargs: Additional keyword arguments
         """
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)

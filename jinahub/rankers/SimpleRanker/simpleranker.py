@@ -33,8 +33,6 @@ class SimpleRanker(Executor):
             - mean_min: Calculate mean score/distance and sort by minimum mean
             - mean_max: Calculate mean score/distance and sort by maximum mean
         :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
-        :param args:  Additional positional arguments
-        :param kwargs: Additional keyword arguments
         """
         super().__init__(*args, **kwargs)
         self.metric = metric

@@ -14,8 +14,6 @@ class MatchMerger(Executor):
     def __init__(self, default_traversal_paths: Tuple[str, ...] = ('r',), **kwargs):
         """
         :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
-        :param args: additional arguments
-        :param kwargs: additional key value arguments
         """
         super().__init__(**kwargs)
         self.default_traversal_paths = default_traversal_paths

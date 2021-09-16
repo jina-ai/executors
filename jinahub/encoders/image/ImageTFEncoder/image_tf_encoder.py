@@ -53,8 +53,6 @@ class ImageTFEncoder(Executor):
         :param default_batch_size: size of each batch
         :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
         :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
-        :param args: additional positional arguments.
-        :param kwargs: additional positional arguments.
         """
         super().__init__(*args, **kwargs)
         if default_traversal_paths is None:
@@ -90,7 +88,7 @@ class ImageTFEncoder(Executor):
         B` is the batch size and `D` is the Dimension.
 
         :param docs: DocumentArray containing blob as image data.
-        :param args: additional positional arguments.
+        :param parameters: parameters dictionary.
         :param kwargs: additional positional arguments.
         :return: Encoded result as a `BatchSize x D` numpy ``ndarray``,
             `D` is the output dimension

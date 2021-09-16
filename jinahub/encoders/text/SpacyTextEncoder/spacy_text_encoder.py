@@ -41,8 +41,6 @@ class SpacyTextEncoder(Executor):
             provided as a parameter in the request
         :param default_traversal_paths: Default traversal paths, used if ``traversal_paths``
             are not provided as a parameter in the request.
-        :param args: Additional positional arguments.
-        :param kwargs: Additional positional arguments.
         """
         super().__init__(*args, **kwargs)
 

@@ -47,8 +47,6 @@ class ImageTorchEncoder(Executor):
         :param device: Which device the model runs on. Can be 'cpu' or 'cuda'
         :param default_traversal_paths: Used in the encode method an defines traversal on the received `DocumentArray`
         :param default_batch_size: Defines the batch size for inference on the loaded PyTorch model.
-        :param args:  Additional positional arguments
-        :param kwargs: Additional keyword arguments
         """
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)

@@ -50,8 +50,6 @@ class LightGBMRanker(Executor):
         :param categorical_query_features: name of features contained in `query_features` corresponding to categorical features.
         :param categorical_match_features: name of features contained in `match_features` corresponding to categorical features.
         :param query_features_before: True if `query_features` must be placed before the `match` ones in the `dataset` used for prediction.
-        :param args: Additional positional arguments
-        :param kwargs: Additional keyword arguments
         """
         super(LightGBMRanker, self).__init__(*args, **kwargs)
         self.params = params

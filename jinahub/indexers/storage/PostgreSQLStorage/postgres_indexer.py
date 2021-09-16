@@ -50,8 +50,6 @@ class PostgreSQLStorage(Executor):
         :param dry_run: If True, no database connection will be build.
         :param virtual_shards: the number of shards to distribute
          the data (used when rolling update on Searcher side)
-        :param args: other arguments
-        :param kwargs: other keyword arguments
         """
         super().__init__(*args, **kwargs)
         self.default_traversal_paths = default_traversal_paths

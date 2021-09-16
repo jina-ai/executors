@@ -51,8 +51,6 @@ class TransformerTFTextEncoder(Executor):
         :param default_batch_size: size of each batch
         :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
         :param on_gpu: set to True if using GPU
-        :param args:  Additional positional arguments
-        :param kwargs: Additional keyword arguments
         """
         super().__init__(*args, **kwargs)
         self.pretrained_model_name_or_path = pretrained_model_name_or_path

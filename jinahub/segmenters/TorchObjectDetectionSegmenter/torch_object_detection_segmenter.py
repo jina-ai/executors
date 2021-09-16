@@ -139,8 +139,6 @@ class TorchObjectDetectionSegmenter(Executor):
             considers a positive detection and therefore the object detected will be cropped and returned
         :param label_name_map: A Dict mapping from label index to label name, by default will be
             COCO_INSTANCE_CATEGORY_NAMES
-        :param args:  Additional positional arguments
-        :param kwargs: Additional keyword arguments
             TODO: Allow changing the backbone
         """
         super().__init__(*args, **kwargs)

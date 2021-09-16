@@ -36,8 +36,6 @@ class RedisStorage(Executor):
         :param default_traversal_paths: default traversal paths
         :param default_batch_size: default batch size
         :param default_return_embeddings: whether to return embeddings on search or not
-        :param args: other arguments
-        :param kwargs: other keyword arguments
         """
         super().__init__(*args, **kwargs)
         self.default_batch_size = default_batch_size
