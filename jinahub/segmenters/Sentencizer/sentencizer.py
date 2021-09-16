@@ -16,6 +16,7 @@ class Sentencizer(Executor):
     The sentences that are shorter than the ``min_sent_len``
     or longer than the ``max_sent_len`` after stripping will be discarded.
     """
+
     def __init__(
         self,
         min_sent_len: int = 1,
