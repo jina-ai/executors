@@ -25,28 +25,6 @@ Since this is a "Searcher"-type Executor, it does not _index_ new data.
 Rather they are write-once classes, which take as data source a `dump_path`. 
 Then we can perform search operations on the loaded data.
 
-#### Loading data with YAML
-  
-```yaml
-jtype: FaissSearcher
-with:
-    dump_path: /tmp/your_dump_location
-...
-```
-
-Then perform search operation
- 
-```python
-import numpy as np
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub+docker://FaissSearcher')
-
-with f:
-    resp = f.post(on='/search', inputs=Document(embedding=np.array([1,2,3])), return_results=True)
-    print(resp)
-```
-
 #### Loading data with Flow
 
 
@@ -79,7 +57,7 @@ train_data = np.array(np.random.random([10240, 256]), dtype=np.float32)
 np.save(train_data_file, train_data)
 
 f = Flow().add(
-    uses="jinahub://FaissSearcher",
+    uses='jinahub://FaissSearcher',
     timeout_ready=-1,
     uses_with={
       'index_key': 'IVF10_HNSW32,PQ64',
@@ -98,7 +76,7 @@ Then, we can directly use the trained indexer with providing `trained_index_file
 from jina import Flow
 
 f = Flow().add(
-    uses="jinahub://FaissSearcher",
+    uses='jinahub://FaissSearcher',
     timeout_ready=-1,
     uses_with={
       'index_key': 'IVF10_HNSW32,PQ64',
