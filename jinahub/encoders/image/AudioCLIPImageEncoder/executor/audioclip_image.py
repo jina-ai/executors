@@ -84,7 +84,7 @@ class AudioCLIPImageEncoder(Executor):
             pre-processed. This means that they are all the same size (for batching) -
             the CLIP model was trained on ``224 x 224`` images, and that they are of
             the shape ``[C, H, W]`` (in the RGB color format). They should also be
-            normalized.
+            normalized (values between 0 and 1).
         :param parameters: A dictionary that contains parameters to control encoding.
             The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
             absence their corresponding default values are used.

@@ -76,7 +76,7 @@ class CLIPImageEncoder(Executor):
             pre-processed. This means that they are all the same size (for batching) -
             the CLIP model was trained on images of the size ``224 x 224``, and that they are of
             the shape ``[3, H, W]``  with ``dtype=float32``. They should also be
-            normalized.
+            normalized (values between 0 and 1).
         :param parameters: A dictionary that contains parameters to control encoding.
             The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
             absence their corresponding default values are used.
