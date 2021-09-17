@@ -70,8 +70,7 @@ def test_single_image(encoder: BigTransferEncoder):
     assert docs[0].embedding.dtype == np.float32
 
 
-def test_encoding_cpu():
-    encoder = BigTransferEncoder()
+def test_encoding_cpu(encoder: BigTransferEncoder):
     input_data = DocumentArray(
         [Document(blob=np.ones((_INPUT_DIM, _INPUT_DIM, 3), dtype=np.uint8))]
     )
