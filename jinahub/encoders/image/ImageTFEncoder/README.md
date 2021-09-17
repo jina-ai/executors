@@ -3,23 +3,6 @@
 `ImageTFEncoder` encodes ``Document`` content from a ndarray, potentially BatchSize x (Height x Width x Channel) into a ndarray of `BatchSize * d`.
 Internally, `ImageTFEncoder` wraps the models from [tensorflow.keras.applications](https://keras.io/applications/).
 
-The following arguments can be passed on initialization:
-
-- `model_name`: name of the pre-trained CLIP model.
-- `img_shape`: The shape of the image to be encoded.
-- `pool_strategy`: Pooling strategy, default use max pooling, available options are `None`, `mean`, `max`.
-- `device`: Pytorch device to put the model on, e.g. 'cpu', 'cuda'.
-- `traversal_paths`: traversal path (use `cpu` if not specified in request's parameters).
-- `batch_size`: default batch size (use `32` if not specified in request's parameters).
-
-#### Inputs 
-
-`Document`s with the `blob` attribute.
-
-#### Returns
-
-`Document`s with `embedding` fields filled with an `ndarray` of the shape 1024 with `dtype=float32`.
-
 ## Usage
 
 Use the prebuilt images from JinaHub in your Python code,
