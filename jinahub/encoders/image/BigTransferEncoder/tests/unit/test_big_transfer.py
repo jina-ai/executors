@@ -11,86 +11,60 @@ from jina import Document, DocumentArray, Executor
 directory = os.path.dirname(os.path.realpath(__file__))
 
 
+_INPUT_DIM = 512
+_EMBEDDING_DIM = 2048
+
+
+@pytest.fixture(scope="module")
+def encoder() -> BigTransferEncoder:
+    return BigTransferEncoder()
+
+
+@pytest.fixture(scope="function")
+def nested_docs() -> DocumentArray:
+    blob = np.ones((_INPUT_DIM, _INPUT_DIM, 3), dtype=np.uint8)
+    docs = DocumentArray([Document(id="root1", blob=blob)])
+    docs[0].chunks = [
+        Document(id="chunk11", blob=blob),
+        Document(id="chunk12", blob=blob),
+        Document(id="chunk13", blob=blob),
+    ]
+    docs[0].chunks[0].chunks = [
+        Document(id="chunk111", blob=blob),
+        Document(id="chunk112", blob=blob),
+    ]
+
+    return docs
+
+
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.model_path == 'pretrained'
     assert ex.model_name == 'Imagenet21k/R50x1'
 
 
-def test_initialization_and_model_download():
-    shutil.rmtree('pretrained', ignore_errors=True)
-    # This call will download the model
-    encoder = BigTransferEncoder()
-    assert encoder.model_path == 'pretrained'
-    assert encoder.model_name == 'Imagenet21k/R50x1'
-    assert os.path.exists('pretrained')
-    assert os.path.exists(os.path.join('pretrained', 'saved_model.pb'))
-    # This call will use the downloaded model
-    _ = BigTransferEncoder()
-    shutil.rmtree('pretrained', ignore_errors=True)
-    with pytest.raises(AttributeError):
-        _ = BigTransferEncoder(model_name='model_not_exists')
+def test_no_documents(encoder: BigTransferEncoder):
+    docs = DocumentArray()
+    encoder.encode(docs=docs, parameters={})
+    assert len(docs) == 0  # SUCCESS
 
 
-def test_encoding():
-    doc = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
-    doc.convert_image_uri_to_blob()
-
-    encoder = BigTransferEncoder()
-
-    encoder.encode(DocumentArray([doc]), {})
-    assert doc.embedding.shape == (2048,)
+def test_none_docs(encoder: BigTransferEncoder):
+    encoder.encode(docs=None, parameters={})
 
 
-def test_preprocessing():
-    doc = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
-    doc.convert_image_uri_to_blob()
-
-    encoder = BigTransferEncoder(target_dim=(256, 256, 3))
-
-    encoder.encode(DocumentArray([doc]), {})
-    assert doc.embedding.shape == (2048,)
+def test_docs_no_blobs(encoder: BigTransferEncoder):
+    docs = DocumentArray([Document()])
+    encoder.encode(docs=DocumentArray(), parameters={})
+    assert len(docs) == 1
+    assert docs[0].embedding is None
 
 
-def test_encoding_default_chunks():
-    doc = Document(text="testing")
-    chunk = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
-    for i in range(3):
-        doc.chunks.append(chunk)
-        doc.chunks[i].convert_image_uri_to_blob()
+def test_single_image(encoder: BigTransferEncoder):
+    docs = DocumentArray(
+        [Document(blob=np.ones((_INPUT_DIM, _INPUT_DIM, 3), dtype=np.uint8))]
+    )
+    encoder.encode(docs, {})
 
-    encoder = BigTransferEncoder(default_traversal_paths=['c'])
-
-    encoder.encode(DocumentArray([doc]), {})
-    assert doc.embedding is None
-    for i in range(3):
-        assert doc.chunks[i].embedding.shape == (2048,)
-
-
-def test_encoding_override_chunks():
-    doc = Document(text="testing")
-    chunk = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
-    for i in range(3):
-        doc.chunks.append(chunk)
-        doc.chunks[i].convert_image_uri_to_blob()
-
-    encoder = BigTransferEncoder()
-    assert encoder.default_traversal_paths == ('r',)
-
-    encoder.encode(DocumentArray([doc]), parameters={'traversal_paths': ['c']})
-    assert doc.embedding is None
-    for i in range(3):
-        assert doc.chunks[i].embedding.shape == (2048,)
-
-
-@pytest.mark.gpu
-def test_encoding_gpu():
-    doc = Document(uri=os.path.join(directory, '../test_data/test_image.png'))
-    doc.convert_image_uri_to_blob()
-
-    assert doc.embedding is None
-
-    encoder = BigTransferEncoder(device='/GPU:0')
-
-    encoder.encode(DocumentArray([doc]), {})
-    assert doc.embedding.shape == (2048,)
+    assert docs[0].embedding.shape == (_EMBEDDING_DIM,)
+    assert docs[0].embedding.dtype == np.float32
