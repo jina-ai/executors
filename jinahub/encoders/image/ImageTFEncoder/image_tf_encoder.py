@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Dict, Iterable, List, Union
+from typing import Dict, Iterable, Sequence
 
 import numpy as np
 import tensorflow as tf
@@ -27,8 +27,8 @@ class ImageTFEncoder(Executor):
         model_name: str = 'MobileNetV2',
         img_shape: int = 336,
         pool_strategy: str = 'max',
-        default_batch_size: int = 32,
-        default_traversal_paths: Union[List[str], str] = None,
+        batch_size: int = 32,
+        traversal_paths: Sequence[str] = ['r'],
         device: str = '/CPU:0',
         *args,
         **kwargs,
@@ -46,22 +46,22 @@ class ImageTFEncoder(Executor):
         :param pool_strategy: the pooling strategy. Options are:
             - `None`: Means that the output of the model will be the 4D tensor
                 output of the last convolutional block.
-            - `avg`: ;eans that global average pooling will be applied to the
+            - `avg`: Means that global average pooling will be applied to the
                 output of the last convolutional block, and thus the output of
                 the model will be a 2D tensor.
             - `max`: Means that global max pooling will be applied.
-        :param default_batch_size: size of each batch
-        :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param batch_size: size of each batch
+        :param traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
         :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
         """
         super().__init__(*args, **kwargs)
-        if default_traversal_paths is None:
-            default_traversal_paths = ['r']
+        if traversal_paths is None:
+            traversal_paths = ['r']
         self.model_name = model_name
         self.pool_strategy = pool_strategy
         self.img_shape = img_shape
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.default_batch_size = batch_size
+        self.default_traversal_paths = traversal_paths
         self.logger = JinaLogger(self.__class__.__name__)
 
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
