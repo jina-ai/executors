@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from big_transfer import BigTransferEncoder
 from jina import Document, DocumentArray, Executor
+from PIL import Image
 
 directory = os.path.dirname(os.path.realpath(__file__))
 
