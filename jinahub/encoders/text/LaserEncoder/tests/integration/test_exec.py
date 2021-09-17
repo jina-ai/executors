@@ -14,15 +14,6 @@ def data_generator(num_docs):
         yield doc
 
 
-def test_use_in_flow():
-    with Flow.load_config('flow.yml') as flow:
-        resp = flow.post(on='/encode', inputs=data_generator(5), return_results=True)
-        docs = resp[0].docs
-        assert len(docs) == 5
-        for doc in docs:
-            assert doc.embedding.shape == (1024,)
-
-
 @pytest.mark.docker
 def test_docker_runtime(build_docker_image: str):
     with pytest.raises(subprocess.TimeoutExpired):

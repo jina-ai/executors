@@ -94,25 +94,6 @@ def test_traversal_path(
         Document(id='chunk112', text=text),
     ]
 
-    encoder = LaserEncoder()
-    encoder.encode(docs, parameters={'batch_size': 10, 'traversal_paths': ['c']})
-
-    for path, count in [[['r'], 0], [['c'], 3], [['cc'], 0]]:
-        embeddings = docs.traverse_flat(path).get_attributes('embedding')
-        assert len([em for em in embeddings if em is not None]) == count
-        if count > 0:
-            assert docs.traverse_flat(path).get_attributes('embedding')[0].shape == (
-                1024,
-            )
-
-    encoder.encode(docs, parameters={'batch_size': 10, 'traversal_paths': ['cc']})
-    for path, count in [[['r'], 0], [['c'], 3], [['cc'], 2]]:
-        embeddings = docs.traverse_flat(path).get_attributes('embedding')
-        assert len([em for em in embeddings if em is not None]) == count
-        if count > 0:
-            assert docs.traverse_flat(path).get_attributes('embedding')[0].shape == (
-                1024,
-            )
     basic_encoder.encode(docs=docs, parameters={'traversal_paths': traversal_paths})
     for path, count in counts:
         embeddings = docs.traverse_flat([path]).get_attributes('embedding')
