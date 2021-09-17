@@ -1,9 +1,0 @@
-jtype: SimpleIndexer
-with:
-  index_file_name: indexer
-metas:
-  py_modules:
-    - simple_indexer.py
-  workspace: workspace/
-  name: indexer
-
