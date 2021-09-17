@@ -9,7 +9,6 @@ import pytest
 import numpy as np
 from PIL import Image
 from jina import Document, DocumentArray, Executor
-
 from image_tf_encoder import ImageTFEncoder
 
 _INPUT_DIM = 336
