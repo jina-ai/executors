@@ -28,10 +28,6 @@ def test_integration(request_size: int):
                 _EMBEDDING_DIM,
             )
 
-    assert responses[0].docs[0].embedding is not None
-    # input has 4 different words
-    assert responses[0].docs[0].embedding.nnz == 4
-
 
 @pytest.mark.docker
 def test_docker_runtime(build_docker_image: str):
