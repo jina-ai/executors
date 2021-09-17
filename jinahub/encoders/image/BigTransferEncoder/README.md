@@ -22,8 +22,3 @@ f = Flow().add(
     gpus='all'
 )
 ```
-
-## Reference
-
-- [BiT github repo](https://github.com/google-research/big_transfer)
-- [TensorflowHub](https://tfhub.dev/google/collections/bit/1)
