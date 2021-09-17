@@ -5,23 +5,6 @@
 This encoder is meant to be used in conjunction with the [CLIPTextEncoder](https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/CLIPTextEncoder),
 as it can embedd text and images to the same latent space.
 
-The following arguments can be passed on initialization:
-
-- `pretrained_model_name_or_path`: name or path of the pre-trained CLIP model.
-- `base_feature_extractor`: Base feature extractor for images. Defaults to ``pretrained_model_name_or_path`` if None.
-- `use_default_preprocessing`: Whether to use the `base_feature_extractor` on images (blobs) before encoding them, default is `True`.
-- `device`: Pytorch device to put the model on, e.g. 'cpu', 'cuda'.
-- `traversal_paths`: traversal path (use `cpu` if not specified in request's parameters).
-- `batch_size`: default batch size (use `32` if not specified in request's parameters).
-
-#### Inputs 
-
-`Document`s with the `blob` attribute.
-
-#### Returns
-
-`Document`s with `embedding` fields filled with an `ndarray` of the shape 1024 with `dtype=float32`.
-
 ## Usage
 
 Use the prebuilt images from JinaHub in your Python code,
