@@ -24,7 +24,8 @@ or in the .yml config.
 jtype: Flow
 pods:
   - name: encoder
-    uses: 'jinahub+docker://AudioCLIPTextEncoder'
+    uses: 'jinahub+docker://CLIPImageEncoder'
+
 ```
 
 Note that this way the Executor will download the model every time it starts up. You can
