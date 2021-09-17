@@ -161,22 +161,6 @@ def test_batch_no_preprocessing(encoder_no_pre: CLIPImageEncoder):
     np.testing.assert_allclose(docs[0].embedding, docs[1].embedding)
 
 
-@pytest.mark.parametrize(
-    "path, expected_counts",
-    [["c", (("r", 0), ("c", 3), ("cc", 0))], ["cc", (("r", 0), ("c", 0), ("cc", 2))]],
-)
-def test_traversal_path(
-    path: str,
-    expected_counts: Tuple[str, int],
-    nested_docs: DocumentArray,
-    encoder: CLIPImageEncoder,
-):
-    encoder.encode(nested_docs, parameters={"traversal_paths": [path]})
-    for path_check, count in expected_counts:
-        embeddings = nested_docs.traverse_flat([path_check]).get_attributes("embedding")
-        assert len([em for em in embeddings if em is not None]) == count
-
-
 @pytest.mark.parametrize("batch_size", [1, 2, 4, 8])
 def test_batch_size(encoder: CLIPImageEncoder, batch_size: int):
     blob = np.ones((100, 100, 3), dtype=np.uint8)
@@ -251,3 +235,24 @@ def test_openai_embed_match():
         expected_embedding = model.encode_image(tensor).numpy()
 
     np.testing.assert_almost_equal(actual_embedding, expected_embedding, 5)
+
+
+@pytest.mark.parametrize(
+    "traversal_paths, counts",
+    [
+        [('c',), (('r', 0), ('c', 3), ('cc', 0))],
+        [('cc',), (("r", 0), ('c', 0), ('cc', 2))],
+        [('r',), (('r', 1), ('c', 0), ('cc', 0))],
+        [('cc', 'r'), (('r', 1), ('c', 0), ('cc', 2))],
+    ],
+)
+def test_traversal_path(
+    traversal_paths: Tuple[str],
+    counts: Tuple[str, int],
+    nested_docs: DocumentArray,
+    encoder: CLIPImageEncoder,
+):
+    encoder.encode(nested_docs, parameters={"traversal_paths": traversal_paths})
+    for path, count in counts:
+        embeddings = nested_docs.traverse_flat([path]).get_attributes('embedding')
+        assert len([em for em in embeddings if em is not None]) == count
