@@ -1,38 +1,57 @@
-# Big Transfer Image Encoder
+# BigTransferEncoder
 
-**Big Transfer Image Encoder** is a class that uses the Big Transfer models presented by Google [here]((https://github.com/google-research/big_transfer)).
-It uses a pretrained version of a BiT model to encode an image from an array of shape 
-(Batch x (Channel x Height x Width)) into an array of shape (Batch x Encoding) 
+**BigTransferEncoder** uses the Big Transfer models presented by Google [here]((https://github.com/google-research/big_transfer)).
 
+## Usage
 
-#### GPU usage
+Use the prebuilt images from JinaHub in your Python code,
 
-You can use the GPU via the source code. Therefore, you need a matching CUDA version
-and GPU drivers installed on your system. 
+```python
+from jina import Flow, Document
+
+f = Flow().add(
+    uses='jinahub+docker://BigTransferEncoder',
+)
+```
+
+or in the .yml config.
 
 ```yaml
 jtype: Flow
 pods:
   - name: encoder
-    uses: 'jinahub://BigTransferEncoder'
-    uses_with:
-      device: '/GPU:0'
+    uses: 'jinahub+docker://BigTransferEncoder'
 ```
 
-Alternatively, use the GPU docker container. Therefore, you need GPU
-drivers installed on your system and nvidia-docker installed.
+Note that this way the Executor will download the model every time it starts up. You can
+re-use the cached model files by mounting the cache directory that the model is using
+into the container. To do this, modify the Flow definition like this
 
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://BigTransferEncoder/gpu'
-    gpus: all
-    uses_with:
-      device: '/GPU:0'
+```python
+from jina import Flow
+
+f = Flow().add(
+    uses='jinahub+docker://BigTransferEncoder',
+    volumes='/your/home/dir/.cache/bit:/root/.cache/bit'
+)
 ```
 
+This encoder also offers a GPU version under the `gpu` tag. To use it, make sure to pass `device='/GPU:0'`, as the initialization parameter, and `gpus='all'` when adding the containerized Executor to the Flow. See the [Executor on GPU](https://docs.jina.ai/tutorials/gpu_executor/) section of Jina documentation for more details.
+
+Here's how you would modify the example above to use a GPU
+
+```python
+from jina import Flow
+
+f = Flow().add(
+    uses='jinahub+docker://ImageTFEncoder/gpu',
+    uses_with={'device': '/GPU:0'},
+    gpus='all',
+    volumes='/your/home/dir/.cache/bit:/root/.cache/bit' 
+)
+```
 
 ## Reference
-- https://github.com/google-research/big_transfer
-- https://tfhub.dev/google/collections/bit/1
+
+- [BiT github repo](https://github.com/google-research/big_transfer)
+- [TensorflowHub](https://tfhub.dev/google/collections/bit/1)
