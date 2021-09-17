@@ -25,32 +25,9 @@ with:
 ...
 ```
 
-- from the `Flow.rolling_update` method. See [README](../../../../README.md).
+- from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/advanced/experimental/indexers/).
 
-The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../README.md).
-
-
-
-## Usage 
-
-```python
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub+docker://AnnoySearcher')
-
-with f:
-    resp = f.post(on='/search', inputs=Document(), return_results=True)
-    print(f'{resp}')
-```
-
-### Inputs 
-
-`Document` with `.embedding` the same shape as the `Documents` it has stored.
-
-### Returns
-
-Attaches matches to the Documents sent as inputs, with the id of the match, and its embedding. For retrieving the full metadata (original text or image blob), use a [key-value searcher](./../../keyvalue).
-
+The folder needs to contain the data exported from your Indexer. Again, see [docs](https://docs.jina.ai/advanced/experimental/indexers/).
 
 ## Reference
 

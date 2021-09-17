@@ -1,5 +1,4 @@
 tensorflow-cpu==2.6.0
-numpy==1.19.3
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
 resampy==0.2.2
 tf_slim==1.1.0

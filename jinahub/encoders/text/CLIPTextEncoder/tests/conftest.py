@@ -15,7 +15,6 @@ def docker_image_name() -> str:
 @pytest.fixture(scope='session')
 def build_docker_image(docker_image_name: str) -> str:
     subprocess.run(['docker', 'build', '-t', docker_image_name, '.'], check=True)
-
     return docker_image_name
 
 

@@ -1,11 +1,9 @@
 from pathlib import Path
-from typing import List
 
 import pytest
 import torch
+from dpr_reader import DPRReaderRanker
 from jina import Document, DocumentArray, Executor
-
-from ...dpr_reader import DPRReaderRanker
 
 
 @pytest.fixture(scope='session')
@@ -117,11 +115,12 @@ def test_spans_title_match(
             assert match_text in title_text_dict[match.tags['title']].lower()
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='GPU is needed for this test')
+@pytest.mark.gpu
 @pytest.mark.parametrize('example_docs', [2], indirect=['example_docs'])
 def test_ranking_gpu(example_docs: DocumentArray):
 
-    ranker = DPRReaderRanker(device='gpu')
+    ranker = DPRReaderRanker(device='cuda')
+    assert ranker.model.device.type == 'cuda'
     ranker.rank(example_docs, {})
 
     assert len(example_docs[0].matches) == 20

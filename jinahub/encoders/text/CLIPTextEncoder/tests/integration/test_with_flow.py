@@ -1,9 +1,8 @@
 import subprocess
 
 import pytest
+from clip_text import CLIPTextEncoder
 from jina import Document, DocumentArray, Flow
-
-from ...clip_text import CLIPTextEncoder
 
 _EMBEDDING_DIM = 512
 
@@ -35,7 +34,25 @@ def test_docker_runtime(build_docker_image: str):
                 'jina',
                 'executor',
                 f'--uses=docker://{build_docker_image}',
-                '--volumes=.cache:/workspace/.cache',
+            ],
+            timeout=30,
+            check=True,
+        )
+
+
+@pytest.mark.gpu
+@pytest.mark.docker
+def test_docker_runtime_gpu(build_docker_image_gpu: str):
+    with pytest.raises(subprocess.TimeoutExpired):
+        subprocess.run(
+            [
+                'jina',
+                'executor',
+                f'--uses=docker://{build_docker_image_gpu}',
+                '--gpus',
+                'all',
+                '--uses-with',
+                'device:cuda',
             ],
             timeout=30,
             check=True,

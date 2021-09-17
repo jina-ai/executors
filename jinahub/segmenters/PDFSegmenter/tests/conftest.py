@@ -1,6 +1,6 @@
-import pytest
 import os
 
+import pytest
 from jina import Document, DocumentArray
 
 
@@ -11,9 +11,11 @@ def test_dir() -> str:
 
 @pytest.fixture
 def expected_text():
-    expected_text = "A cat poem\nI love cats, I love every kind of cat,\nI just wanna hug all of them, but I can't," \
-                    "\nI'm thinking about cats again\nI think about how cute they are\nAnd their whiskers and their " \
-                    "nose"
+    expected_text = (
+        "A cat poem\nI love cats, I love every kind of cat,\nI just wanna hug all of them, but I can't,"
+        "\nI'm thinking about cats again\nI think about how cute they are\nAnd their whiskers and their "
+        "nose"
+    )
     return expected_text
 
 
@@ -32,9 +34,11 @@ def input_pdf(test_dir: str):
     with open(path_img_text, 'rb') as pdf:
         input_bytes_images_text = pdf.read()
 
-    return {'img_text': [(path_img_text, None), (None, input_bytes_images_text)],
-            'text': [(path_text, None), (None, input_bytes_text)],
-            'img': [(path_img, None), (None, input_bytes_image)]}
+    return {
+        'img_text': [(path_img_text, None), (None, input_bytes_images_text)],
+        'text': [(path_text, None), (None, input_bytes_text)],
+        'img': [(path_img, None), (None, input_bytes_image)],
+    }
 
 
 @pytest.fixture()

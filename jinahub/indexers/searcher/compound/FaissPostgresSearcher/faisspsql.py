@@ -6,6 +6,7 @@ import datetime
 import functools
 from typing import Dict, Optional
 
+import numpy as np
 from jina import DocumentArray, Executor, requests
 from jina_commons import get_logger
 
@@ -14,16 +15,8 @@ from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 
 
 class FaissPostgresSearcher(Executor):
-    """A Compound Indexer made up of a FaissSearcher (for vectors) and a Postgres
-    Indexer
-
-    :param dump_path: a path to a dump folder containing
-    the dump data obtained by calling jina_commons.dump_docs
-    :param startup_sync_args: the arguments to be passed to the self.sync call on
-    startup
-    :param total_shards: the total nr of shards that this shard is part of.
-
-        NOTE: This is REQUIRED in k8s, since there `runtime_args.parallel` is always 1
+    """A Compound Indexer made up of a FaissSearcher (for vectors) and a
+    PostgreSQLStorage
     """
 
     def __init__(
@@ -33,6 +26,15 @@ class FaissPostgresSearcher(Executor):
         total_shards: Optional[int] = None,
         **kwargs,
     ):
+        """
+        :param dump_path: a path to a dump folder containing
+        the dump data obtained by calling jina_commons.dump_docs
+        :param startup_sync_args: the arguments to be passed to the self.sync call on
+        startup
+        :param total_shards: the total nr of shards that this shard is part of.
+
+            NOTE: This is REQUIRED in k8s, since there `runtime_args.parallel` is always 1
+        """
         super().__init__(**kwargs)
         self.logger = get_logger(self)
 
@@ -64,7 +66,8 @@ class FaissPostgresSearcher(Executor):
             self.sync(parameters=startup_sync_args)
 
     def _init_executors(self, dump_path, kwargs, startup_sync_args):
-        kv_indexer = PostgreSQLStorage(**kwargs)
+        # float32 because that's what faiss expects
+        kv_indexer = PostgreSQLStorage(dump_dtype=np.float32, **kwargs)
         vec_indexer = FaissSearcher(dump_path=dump_path, **kwargs)
 
         if dump_path is None and startup_sync_args is None:
@@ -151,6 +154,19 @@ class FaissPostgresSearcher(Executor):
     def search(self, docs: 'DocumentArray', parameters: Dict = None, **kwargs):
         """
         Search the vec embeddings in Faiss and then lookup the metadata in PSQL
+
+        :param docs: `Document` with `.embedding` the same shape as the
+            `Documents` stored in the `FaissSearcher`. The ids of the `Documents`
+            stored in `FaissSearcher` need to exist in the `PostgreSQLStorage`.
+            Otherwise you will not get back the original metadata.
+        :param parameters: dictionary to define the ``traversal_paths``. This will
+            override the default parameters set at init.
+
+        :return: The `FaissSearcher` attaches matches to the `Documents` sent as inputs,
+            with the id of the match, and its embedding. Then, the `PostgreSQLStorage`
+            retrieves the full metadata (original text or image blob) and attaches
+            those to the Document. You receive back the full Document.
+
         """
         if self._kv_indexer and self._vec_indexer:
             self._vec_indexer.search(docs, parameters)
@@ -195,6 +211,12 @@ class FaissPostgresSearcher(Executor):
     @requests(on='/delete')
     def delete(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
-        Delete docs from PSQL, based on id
+        Delete docs from PSQL, based on id.
+
+        By default, it will be a soft delete, where the entry is left in the DB,
+        but its data will be set to None
         """
+        if 'soft_delete' not in parameters:
+            parameters['soft_delete'] = True
+
         self._kv_indexer.delete(docs, parameters, **kwargs)

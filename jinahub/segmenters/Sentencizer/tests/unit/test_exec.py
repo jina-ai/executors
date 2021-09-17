@@ -1,10 +1,7 @@
-__copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
-__license__ = "Apache-2.0"
-
 from pathlib import Path
 
 from jina import Document, DocumentArray, Executor
-from ...sentencizer import Sentencizer
+from sentencizer import Sentencizer
 
 
 def test_config():

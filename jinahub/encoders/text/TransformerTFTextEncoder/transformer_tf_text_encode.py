@@ -17,26 +17,6 @@ def _batch_generator(data: List[Any], batch_size: int):
 class TransformerTFTextEncoder(Executor):
     """
     Internally wraps the tensorflow-version of transformers from huggingface.
-    :param pretrained_model_name_or_path: Either:
-        - a string, the `model id` of a pretrained model hosted inside a
-            model repo on huggingface.co, e.g.: ``bert-base-uncased``.
-        - a path to a `directory` containing model weights saved using
-            :func:`~transformers.PreTrainedModel.save_pretrained`, e.g.:
-            ``./my_model_directory/``.
-    :param base_tokenizer_model: The name of the base model to use for
-        creating the tokenizer. If None, will be equal to
-        `pretrained_model_name_or_path`.
-    :param pooling_strategy: the strategy to merge the word embeddings
-        into the chunk embedding. Supported strategies include
-        'cls', 'mean', 'max', 'min'.
-    :param layer_index: index of the transformer layer that is used to
-        create encodings. Layer 0 corresponds to the embeddings layer
-    :param max_length: the max length to truncate the tokenized sequences to.
-    :param default_batch_size: size of each batch
-    :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-    :param device: Tensorflow device string ('/CPU', '/GPU', '/GPU:0')
-    :param args:  Additional positional arguments
-    :param kwargs: Additional keyword arguments
     """
 
     def __init__(
@@ -52,6 +32,26 @@ class TransformerTFTextEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param pretrained_model_name_or_path: Either:
+            - a string, the `model id` of a pretrained model hosted inside a
+                model repo on huggingface.co, e.g.: ``bert-base-uncased``.
+            - a path to a `directory` containing model weights saved using
+                :func:`~transformers.PreTrainedModel.save_pretrained`, e.g.:
+                ``./my_model_directory/``.
+        :param base_tokenizer_model: The name of the base model to use for
+            creating the tokenizer. If None, will be equal to
+            `pretrained_model_name_or_path`.
+        :param pooling_strategy: the strategy to merge the word embeddings
+            into the chunk embedding. Supported strategies include
+            'cls', 'mean', 'max', 'min'.
+        :param layer_index: index of the transformer layer that is used to
+            create encodings. Layer 0 corresponds to the embeddings layer
+        :param max_length: the max length to truncate the tokenized sequences to.
+        :param default_batch_size: size of each batch
+        :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param device: Tensorflow device string ('/CPU', '/GPU', '/GPU:0')
+        """
         super().__init__(*args, **kwargs)
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.base_tokenizer_model = (

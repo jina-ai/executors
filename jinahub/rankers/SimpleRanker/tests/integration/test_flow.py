@@ -2,8 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from jina import Flow
-
-from ...simpleranker import SimpleRanker
+from simpleranker import SimpleRanker
 
 
 def test_integration(documents_chunk):

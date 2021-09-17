@@ -2,15 +2,17 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from pydoc import locate
-from typing import Tuple, Union, Iterable
+from typing import Iterable, Tuple, Union
+
 import numpy as np
 import PIL.Image as Image
-
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
 
 class ImageNormalizer(Executor):
+    """`ImageNormalizer` resizes, crops and normalizes images stored in Document blobs."""
+
     def __init__(
         self,
         target_size: Union[Iterable[int], int] = 224,
@@ -24,7 +26,18 @@ class ImageNormalizer(Executor):
         *args,
         **kwargs,
     ):
-        """Set Constructor."""
+        """
+        :param target_size: desired output size. If size is a sequence like
+            (h, w), the output size will be matched to this. If size is an int,
+            the output will have the same height and width as the `target_size`
+        :param img_mean: mean value to be subtracted from the image during normalization
+        :param img_std: standard deviation to be removed during normalization
+        :param resize_dim: target dimensions to which the image will be resized
+        :param channel_axis: channel axis
+        :param target_channel_axis: target channel axis
+        :param target_dtype:  dtype which the image will be converted to
+        :param default_traversal_paths: default traversal paths
+        """
         super().__init__(*args, **kwargs)
         self.target_size = target_size
         self.resize_dim = resize_dim
@@ -41,8 +54,10 @@ class ImageNormalizer(Executor):
             if actual_type:
                 self.target_dtype = actual_type
             else:
-                self.logger.error(f'Could not resolve type "{target_dtype}". '
-                                  f'Make sure you use "numpy.float32"-like syntax')
+                self.logger.error(
+                    f'Could not resolve type "{target_dtype}". '
+                    f'Make sure you use "numpy.float32"-like syntax'
+                )
 
         else:
             self.target_dtype = target_dtype
@@ -52,10 +67,17 @@ class ImageNormalizer(Executor):
         if docs is None:
             return
 
-        traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
+        traversal_paths = parameters.get(
+            'traversal_paths', self.default_traversal_paths
+        )
 
         filtered_docs = DocumentArray(
-            list(filter(lambda d: 'image/' in d.mime_type, docs.traverse_flat(traversal_paths)))
+            list(
+                filter(
+                    lambda d: 'image/' in d.mime_type,
+                    docs.traverse_flat(traversal_paths),
+                )
+            )
         )
 
         for doc in filtered_docs:
@@ -91,7 +113,7 @@ class ImageNormalizer(Executor):
 
     @staticmethod
     def _move_channel_axis(
-            img: 'np.ndarray', channel_axis_to_move: int, target_channel_axis: int = -1
+        img: 'np.ndarray', channel_axis_to_move: int, target_channel_axis: int = -1
     ) -> 'np.ndarray':
         """
         Ensure the color channel axis is the default axis.
@@ -137,10 +159,10 @@ class ImageNormalizer(Executor):
         elif how == 'precise':
             assert w_beg is not None and h_beg is not None
             assert (
-                    0 <= w_beg <= (img_w - target_w)
+                0 <= w_beg <= (img_w - target_w)
             ), f'left must be within [0, {img_w - target_w}]: {w_beg}'
             assert (
-                    0 <= h_beg <= (img_h - target_h)
+                0 <= h_beg <= (img_h - target_h)
             ), f'top must be within [0, {img_h - target_h}]: {h_beg}'
         else:
             raise ValueError(f'unknown input how: {how}')

@@ -27,23 +27,6 @@ class FlairTextEncoder(Executor):
     Due to different interfaces of all these embedding models, using custom pre-trained
     models (not part of the library), or other embedding models is not possible. For
     that, we recommend that you create a custom executor.
-
-    :param embeddings: the name of the embeddings. Supported models include
-        - ``word:[ID]``: the classic word embedding model, the ``[ID]`` are listed at
-        https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/CLASSIC_WORD_EMBEDDINGS.md
-        - ``flair:[ID]``: the contextual embedding model, the ``[ID]`` are listed at
-        https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/FLAIR_EMBEDDINGS.md
-        - ``byte-pair:[ID]``: the subword-level embedding model, the ``[ID]`` are listed at
-        https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/BYTE_PAIR_EMBEDDINGS.md
-
-        Example: ``('word:glove', 'flair:news-forward', 'flair:news-backward')``
-    :param default_batch_size: Default batch size, used if ``batch_size`` is not
-        provided as a parameter in the request
-    :param default_traversal_paths: Default traversal paths, used if ``traversal_paths``
-        are not provided as a parameter in the request.
-    :param device: The device (cpu or gpu) that the model should be on.
-    :param pooling_strategy: the strategy to merge the word embeddings into the sentence
-        embedding. Supported strategies are ``'mean'``, ``'min'`` and ``'max'``.
     """
 
     def __init__(
@@ -56,6 +39,24 @@ class FlairTextEncoder(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param embeddings: the name of the embeddings. Supported models include
+            - ``word:[ID]``: the classic word embedding model, the ``[ID]`` are listed at
+            https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/CLASSIC_WORD_EMBEDDINGS.md
+            - ``flair:[ID]``: the contextual embedding model, the ``[ID]`` are listed at
+            https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/FLAIR_EMBEDDINGS.md
+            - ``byte-pair:[ID]``: the subword-level embedding model, the ``[ID]`` are listed at
+            https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/BYTE_PAIR_EMBEDDINGS.md
+
+            Example: ``('word:glove', 'flair:news-forward', 'flair:news-backward')``
+        :param default_batch_size: Default batch size, used if ``batch_size`` is not
+            provided as a parameter in the request
+        :param default_traversal_paths: Default traversal paths, used if ``traversal_paths``
+            are not provided as a parameter in the request.
+        :param device: The device (cpu or gpu) that the model should be on.
+        :param pooling_strategy: the strategy to merge the word embeddings into the sentence
+            embedding. Supported strategies are ``'mean'``, ``'min'`` and ``'max'``.
+        """
         super().__init__(*args, **kwargs)
 
         if isinstance(embeddings, str):

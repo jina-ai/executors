@@ -7,7 +7,7 @@ from typing import List
 import fitz
 import numpy as np
 import pdfplumber
-from jina import DocumentArray, Executor, requests, Document
+from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
 
@@ -19,9 +19,9 @@ class PDFSegmenter(Executor):
     """
 
     def __init__(
-            self,
-            *args,
-            **kwargs,
+        self,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(context=self.__class__.__name__)
@@ -34,6 +34,7 @@ class PDFSegmenter(Executor):
         or if it's the file in bytes.
         It will then extract the data from the file, creating a list for images,
         and text.
+
         :param docs: Array of Documents.
         """
         for doc in docs:
@@ -41,10 +42,14 @@ class PDFSegmenter(Executor):
 
             if pdf_img is not None:
                 images = self._extract_image(pdf_img)
-                doc.chunks.extend([Document(blob=img, mime_type='image/*') for img in images])
+                doc.chunks.extend(
+                    [Document(blob=img, mime_type='image/*') for img in images]
+                )
             if pdf_text is not None:
                 texts = self._extract_text(pdf_text)
-                doc.chunks.extend([Document(text=t, mime_type='text/plain') for t in texts])
+                doc.chunks.extend(
+                    [Document(text=t, mime_type='text/plain') for t in texts]
+                )
 
     def _parse_pdf(self, doc: Document):
         pdf_img = None
@@ -78,7 +83,11 @@ class PDFSegmenter(Executor):
                     xref = img[0]
                     pix = fitz.Pixmap(pdf_img, xref)
                     # read data from buffer and reshape the array into 3-d format
-                    np_arr = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n).astype('float32')
+                    np_arr = (
+                        np.frombuffer(pix.samples, dtype=np.uint8)
+                        .reshape(pix.h, pix.w, pix.n)
+                        .astype('float32')
+                    )
                     if pix.n - pix.alpha < 4:  # if gray or RGB
                         if pix.n == 1:  # convert gray to rgb
                             images.append(np.concatenate((np_arr,) * 3, -1))
@@ -88,7 +97,10 @@ class PDFSegmenter(Executor):
                             images.append(np_arr)
                     else:  # if CMYK:
                         pix = fitz.Pixmap(fitz.csRGB, pix)  # Convert to RGB
-                        np_arr = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n).astype(
-                            'float32')
+                        np_arr = (
+                            np.frombuffer(pix.samples, dtype=np.uint8)
+                            .reshape(pix.h, pix.w, pix.n)
+                            .astype('float32')
+                        )
                         images.append(np_arr)
         return images

@@ -1,116 +1,83 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+import subprocess
 from typing import Dict, Iterable, Optional
 
 import spacy
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
+from jina_commons.batching import get_docs_batch_generator
+
+_EXCLUDE_COMPONENTS = [
+    'tagger',
+    'parser',
+    'ner',
+    'senter',
+    'lemmatizer',
+    'attribute_ruler',
+]
 
 
 class SpacyTextEncoder(Executor):
     """
     :class:`SpacyTextEncoder` encodes ``Document`` using models offered by Spacy
-    :param lang: pre-trained spaCy language pipeline (model name HashEmbedCNN by default for tok2vec), `en_core_web_sm`
-        by default. Allows models `en_core_web_md`, `en_core_web_lg`, `en_core_web_trf`. Refer https://spacy.io/models/en.
-    :param use_default_encoder: if True will use parser component,
-        otherwise tok2vec implementation will be chosen,
-        by default False.
-    :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
-    :param device: device to use for encoding ['cuda', 'cpu', 'cuda:2']
-    :param args: Additional positional arguments.
-    :param kwargs: Additional positional arguments.
     """
-
-    SPACY_COMPONENTS = [
-        'tagger',
-        'parser',
-        'ner',
-        'senter',
-        'tok2vec',
-        'lemmatizer',
-        'attribute_ruler',
-    ]
 
     def __init__(
         self,
-        lang: str = 'en_core_web_sm',
-        use_default_encoder: bool = False,
+        model_name: str = 'en_core_web_sm',
+        download_data: bool = True,
+        default_batch_size: int = 32,
         default_traversal_paths: Iterable[str] = ('r',),
         device: str = 'cpu',
         *args,
         **kwargs,
     ):
-        """Set constructor."""
+        """
+        :param model_name: pre-trained spaCy language pipeline name
+        :param default_batch_size: fallback batch size in case there is not batch size sent in the request
+        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param device: device to use for encoding ['cuda', 'cpu', 'cuda:2']
+        """
         super().__init__(*args, **kwargs)
-        self.lang = lang
-        self.use_default_encoder = use_default_encoder
+
+        self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
         self.logger = JinaLogger(self.__class__.__name__)
-        self.device = device
-        if self.device.startswith('cuda'):
+        if device.startswith('cuda'):
             spacy.require_gpu()
-
-        try:
-            self.spacy_model = spacy.load(self.lang)
-            # Disable everything as we only requires certain pipelines to turned on.
-            ignored_components = []
-            for comp in self.SPACY_COMPONENTS:
-                try:
-                    self.spacy_model.disable_pipe(comp)
-                except Exception:
-                    ignored_components.append(comp)
-            self.logger.info(
-                f'Ignoring {ignored_components} pipelines as it does not available on the model package.'
+        if download_data:
+            subprocess.run(
+                ['python', '-m', 'spacy', 'download', model_name], check=True
             )
-        except IOError:
-            self.logger.error(
-                f'spaCy model for language {self.lang} can not be found. Please install by referring to the '
-                'official page https://spacy.io/usage/models.'
-            )
-            raise
-
-        if self.use_default_encoder:
-            try:
-                self.spacy_model.enable_pipe('parser')
-            except ValueError:
-                self.logger.error(
-                    f'Parser for language {self.lang} can not be found. The default sentence encoder requires'
-                    'DependencyParser to be trained. Please refer to https://spacy.io/api/tok2vec for more clarity.'
-                )
-                raise
-        else:
-            try:
-                self.spacy_model.enable_pipe('tok2vec')
-            except ValueError:
-                self.logger.error(
-                    f'TokenToVector is not available for language {self.lang}. Please refer to'
-                    'https://github.com/explosion/spaCy/issues/6615 for training your own recognizer.'
-                )
-                raise
+        self.spacy_model = spacy.load(model_name, exclude=_EXCLUDE_COMPONENTS)
 
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
-        Encode all docs with text and store the encodings in the embedding attribute of the docs.
-        :param docs: documents sent to the encoder. The docs must have `text` as content
-        :param parameters: dictionary to define the `traversal_path` and the `batch_size`.
-            For example,
-            `parameters={'traversal_paths': ['r']}`
-            will set the parameters for traversal_paths that is actually used`
+        Encode all docs with text and store the encodings in the embedding
+        attribute of the docs.
+
+        :param docs: documents sent to the encoder. The docs must have the
+            ``text`` attribute.
+        :param parameters: dictionary to define the ``traversal_path`` and the
+            ``batch_size``. For example,
+            ``parameters={'traversal_paths': ['r'], 'batch_size': 10}``
         """
         if docs:
-            trav_paths = parameters.get('traversal_paths', self.default_traversal_paths)
-            # traverse thought all documents which have to be processed
-            flat_docs = docs.traverse_flat(trav_paths)
-            # filter out documents without text
-            filtered_docs = [doc for doc in flat_docs if doc.text is not None]
-
-            for doc in filtered_docs:
-                spacy_doc = self.spacy_model(doc.text)
-                if self.device.startswith('cuda'):
-                    from cupy import asnumpy
-
-                    doc.embedding = asnumpy(spacy_doc.vector)
-                else:
+            batch_size = parameters.get('batch_size', self.default_batch_size)
+            document_batches_generator = get_docs_batch_generator(
+                docs,
+                traversal_path=parameters.get(
+                    'traversal_paths', self.default_traversal_paths
+                ),
+                batch_size=batch_size,
+                needs_attr='text',
+            )
+            for document_batch in document_batches_generator:
+                texts = [doc.text for doc in document_batch]
+                for doc, spacy_doc in zip(
+                    document_batch, self.spacy_model.pipe(texts, batch_size=batch_size)
+                ):
                     doc.embedding = spacy_doc.vector

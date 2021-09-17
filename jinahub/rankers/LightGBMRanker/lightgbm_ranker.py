@@ -14,22 +14,9 @@ class LightGBMRanker(Executor):
     """
     Computes a relevance score for each match using a pretrained learning-to-rank model trained with LightGBM (https://lightgbm.readthedocs.io/en/latest/index.html)
 
-    :param query_features: name of the features to extract from query Documents and used to compute relevance scores by the model loaded
-    from model_path
-    :param match_features: name of the features to extract from match Documents and used to compute relevance scores by the model loaded
-    from model_path
-    :param relevance_label: If call :meth:`train` endpoint, the label will be used as groundtruth for model training. If on :meth:`rank` endpoint, the
-    label will be used to assign a score to :attr:`Document.scores` field.
-    :param model_path: path to the pretrained model previously trained using LightGBM.
-    :param params: Parameters used to train the LightGBM learning-to-rank model.
-    :param categorical_query_features: name of features contained in `query_features` corresponding to categorical features.
-    :param categorical_match_features: name of features contained in `match_features` corresponding to categorical features.
-    :param query_features_before: True if `query_features` must be placed before the `match` ones in the `dataset` used for prediction.
-    :param args: Additional positional arguments
-    :param kwargs: Additional keyword arguments
     .. note::
-        The name of the features are used to extract the features from incoming `documents`. Check how these features are accessed in
-        :class:`Document` at https://docs.jina.ai/api/jina.types.document/
+        The name of the features used by this Executor are used to extract the features from incoming `documents`.
+        Check how these features are accessed in :class:`Document` at https://docs.jina.ai/api/jina.types.document/
     """
 
     def __init__(
@@ -51,6 +38,19 @@ class LightGBMRanker(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param query_features: name of the features to extract from query Documents and used to compute relevance scores by the model loaded
+        from model_path
+        :param match_features: name of the features to extract from match Documents and used to compute relevance scores by the model loaded
+        from model_path
+        :param relevance_label: If call :meth:`train` endpoint, the label will be used as groundtruth for model training. If on :meth:`rank` endpoint, the
+        label will be used to assign a score to :attr:`Document.scores` field.
+        :param model_path: path to the pretrained model previously trained using LightGBM.
+        :param params: Parameters used to train the LightGBM learning-to-rank model.
+        :param categorical_query_features: name of features contained in `query_features` corresponding to categorical features.
+        :param categorical_match_features: name of features contained in `match_features` corresponding to categorical features.
+        :param query_features_before: True if `query_features` must be placed before the `match` ones in the `dataset` used for prediction.
+        """
         super(LightGBMRanker, self).__init__(*args, **kwargs)
         self.params = params
         self.model_path = model_path

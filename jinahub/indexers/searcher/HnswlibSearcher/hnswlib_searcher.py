@@ -1,11 +1,11 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 import hnswlib
 import numpy as np
-from jina import Executor, requests, DocumentArray, Document
+from jina import Document, DocumentArray, Executor, requests
 from jina_commons import get_logger
 from jina_commons.indexers.dump import import_vectors
 
@@ -21,17 +21,17 @@ class HnswlibSearcher(Executor):
     """
 
     def __init__(
-            self,
-            default_top_k: int = 10,
-            metric: str = 'cosine',
-            dump_path: Optional[str] = None,
-            default_traversal_paths: Optional[List[str]] = None,
-            is_distance: bool = False,
-            ef_construction: int = 400,
-            ef_query: int = 50,
-            max_connection: int = 64,
-            *args,
-            **kwargs,
+        self,
+        default_top_k: int = 10,
+        metric: str = 'cosine',
+        dump_path: Optional[str] = None,
+        default_traversal_paths: Optional[List[str]] = None,
+        is_distance: bool = False,
+        ef_construction: int = 400,
+        ef_query: int = 50,
+        max_connection: int = 64,
+        *args,
+        **kwargs,
     ):
         """
         Initialize an HnswlibSearcher
@@ -44,8 +44,6 @@ class HnswlibSearcher(Executor):
         :param ef_construction: defines a construction time/accuracy trade-off
         :param ef_query:  sets the query time accuracy/speed trade-off
         :param max_connection: defines tha maximum number of outgoing connections in the graph
-        :param args:
-        :param kwargs:
         """
         super().__init__(*args, **kwargs)
         self.default_top_k = default_top_k
@@ -64,8 +62,11 @@ class HnswlibSearcher(Executor):
             self._vecs = np.array(list(vecs))
             num_dim = self._vecs.shape[1]
             self._indexer = hnswlib.Index(space=self.metric, dim=num_dim)
-            self._indexer.init_index(max_elements=len(self._vecs), ef_construction=self.ef_construction,
-                                     M=self.max_connection)
+            self._indexer.init_index(
+                max_elements=len(self._vecs),
+                ef_construction=self.ef_construction,
+                M=self.max_connection,
+            )
 
             self._doc_id_to_offset = {}
             self._load_index(self._ids, self._vecs)
@@ -82,6 +83,15 @@ class HnswlibSearcher(Executor):
 
     @requests(on='/search')
     def search(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
+        """
+
+        :param docs: `Document` with `.embedding` the same shape as the `Documents`
+            it has stored.
+        :param parameters: dictionary to define the `traversal_paths` and the `top_k`.
+
+        :return: Attaches matches to the Documents sent as inputs, with the id of the
+            match, and its embedding.
+        """
         if docs is None:
             return
         if not hasattr(self, '_indexer'):
@@ -113,8 +123,6 @@ class HnswlibSearcher(Executor):
         for doc in docs:
             doc_idx = self._doc_id_to_offset.get(doc.id)
             if doc_idx is not None:
-                doc.embedding = np.array(
-                    self._indexer.get_items([int(doc_idx)])[0]
-                )
+                doc.embedding = np.array(self._indexer.get_items([int(doc_idx)])[0])
             else:
                 self.logger.warning(f'Document {doc.id} not found in index')

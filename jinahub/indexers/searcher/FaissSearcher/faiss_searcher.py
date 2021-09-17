@@ -14,6 +14,14 @@ from jina.helper import batch_iterator
 from jina_commons import get_logger
 from jina_commons.indexers.dump import import_vectors
 
+GENERATOR_DELTA = Generator[
+    Tuple[str, Optional[np.ndarray], Optional[datetime]], None, None
+]
+
+DELETE_MARKS_FILENAME = 'delete_marks.bin'
+DOC_IDS_FILENAME = 'doc_ids.bin'
+FAISS_INDEX_FILENAME = 'faiss.bin'
+
 
 class FaissSearcher(Executor):
     """Faiss-powered vector indexer
@@ -21,38 +29,6 @@ class FaissSearcher(Executor):
     For more information about the Faiss
     supported parameters and installation problems, please consult:
         - https://github.com/facebookresearch/faiss
-
-    :param trained_index_file: the index file dumped from a trained
-     index, e.g., ``faiss.index``. If none is provided, `indexed` data will be used
-        to train the Indexer (In that case, one must be careful when sharding
-         is enabled, because every shard will be trained with its own part of data).
-    :param index_key: index type supported
-        by ``faiss.index_factory``
-    :param train_filepath: the training data file path,
-        e.g ``faiss.tgz`` or `faiss.npy`. The data file is expected
-        to be either `.npy` file from `numpy.save()` or a `.tgz` file
-        from `NumpyIndexer`. If none is provided, `indexed` data will be used
-        to train the Indexer (In that case, one must be careful when sharding
-        is enabled, because every shard will be trained with its own part of data).
-        The data will only be loaded if `requires_training` is set to True.
-    :param max_num_training_points: Optional argument to consider only a subset of
-    training points to training data from `train_filepath`.
-        The points will be selected randomly from the available points
-    :param prefetch_size: the number of data to pre-load into RAM
-    :param requires_training: Boolean flag indicating if the index type
-        requires training to be run before building index.
-    :param metric: 'l2' or 'inner_product' accepted. Determines which distances to
-        optimize by FAISS. l2...smaller is better, inner_product...larger is better
-    :param normalize: whether or not to normalize the vectors e.g. for the cosine
-        similarity
-        https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how
-        -can-i-index-vectors-for-cosine-similarity
-    :param nprobe: Number of clusters to consider at search time.
-    :param is_distance: Boolean flag that describes if distance metric need to be
-        reinterpreted as similarities.
-    :param make_direct_map: Boolean flag that describes if direct map has to be
-        computed after building the index. Useful if you need to call `fill_embedding`
-        endpoint and reconstruct vectors by id
 
     .. highlight:: python
     .. code-block:: python
@@ -74,6 +50,7 @@ class FaissSearcher(Executor):
 
     def __init__(
         self,
+        # exhaustive search, which corresponds to what NumpySearcher was doing
         index_key: str = 'Flat',
         trained_index_file: Optional[str] = None,
         max_num_training_points: Optional[int] = None,
@@ -91,6 +68,39 @@ class FaissSearcher(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param trained_index_file: the index file dumped from a trained
+            index, e.g., ``faiss.index``. If none is provided, `indexed` data will be used
+            to train the Indexer (In that case, one must be careful when sharding
+            is enabled, because every shard will be trained with its own part of data).
+        :param index_key: index type supported
+            by ``faiss.index_factory``
+        :param train_filepath: the training data file path,
+            e.g ``faiss.tgz`` or `faiss.npy`. The data file is expected
+            to be either `.npy` file from `numpy.save()` or a `.tgz` file
+            from `NumpyIndexer`. If none is provided, `indexed` data will be used
+            to train the Indexer (In that case, one must be careful when sharding
+            is enabled, because every shard will be trained with its own part of data).
+            The data will only be loaded if `requires_training` is set to True.
+        :param max_num_training_points: Optional argument to consider only a subset of
+        training points to training data from `train_filepath`.
+            The points will be selected randomly from the available points
+        :param prefetch_size: the number of data to pre-load into RAM
+        :param requires_training: Boolean flag indicating if the index type
+            requires training to be run before building index.
+        :param metric: 'l2' or 'inner_product' accepted. Determines which distances to
+            optimize by FAISS. l2...smaller is better, inner_product...larger is better
+        :param normalize: whether or not to normalize the vectors e.g. for the cosine
+            similarity
+            https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how
+            -can-i-index-vectors-for-cosine-similarity
+        :param nprobe: Number of clusters to consider at search time.
+        :param is_distance: Boolean flag that describes if distance metric need to be
+            reinterpreted as similarities.
+        :param make_direct_map: Boolean flag that describes if direct map has to be
+            computed after building the index. Useful if you need to call `fill_embedding`
+            endpoint and reconstruct vectors by id
+        """
         super().__init__(*args, **kwargs)
         self.index_key = index_key
         self.requires_training = requires_training
@@ -114,7 +124,7 @@ class FaissSearcher(Executor):
 
         self.logger = get_logger(self)
         is_loaded = False
-        if os.path.exists(self.workspace):
+        if self._faiss_index_exist(self.workspace):
             is_loaded = self._load(self.workspace)
         if not is_loaded:
             self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
@@ -164,7 +174,11 @@ class FaissSearcher(Executor):
             self._doc_ids.append(id_)
             self._doc_id_to_offset[id_] = position
             self._is_deleted.append(0)
-            yield np.frombuffer(vector)
+            if vector is not None:
+                # this should already be a np.array, NOT bytes
+                yield vector
+            else:
+                yield None
 
     def device(self):
         """
@@ -304,6 +318,9 @@ class FaissSearcher(Executor):
 
         :param docs: the DocumentArray containing the documents to search with
         :param parameters: the parameters for the request
+
+        :return: Attaches matches to the Documents sent as inputs, with the id of the
+            match, and its embedding.
         """
         if not hasattr(self, '_faiss_index'):
             self.logger.warning('Querying against an empty Index')
@@ -371,26 +388,32 @@ class FaissSearcher(Executor):
         os.makedirs(target_path, exist_ok=True)
 
         # dump faiss index
-        faiss.write_index(self._faiss_index, os.path.join(target_path, 'faiss.bin'))
+        faiss.write_index(
+            self._faiss_index, os.path.join(target_path, FAISS_INDEX_FILENAME)
+        )
 
-        with open(os.path.join(target_path, 'doc_ids.bin'), "wb") as fp:
+        with open(os.path.join(target_path, DOC_IDS_FILENAME), "wb") as fp:
             pickle.dump(self._doc_ids, fp)
 
-        with open(os.path.join(target_path, 'delete_marks.bin'), "wb") as fp:
+        with open(os.path.join(target_path, DELETE_MARKS_FILENAME), "wb") as fp:
             pickle.dump(self._is_deleted, fp)
+
+    def _faiss_index_exist(self, folder_path: str):
+        index_path = os.path.join(folder_path, FAISS_INDEX_FILENAME)
+        return os.path.exists(index_path)
 
     def _load(self, from_path: Optional[str] = None):
         from_path = from_path if from_path else self.workspace
         self.logger.info(f'Try to load indexer from {from_path}...')
         try:
-            with open(os.path.join(from_path, 'doc_ids.bin'), 'rb') as fp:
+            with open(os.path.join(from_path, DOC_IDS_FILENAME), 'rb') as fp:
                 self._doc_ids = pickle.load(fp)
                 self._doc_id_to_offset = {v: i for i, v in enumerate(self._doc_ids)}
 
-            with open(os.path.join(from_path, 'delete_marks.bin'), 'rb') as fp:
+            with open(os.path.join(from_path, DELETE_MARKS_FILENAME), 'rb') as fp:
                 self._is_deleted = pickle.load(fp)
 
-            index = faiss.read_index(os.path.join(from_path, 'faiss.bin'))
+            index = faiss.read_index(os.path.join(from_path, FAISS_INDEX_FILENAME))
             assert index.metric_type == self.metric_type
             assert index.is_trained
             self.num_dim = index.d
@@ -585,7 +608,8 @@ class FaissSearcher(Executor):
             metric_type = faiss.METRIC_INNER_PRODUCT
         if self.metric not in {'inner_product', 'l2'}:
             self.logger.warning(
-                'Invalid distance metric for Faiss index construction. Defaulting to l2 distance'
+                'Invalid distance metric for Faiss index construction. Defaulting '
+                'to l2 distance'
             )
         return metric_type
 
@@ -600,29 +624,27 @@ class FaissSearcher(Executor):
             self._is_deleted.append(0)
         self._index(vecs)
 
-    def _add_delta(self, delta: Generator[Tuple[str, bytes, datetime], None, None]):
+    def _add_delta(self, delta: GENERATOR_DELTA):
         """
         Adding the delta data to the indexer
-        :param delta: a generator yielding (id, doc_vec_bytes, last_updated)
+        :param delta: a generator yielding (id, np.ndarray, last_updated)
         """
-        for doc_id, vec_buffer, _ in delta:
+        for doc_id, vec_array, _ in delta:
             idx = self._doc_id_to_offset.get(doc_id)
             if idx is None:  # add new item
-                if vec_buffer is None:
+                if vec_array is None:
                     continue
-                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
-                    1, -1
-                )  # shape [1, D]
+                # shape [1, D]
+                vec = vec_array.reshape(1, -1).astype(np.float32)
 
                 self._append_vecs_and_ids([doc_id], vec)
-            elif vec_buffer is None:  # soft delete
+            elif vec_array is None:  # soft delete
                 self._is_deleted[idx] = 1
             else:  # update
                 # first soft delete
                 self._is_deleted[idx] = 1
 
                 # then add the updated doc
-                vec = np.frombuffer(vec_buffer, dtype=np.float32).reshape(
-                    1, -1
-                )  # shape [1, D]
+                # shape [1, D]
+                vec = vec_array.reshape(1, -1).astype(np.float32)
                 self._append_vecs_and_ids([doc_id], vec)

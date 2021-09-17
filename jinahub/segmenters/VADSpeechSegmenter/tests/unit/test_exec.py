@@ -1,10 +1,8 @@
 from pathlib import Path
 
 import pytest
-from jina import Executor, DocumentArray, Document
+from jina import Document, DocumentArray, Executor
 from jina.excepts import BadDocType
-
-from ...vad_speech_segmenter import VADSpeechSegmenter
 
 
 def test_load():

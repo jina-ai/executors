@@ -3,8 +3,7 @@ __license__ = "Apache-2.0"
 
 import pytest
 from jina import Document, DocumentArray
-
-from ...match_merger import MatchMerger
+from match_merger import MatchMerger
 
 
 @pytest.fixture
@@ -14,22 +13,18 @@ def docs_matrix():
             [
                 Document(
                     id=f'doc {i}',
-                    matches=[
-                        Document(id=f'doc {i}, match {j}')
-                        for j in range(3)
-                    ],
+                    matches=[Document(id=f'doc {i}, match {j}') for j in range(3)],
                     chunks=[
                         Document(
                             id=f'doc {i}, chunk {j}',
                             matches=[
-                                Document(
-                                    id=f'doc {i}, chunk {j}, match {k}'
-                                )
+                                Document(id=f'doc {i}, chunk {j}, match {k}')
                                 for k in range(2)
-                            ]
+                            ],
                         )
                         for j in range(3)
-                    ])
+                    ],
+                )
                 for i in range(2)
             ]
         )

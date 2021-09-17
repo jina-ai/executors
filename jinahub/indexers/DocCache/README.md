@@ -1,6 +1,6 @@
 # DocCache
 
-DocCache is an Executor that can cache documents that it has seen before, by different combination of fields (or just one field). It then removes the Document that has the same combination of values in those fields from the DocumentArray, so it will not reach the following Executors in your Flow. 
+**DocCache** is an Executor that can cache documents that it has seen before, by different combination of fields (or just one field). It then removes the Document that has the same combination of values in those fields from the DocumentArray, so it will not reach the following Executors in your Flow. 
 
 This is useful for continuously indexing Documents, and not having to worry about indexing the same Document twice.
 
@@ -48,43 +48,3 @@ with f:
 ## Initialization
 `fields` is the one or more [attributes of Document](https://github.com/jina-ai/jina/blob/master/.github/2.0/cookbooks/Document.md#document-attributes).
 The value must be a tuple of strings (e.g. `[text, tags__author]`). The default value is `('content_hash', )`
-
-
-## APIs
-
-### `on='/index'`
-
-This API calculates and caches the hash codes of the `Document`. If the Document has already previously cached,
-it is removed from the `DocumentArray` and therefore no further Executor will receive it.
-
-#### Inputs
-
-`DocumentArray`. 
-
-#### Outputs
-
-`DocumentArray` without the duplicated `Document`.
-
-### `on='/update'`
-
-This API is used to update the hash codes of the cached `Document`. If the Document with the same `id` has already previously been cached, the hash code will be updated based on the new values of the `fields`
-
-#### Inputs
-
-`DocumentArray`.
-
-#### Outputs
-
-`DocumentArray` without the duplicated `Document`.
-
-### `on='/delete'`
-
-This API is used to delete the hash codes of the cached `Document`. If the Document with the same `id` has already previously been cached, the hash code will be deleted. 
-
-#### Inputs
-
-`DocumentArray`.
-
-#### Outputs
-
-`DocumentArray` without the duplicated `Document`.

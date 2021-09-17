@@ -1,17 +1,15 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-
 import os
 from pathlib import Path
-
-import numpy as np
-from PIL import Image
 from unittest.mock import patch
 
+import numpy as np
+import pytest
 from jina import Document, DocumentArray, Executor
-from ...torch_object_detection_segmenter import TorchObjectDetectionSegmenter
-
+from PIL import Image
+from torch_object_detection_segmenter import TorchObjectDetectionSegmenter
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -379,3 +377,18 @@ def test_encoding_maskrcnn_results_real_image():
         assert blob.shape == (90, 175, 3)
         array = np.array(img)
         np.testing.assert_array_almost_equal(blob, array)
+
+
+@pytest.mark.gpu
+def test_encoding_maskrcnn_results_gpu():
+    img_array = create_random_img_array(128, 64)
+    img_array = img_array / 255
+    segmenter = TorchObjectDetectionSegmenter(
+        model_name="maskrcnn_resnet50_fpn", confidence_threshold=0.98, on_gpu=True
+    )
+    test_docs = DocumentArray([Document(blob=img_array), Document(blob=img_array)])
+    segmenter.segment(test_docs, {})
+    docs_chunks = test_docs.get_attributes("chunks")
+    assert len(docs_chunks) == 2
+    for chunks in docs_chunks:
+        assert len(chunks) == 0

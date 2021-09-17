@@ -26,6 +26,17 @@ def data_generator(test_dir: str):
     return _generator
 
 
+@pytest.fixture(scope='session')
+def docker_image_name() -> str:
+    return Path(__file__).parents[1].stem.lower()
+
+
+@pytest.fixture(scope='session')
+def build_docker_image(docker_image_name: str) -> str:
+    subprocess.run(['docker', 'build', '-t', docker_image_name, '.'], check=True)
+    return docker_image_name
+
+
 @pytest.fixture()
 def docs_with_text() -> DocumentArray:
     return DocumentArray([Document(text='hello world') for _ in range(10)])
@@ -49,17 +60,6 @@ def docs_with_chunk_chunk_text() -> DocumentArray:
             )
         ]
     )
-
-
-@pytest.fixture(scope='session')
-def docker_image_name() -> str:
-    return Path(__file__).parents[1].stem.lower()
-
-
-@pytest.fixture(scope='session')
-def build_docker_image(docker_image_name: str) -> str:
-    subprocess.run(['docker', 'build', '-t', docker_image_name, '.'], check=True)
-    return docker_image_name
 
 
 @pytest.fixture(scope='session')

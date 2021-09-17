@@ -2,12 +2,9 @@ import os
 from typing import Dict, List
 
 import lmdb
-from jina import Executor, Document, DocumentArray, requests
+from jina import Document, DocumentArray, Executor, requests
 from jina_commons import get_logger
-from jina_commons.indexers.dump import (
-    export_dump_streaming,
-    import_metas,
-)
+from jina_commons.indexers.dump import export_dump_streaming, import_metas
 
 
 class _LMDBHandler:
@@ -50,11 +47,6 @@ class LMDBStorage(Executor):
     """An lmdb-based Storage Indexer for Jina
 
     For more information on lmdb check their documentation: https://lmdb.readthedocs.io/en/release/
-
-    :param map_size: the maximal size of teh database. Check more information at
-        https://lmdb.readthedocs.io/en/release/#environment-class
-    :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
-    :param default_return_embeddings: whether to return embeddings on search or not
     """
 
     def __init__(
@@ -66,6 +58,12 @@ class LMDBStorage(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param map_size: the maximal size of teh database. Check more information at
+            https://lmdb.readthedocs.io/en/release/#environment-class
+        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param default_return_embeddings: whether to return embeddings on search or not
+        """
         super().__init__(*args, **kwargs)
         self.map_size = map_size
         self.default_traversal_paths = default_traversal_paths

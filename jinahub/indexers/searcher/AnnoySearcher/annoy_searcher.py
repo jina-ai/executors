@@ -1,12 +1,11 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, List, Union, Dict
+from typing import Dict, List, Optional
 
 import numpy as np
 from annoy import AnnoyIndex
-from jina import Executor, requests, DocumentArray, Document
-
+from jina import Document, DocumentArray, Executor, requests
 from jina_commons import get_logger
 from jina_commons.indexers.dump import import_vectors
 
@@ -22,14 +21,14 @@ class AnnoySearcher(Executor):
     """
 
     def __init__(
-            self,
-            default_top_k: int = 10,
-            metric: str = 'euclidean',
-            num_trees: int = 10,
-            dump_path: Optional[str] = None,
-            default_traversal_paths: List[str] = ['r'],
-            is_distance: bool = False,
-            **kwargs,
+        self,
+        default_top_k: int = 10,
+        metric: str = "euclidean",
+        num_trees: int = 10,
+        dump_path: Optional[str] = None,
+        default_traversal_paths: List[str] = ["r"],
+        is_distance: bool = False,
+        **kwargs,
     ):
         """
         Initialize an AnnoyIndexer
@@ -40,8 +39,6 @@ class AnnoySearcher(Executor):
         :param dump_path: the path to load ids and vecs
         :param traverse_path: traverse path on docs, e.g. ['r'], ['c']
         :param is_distance: Boolean flag that describes if distance metric need to be reinterpreted as similarities.
-        :param args:
-        :param kwargs:
         """
         super().__init__(**kwargs)
         self.default_top_k = default_top_k
@@ -51,7 +48,7 @@ class AnnoySearcher(Executor):
         self.is_distance = is_distance
         self.logger = get_logger(self)
         self._doc_id_to_offset = {}
-        dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path', None)
+        dump_path = dump_path or kwargs.get("runtime_args", {}).get("dump_path", None)
         if dump_path is not None:
             self.logger.info('Start building "AnnoyIndexer" from dump data')
             ids, vecs = import_vectors(dump_path, str(self.runtime_args.pea_id))
@@ -60,7 +57,7 @@ class AnnoySearcher(Executor):
             num_dim = self._vecs.shape[1]
             self._indexer = AnnoyIndex(num_dim, self.metric)
             self._load_index(self._ids, self._vecs)
-            self.logger.info('Done building Annoy index')
+            self.logger.info("Done building Annoy index")
         else:
             self.logger.warning(
                 'No data loaded in "AnnoyIndexer". Use .rolling_update() to re-initialize it...'
@@ -72,16 +69,16 @@ class AnnoySearcher(Executor):
             self._doc_id_to_offset[ids[idx]] = idx
         self._indexer.build(self.num_trees)
 
-    @requests(on='/search')
+    @requests(on="/search")
     def search(self, docs: DocumentArray, parameters: Dict, **kwargs):
-        if not hasattr(self, '_indexer'):
-            self.logger.warning('Querying against an empty index')
+        if not hasattr(self, "_indexer"):
+            self.logger.warning("Querying against an empty index")
             return
 
         traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
+            "traversal_paths", self.default_traversal_paths
         )
-        top_k = parameters.get('top_k', self.default_top_k)
+        top_k = parameters.get("top_k", self.default_top_k)
 
         for doc in docs.traverse_flat(traversal_paths):
             indices, dists = self._indexer.get_nns_by_vector(
@@ -90,25 +87,24 @@ class AnnoySearcher(Executor):
             for idx, dist in zip(indices, dists):
                 match = Document(id=self._ids[idx], embedding=self._vecs[idx])
                 if self.is_distance:
-                    if self.metric == 'dot':
+                    if self.metric == "dot":
                         match.scores[self.metric] = 1 - dist
                     else:
                         match.scores[self.metric] = dist
                 else:
-                    if self.metric == 'dot':
+                    if self.metric == "dot":
                         match.scores[self.metric] = dist
-                    elif self.metric == 'angular' or self.metric == 'hamming':
+                    elif self.metric == "angular" or self.metric == "hamming":
                         match.scores[self.metric] = 1 - dist
                     else:
                         match.scores[self.metric] = 1 / (1 + dist)
                 doc.matches.append(match)
 
-    @requests(on='/fill_embedding')
+    @requests(on="/fill_embedding")
     def fill_embedding(self, query_da: DocumentArray, **kwargs):
         for doc in query_da:
             doc_idx = self._doc_id_to_offset.get(doc.id)
             if doc_idx is not None:
                 doc.embedding = np.array(self._indexer.get_item_vector(int(doc_idx)))
             else:
-                self.logger.warning(f'Document {doc.id} not found in index')
-
+                self.logger.warning(f"Document {doc.id} not found in index")

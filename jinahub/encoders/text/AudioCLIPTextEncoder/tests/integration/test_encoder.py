@@ -4,9 +4,8 @@ __license__ = "Apache-2.0"
 import subprocess
 
 import pytest
+from executor.audioclip_text import AudioCLIPTextEncoder
 from jina import Document, DocumentArray, Flow
-
-from ...audioclip_text import AudioCLIPTextEncoder
 
 _EMBEDDING_DIM = 1024
 

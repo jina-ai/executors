@@ -1,19 +1,32 @@
-import os
 import subprocess
 
 import pytest
 from jina import Document, DocumentArray, Flow
+from tfidf_text_executor import TFIDFTextEncoder
 
-from ...tfidf_text_executor import TFIDFTextEncoder  # is implicitly required
-
-cur_dir = os.path.dirname(os.path.abspath(__file__))
+_EMBEDDING_DIM = 130107
 
 
-def test_flow_generates_embedding():
-    doc = DocumentArray([Document(text='Han likes eating pizza')])
+@pytest.mark.parametrize('request_size', [1, 10, 50, 100])
+def test_integration(request_size: int):
+    docs = DocumentArray(
+        [Document(text='just some random text here') for _ in range(50)]
+    )
+    with Flow(return_results=True).add(uses=TFIDFTextEncoder) as flow:
+        resp = flow.post(
+            on='/index',
+            inputs=docs,
+            request_size=request_size,
+            return_results=True,
+        )
 
-    with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as f:
-        responses = f.index(inputs=doc, return_results=True)
+    assert sum(len(resp_batch.docs) for resp_batch in resp) == 50
+    for r in resp:
+        for doc in r.docs:
+            assert doc.embedding.shape == (
+                1,
+                _EMBEDDING_DIM,
+            )
 
     assert responses[0].docs[0].embedding is not None
     # input has 4 different words
@@ -24,7 +37,11 @@ def test_flow_generates_embedding():
 def test_docker_runtime(build_docker_image: str):
     with pytest.raises(subprocess.TimeoutExpired):
         subprocess.run(
-            ['jina', 'executor', f'--uses=docker://{build_docker_image}'],
+            [
+                'jina',
+                'executor',
+                f'--uses=docker://{build_docker_image}',
+            ],
             timeout=30,
             check=True,
         )

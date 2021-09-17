@@ -1,4 +1,4 @@
-FROM jinaai/jina:master-py37-perf as base
+FROM jinaai/jina:2-py37-perf as base
 
 # install and upgrade pip
 RUN apt-get update && apt-get install -y git

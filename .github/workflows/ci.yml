@@ -71,14 +71,14 @@ jobs:
               | select(startswith("2."))' \
             | sort -V | tail -1)
           pip install git+https://github.com/jina-ai/jina.git@v${JINA_VERSION}
-      - name: Install image normalizer
-        run: pip install git+https://github.com/jina-ai/executor-normalizer
       - name: Python requirements
         run: pip install -r requirements.txt -r tests/requirements.txt
       - name: Create Dockerfile, if needed
         run: |
           if [[ ! -f "Dockerfile" ]]; then
-            normalizer . --jina-version=2; fi
+            docker run --entrypoint="normalizer" -v "$(pwd):/workspace" \
+            jinahub/hubble-normalizer:v0.1.1 . --jina-version=2
+            sudo chown -R $(id -u ${USER}):$(id -g ${USER}) . ; fi
       - name: Run unit tests
         run: pytest -s -v -m "not gpu"
       # - name: Print image size

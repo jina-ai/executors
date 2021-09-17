@@ -2,11 +2,10 @@ from pathlib import Path
 
 import librosa
 import pytest
+from executor.vggish import vggish_input
+from executor.vggish_audio_encoder import VggishAudioEncoder
 from jina import Document, DocumentArray, Executor
 from tensorflow.python.framework import ops
-
-from ...vggish import vggish_input
-from ...vggish_audio_encoder import VggishAudioEncoder
 
 
 def test_config():

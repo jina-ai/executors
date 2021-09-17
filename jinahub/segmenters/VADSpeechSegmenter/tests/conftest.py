@@ -1,13 +1,11 @@
-import pytest
-import os
-from typing import Callable
 from pathlib import Path
+from typing import Callable
 
-from jina import Document, DocumentArray
 import numpy as np
+import pytest
 import torchaudio
-
-from ..vad_speech_segmenter import VADSpeechSegmenter
+from jina import Document, DocumentArray
+from vad_speech_segmenter import VADSpeechSegmenter
 
 
 @pytest.fixture(scope='module')

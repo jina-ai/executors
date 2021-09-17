@@ -1,10 +1,9 @@
 import random
 
-import pytest
 import numpy as np
+import pytest
+from catboost_ranker import CatboostRanker
 from jina import Document, DocumentArray
-
-from ..catboost_ranker import CatboostRanker
 
 NUM_DOCS = 1000
 NUM_MATCHES = 5

@@ -1,9 +1,8 @@
 import subprocess
 
 import pytest
+from flair_text import FlairTextEncoder
 from jina import Document, DocumentArray, Flow
-
-from ...flair_text import FlairTextEncoder
 
 _EMBEDDING_DIM = 100
 
@@ -35,7 +34,6 @@ def test_docker_runtime(build_docker_image: str):
                 'jina',
                 'executor',
                 f'--uses=docker://{build_docker_image}',
-                '--volumes=.cache:/workspace/.cache',
             ],
             timeout=30,
             check=True,

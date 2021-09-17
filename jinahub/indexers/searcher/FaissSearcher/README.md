@@ -28,9 +28,9 @@ with:
 ...
 ```
 
-- from the `Flow.rolling_update` method. See [README](../../../../README.md).
+- from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/fundamentals/executor/indexers/).
 
-The folder needs to contain the data exported from your Indexer. Again, see [README](../../../../README.md). 
+The folder needs to contain the data exported from your Indexer. Again, see [docs](https://docs.jina.ai/fundamentals/executor/indexers/). 
 
 
 ```python
@@ -83,14 +83,6 @@ f = Flow().add(
     },
 )
 ```
-
-### Inputs 
-
-`Document` with `.embedding` the same shape as the `Documents` it has stored.
-
-### Returns
-
-Attaches matches to the Documents sent as inputs, with the id of the match, and its embedding. For retrieving the full metadata (original text or image blob), use a [key-value searcher](./../../keyvalue).
 
 
 ## Reference

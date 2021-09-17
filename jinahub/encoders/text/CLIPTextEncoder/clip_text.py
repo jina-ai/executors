@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Optional, Sequence
+from typing import Dict, Optional, Sequence
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -7,39 +7,37 @@ from transformers import CLIPModel, CLIPTokenizer
 
 
 class CLIPTextEncoder(Executor):
-    """Encode text into embeddings using a CLIP model.
-
-    :param pretrained_model_name_or_path: Can be either:
-        - A string, the model id of a pretrained CLIP model hosted
-            inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
-        - A path to a directory containing model weights saved, e.g., ./my_model_directory/
-    :param base_tokenizer_model: Base tokenizer model.
-        Defaults to ``pretrained_model_name_or_path`` if None
-    :param max_length: Max length argument for the tokenizer.
-        All CLIP models use 77 as the max length
-    :param device: Device to be used. Use 'cuda' or 'cuda:X' for GPU.
-    :param default_traversal_paths: Default traversal paths for encoding, used if the
-        traversal path is not passed as a parameter with the request.
-    :param default_batch_size: Default batch size for encoding, used if the
-        batch size is not passed as a parameter with the request.
-    :param args: Arguments
-    :param kwargs: Keyword Arguments
-    """
+    """Encode text into embeddings using the CLIP model."""
 
     def __init__(
         self,
         pretrained_model_name_or_path: str = 'openai/clip-vit-base-patch32',
         base_tokenizer_model: Optional[str] = None,
-        max_length: Optional[int] = 77,
+        max_length: int = 77,
         device: str = 'cpu',
-        default_traversal_paths: Iterable[str] = ('r',),
-        default_batch_size: int = 32,
+        traversal_paths: Sequence[str] = ['r'],
+        batch_size: int = 32,
         *args,
         **kwargs,
     ):
+        """
+        :param pretrained_model_name_or_path: Can be either:
+            - A string, the model id of a pretrained CLIP model hosted
+                inside a model repo on huggingface.co, e.g., 'openai/clip-vit-base-patch32'
+            - A path to a directory containing model weights saved, e.g., ./my_model_directory/
+        :param base_tokenizer_model: Base tokenizer model.
+            Defaults to ``pretrained_model_name_or_path`` if None
+        :param max_length: Max length argument for the tokenizer.
+            All CLIP models use 77 as the max length
+        :param device: Pytorch device to put the model on, e.g. 'cpu', 'cuda', 'cuda:1'
+        :param traversal_paths: Default traversal paths for encoding, used if
+            the traversal path is not passed as a parameter with the request.
+        :param batch_size: Default batch size for encoding, used if the
+            batch size is not passed as a parameter with the request.
+        """
         super().__init__(*args, **kwargs)
-        self.default_traversal_paths = default_traversal_paths
-        self.default_batch_size = default_batch_size
+        self.default_traversal_paths = traversal_paths
+        self.default_batch_size = batch_size
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.base_tokenizer_model = (
             base_tokenizer_model or pretrained_model_name_or_path
@@ -54,14 +52,13 @@ class CLIPTextEncoder(Executor):
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
-        Encode text data into a ndarray of `D` as dimension, and fill
-        the embedding attribute of the docs.
+        Encode all documents with the `text` attribute and store the embeddings in the
+        `embedding` attribute.
 
-        :param docs: DocumentArray containing text
-        :param parameters: dictionary to define the `traversal_paths` and the
-            `batch_size`. For example,
-            `parameters={'traversal_paths': ['r'], 'batch_size': 10}`.
-        :param kwargs: Additional key value arguments.
+        :param docs: DocumentArray containing the Documents to be encoded
+        :param parameters: A dictionary that contains parameters to control encoding.
+            The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
+            absence their corresponding default values are used.
         """
         for docs_batch in get_docs_batch_generator(
             docs,

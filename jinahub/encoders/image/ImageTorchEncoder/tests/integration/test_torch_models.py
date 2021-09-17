@@ -5,9 +5,8 @@ from typing import Dict
 
 import numpy as np
 import pytest
+from executor.torch_encoder import ImageTorchEncoder
 from jina import Document, DocumentArray
-
-from ...torch_encoder import ImageTorchEncoder
 
 MODELS_TO_TEST = [
     'mobilenet_v2',

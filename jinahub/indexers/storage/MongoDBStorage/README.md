@@ -25,30 +25,3 @@ You can start one in a Docker container, like so:
 ```bash
 docker run --name mongo-storage  -p 127.0.0.1:27017:27017/tcp -d mongo:latest
 ```
-
-## Usage 
-
-```python
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub://MongoDBStorage')
-
-with f:
-    resp = f.post(on='/index', inputs=Document(), return_results=True)
-    print(f'{resp}')
-```
-
-Parameters:
-
-- `default_traversal_paths`: the default traversal paths for the `DocumentArray` in a request. Can be overridden with `parameters={'traversal_paths': ..}` 
-
-Check [tests](tests/test_mongodb.py) for more usage scenarios.
-
-
-### Inputs 
-
-`Document`, with any data. It is stored in full, in bytes.
-
-### Returns
-
-Nothing

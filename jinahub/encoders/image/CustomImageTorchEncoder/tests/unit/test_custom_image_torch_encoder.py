@@ -2,9 +2,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from custom_image_torch_encoder import CustomImageTorchEncoder
 from jina import Document, DocumentArray, Executor
-
-from ...custom_image_torch_encoder import CustomImageTorchEncoder
 
 
 @pytest.fixture

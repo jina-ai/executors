@@ -4,8 +4,7 @@ import numpy as np
 import paddlehub as hub
 import pytest
 from jina import Document, DocumentArray, Executor
-
-from ...text_paddle import TextPaddleEncoder
+from text_paddle import TextPaddleEncoder
 
 
 @pytest.fixture(scope='function')
@@ -35,7 +34,7 @@ def test_config():
 
 def test_text_paddle(model, document_array, content, parameters):
     ex = TextPaddleEncoder()
-    assert ex.on_gpu is False
+    assert ex.device == 'cpu'
     ex.encode(document_array, parameters)
     for doc in document_array:
         assert isinstance(doc.embedding, np.ndarray)
