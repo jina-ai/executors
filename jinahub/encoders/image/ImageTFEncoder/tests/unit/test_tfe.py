@@ -5,11 +5,11 @@ import os
 from pathlib import Path
 from typing import Dict, Tuple
 
-import pytest
 import numpy as np
-from PIL import Image
-from jina import Document, DocumentArray, Executor
+import pytest
 from image_tf_encoder import ImageTFEncoder
+from jina import Document, DocumentArray, Executor
+from PIL import Image
 
 _INPUT_DIM = 336
 _EMBEDDING_DIM = 1280
