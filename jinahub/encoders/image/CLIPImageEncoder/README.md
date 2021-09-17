@@ -3,7 +3,8 @@
 **CLIPImageEncoder** is an image encoder that wraps the image embedding functionality using the [CLIP](https://huggingface.co/transformers/model_doc/clip.html) model from huggingface transformers.
 
 This encoder is meant to be used in conjunction with the [CLIPTextEncoder](https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/CLIPTextEncoder),
-as it can embedd text and images to the same latent space.
+as it can embed text and images to the same latent space.
+
 
 ## Usage
 
