@@ -41,7 +41,7 @@ with f:
 
 #### Loading data with `rolling_update`
 
-To load data from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/advanced/experimental/indexers/).
+To load data from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/advanced/experimental/indexers/#dump-and-rolling-update).
 
 ### Training
 
