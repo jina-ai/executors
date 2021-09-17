@@ -56,12 +56,12 @@ class ImageTFEncoder(Executor):
         """
         super().__init__(*args, **kwargs)
         if traversal_paths is None:
-            default_traversal_paths = ['r']
+            traversal_paths = ['r']
         self.model_name = model_name
         self.pool_strategy = pool_strategy
         self.img_shape = img_shape
         self.default_batch_size = batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.default_traversal_paths = traversal_paths
         self.logger = JinaLogger(self.__class__.__name__)
 
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
