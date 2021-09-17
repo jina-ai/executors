@@ -15,7 +15,7 @@ _INPUT_DIM = 512
 _EMBEDDING_DIM = 2048
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def encoder() -> BigTransferEncoder:
     return BigTransferEncoder()
 
