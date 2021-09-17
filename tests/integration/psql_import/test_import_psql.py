@@ -262,7 +262,7 @@ def test_benchmark(tmpdir, docker_compose):
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_start_up(docker_compose):
     docs = list(get_batch_iterator(batches=10, batch_size=10, emb_size=7))
-    shards = 3
+    shards = 1
 
     with _flow(uses_after='MatchMerger', total_shards=shards, startup_args={}) as flow:
         flow.post(on='/index', inputs=docs)

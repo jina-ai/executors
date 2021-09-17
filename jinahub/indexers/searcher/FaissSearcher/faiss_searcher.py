@@ -628,6 +628,10 @@ class FaissSearcher(Executor):
         Adding the delta data to the indexer
         :param delta: a generator yielding (id, np.ndarray, last_updated)
         """
+        if delta is None:
+            self.logger.warning('No data received in Faiss._add_delta. Skipping...')
+            return
+
         for doc_id, vec_array, _ in delta:
             idx = self._doc_id_to_offset.get(doc_id)
             if idx is None:  # add new item

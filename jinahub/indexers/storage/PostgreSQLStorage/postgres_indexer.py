@@ -227,12 +227,16 @@ class PostgreSQLStorage(Executor):
         to this shard id, out of X total shards, based on the virtual
         shards allocated.
         """
-        shards_to_get = self._vshards_to_get(
-            shard_id, total_shards, self.virtual_shards
-        )
+        if self.snapshot_size > 0:
+            shards_to_get = self._vshards_to_get(
+                shard_id, total_shards, self.virtual_shards
+            )
 
-        with self.handler as postgres_handler:
-            return postgres_handler.get_snapshot(shards_to_get)
+            with self.handler as postgres_handler:
+                return postgres_handler.get_snapshot(shards_to_get)
+        else:
+            self.logger.warning('Not data in PSQL db snapshot. Nothing to export...')
+        return None
 
     @staticmethod
     def _vshards_to_get(shard_id, total_shards, virtual_shards):
@@ -260,12 +264,17 @@ class PostgreSQLStorage(Executor):
         """
         Get the rows that have changed since the last timestamp, per shard
         """
-        shards_to_get = self._vshards_to_get(
-            shard_id, total_shards, self.virtual_shards
-        )
+        if self.size > 0:
 
-        with self.handler as postgres_handler:
-            return postgres_handler._get_delta(shards_to_get, timestamp)
+            shards_to_get = self._vshards_to_get(
+                shard_id, total_shards, self.virtual_shards
+            )
+
+            with self.handler as postgres_handler:
+                return postgres_handler._get_delta(shards_to_get, timestamp)
+        else:
+            self.logger.warning('No data in PSQL to export with _get_delta...')
+        return None
 
     @property
     def last_snapshot_timestamp(self):

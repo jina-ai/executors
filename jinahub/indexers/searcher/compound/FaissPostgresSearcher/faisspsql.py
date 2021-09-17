@@ -47,6 +47,9 @@ class FaissPostgresSearcher(Executor):
                 'total_shards is None, rolling update '
                 'via PSQL import will not be possible.'
             )
+        else:
+            # shards is passed as str from Flow.add in yaml
+            self.total_shards = int(self.total_shards)
 
         # when constructed from rolling update
         # args are passed via runtime_args
