@@ -49,7 +49,7 @@ class SpacyTextEncoder(Executor):
             spacy.require_gpu()
         if download_data:
             subprocess.run(
-                ['python', '-m', 'spacy', 'download', model_name], check=True
+                ['python3', '-m', 'spacy', 'download', model_name], check=True
             )
         self.spacy_model = spacy.load(model_name, exclude=_EXCLUDE_COMPONENTS)
 
