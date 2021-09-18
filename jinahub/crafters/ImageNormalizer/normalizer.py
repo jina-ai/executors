@@ -22,7 +22,7 @@ class ImageNormalizer(Executor):
         channel_axis: int = -1,
         target_channel_axis: int = -1,
         target_dtype: Union[str, np.dtype] = np.float32,
-        default_traversal_paths: Tuple[str] = ('r',),
+        traversal_paths: Tuple[str] = ('r',),
         *args,
         **kwargs,
     ):
@@ -36,7 +36,7 @@ class ImageNormalizer(Executor):
         :param channel_axis: channel axis
         :param target_channel_axis: target channel axis
         :param target_dtype:  dtype which the image will be converted to
-        :param default_traversal_paths: default traversal paths
+        :param traversal_paths: default traversal paths
         """
         super().__init__(*args, **kwargs)
         self.target_size = target_size
@@ -46,7 +46,7 @@ class ImageNormalizer(Executor):
         self.channel_axis = channel_axis
         self.target_channel_axis = target_channel_axis
         self.logger = JinaLogger(getattr(self.metas, 'name', self.__class__.__name__))
-        self.default_traversal_paths = default_traversal_paths
+        self.traversal_paths = traversal_paths
 
         # when passed from yaml it is string
         if isinstance(target_dtype, str):
@@ -67,9 +67,7 @@ class ImageNormalizer(Executor):
         if docs is None:
             return
 
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
 
         filtered_docs = DocumentArray(
             list(

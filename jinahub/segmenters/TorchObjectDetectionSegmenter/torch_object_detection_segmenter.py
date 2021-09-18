@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional
 
 import numpy as np
 import torchvision.models.detection as detection_models
@@ -120,16 +120,15 @@ class TorchObjectDetectionSegmenter(Executor):
     def __init__(
         self,
         model_name: Optional[str] = None,
-        on_gpu: bool = False,
-        default_traversal_paths: Tuple = ('r',),
-        default_batch_size: int = 32,
         confidence_threshold: float = 0.0,
         label_name_map: Optional[Dict[int, str]] = None,
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
+        device: str = 'cpu',
         *args,
         **kwargs,
     ):
         """
-        :param on_gpu: set to True if using GPU
         :param model_name: the name of the model. Supported models include
             ``fasterrcnn_resnet50_fpn``, ``maskrcnn_resnet50_fpn`
         :param confidence_threshold: confidence value from which it
@@ -137,14 +136,21 @@ class TorchObjectDetectionSegmenter(Executor):
         :param label_name_map: A Dict mapping from label index to label name, by default will be
             COCO_INSTANCE_CATEGORY_NAMES
             TODO: Allow changing the backbone
+        :param traversal_paths: traverse path on docs, e.g. ['r'], ['c']
+        :param batch_size: Default batch size for encoding, used if the batch
+            size is not passed as a parameter with the request.
+        :param device: 'cpu' for using CPU or 'cuda' for using GPU
         """
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)
-        self.on_gpu = on_gpu
+        self.device = device
+        if self.device not in ('cpu', 'cuda'):
+            self.logger.error(f'unsupported device: {self.device}, set to default cpu')
+            self.device = 'cpu'
         self.model_name = model_name or 'fasterrcnn_resnet50_fpn'
         self._default_channel_axis = 0
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
         self.confidence_threshold = confidence_threshold
         self.label_name_map = (
             label_name_map or TorchObjectDetectionSegmenter.COCO_INSTANCE_CATEGORY_NAMES
@@ -153,7 +159,7 @@ class TorchObjectDetectionSegmenter(Executor):
             getattr(detection_models, self.model_name)(
                 pretrained=True, pretrained_backbone=True
             )
-            .to('cuda' if self.on_gpu else 'cpu')
+            .to(self.device)
             .eval()
         )
 
@@ -167,13 +173,19 @@ class TorchObjectDetectionSegmenter(Executor):
 
         _input = torch.from_numpy(np.stack(batch).astype('float32'))
 
-        if self.on_gpu:
+        if self.device == 'cuda':
             _input = _input.cuda()
 
         return self.model(_input)
 
     @requests
-    def segment(self, docs: DocumentArray, parameters: dict, *args, **kwargs):
+    def segment(
+        self,
+        docs: Optional[DocumentArray] = None,
+        parameters: dict = {},
+        *args,
+        **kwargs,
+    ):
         """
         Crop the input image array within DocumentArray.
         :param docs: docs containing the ndarrays of the images
@@ -185,10 +197,8 @@ class TorchObjectDetectionSegmenter(Executor):
             # traverse through a generator of batches of docs
             for docs_batch in get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='blob',
             ):
                 # the blob dimension of imgs/cars.jpg at this point is (2, 681, 1264, 3)
@@ -206,7 +216,7 @@ class TorchObjectDetectionSegmenter(Executor):
                     bboxes = predictions['boxes'].detach()
                     scores = predictions['scores'].detach()
                     labels = predictions['labels']
-                    if self.on_gpu:
+                    if self.device:
                         bboxes = bboxes.cpu()
                         scores = scores.cpu()
                         labels = labels.cpu()

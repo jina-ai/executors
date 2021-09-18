@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import re
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, List, Optional
 
 from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
@@ -23,7 +23,7 @@ class Sentencizer(Executor):
         max_sent_len: int = 512,
         punct_chars: Optional[List[str]] = None,
         uniform_weight: bool = True,
-        default_traversal_path: Optional[List[str]] = None,
+        traversal_paths: Iterable[str] = ('r',),
         *args,
         **kwargs
     ):
@@ -37,6 +37,7 @@ class Sentencizer(Executor):
             for example ['!', '.', '?'] will use '!', '.' and '?'
         :param uniform_weight: the definition of it should have
             uniform weight or should be calculated
+        :param traversal_paths: traverse path on docs, e.g. ['r'], ['c']
         """
         super().__init__(*args, **kwargs)
         self.min_sent_len = min_sent_len
@@ -44,7 +45,7 @@ class Sentencizer(Executor):
         self.punct_chars = punct_chars
         self.uniform_weight = uniform_weight
         self.logger = JinaLogger(self.__class__.__name__)
-        self.default_traversal_path = default_traversal_path or ['r']
+        self.traversal_paths = traversal_paths
         if not punct_chars:
             self.punct_chars = [
                 '!',
@@ -82,7 +83,9 @@ class Sentencizer(Executor):
         )
 
     @requests
-    def segment(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def segment(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """
         Split the text into sentences.
         :param docs: Documents that contain the text
@@ -90,7 +93,9 @@ class Sentencizer(Executor):
         :param kwargs: Additional keyword arguments
         :return: a list of chunk dicts with the split sentences
         """
-        traversal_path = parameters.get('traversal_paths', self.default_traversal_path)
+        if not docs:
+            return
+        traversal_path = parameters.get('traversal_paths', self.traversal_paths)
         flat_docs = docs.traverse_flat(traversal_path)
         for doc in flat_docs:
             text = doc.text
