@@ -32,7 +32,7 @@ def test_empty_documents(basic_encoder: LaserEncoder):
 
 
 @pytest.mark.gpu
-def test_gpu_encoding(docs_generator):
+def test_encoding_gpu():
     encoder = LaserEncoder(device='cuda')
     docs = DocumentArray((Document(text='random text')))
     encoder.encode(docs, {})
