@@ -1,3 +1,4 @@
 spacy[cuda112]==3.1.2
 torch==1.9.0
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.1.0/en_core_web_sm-3.1.0.tar.gz#egg=en_core_web_sm
