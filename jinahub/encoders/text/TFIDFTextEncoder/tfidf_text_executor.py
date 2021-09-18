@@ -16,15 +16,15 @@ class TFIDFTextEncoder(Executor):
     def __init__(
         self,
         path_vectorizer: Optional[str] = None,
-        default_batch_size: int = 2048,
-        default_traversal_paths: Tuple[str] = ('r',),
+        batch_size: int = 2048,
+        traversal_paths: Tuple[str] = ('r',),
         *args,
         **kwargs,
     ):
         """
         :param path_vectorizer: path of the pre-trained tfidf sklearn vectorizer
-        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
-        :param default_batch_size: fallback batch size in case there is not batch size sent in the request
+        :param traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param batch_size: fallback batch size in case there is not batch size sent in the request
         """
         super().__init__(*args, **kwargs)
         if path_vectorizer is None:
@@ -33,8 +33,8 @@ class TFIDFTextEncoder(Executor):
             )
 
         self.path_vectorizer = path_vectorizer
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
 
         if os.path.exists(self.path_vectorizer):
             self.tfidf_vectorizer = pickle.load(open(self.path_vectorizer, 'rb'))
@@ -44,7 +44,9 @@ class TFIDFTextEncoder(Executor):
             )
 
     @requests
-    def encode(self, docs: Optional[DocumentArray], parameters: dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+    ):
         """
         Generate the TF-IDF feature vector for all text documents.
 
@@ -58,10 +60,8 @@ class TFIDFTextEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='text',
             )
 

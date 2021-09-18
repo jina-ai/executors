@@ -24,8 +24,8 @@ class TextPaddleEncoder(Executor):
     def __init__(
         self,
         model_name: Optional[str] = 'ernie_tiny',
-        default_traversal_paths: Iterable[str] = ('r',),
-        default_batch_size: int = 32,
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
         *args,
         **kwargs,
@@ -39,21 +39,24 @@ class TextPaddleEncoder(Executor):
             ``chinese-bert-wwm-ext``, ``chinese-electra-base``,
             ``chinese-electra-small``, ``chinese-roberta-wwm-ext``,
             ``chinese-roberta-wwm-ext-large``, ``rbt3``, ``rbtl3``
-        :param default_batch_size: fallback batch size in case there is not batch size sent in the request
-        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param batch_size: fallback batch size in case there is not batch size sent in the request
         :param device: Device to be used. Use 'gpu' for GPU or use 'cpu' for CPU.
         """
         super().__init__(*args, **kwargs)
         self.device = device
         self.model = hub.Module(name=model_name)
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
 
     @requests
-    def encode(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """Encode doc content into vector representation.
 
-        :param docs: `DocumentArray` passed from the previous ``Executor``.
+        :param docs: documents sent to the encoder. The docs must have the
+            ``text`` attribute.
         :param parameters: dictionary to define the `traversal_paths` and the `batch_size`. For example,
             `parameters={'traversal_paths': ['r'], 'batch_size': 10}`.
         :param kwargs: Additional key value arguments.
@@ -61,10 +64,8 @@ class TextPaddleEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='text',
             )
             for batch_of_docs in document_batches_generator:
