@@ -5,7 +5,6 @@ import subprocess
 from typing import Dict, Iterable, Optional
 
 import spacy
-from cupy import asnumpy
 from jina import DocumentArray, Executor, requests
 from jina_commons.batching import get_docs_batch_generator
 
@@ -64,6 +63,8 @@ class SpacyTextEncoder(Executor):
             ``batch_size``. For example,
             ``parameters={'traversal_paths': ['r'], 'batch_size': 10}``
         """
+        if self.device.startswith('cuda'):
+            from cupy import asnumpy
         if docs:
             batch_size = parameters.get('batch_size', self.default_batch_size)
             document_batches_generator = get_docs_batch_generator(
