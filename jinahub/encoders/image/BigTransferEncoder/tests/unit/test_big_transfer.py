@@ -16,7 +16,7 @@ _INPUT_DIM = 512
 _EMBEDDING_DIM = 2048
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def encoder() -> BigTransferEncoder:
     yield BigTransferEncoder()
     shutil.rmtree('pretrained', ignore_errors=True)
