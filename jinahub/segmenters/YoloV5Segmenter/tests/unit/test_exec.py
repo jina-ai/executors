@@ -68,7 +68,7 @@ def test_confidence_threshold(build_da, confidence_threshold, expected_detection
     da = build_da()
     segmenter = YoloV5Segmenter(
         model_name_or_path=os.path.join(cur_dir, '../data/models/yolov5m.pt'),
-        default_confidence_threshold=confidence_threshold,
+        confidence_threshold=confidence_threshold,
     )
     segmenter.segment(da, parameters={})
     for doc in da:

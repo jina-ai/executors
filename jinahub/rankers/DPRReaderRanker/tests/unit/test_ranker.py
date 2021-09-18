@@ -44,8 +44,8 @@ def example_docs(request) -> DocumentArray:
 
 def test_config():
     encoder = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert encoder.default_batch_size == 32
-    assert encoder.default_traversal_paths == ('r',)
+    assert encoder.batch_size == 32
+    assert encoder.traversal_paths == ('r',)
     assert encoder.title_tag_key is None
     assert encoder.num_spans_per_match == 2
 

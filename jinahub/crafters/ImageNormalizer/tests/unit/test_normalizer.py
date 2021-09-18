@@ -83,7 +83,7 @@ def test_convert_image_to_blob(
 
 @pytest.mark.parametrize('dtype_conversion', [np.uint8, np.float32, np.float64])
 @pytest.mark.parametrize('manual_convert', [True, False])
-@pytest.mark.parametrize('default_traversal_paths', [(('r'),), (('c'),)])
+@pytest.mark.parametrize('traversal_paths', [(('r'),), (('c'),)])
 def test_crafting_image(
     test_image_uri_doc, manual_convert, dtype_conversion, default_traversal_paths
 ):

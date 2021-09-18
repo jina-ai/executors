@@ -5,7 +5,7 @@ import pytest
 from simpleranker import SimpleRanker
 
 
-@pytest.mark.parametrize('default_traversal_paths', [['r'], ['c']])
+@pytest.mark.parametrize('traversal_paths', [['r'], ['c']])
 @pytest.mark.parametrize('ranking', ['min', 'max'])
 def test_ranking(
     documents_chunk, documents_chunk_chunk, default_traversal_paths, ranking
