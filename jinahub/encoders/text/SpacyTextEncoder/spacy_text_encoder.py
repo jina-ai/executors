@@ -43,6 +43,7 @@ class SpacyTextEncoder(Executor):
 
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
+        self.device = device
         if device.startswith('cuda'):
             spacy.require_gpu()
         if download_data:
