@@ -166,7 +166,7 @@ def test_image_results(test_images: Dict[str, np.array]):
 
 
 @pytest.mark.gpu
-def test_image_results_gpu(test_images: Dict[str, np.array]):
+def test_image_results_gpu():
     num_doc = 2
     test_data = np.random.rand(num_doc, _INPUT_DIM, _INPUT_DIM, 3)
     doc = DocumentArray()

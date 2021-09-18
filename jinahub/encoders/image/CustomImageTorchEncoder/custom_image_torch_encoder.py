@@ -4,7 +4,7 @@ __license__ = "Apache-2.0"
 import importlib
 import os
 import types
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Iterable, Optional
 
 import numpy as np
 import torch
@@ -32,9 +32,9 @@ class CustomImageTorchEncoder(Executor):
         model_definition_file: Optional[str] = None,
         model_class_name: Optional[str] = None,
         layer_name: Optional[str] = 'features',
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
-        default_batch_size: int = 32,
-        default_traversal_paths: Tuple = ('r',),
         *args,
         **kwargs,
     ):
@@ -46,18 +46,18 @@ class CustomImageTorchEncoder(Executor):
         :param layer_name: The layer name from which to extract the feature maps.
             These feature maps will then be fed into an `AdaptiveAvgPool2d` layer
         to extract the embeddings
-        :param device: The device where to load the model.
-        :param default_batch_size: fallback batch size in case there is not batch size
-            sent in the request
-        :param default_traversal_paths: fallback traversal path in case there is no
+        :param traversal_paths: fallback traversal path in case there is no
             traversal path sent in the request
+        :param batch_size: fallback batch size in case there is not batch size
+            sent in the request
+        :param device: The device where to load the model.
         """
         super().__init__(*args, **kwargs)
         self.layer_name = layer_name
         self.logger = JinaLogger(self.__class__.__name__)
         self.device = device
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
         self.model_state_dict_path = model_state_dict_path
         self.model_definition_file = model_definition_file
         self.model_class_name = model_class_name
@@ -100,7 +100,9 @@ class CustomImageTorchEncoder(Executor):
         return feature_map
 
     @requests
-    def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """
         Encode all docs with images and store the encodings in the embedding attribute
         of the docs.
@@ -114,10 +116,8 @@ class CustomImageTorchEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='blob',
             )
             self._create_embeddings(document_batches_generator)

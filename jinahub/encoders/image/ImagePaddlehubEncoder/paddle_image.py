@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Iterable, Tuple
+from typing import Iterable, Optional, Tuple
 
 import numpy as np
 from jina import DocumentArray, Executor, requests
@@ -22,8 +22,8 @@ class ImagePaddlehubEncoder(Executor):
         model_name: str = 'xception71_imagenet',
         pool_strategy: str = 'mean',
         channel_axis: int = -3,
-        default_batch_size: int = 32,
-        default_traversal_paths: Tuple[str] = ('r',),
+        traversal_paths: Tuple[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
         *args,
         **kwargs,
@@ -50,8 +50,8 @@ class ImagePaddlehubEncoder(Executor):
             ``densenet121_imagenet``, ``darknet53_imagenet``, ``alexnet_imagenet``,
         :param pool_strategy: the pooling strategy. Default is `None`.
         :param channel_axis: The axis of the color channel, default is -3
-        :param default_batch_size: size of each batch
-        :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param batch_size: size of each batch
         :param device: Device to run the model on (e.g. 'cpu'/'cuda'/'cuda:2')
         """
         super().__init__(*args, **kwargs)
@@ -61,8 +61,8 @@ class ImagePaddlehubEncoder(Executor):
         self._default_channel_axis = -3
         self.inputs_name = None
         self.outputs_name = None
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
 
         import paddle
         import paddlehub as hub
@@ -84,23 +84,23 @@ class ImagePaddlehubEncoder(Executor):
         self.exe = fluid.Executor(self.device)
 
     @requests
-    def encode(self, docs: DocumentArray, parameters: dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+    ):
         """
         Encode all docs with images and store the encodings in the embedding attribute of the docs.
 
-        :param docs: documents sent to the encoder. The docs must have `blob` with a shape and content as expected by
-                     the pretrained loaded model
-        :param parameters: dictionary to define the `traversal_paths` and the `batch_size`. For example,
-        `parameters={'traversal_paths': ['r'], 'batch_size': 10}` will override the `self.default_traversal_paths` and
-        `self.default_batch_size`.
+        :param docs: documents sent to the encoder. The docs must have `blob` with a shape and
+            content as expected by the pretrained loaded model
+        :param parameters: dictionary to define the `traversal_paths` and the `batch_size`.
+            For example, `parameters={'traversal_paths': ['r'], 'batch_size': 10}` will
+            override the `self.traversal_paths` and `self.batch_size`.
         """
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='blob',
             )
             self._create_embeddings(document_batches_generator)
