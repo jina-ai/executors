@@ -1,38 +1,12 @@
-# Big Transfer Image Encoder
+# BigTransferEncoder
 
-**Big Transfer Image Encoder** is a class that uses the Big Transfer models presented by Google [here]((https://github.com/google-research/big_transfer)).
-It uses a pretrained version of a BiT model to encode an image from an array of shape 
-(Batch x (Channel x Height x Width)) into an array of shape (Batch x Encoding) 
+``BigTransferEncoder`` uses the Big Transfer models presented by Google [here]((https://github.com/google-research/big_transfer)).
+Use the prebuilt images from JinaHub in your Python code,
 
+```python
+from jina import Flow
 
-#### GPU usage
-
-You can use the GPU via the source code. Therefore, you need a matching CUDA version
-and GPU drivers installed on your system. 
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub://BigTransferEncoder'
-    uses_with:
-      device: '/GPU:0'
+f = Flow().add(uses='jinahub+docker://BigTransferEncoder')
 ```
 
-Alternatively, use the GPU docker container. Therefore, you need GPU
-drivers installed on your system and nvidia-docker installed.
-
-```yaml
-jtype: Flow
-pods:
-  - name: encoder
-    uses: 'jinahub+docker://BigTransferEncoder/gpu'
-    gpus: all
-    uses_with:
-      device: '/GPU:0'
-```
-
-
-## Reference
-- https://github.com/google-research/big_transfer
-- https://tfhub.dev/google/collections/bit/1
+For more information, such as run executor on gpu, check out [documentation](https://docs.jina.ai/tutorials/gpu-executor/).

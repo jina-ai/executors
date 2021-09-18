@@ -12,7 +12,7 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 def data_generator(num_docs):
     for i in range(num_docs):
-        doc = Document(uri=os.path.join(cur_dir, '..', 'test_data', 'test_image.png'))
+        doc = Document(uri=os.path.join(cur_dir, '..', 'imgs', 'cat.jpg'))
         doc.convert_image_uri_to_blob()
         img = Image.fromarray(doc.blob.astype('uint8'))
         img = img.resize((96, 96))

@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Optional, Sequence, Tuple
 
 import numpy as np
 import tensorflow as tf
@@ -34,8 +34,8 @@ class BigTransferEncoder(Executor):
         model_name: Optional[str] = 'Imagenet21k/R50x1',
         device: str = '/CPU:0',
         target_dim: Optional[Tuple[int, int, int]] = None,
-        default_traversal_paths: Iterable[str] = ('r',),
-        default_batch_size: int = 32,
+        traversal_paths: Sequence[str] = ('r',),
+        batch_size: int = 32,
         *args,
         **kwargs,
     ):
@@ -64,8 +64,8 @@ class BigTransferEncoder(Executor):
         :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
         :param target_dim: preprocess the data image into shape of `target_dim`,
             (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
-        :param default_traversal_paths: Traversal path through the docs
-        :param default_batch_size: Batch size to be used in the encoder model
+        :param traversal_paths: Traversal path through the docs
+        :param batch_size: Batch size to be used in the encoder model
         """
         super().__init__(*args, **kwargs)
         self.model_path = model_path
@@ -73,8 +73,8 @@ class BigTransferEncoder(Executor):
         self.device = device
         self.target_dim = target_dim
         self.logger = JinaLogger(self.__class__.__name__)
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.default_batch_size = batch_size
+        self.default_traversal_paths = traversal_paths
 
         if not os.path.exists(self.model_path):
             self.download_model()
