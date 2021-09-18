@@ -28,20 +28,22 @@ class VggishAudioEncoder(Executor):
     def __init__(
         self,
         model_path: str = Path(cur_dir) / 'models',
-        default_traversal_paths: Optional[Iterable[str]] = None,
+        traversal_paths: Optional[Iterable[str]] = None,
         device: str = '/CPU:0',
         *args,
         **kwargs,
     ):
         """
-        :param model_path: path of the models directory
-        :param default_traversal_paths: fallback batch size in case there is not
+        :param model_path: path of the models directory. The directory should contain
+            'vggish_model.ckpt' and 'vggish_pca_params.ckpt'. Setting this to a new directory
+            will download the files.
+        :param traversal_paths: fallback batch size in case there is not
             batch size sent in the request
         :param device: device to run the model on e.g. '/CPU:0','/GPU:0','/GPU:2'
         """
 
         super().__init__(*args, **kwargs)
-        self.default_traversal_paths = default_traversal_paths or ['r']
+        self.traversal_paths = traversal_paths or ['r']
         self.logger = JinaLogger(self.__class__.__name__)
         self.device = device
         self.model_path = Path(model_path)
@@ -131,9 +133,7 @@ class VggishAudioEncoder(Executor):
     def _get_input_data(self, docs: DocumentArray, parameters: dict):
         """Create a filtered set of Documents to iterate over."""
 
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
 
         # traverse thought all documents which have to be processed
         flat_docs = docs.traverse_flat(traversal_paths)

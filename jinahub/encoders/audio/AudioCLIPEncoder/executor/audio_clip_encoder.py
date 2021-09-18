@@ -22,14 +22,14 @@ class AudioCLIPEncoder(Executor):
     def __init__(
         self,
         model_path: str = 'assets/AudioCLIP-Full-Training.pt',
-        default_traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: Iterable[str] = ('r',),
         device: str = 'cpu',
         *args,
         **kwargs
     ):
         """
         :param model_path: path of the pre-trained AudioCLIP model
-        :param default_traversal_paths: default traversal path
+        :param traversal_paths: default traversal path
         :param device: Torch device string (e.g. 'cpu', 'cuda', 'cuda:2')
         """
 
@@ -37,12 +37,27 @@ class AudioCLIPEncoder(Executor):
         torch.set_grad_enabled(False)
         self.model_path = model_path
         self.aclp = AudioCLIP(pretrained=model_path).to(device).eval()
-        self.default_traversal_paths = default_traversal_paths
+        self.traversal_paths = traversal_paths
 
     @requests
     def encode(
-        self, docs: Optional[DocumentArray], parameters: dict, *args, **kwargs
+        self,
+        docs: Optional[DocumentArray] = None,
+        parameters: dict = {},
+        *args,
+        **kwargs
     ) -> Any:
+        """
+        Encode all Documents with audio data (stored in the ``blob`` attribute) and store the
+        embeddings in the ``embedding`` attribute of the Documents.
+
+        :param docs: a `DocumentArray` contains `Document`s with `blob` of the size (n,) or (2, n).
+            The `blob` contains audio time-series data. Additionally,
+            `tags` of each `Document` must contain `sample_rate` field,
+            which has the sample rate of the audio data. The `sample_rate` must be a positive
+            scalar value.
+        :param parameters: dictionary to defines the `traversal_paths`.
+        """
 
         if docs:
             cleaned_document_array = self._get_input_data(docs, parameters)
@@ -51,9 +66,7 @@ class AudioCLIPEncoder(Executor):
     def _get_input_data(self, docs: DocumentArray, parameters: dict):
         """Create a filtered set of Documents to iterate over."""
 
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
 
         # traverse thought all documents which have to be processed
         flat_docs = docs.traverse_flat(traversal_paths)

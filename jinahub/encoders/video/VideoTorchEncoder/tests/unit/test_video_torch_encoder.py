@@ -14,13 +14,13 @@ from video_torch_encoder import ConvertFCHWtoCFHW, ConvertFHWCtoFCHW, VideoTorch
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.default_batch_size == 32
+    assert ex.batch_size == 32
 
 
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
 def test_video_torch_encoder(model_name):
     ex = VideoTorchEncoder(
-        model_name=model_name, use_default_preprocessing=False, download_progress=False
+        model_name=model_name, use_preprocessing=False, download_progress=False
     )
     da = DocumentArray(
         [Document(blob=np.random.random((3, 2, 224, 224))) for _ in range(10)]
@@ -33,7 +33,7 @@ def test_video_torch_encoder(model_name):
 
 @pytest.mark.parametrize('batch_size', [1, 3, 10])
 def test_video_torch_encoder_traversal_paths(batch_size):
-    ex = VideoTorchEncoder(use_default_preprocessing=False, download_progress=False)
+    ex = VideoTorchEncoder(use_preprocessing=False, download_progress=False)
 
     def _create_doc_with_video_chunks():
         d = Document(blob=np.random.random((3, 2, 112, 112)))
@@ -51,9 +51,9 @@ def test_video_torch_encoder_traversal_paths(batch_size):
 
 
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-def test_video_torch_encoder_use_default_preprocessing(model_name):
+def test_video_torch_encoder_use_preprocessing(model_name):
     ex = VideoTorchEncoder(
-        model_name=model_name, use_default_preprocessing=True, download_progress=False
+        model_name=model_name, use_preprocessing=True, download_progress=False
     )
     da = DocumentArray(
         [Document(blob=np.random.random((10, 270, 480, 3))) for _ in range(10)]
@@ -81,7 +81,7 @@ def test_with_dataset_video(model_name, kinects_videos):
     )
 
     ex = VideoTorchEncoder(
-        use_default_preprocessing=True,
+        use_preprocessing=True,
         model_name=model_name,
         download_progress=False,
     )
@@ -128,10 +128,10 @@ def test_with_dataset_video(model_name, kinects_videos):
 
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
 @pytest.mark.gpu
-def test_video_torch_encoder_use_default_preprocessing_gpu(model_name):
+def test_video_torch_encoder_use_preprocessing_gpu(model_name):
     ex = VideoTorchEncoder(
         model_name=model_name,
-        use_default_preprocessing=True,
+        use_preprocessing=True,
         device='cuda',
         download_progress=False,
     )
