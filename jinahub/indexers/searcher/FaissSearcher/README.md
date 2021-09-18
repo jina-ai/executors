@@ -9,39 +9,11 @@ Vector searcher is meant to be used together with a **Storage**.
 To understand Jina's storage-search workflow,
 please read the documentation [here](https://docs.jina.ai/advanced/experimental/indexers/).
 
-[Faiss](https://github.com/facebookresearch/faiss) is a library for efficient similarity search and clustering of dense vectors.
-It contains algorithms that search in sets of vectors of any size, up to ones that possibly do not fit in RAM.
-It also contains supporting code for evaluation and parameter tuning.
-Faiss is written in C++ with complete wrappers for Python/numpy.
-Some of the most useful algorithms are implemented on the GPU.
-It is developed by Facebook AI Research.
+[Faiss](https://github.com/facebookresearch/faiss) is a library for efficient similarity 
+search and clustering of dense vectors.
 
 
 ## Usage
-
-### Loading data
-
-Since this is a "Searcher"-type Executor, it does not _index_ new data.
-Rather they are write-once classes, which take as data source a `dump_path`. 
-Then we can perform search operations on the loaded data.
-
-#### Loading data with Flow
-
-
-```python
-import numpy as np
-from jina import Flow, Document
-
-f = Flow().add(uses='jinahub+docker://FaissSearcher', uses_with={'dump_path': '/tmp/your_dump_location'})
-
-with f:
-    resp = f.post(on='/search', inputs=Document(embedding=np.array([1,2,3])), return_results=True)
-    print(resp)
-```
-
-#### Loading data with `rolling_update`
-
-To load data from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/advanced/experimental/indexers/#dump-and-rolling-update).
 
 ### Training
 
@@ -85,6 +57,15 @@ f = Flow().add(
     },
 )
 ```
+
+### Loading data
+
+Since this is a "Searcher"-type Executor, it does not _index_ new data.
+Rather they are write-once classes, which take as data source a `dump_path`.
+Then we can perform search operations on the loaded data.
+Check out the 
+[documentation](https://docs.jina.ai/advanced/experimental/indexers/#indexing-vs-searching-operations) 
+for more details
 
 ## Reference
 
