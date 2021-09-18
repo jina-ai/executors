@@ -5,8 +5,8 @@ import subprocess
 from typing import Dict, Iterable, Optional
 
 import spacy
+from cupy import asnumpy
 from jina import DocumentArray, Executor, requests
-from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
 
 _EXCLUDE_COMPONENTS = [
@@ -44,7 +44,6 @@ class SpacyTextEncoder(Executor):
 
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
-        self.logger = JinaLogger(self.__class__.__name__)
         if device.startswith('cuda'):
             spacy.require_gpu()
         if download_data:
@@ -80,4 +79,7 @@ class SpacyTextEncoder(Executor):
                 for doc, spacy_doc in zip(
                     document_batch, self.spacy_model.pipe(texts, batch_size=batch_size)
                 ):
-                    doc.embedding = spacy_doc.vector
+                    if self.device.startswith('cuda'):
+                        doc.embedding = asnumpy(spacy_doc.vector)
+                    else:
+                        doc.embedding = spacy_doc.vector
