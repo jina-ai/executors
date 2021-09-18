@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from typing import Tuple
 
@@ -17,7 +18,8 @@ _EMBEDDING_DIM = 2048
 
 @pytest.fixture(scope="function")
 def encoder() -> BigTransferEncoder:
-    return BigTransferEncoder()
+    yield BigTransferEncoder()
+    shutil.rmtree('pretrained', ignore_errors=True)
 
 
 @pytest.fixture(scope="function")
