@@ -27,22 +27,22 @@ class SpacyTextEncoder(Executor):
         self,
         model_name: str = 'en_core_web_sm',
         download_data: bool = True,
-        default_batch_size: int = 32,
-        default_traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
         *args,
         **kwargs,
     ):
         """
         :param model_name: pre-trained spaCy language pipeline name
-        :param default_batch_size: fallback batch size in case there is not batch size sent in the request
-        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
-        :param device: device to use for encoding ['cuda', 'cpu', 'cuda:2']
+        :param traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param batch_size: fallback batch size in case there is not batch size sent in the request
+        :param device: device to use for encoding.  ['cuda', 'cpu', 'cuda:2']
         """
         super().__init__(*args, **kwargs)
 
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
         self.device = device
         if device.startswith('cuda'):
             spacy.require_gpu()
@@ -53,7 +53,9 @@ class SpacyTextEncoder(Executor):
         self.spacy_model = spacy.load(model_name, exclude=_EXCLUDE_COMPONENTS)
 
     @requests
-    def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """
         Encode all docs with text and store the encodings in the embedding
         attribute of the docs.
@@ -67,12 +69,10 @@ class SpacyTextEncoder(Executor):
         if self.device.startswith('cuda'):
             from cupy import asnumpy
         if docs:
-            batch_size = parameters.get('batch_size', self.default_batch_size)
+            batch_size = parameters.get('batch_size', self.batch_size)
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
                 batch_size=batch_size,
                 needs_attr='text',
             )

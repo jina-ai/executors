@@ -18,7 +18,7 @@ def basic_encoder() -> LaserEncoder:
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.default_language == 'en'
+    assert ex.language == 'en'
 
 
 def test_no_document(basic_encoder: LaserEncoder):

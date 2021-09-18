@@ -17,25 +17,27 @@ class TransformerSentenceEncoder(Executor):
     def __init__(
         self,
         model_name: str = 'all-MiniLM-L6-v2',
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
-        default_traversal_paths: Iterable[str] = ('r',),
-        default_batch_size: int = 32,
         *args,
         **kwargs
     ):
         """
         :param model_name: The name of the sentence transformer to be used
         :param device: Torch device to put the model on (e.g. 'cpu', 'cuda', 'cuda:1')
-        :param default_traversal_paths: Default traversal paths
-        :param default_batch_size: Batch size to be used in the encoder model
+        :param traversal_paths: Default traversal paths
+        :param batch_size: Batch size to be used in the encoder model
         """
         super().__init__(*args, **kwargs)
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
         self.model = SentenceTransformer(model_name, device=device)
 
     @requests
-    def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """
         Encode all docs with text and store the encodings in the ``embedding`` attribute
         of the docs.
@@ -46,10 +48,8 @@ class TransformerSentenceEncoder(Executor):
         """
         for batch in get_docs_batch_generator(
             docs,
-            traversal_path=parameters.get(
-                'traversal_paths', self.default_traversal_paths
-            ),
-            batch_size=parameters.get('batch_size', self.default_batch_size),
+            traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+            batch_size=parameters.get('batch_size', self.batch_size),
             needs_attr='text',
         ):
             texts = batch.get_attributes('text')

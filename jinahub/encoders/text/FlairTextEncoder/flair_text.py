@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Optional, Sequence
+from typing import Iterable, Optional, Sequence
 
 import flair
 import torch
@@ -33,9 +33,9 @@ class FlairTextEncoder(Executor):
         self,
         embeddings: Sequence[str] = ('word:glove',),
         pooling_strategy: str = 'mean',
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
-        default_batch_size: int = 32,
-        default_traversal_paths: Sequence[str] = ('r',),
         *args,
         **kwargs,
     ):
@@ -49,13 +49,13 @@ class FlairTextEncoder(Executor):
             https://github.com/flairNLP/flair/blob/master/resources/docs/embeddings/BYTE_PAIR_EMBEDDINGS.md
 
             Example: ``('word:glove', 'flair:news-forward', 'flair:news-backward')``
-        :param default_batch_size: Default batch size, used if ``batch_size`` is not
-            provided as a parameter in the request
-        :param default_traversal_paths: Default traversal paths, used if ``traversal_paths``
-            are not provided as a parameter in the request.
-        :param device: The device (cpu or gpu) that the model should be on.
         :param pooling_strategy: the strategy to merge the word embeddings into the sentence
             embedding. Supported strategies are ``'mean'``, ``'min'`` and ``'max'``.
+        :param traversal_paths: Default traversal paths, used if ``traversal_paths``
+            are not provided as a parameter in the request.
+        :param batch_size: Default batch size, used if ``batch_size`` is not
+            provided as a parameter in the request
+        :param device: The device (cpu or gpu) that the model should be on.
         """
         super().__init__(*args, **kwargs)
 
@@ -71,8 +71,8 @@ class FlairTextEncoder(Executor):
             )
 
         self.pooling_strategy = pooling_strategy
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
         self.device = torch.device(device)
 
         flair.device = self.device
@@ -99,11 +99,13 @@ class FlairTextEncoder(Executor):
         )
 
     @requests
-    def encode(self, docs: Optional[DocumentArray], parameters: dict, *args, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+    ):
         """
         Encode text data into a ndarray of `D` as dimension, and fill the embedding of each Document.
 
-        :param docs: documents sent to the encoder. The docs must have text.
+        :param docs: documents sent to the encoder. The docs must have `text`.
         :param parameters: dictionary to define the `traversal_path` and the `batch_size`.
             For example,
             `parameters={'traversal_paths': ['r'], 'batch_size': 10}`
@@ -112,10 +114,8 @@ class FlairTextEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='text',
             )
 

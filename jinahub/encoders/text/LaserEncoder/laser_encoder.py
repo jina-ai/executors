@@ -29,9 +29,9 @@ class LaserEncoder(Executor):
         path_to_bpe_vocab: Optional[str] = None,
         path_to_encoder: Optional[str] = None,
         download_data: bool = True,
-        default_language: str = 'en',
-        default_batch_size: int = 32,
-        default_traversal_paths: Iterable[str] = ('r',),
+        language: str = 'en',
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
         *args,
         **kwargs,
@@ -47,13 +47,13 @@ class LaserEncoder(Executor):
             convenient when just trying out the encoder, but should be turned off in a
             production setting (where you should already have the data on disk), as it can
             lead to large startup times.
-        :param default_language: The default language of the text. Can be overriden by a
+        :param language: The default language of the text. Can be overriden by a
             request parameter. The full list of possible values can be found at
             [LASER](https://github.com/facebookresearch/LASER#supported-languages)
             with the language code
             ([ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
-        :param default_batch_size: size of each batch
-        :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param batch_size: size of each batch
         :param device: Device string ('cpu'/'cuda'/'cuda:2')
         """
         super().__init__(*args, **kwargs)
@@ -63,9 +63,9 @@ class LaserEncoder(Executor):
         self._path_to_bpe_vocab = path_to_bpe_vocab
         self._path_to_encoder = path_to_encoder
         self.device = device
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
-        self.default_language = default_language
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
+        self.language = language
 
         if download_data:
             self.logger.info("Downloading data for the Laser model")
@@ -83,7 +83,9 @@ class LaserEncoder(Executor):
         self.model.bpeSentenceEmbedding.encoder.encoder.to(self.device)
 
     @requests
-    def encode(self, docs: Optional[DocumentArray], parameters: dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+    ):
         """
         Encode all docs with text and store the encodings in the embedding attribute
         of the docs.
@@ -98,17 +100,15 @@ class LaserEncoder(Executor):
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='text',
             )
 
             for document_batch in document_batches_generator:
                 text_batch = [d.text for d in document_batch]
 
-                language = parameters.get('language', self.default_language)
+                language = parameters.get('language', self.language)
                 embeddings = self.model.embed_sentences(text_batch, lang=language)
                 for document, embedding in zip(document_batch, embeddings):
                     document.embedding = embedding
