@@ -19,17 +19,17 @@ class AudioCLIPTextEncoder(Executor):
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
         tokenizer_path: str = '.cache/bpe_simple_vocab_16e6.txt.gz',
-        default_traversal_paths: Iterable[str] = ('r',),
-        default_batch_size: int = 32,
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
         *args,
         **kwargs
     ):
         """
         :param model_path: path to the pre-trained AudioCLIP model.
-        :param default_traversal_paths: default traversal path (used if not specified in
+        :param traversal_paths: default traversal path (used if not specified in
             request's parameters)
-        :param default_batch_size: default batch size (used if not specified in
+        :param batch_size: default batch size (used if not specified in
             request's parameters)
         :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
             where X is the index of the GPU on the machine)
@@ -43,15 +43,19 @@ class AudioCLIPTextEncoder(Executor):
             .to(device)
             .eval()
         )
-        self.default_traversal_paths = default_traversal_paths
-        self.default_batch_size = default_batch_size
+        self.traversal_paths = traversal_paths
+        self.batch_size = batch_size
 
     @requests
     def encode(
-        self, docs: Optional[DocumentArray], parameters: dict, *args, **kwargs
+        self,
+        docs: Optional[DocumentArray] = None,
+        parameters: dict = {},
+        *args,
+        **kwargs
     ) -> None:
         """
-        Method to create embedddings for documents by encoding their text.
+        Method to create embeddings for documents by encoding their text.
 
         :param docs: A document array with documents to create embeddings for. Only the
             documents that have the ``text`` attribute will get embeddings.
@@ -59,13 +63,13 @@ class AudioCLIPTextEncoder(Executor):
             The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
             absence their corresponding default values are used.
         """
+        if not docs:
+            return
 
         batch_generator = get_docs_batch_generator(
             docs,
-            traversal_path=parameters.get(
-                'traversal_paths', self.default_traversal_paths
-            ),
-            batch_size=parameters.get('batch_size', self.default_batch_size),
+            traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+            batch_size=parameters.get('batch_size', self.batch_size),
             needs_attr='text',
         )
 

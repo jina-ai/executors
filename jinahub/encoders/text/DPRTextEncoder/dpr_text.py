@@ -29,8 +29,8 @@ class DPRTextEncoder(Executor):
         base_tokenizer_model: Optional[str] = None,
         title_tag_key: Optional[str] = None,
         max_length: Optional[int] = None,
-        default_batch_size: int = 32,
-        default_traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
         *args,
         **kwargs,
@@ -50,10 +50,10 @@ class DPRTextEncoder(Executor):
             tag property. It is recommended to set this property for context encoders,
             to match the model pre-training. It has no effect for question encoders.
         :param max_length: Max length argument for the tokenizer
-        :param default_batch_size: Default batch size for encoding, used if the
-            batch size is not passed as a parameter with the request.
-        :param default_traversal_paths: Default traversal paths for encoding, used if the
+        :param traversal_paths: Default traversal paths for encoding, used if the
             traversal path is not passed as a parameter with the request.
+        :param batch_size: Default batch size for encoding, used if the
+            batch size is not passed as a parameter with the request.
         :param device: The device (cpu or gpu) that the model should be on.
         """
         super().__init__(*args, **kwargs)
@@ -95,11 +95,13 @@ class DPRTextEncoder(Executor):
 
         self.model = self.model.to(self.device).eval()
 
-        self.default_traversal_paths = default_traversal_paths
-        self.default_batch_size = default_batch_size
+        self.default_traversal_paths = traversal_paths
+        self.default_batch_size = batch_size
 
     @requests
-    def encode(self, docs: Optional[DocumentArray], parameters: dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+    ):
         """
         Encode all docs with text and store the encodings in the embedding
         attribute of the docs.

@@ -30,7 +30,7 @@ def test_config():
             ),
         },
     )
-    assert ex.default_batch_size == 32
+    assert ex.batch_size == 32
 
 
 def test_no_document(basic_encoder: AudioCLIPTextEncoder):

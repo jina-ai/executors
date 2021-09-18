@@ -15,7 +15,7 @@ def basic_encoder() -> FlairTextEncoder:
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.default_batch_size == 32
+    assert ex.batch_size == 32
 
 
 def test_no_document(basic_encoder: FlairTextEncoder):
