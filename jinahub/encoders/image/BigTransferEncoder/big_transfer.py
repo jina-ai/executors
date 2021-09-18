@@ -32,10 +32,10 @@ class BigTransferEncoder(Executor):
         self,
         model_path: Optional[str] = 'pretrained',
         model_name: Optional[str] = 'Imagenet21k/R50x1',
-        device: str = '/CPU:0',
         target_dim: Optional[Tuple[int, int, int]] = None,
         traversal_paths: Sequence[str] = ('r',),
         batch_size: int = 32,
+        device: str = '/CPU:0',
         *args,
         **kwargs,
     ):
@@ -61,11 +61,11 @@ class BigTransferEncoder(Executor):
             └── variables
                 ├── variables.data-00000-of-00001
                 └── variables.index
-        :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
         :param target_dim: preprocess the data image into shape of `target_dim`,
             (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
         :param traversal_paths: Traversal path through the docs
         :param batch_size: Batch size to be used in the encoder model
+        :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
         """
         super().__init__(*args, **kwargs)
         self.model_path = model_path
@@ -135,7 +135,9 @@ class BigTransferEncoder(Executor):
         self.logger.info(f'Completed download of {self.model_name} BiT model')
 
     @requests
-    def encode(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """
         Encode data into a ndarray of `B x D`.
         Where `B` is the batch size and `D` is the Dimension.
@@ -143,6 +145,8 @@ class BigTransferEncoder(Executor):
         :param docs: DocumentArray containing image data as an array
         :param parameters: parameters dictionary
         """
+        if not docs:
+            return
         docs_batch_generator = get_docs_batch_generator(
             docs,
             traversal_path=parameters.get(

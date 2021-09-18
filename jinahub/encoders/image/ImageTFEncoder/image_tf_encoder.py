@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Dict, Iterable, Sequence
+from typing import Dict, Iterable, Optional
 
 import numpy as np
 import tensorflow as tf
@@ -27,8 +27,8 @@ class ImageTFEncoder(Executor):
         model_name: str = 'MobileNetV2',
         img_shape: int = 336,
         pool_strategy: str = 'max',
+        traversal_paths: Iterable[str] = ('r',),
         batch_size: int = 32,
-        traversal_paths: Sequence[str] = ['r'],
         device: str = '/CPU:0',
         *args,
         **kwargs,
@@ -50,18 +50,16 @@ class ImageTFEncoder(Executor):
                 output of the last convolutional block, and thus the output of
                 the model will be a 2D tensor.
             - `max`: Means that global max pooling will be applied.
-        :param batch_size: size of each batch
         :param traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param batch_size: size of each batch
         :param device: Device ('/CPU:0', '/GPU:0', '/GPU:X')
         """
         super().__init__(*args, **kwargs)
-        if traversal_paths is None:
-            traversal_paths = ['r']
         self.model_name = model_name
         self.pool_strategy = pool_strategy
         self.img_shape = img_shape
-        self.default_batch_size = batch_size
-        self.default_traversal_paths = traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
         self.logger = JinaLogger(self.__class__.__name__)
 
         gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
@@ -82,24 +80,25 @@ class ImageTFEncoder(Executor):
             self.model = model
 
     @requests
-    def encode(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """
-        Encode document content into a ndarray of `B x D`. `
-        B` is the batch size and `D` is the Dimension.
+        Encode document 'blob' into one-dimentional vector and store it into `embedding`.
 
-        :param docs: DocumentArray containing blob as image data.
-        :param parameters: parameters dictionary.
-        :param kwargs: additional keyword arguments.
-        :return: Encoded result as a `BatchSize x D` numpy ``ndarray``,
-            `D` is the output dimension
+        :param docs: `DocumentArray` containing `Document`s with the `blob` of image data
+            in the size of `Height x Width x 3`. The `dtype` of the `blob` must be `float32`.
+            The `blob` must be preprocessed to `[0, 1]`. Check out the preprocessed module of
+            different models at https://www.tensorflow.org/api_docs/python/tf/keras/applications#functions
+        :param parameters: dictionary to define the `traversal_paths` and the `batch_size`.
+            For example, `parameters={'traversal_paths': ['r'], 'batch_size': 10}` will
+            override the `self.traversal_paths` and `self.batch_size`.
         """
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='blob',
             )
             self._create_embeddings(document_batches_generator)

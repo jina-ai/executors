@@ -18,7 +18,7 @@ def basic_encoder() -> AudioCLIPImageEncoder:
 
 @pytest.fixture(scope="module")
 def basic_encoder_no_pre() -> AudioCLIPImageEncoder:
-    return AudioCLIPImageEncoder(use_default_preprocessing=False)
+    return AudioCLIPImageEncoder(use_preprocessing=False)
 
 
 @pytest.fixture(scope="function")
@@ -40,9 +40,9 @@ def nested_docs() -> DocumentArray:
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.default_batch_size == 32
-    assert ex.default_traversal_paths == ('r',)
-    assert ex.use_default_preprocessing
+    assert ex.batch_size == 32
+    assert ex.traversal_paths == ('r',)
+    assert ex.use_preprocessing
 
 
 def test_no_documents(basic_encoder):
@@ -65,14 +65,14 @@ def test_docs_no_blobs(basic_encoder):
 def test_err_preprocessing(basic_encoder):
     docs = DocumentArray([Document(blob=np.ones((3, 100, 100), dtype=np.uint8))])
 
-    with pytest.raises(ValueError, match='If `use_default_preprocessing=True`'):
+    with pytest.raises(ValueError, match='If `use_preprocessing=True`'):
         basic_encoder.encode(docs, {})
 
 
 def test_err_no_preprocessing(basic_encoder_no_pre):
     docs = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
 
-    with pytest.raises(ValueError, match='If `use_default_preprocessing=False`'):
+    with pytest.raises(ValueError, match='If `use_preprocessing=False`'):
         basic_encoder_no_pre.encode(docs, {})
 
 

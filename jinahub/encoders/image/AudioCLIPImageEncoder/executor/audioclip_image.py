@@ -25,23 +25,23 @@ class AudioCLIPImageEncoder(Executor):
     def __init__(
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
-        default_traversal_paths: Iterable[str] = ('r',),
-        default_batch_size: int = 32,
-        use_default_preprocessing: bool = True,
+        use_preprocessing: bool = True,
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
         *args,
         **kwargs,
     ):
         """
         :param model_path: path of the pre-trained AudioCLIP model.
-        :param default_traversal_paths: default traversal path (used if not specified in
-            request's parameters)
-        :param default_batch_size: default batch size (used if not specified in
-            request's parameters)
-        :param use_default_preprocessing: Whether to use the default preprocessing on
+        :param use_preprocessing: Whether to use the default preprocessing on
             images (blobs) before encoding them. If you disable this, you must ensure
             that the images you pass in have the correct format, see the ``encode`` method
             for details.
+        :param traversal_paths: default traversal path (used if not specified in
+            request's parameters)
+        :param batch_size: default batch size (used if not specified in
+            request's parameters)
         :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
             where X is the index of the GPU on the machine)
         """
@@ -49,9 +49,9 @@ class AudioCLIPImageEncoder(Executor):
 
         self.device = device
         self.model = AudioCLIP(pretrained=model_path).to(device).eval()
-        self.default_traversal_paths = default_traversal_paths
-        self.default_batch_size = default_batch_size
-        self.use_default_preprocessing = use_default_preprocessing
+        self.traversal_paths = traversal_paths
+        self.batch_size = batch_size
+        self.use_preprocessing = use_preprocessing
 
         self._default_transforms = transforms.Compose(
             [
@@ -64,7 +64,11 @@ class AudioCLIPImageEncoder(Executor):
 
     @requests
     def encode(
-        self, docs: Optional[DocumentArray], parameters: dict, *args, **kwargs
+        self,
+        docs: Optional[DocumentArray] = None,
+        parameters: dict = {},
+        *args,
+        **kwargs,
     ) -> None:
         """
         Method to create embedddings for documents by encoding their image.
@@ -89,13 +93,13 @@ class AudioCLIPImageEncoder(Executor):
             The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
             absence their corresponding default values are used.
         """
+        if not docs:
+            return
 
         batch_generator = get_docs_batch_generator(
             docs,
-            traversal_path=parameters.get(
-                'traversal_paths', self.default_traversal_paths
-            ),
-            batch_size=parameters.get('batch_size', self.default_batch_size),
+            traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+            batch_size=parameters.get('batch_size', self.batch_size),
             needs_attr='blob',
         )
 
@@ -103,10 +107,10 @@ class AudioCLIPImageEncoder(Executor):
             for batch in batch_generator:
                 images = []
                 for doc in batch:
-                    if self.use_default_preprocessing:
+                    if self.use_preprocessing:
                         if doc.blob.shape[2] != 3:
                             raise ValueError(
-                                "If `use_default_preprocessing=True`, your image must"
+                                "If `use_preprocessing=True`, your image must"
                                 " be of the format [H, W, C], in the RGB format (C=3),"
                                 f" but got C={doc.blob.shape[2]} instead."
                             )
@@ -114,7 +118,7 @@ class AudioCLIPImageEncoder(Executor):
                     else:
                         if doc.blob.shape[0] != 3:
                             raise ValueError(
-                                "If `use_default_preprocessing=False`, your image must"
+                                "If `use_preprocessing=False`, your image must"
                                 " be of the format [C, H, W], in the RGB format (C=3),"
                                 f" but got C={doc.blob.shape[0]} instead."
                             )
