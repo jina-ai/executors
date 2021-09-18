@@ -7,15 +7,13 @@ from simpleranker import SimpleRanker
 
 @pytest.mark.parametrize('traversal_paths', [['r'], ['c']])
 @pytest.mark.parametrize('ranking', ['min', 'max'])
-def test_ranking(
-    documents_chunk, documents_chunk_chunk, default_traversal_paths, ranking
-):
+def test_ranking(documents_chunk, documents_chunk_chunk, traversal_paths, ranking):
     ranker = SimpleRanker(
         metric='cosine',
         ranking=ranking,
-        default_traversal_paths=default_traversal_paths,
+        traversal_paths=traversal_paths,
     )
-    if default_traversal_paths == ['r']:
+    if traversal_paths == ['r']:
         ranking_docs = documents_chunk
     else:
         ranking_docs = documents_chunk_chunk
@@ -23,7 +21,7 @@ def test_ranking(
     ranker.rank(ranking_docs, parameters={})
     assert ranking_docs
 
-    for doc in ranking_docs.traverse_flat(default_traversal_paths):
+    for doc in ranking_docs.traverse_flat(traversal_paths):
         assert doc.matches
         for i in range(len(doc.matches) - 1):
             match = doc.matches[i]
@@ -42,11 +40,11 @@ def test_ranking(
 
 @pytest.mark.parametrize('ranking', ['mean_min', 'mean_max'])
 def test_mean_ranking(documents_chunk, ranking):
-    default_traversal_paths = ['r']
+    traversal_paths = ['r']
     ranker = SimpleRanker(
         metric='cosine',
         ranking=ranking,
-        default_traversal_paths=default_traversal_paths,
+        traversal_paths=traversal_paths,
     )
     ranking_docs = documents_chunk
 
@@ -60,7 +58,7 @@ def test_mean_ranking(documents_chunk, ranking):
     ranker.rank(ranking_docs, parameters={})
     assert ranking_docs
 
-    for doc in ranking_docs.traverse_flat(default_traversal_paths):
+    for doc in ranking_docs.traverse_flat(traversal_paths):
         assert doc.matches
         for i in range(len(doc.matches) - 1):
             match = doc.matches[i]
