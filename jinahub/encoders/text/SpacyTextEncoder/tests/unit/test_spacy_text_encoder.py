@@ -22,7 +22,7 @@ def test_config():
 
 
 def test_encoding_cpu():
-    enc = SpacyTextEncoder(require_gpu=False)
+    enc = SpacyTextEncoder(device='cpu')
     input_data = DocumentArray([Document(text='hello world')])
 
     enc.encode(docs=input_data, parameters={})
@@ -32,7 +32,7 @@ def test_encoding_cpu():
 
 @pytest.mark.gpu
 def test_encoding_gpu():
-    enc = SpacyTextEncoder(require_gpu=True)
+    enc = SpacyTextEncoder(device='cuda')
     input_data = DocumentArray([Document(text='hello world')])
 
     enc.encode(docs=input_data, parameters={})
