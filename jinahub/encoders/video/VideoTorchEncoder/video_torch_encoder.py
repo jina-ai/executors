@@ -35,11 +35,11 @@ class VideoTorchEncoder(Executor):
     def __init__(
         self,
         model_name: str = 'r3d_18',
-        use_default_preprocessing: bool = True,
-        device: Optional[str] = None,
-        default_batch_size: int = 32,
-        default_traversal_paths: Tuple = ('r',),
+        use_preprocessing: bool = True,
         download_progress=True,
+        traversal_paths: Tuple = ('r',),
+        batch_size: int = 32,
+        device: str = 'cpu',
         *args,
         **kwargs
     ):
@@ -47,26 +47,27 @@ class VideoTorchEncoder(Executor):
         :param model_name: the name of the model.
             Supported models include ``r3d_18``, ``mc3_18``, ``r2plus1d_18``
             Default is ``r3d_18``.
-        :param use_default_preprocessing: if True, the same preprocessing is used which got used during training
+        :param use_preprocessing: if True, the same preprocessing is used which got used during training
             - prevents training-serving gap.
+        :param traversal_paths: fallback traversal path in case there is not traversal path
+            sent in the request.
+        :param batch_size: fallback batch size in case there is not batch size sent in the request
+            Defaults to ('r', ), i.e. root level traversal.
         :param device: device to use for encoding ['cuda', 'cpu] - if not set, the device is detected automatically
-        :param default_batch_size: fallback batch size in case there is not batch size sent in the request
-        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request.
-            Defaults to ['r'], i.e. root level traversal.
         """
         super().__init__(*args, **kwargs)
-        if not device:
+        if not device or device not in ('cpu', 'cuda'):
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
-        self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.batch_size = batch_size
+        self.traversal_paths = traversal_paths
         self.model = (
             getattr(models, model_name)(pretrained=True, progress=download_progress)
             .eval()
             .to(self.device)
         )
-        self.use_default_preprocessing = use_default_preprocessing
-        if self.use_default_preprocessing:
+        self.use_preprocessing = use_preprocessing
+        if self.use_preprocessing:
             # https://github.com/pytorch/vision/blob/master/references/video_classification/train.py
             # Eval preset transformation
             mean = (0.43216, 0.394666, 0.37645)
@@ -97,23 +98,25 @@ class VideoTorchEncoder(Executor):
         return embeddings.flatten(1)
 
     @requests
-    def encode(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
+    def encode(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """
         Encode all docs with images and store the encodings in the embedding attribute of the docs.
-        :param docs: documents sent to the encoder. The docs must have `blob` of the shape `Channels x NumFrames x Height x Width`
-        with `Height` and `Width` equals to 112, if no default preprocessing is requested. When setting
-        `use_default_preprocessing=True`, the input `blob` must have the size of `Frame x Height x Width x Channel`.
-        :param parameters: dictionary to define the `traversal_paths` and the `batch_size`. For example,
-        `parameters={'traversal_paths': 'r', 'batch_size': 10}` will override the `self.default_traversal_paths` and
-        `self.default_batch_size`.
+
+        :param docs: documents sent to the encoder. The docs must have `blob` of the shape
+            `Channels x NumFrames x Height x Width` with `Height` and `Width` equals to 112,
+            if no preprocessing is requested. When setting `use_preprocessing=True`,
+            the input `blob` must have the size of `NumFrames x Height x Width x Channel`.
+        :param parameters: dictionary to define the `traversal_paths` and the `batch_size`.
+            For example, `parameters={'traversal_paths': 'r', 'batch_size': 10}` will override
+            the `self.traversal_paths` and `self.batch_size`.
         """
         if docs:
             document_batches_generator = get_docs_batch_generator(
                 docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='blob',
             )
             self._create_embeddings(document_batches_generator)
@@ -121,7 +124,7 @@ class VideoTorchEncoder(Executor):
     def _create_embeddings(self, document_batches_generator: Iterable):
         with torch.no_grad():
             for document_batch in document_batches_generator:
-                if self.use_default_preprocessing:
+                if self.use_preprocessing:
                     tensors = [
                         self.transforms(torch.Tensor(d.blob).to(dtype=torch.uint8))
                         for d in document_batch
