@@ -31,8 +31,8 @@ class DPRReaderRanker(Executor):
         title_tag_key: Optional[str] = None,
         num_spans_per_match: int = 2,
         max_length: Optional[int] = None,
-        default_batch_size: int = 32,
-        default_traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
         device: str = 'cpu',
         *args,
         **kwargs,
@@ -51,10 +51,10 @@ class DPRReaderRanker(Executor):
             with their titles (to mirror the method used in training of the original model)
         :param num_spans_per_match: Number of spans to extract per match
         :param max_length: Max length argument for the tokenizer
-        :param default_batch_size: Default batch size for processing documents, used if the
-            batch size is not passed as a parameter with the request.
-        :param default_traversal_paths: Default traversal paths for processing documents,
+        :param traversal_paths: Default traversal paths for processing documents,
             used if the traversal path is not passed as a parameter with the request.
+        :param batch_size: Default batch size for processing documents, used if the
+            batch size is not passed as a parameter with the request.
         :param device: The device (cpu or gpu) that the model should be on.
         """
         super().__init__(*args, **kwargs)
@@ -72,8 +72,8 @@ class DPRReaderRanker(Executor):
 
         self.model = self.model.to(torch.device(self.device)).eval()
 
-        self.default_traversal_paths = default_traversal_paths
-        self.default_batch_size = default_batch_size
+        self.traversal_paths = traversal_paths
+        self.batch_size = batch_size
 
     @requests
     def rank(
@@ -109,7 +109,7 @@ class DPRReaderRanker(Executor):
             return None
 
         for doc in docs.traverse_flat(
-            parameters.get('traversal_paths', self.default_traversal_paths)
+            parameters.get('traversal_paths', self.traversal_paths)
         ):
             if not doc.text:
                 self.logger.warning(
@@ -124,7 +124,7 @@ class DPRReaderRanker(Executor):
             match_batches_generator = get_docs_batch_generator(
                 DocumentArray([doc]),
                 traversal_path=['m'],
-                batch_size=parameters.get('batch_size', self.default_batch_size),
+                batch_size=parameters.get('batch_size', self.batch_size),
                 needs_attr='text',
             )
             for matches in match_batches_generator:

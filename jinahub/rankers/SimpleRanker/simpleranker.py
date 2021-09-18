@@ -20,7 +20,7 @@ class SimpleRanker(Executor):
         self,
         metric: str = 'cosine',
         ranking: str = 'min',
-        default_traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: Iterable[str] = ('r',),
         *args,
         **kwargs
     ):
@@ -32,19 +32,17 @@ class SimpleRanker(Executor):
             - max: Select maximum score/distance and sort by maximum
             - mean_min: Calculate mean score/distance and sort by minimum mean
             - mean_max: Calculate mean score/distance and sort by maximum mean
-        :param default_traversal_paths: traverse path on docs, e.g. ['r'], ['c']
+        :param traversal_paths: traverse path on docs, e.g. ['r'], ['c']
         """
         super().__init__(*args, **kwargs)
         self.metric = metric
         assert ranking in ['min', 'max', 'mean_min', 'mean_max']
         self.ranking = ranking
-        self.default_traversal_paths = default_traversal_paths
+        self.traversal_paths = traversal_paths
 
     @requests(on='/search')
     def rank(self, docs: DocumentArray, parameters: Dict, *args, **kwargs):
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
 
         for doc in docs.traverse_flat(traversal_paths):
             matches_of_chunks = []
