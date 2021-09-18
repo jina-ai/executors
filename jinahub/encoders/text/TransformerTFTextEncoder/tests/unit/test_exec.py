@@ -30,6 +30,16 @@ def test_tf_batch(docs_generator):
     assert docs[0].embedding.shape == (target_dim,)
 
 
+@pytest.mark.gpu
+def test_encoder_gpu(docs_generator):
+    encoder = TransformerTFTextEncoder(device='/GPU:0')
+    docs = DocumentArray((Document(text='random text')))
+    encoder.encode(docs, {})
+
+    assert len(docs.get_attributes('embedding')) == 1
+    assert docs[0].embedding.shape == (target_dim,)
+
+
 def test_encodes_semantic_meaning():
     sentences = dict()
     sentences['A'] = 'Hello, my name is Michael.'
@@ -66,12 +76,12 @@ def test_encodes_semantic_meaning():
         ),
         (
             pytest.lazy_fixture("docs_with_chunk_text"),
-            [[['r'], 1], [['c'], 10], [['cc'], 0]],
+            [[['r'], 0], [['c'], 10], [['cc'], 0]],
             ['c'],
         ),
         (
             pytest.lazy_fixture("docs_with_chunk_chunk_text"),
-            [[['r'], 1], [['c'], 1], [['cc'], 10]],
+            [[['r'], 0], [['c'], 0], [['cc'], 10]],
             ['cc'],
         ),
     ],
@@ -81,4 +91,5 @@ def test_traversal_path(docs: DocumentArray, docs_per_path, traversal_path):
     encoder.encode(docs, parameters={'traversal_paths': traversal_path})
 
     for path, count in docs_per_path:
-        assert len(docs.traverse_flat(path).get_attributes("embedding")) == count
+        embeddings = docs.traverse_flat(path).get_attributes("embedding")
+        assert len([en for en in embeddings if en is not None]) == count

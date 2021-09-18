@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import subprocess
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, Optional
 
 import spacy
 from jina import DocumentArray, Executor, requests
@@ -26,35 +26,30 @@ class SpacyTextEncoder(Executor):
     def __init__(
         self,
         model_name: str = 'en_core_web_sm',
-        require_gpu: bool = False,
         download_data: bool = True,
         default_batch_size: int = 32,
-        default_traversal_paths: List[str] = ['r'],
+        default_traversal_paths: Iterable[str] = ('r',),
+        device: str = 'cpu',
         *args,
         **kwargs,
     ):
         """
         :param model_name: pre-trained spaCy language pipeline name
-        :param require_gpu: device to use for encoding ['cuda', 'cpu] - if not set,
-            the device is detected automatically
-        :param default_batch_size: Default batch size, used if ``batch_size`` is not
-            provided as a parameter in the request
-        :param default_traversal_paths: Default traversal paths, used if ``traversal_paths``
-            are not provided as a parameter in the request.
+        :param default_batch_size: fallback batch size in case there is not batch size sent in the request
+        :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param device: device to use for encoding ['cuda', 'cpu', 'cuda:2']
         """
         super().__init__(*args, **kwargs)
 
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
-
-        if require_gpu:
+        self.device = device
+        if device.startswith('cuda'):
             spacy.require_gpu()
-
         if download_data:
             subprocess.run(
-                ['python', '-m', 'spacy', 'download', model_name], check=True
+                ['python3', '-m', 'spacy', 'download', model_name], check=True
             )
-
         self.spacy_model = spacy.load(model_name, exclude=_EXCLUDE_COMPONENTS)
 
     @requests
@@ -69,6 +64,8 @@ class SpacyTextEncoder(Executor):
             ``batch_size``. For example,
             ``parameters={'traversal_paths': ['r'], 'batch_size': 10}``
         """
+        if self.device.startswith('cuda'):
+            from cupy import asnumpy
         if docs:
             batch_size = parameters.get('batch_size', self.default_batch_size)
             document_batches_generator = get_docs_batch_generator(
@@ -79,10 +76,12 @@ class SpacyTextEncoder(Executor):
                 batch_size=batch_size,
                 needs_attr='text',
             )
-
             for document_batch in document_batches_generator:
                 texts = [doc.text for doc in document_batch]
                 for doc, spacy_doc in zip(
                     document_batch, self.spacy_model.pipe(texts, batch_size=batch_size)
                 ):
-                    doc.embedding = spacy_doc.vector
+                    if self.device.startswith('cuda'):
+                        doc.embedding = asnumpy(spacy_doc.vector)
+                    else:
+                        doc.embedding = spacy_doc.vector

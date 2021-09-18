@@ -28,7 +28,7 @@ class TransformerTFTextEncoder(Executor):
         max_length: Optional[int] = None,
         default_batch_size: int = 32,
         default_traversal_paths: List[str] = None,
-        on_gpu: bool = False,
+        device: str = '/CPU',
         *args,
         **kwargs,
     ):
@@ -50,7 +50,7 @@ class TransformerTFTextEncoder(Executor):
         :param max_length: the max length to truncate the tokenized sequences to.
         :param default_batch_size: size of each batch
         :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
-        :param on_gpu: set to True if using GPU
+        :param device: Tensorflow device string ('/CPU', '/GPU', '/GPU:0')
         """
         super().__init__(*args, **kwargs)
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
@@ -62,7 +62,14 @@ class TransformerTFTextEncoder(Executor):
         self.max_length = max_length
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths or ['r']
-        self.on_gpu = on_gpu
+
+        gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
+        if 'GPU' in device:
+            gpu_index = 0 if 'GPU:' not in device else int(device.split(':')[-1])
+            if len(gpus) < gpu_index + 1:
+                raise RuntimeError(f'Device {device} not found on your system!')
+        self.device = tf.device(device)
+
         self.logger = JinaLogger(self.__class__.__name__)
 
         if self.pooling_strategy == 'auto':
@@ -81,23 +88,11 @@ class TransformerTFTextEncoder(Executor):
 
         from transformers import AutoTokenizer, TFAutoModel
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.base_tokenizer_model)
-        self.model = TFAutoModel.from_pretrained(
-            self.pretrained_model_name_or_path, output_hidden_states=True
-        )
-
-        import tensorflow as tf
-
-        cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
-        gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
-        if self.on_gpu and len(gpus) > 0:
-            cpus.append(gpus[0])
-        if self.on_gpu and len(gpus) == 0:
-            self.logger.warning(
-                'You tried to use a GPU but no GPU was found on'
-                ' your system. Defaulting to CPU!'
+        with self.device:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.base_tokenizer_model)
+            self.model = TFAutoModel.from_pretrained(
+                self.pretrained_model_name_or_path, output_hidden_states=True
             )
-        tf.config.experimental.set_visible_devices(devices=cpus)
 
     @requests
     def encode(self, docs: DocumentArray, parameters: dict, *args, **kwargs):
@@ -112,19 +107,20 @@ class TransformerTFTextEncoder(Executor):
             self._create_embeddings(document_batches_generator)
 
     def _get_embeddings(self, text):
-        if not self.tokenizer.pad_token:
-            self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-            self.model.resize_token_embeddings(len(self.tokenizer.vocab))
+        with self.device:
+            if not self.tokenizer.pad_token:
+                self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+                self.model.resize_token_embeddings(len(self.tokenizer.vocab))
 
-        input_tokens = self.tokenizer(
-            text,
-            max_length=self.max_length,
-            padding='longest',
-            truncation=True,
-            return_tensors='tf',
-        )
+            input_tokens = self.tokenizer(
+                text,
+                max_length=self.max_length,
+                padding='longest',
+                truncation=True,
+                return_tensors='tf',
+            )
 
-        outputs = self.model(**input_tokens)
+            outputs = self.model(**input_tokens)
 
         n_layers = len(outputs.hidden_states)
         if self.layer_index not in list(range(-n_layers, n_layers)):

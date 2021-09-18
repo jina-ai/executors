@@ -1,4 +1,4 @@
-paddlepaddle==2.1.0
+paddlepaddle-gpu==2.1.0
 paddlehub==2.1.0
 sentencepiece==0.1.96
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.5#egg=jina-commons

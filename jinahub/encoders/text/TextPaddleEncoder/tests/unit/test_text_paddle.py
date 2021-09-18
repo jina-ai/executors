@@ -34,7 +34,7 @@ def test_config():
 
 def test_text_paddle(model, document_array, content, parameters):
     ex = TextPaddleEncoder()
-    assert ex.on_gpu is False
+    assert ex.device == 'cpu'
     ex.encode(document_array, parameters)
     for doc in document_array:
         assert isinstance(doc.embedding, np.ndarray)
@@ -45,3 +45,13 @@ def test_text_paddle(model, document_array, content, parameters):
         pooled_feature, _ = embed
         pooled_features.append(pooled_feature)
     assert (pooled_features == document_array[0].embedding).all()
+
+
+@pytest.mark.gpu
+def test_text_paddle_gpu(model, document_array, content, parameters):
+    ex = TextPaddleEncoder(on_gpu=True)
+
+    ex.encode(document_array, parameters)
+    for doc in document_array:
+        assert isinstance(doc.embedding, np.ndarray)
+        assert doc.embedding.shape == (1024,)

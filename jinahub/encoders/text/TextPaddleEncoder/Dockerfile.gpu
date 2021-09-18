@@ -1,0 +1,20 @@
+FROM nvidia/cuda:10.1-cudnn7-runtime
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y python3.8 python3.8-distutils git wget libgomp1 libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3.8 get-pip.py
+RUN JINA_PIP_INSTALL_PERF=1 pip install --no-cache-dir jina~=2.1
+
+COPY gpu_requirements.txt gpu_requirements.txt
+RUN pip3 install --no-cache-dir -r gpu_requirements.txt
+
+COPY . /workdir/
+WORKDIR /workdir
+
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH
+RUN ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so.7 /usr/lib/x86_64-linux-gnu/libcudnn.so
+SHELL ["/bin/bash", "-c"]
+RUN for i in $(find /usr/local/cuda/lib64/ -iname "*.so.10"); do ln -s $i ${i::-3} ; done
+RUN ln -s /usr/lib/x86_64-linux-gnu/libcublas.so.10 /usr/lib/x86_64-linux-gnu/libcublas.so
+
+ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

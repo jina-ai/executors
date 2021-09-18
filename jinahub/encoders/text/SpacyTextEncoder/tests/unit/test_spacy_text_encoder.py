@@ -22,7 +22,7 @@ def test_config():
 
 
 def test_encoding_cpu():
-    enc = SpacyTextEncoder(require_gpu=False)
+    enc = SpacyTextEncoder(device='cpu')
     input_data = DocumentArray([Document(text='hello world')])
 
     enc.encode(docs=input_data, parameters={})
@@ -32,7 +32,7 @@ def test_encoding_cpu():
 
 @pytest.mark.gpu
 def test_encoding_gpu():
-    enc = SpacyTextEncoder(require_gpu=True)
+    enc = SpacyTextEncoder(device='cuda')
     input_data = DocumentArray([Document(text='hello world')])
 
     enc.encode(docs=input_data, parameters={})
@@ -94,6 +94,21 @@ def test_batch_size(basic_encoder: SpacyTextEncoder, batch_size: int):
 
     for doc in docs:
         assert doc.embedding.shape == (_EMBEDDING_DIM,)
+
+
+@pytest.mark.gpu
+def test_spacy_text_encoder_gpu():
+    # Input
+    docs = DocumentArray(
+        [
+            Document(text='Jina rocks'),
+        ]
+    )
+    # Encoder embedding
+    encoder = SpacyTextEncoder(device='cuda')
+    encoder.encode(docs, parameters={})
+    assert len(docs) == 1
+    assert docs[0].embedding.shape == (96,)
 
 
 def test_quality_embeddings(basic_encoder: SpacyTextEncoder):

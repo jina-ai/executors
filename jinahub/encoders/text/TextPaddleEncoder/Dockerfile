@@ -10,7 +10,7 @@ COPY requirements.txt /requirements.txt
 RUN pip install -r requirements.txt
 
 # setup the workspace
-COPY . /workspace
-WORKDIR /workspace
+COPY . /workdir
+WORKDIR /workdir
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

@@ -1,9 +1,11 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+
 import subprocess
 from typing import Iterable, Optional
 
+import torch
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from jina_commons.batching import get_docs_batch_generator
@@ -14,6 +16,9 @@ class LaserEncoder(Executor):
     """
     LaserEncoder is a text encoder based on Facebook Research's LASER encoder.
 
+    :class:`LaserEncoder` is a encoder based on Facebook Research's LASER
+    (Language-Agnostic SEntence Representations) to compute multilingual
+    sentence embeddings: https://github.com/facebookresearch/LASER
     This encoder is suitable for producing multi-lingual sentence embeddings, enabling
     you to have sentences from multiple languages in the same latent space.
     """
@@ -25,9 +30,9 @@ class LaserEncoder(Executor):
         path_to_encoder: Optional[str] = None,
         download_data: bool = True,
         default_language: str = 'en',
-        cpu: bool = False,
         default_batch_size: int = 32,
         default_traversal_paths: Iterable[str] = ('r',),
+        device: str = 'cpu',
         *args,
         **kwargs,
     ):
@@ -47,9 +52,9 @@ class LaserEncoder(Executor):
             [LASER](https://github.com/facebookresearch/LASER#supported-languages)
             with the language code
             ([ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
-        :param cpu: if True, forces the use of the CPU even when a GPU is available.
         :param default_batch_size: size of each batch
         :param default_traversal_paths: traversal path of the Documents, (e.g. 'r', 'c')
+        :param device: Device string ('cpu'/'cuda'/'cuda:2')
         """
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(self.__class__.__name__)
@@ -57,7 +62,7 @@ class LaserEncoder(Executor):
         self._path_to_bpe_codes = path_to_bpe_codes
         self._path_to_bpe_vocab = path_to_bpe_vocab
         self._path_to_encoder = path_to_encoder
-
+        self.device = device
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
         self.default_language = default_language
@@ -72,8 +77,10 @@ class LaserEncoder(Executor):
             bpe_codes=self._path_to_bpe_codes,
             bpe_vocab=self._path_to_bpe_vocab,
             encoder=self._path_to_encoder,
-            embedding_options={'cpu': cpu},
+            embedding_options={'cpu': self.device == 'cpu'},
         )
+        self.device = torch.device(device)
+        self.model.bpeSentenceEmbedding.encoder.encoder.to(self.device)
 
     @requests
     def encode(self, docs: Optional[DocumentArray], parameters: dict, **kwargs):

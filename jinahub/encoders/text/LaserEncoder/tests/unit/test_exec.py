@@ -31,6 +31,16 @@ def test_empty_documents(basic_encoder: LaserEncoder):
     assert len(docs) == 0
 
 
+@pytest.mark.gpu
+def test_encoding_gpu():
+    encoder = LaserEncoder(device='cuda')
+    docs = DocumentArray((Document(text='random text')))
+    encoder.encode(docs, {})
+
+    assert len(docs.get_attributes('embedding')) == 1
+    assert docs[0].embedding.shape == (1024,)
+
+
 def test_no_text_documents(basic_encoder: LaserEncoder):
     docs = DocumentArray([Document()])
     basic_encoder.encode(docs, {})
@@ -90,6 +100,13 @@ def test_traversal_path(
         assert len(list(filter(lambda x: x is not None, embeddings))) == count
 
 
+def test_no_documents():
+    encoder = LaserEncoder()
+    docs = []
+    encoder.encode(docs, parameters={'batch_size': 10, 'traversal_paths': ['r']})
+    assert not docs
+
+
 @pytest.mark.parametrize('batch_size', [1, 2, 4, 8])
 def test_batch_size(basic_encoder: LaserEncoder, batch_size: int):
     docs = DocumentArray([Document(text='hello there') for _ in range(32)])
@@ -103,7 +120,7 @@ def test_quality_embeddings(basic_encoder: LaserEncoder):
     docs = DocumentArray(
         [
             # Different than usual example - because embeddings suck (manually verified
-            # using the laserembedings module)
+            # using the laser embedings module)
             Document(id='A', text='car'),
             Document(id='B', text='truck'),
             Document(id='C', text='radio'),

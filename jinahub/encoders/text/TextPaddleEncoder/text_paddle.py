@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Iterable, Optional
 
 import numpy as np
 import paddlehub as hub
@@ -24,9 +24,9 @@ class TextPaddleEncoder(Executor):
     def __init__(
         self,
         model_name: Optional[str] = 'ernie_tiny',
-        on_gpu: bool = False,
+        default_traversal_paths: Iterable[str] = ('r',),
         default_batch_size: int = 32,
-        default_traversal_paths: Tuple[str] = ('r',),
+        device: str = 'cpu',
         *args,
         **kwargs,
     ):
@@ -39,12 +39,12 @@ class TextPaddleEncoder(Executor):
             ``chinese-bert-wwm-ext``, ``chinese-electra-base``,
             ``chinese-electra-small``, ``chinese-roberta-wwm-ext``,
             ``chinese-roberta-wwm-ext-large``, ``rbt3``, ``rbtl3``
-        :param on_gpu: If use gpu to get the output.
         :param default_batch_size: fallback batch size in case there is not batch size sent in the request
         :param default_traversal_paths: fallback traversal path in case there is not traversal path sent in the request
+        :param device: Device to be used. Use 'gpu' for GPU or use 'cpu' for CPU.
         """
         super().__init__(*args, **kwargs)
-        self.on_gpu = on_gpu
+        self.device = device
         self.model = hub.Module(name=model_name)
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths
@@ -70,7 +70,9 @@ class TextPaddleEncoder(Executor):
             for batch_of_docs in document_batches_generator:
                 pooled_features = []
                 contents = [[doc.content] for doc in batch_of_docs]
-                results = self.model.get_embedding(contents, use_gpu=self.on_gpu)
+                results = self.model.get_embedding(
+                    contents, use_gpu=self.device == 'gpu'
+                )
                 for pooled_feature, _ in results:
                     pooled_features.append(pooled_feature)
                 for doc, feature in zip(batch_of_docs, pooled_features):
