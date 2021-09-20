@@ -1,6 +1,7 @@
 -f https://download.pytorch.org/whl/torch_stable.html
 torch==1.9.0+cpu
 torchvision
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
 pytorch-ignite==0.3.0
 termcolor==1.1.0
 tqdm==4.43.0
