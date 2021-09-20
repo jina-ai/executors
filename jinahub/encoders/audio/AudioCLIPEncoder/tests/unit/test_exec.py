@@ -11,35 +11,66 @@ from jina import Document, DocumentArray, Executor
 from jina.excepts import BadDocType
 
 
+@pytest.fixture(scope="module")
+def encoder() -> AudioCLIPEncoder:
+    return AudioCLIPEncoder()
+
+
+@pytest.fixture(scope="module")
+def gpu_encoder() -> AudioCLIPEncoder:
+    return AudioCLIPEncoder(device='cuda')
+
+
+@pytest.fixture(scope="function")
+def nested_docs() -> DocumentArray:
+    blob = np.ones((224, 224, 3), dtype=np.uint8)
+    docs = DocumentArray([Document(id="root1", blob=blob)])
+    docs[0].chunks = [
+        Document(id="chunk11", blob=blob),
+        Document(id="chunk12", blob=blob),
+        Document(id="chunk13", blob=blob),
+    ]
+    docs[0].chunks[0].chunks = [
+        Document(id="chunk111", blob=blob),
+        Document(id="chunk112", blob=blob),
+    ]
+
+    return docs
+
+
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.model_path.endswith('AudioCLIP-Full-Training.pt')
 
 
-def test_embedding_dimension():
+def test_no_documents(encoder: AudioCLIPEncoder):
+    docs = DocumentArray()
+    encoder.encode(docs=docs, parameters={})
+    assert len(docs) == 0  # SUCCESS
+
+
+def test_none_docs(encoder: AudioCLIPEncoder):
+    encoder.encode(docs=None, parameters={})
+
+
+def test_docs_no_blobs(encoder: AudioCLIPEncoder):
+    docs = DocumentArray([Document()])
+    encoder.encode(docs=DocumentArray(), parameters={})
+    assert len(docs) == 1
+    assert docs[0].embedding is None
+
+
+def test_encode_single_document(encoder: AudioCLIPEncoder):
     x_audio, sample_rate = librosa.load(
         str(Path(__file__).parents[1] / 'test_data/sample.wav')
     )
     docs = DocumentArray([Document(blob=x_audio, tags={'sample_rate': sample_rate})])
-    model = AudioCLIPEncoder()
-    model.encode(docs, parameters={})
+    encoder.encode(docs, parameters={})
     assert docs[0].embedding.shape == (1024,)
     assert docs[0].tags['sample_rate'] == AudioCLIPEncoder.TARGET_SAMPLE_RATE
 
 
-@pytest.mark.gpu
-def test_embedding_dimension_gpu():
-    x_audio, sample_rate = librosa.load(
-        str(Path(__file__).parents[1] / 'test_data/sample.wav')
-    )
-    docs = DocumentArray([Document(blob=x_audio, tags={'sample_rate': sample_rate})])
-    model = AudioCLIPEncoder(device='cuda')
-    model.encode(docs, parameters={})
-    assert docs[0].embedding.shape == (1024,)
-    assert docs[0].tags['sample_rate'] == AudioCLIPEncoder.TARGET_SAMPLE_RATE
-
-
-def test_many_documents():
+def test_encode_multiple_documents():
 
     audio1, sample_rate1 = librosa.load(
         str(Path(__file__).parents[1] / 'test_data/sample.mp3')
@@ -61,6 +92,17 @@ def test_many_documents():
     assert docs[0].tags['sample_rate'] == AudioCLIPEncoder.TARGET_SAMPLE_RATE
     assert docs[1].embedding.shape == (1024,)
     assert docs[1].tags['sample_rate'] == AudioCLIPEncoder.TARGET_SAMPLE_RATE
+
+
+@pytest.mark.gpu
+def test_embedding_dimension_gpu(gpu_encoder):
+    x_audio, sample_rate = librosa.load(
+        str(Path(__file__).parents[1] / 'test_data/sample.wav')
+    )
+    docs = DocumentArray([Document(blob=x_audio, tags={'sample_rate': sample_rate})])
+    gpu_encoder.encode(docs, parameters={})
+    assert docs[0].embedding.shape == (1024,)
+    assert docs[0].tags['sample_rate'] == AudioCLIPEncoder.TARGET_SAMPLE_RATE
 
 
 def test_traversal_paths():
