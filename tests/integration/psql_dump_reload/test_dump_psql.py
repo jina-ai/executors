@@ -17,12 +17,14 @@ METRIC = 'l2'
 @pytest.fixture()
 def docker_compose(request):
     os.system(
-        f"docker-compose -f {request.param} --project-directory . up  --build -d --remove-orphans"
+        f'docker-compose -f {request.param} --project-directory . up  --build -d '
+        f'--remove-orphans'
     )
     time.sleep(5)
     yield
     os.system(
-        f"docker-compose -f {request.param} --project-directory . down --remove-orphans"
+        f'docker-compose -f {request.param} --project-directory . down '
+        f'--remove-orphans'
     )
 
 
@@ -30,9 +32,6 @@ def docker_compose(request):
 # noinspection PyUnresolvedReferences
 from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
     FaissPostgresSearcher,
-)
-from jinahub.indexers.storage.PostgreSQLStorage.postgres_indexer import (
-    PostgreSQLStorage,
 )
 
 # noinspection PyUnresolvedReferences
@@ -116,7 +115,8 @@ def assert_dump_data(dump_path, docs, shards, pea_id):
         docs_expected = docs[(pea_id) * size_shard : (pea_id + 1) * size_shard]
     print(f'### pea {pea_id} has {len(docs_expected)} docs')
 
-    # TODO these might fail if we implement any ordering of elements on dumping / reloading
+    # TODO these might fail if we implement any ordering of elements on dumping /
+    #  reloading
     ids_dump = list(ids_dump)
     vectors_dump = list(vectors_dump)
     np.testing.assert_equal(set(ids_dump), set([d.id for d in docs_expected]))
@@ -231,18 +231,16 @@ def _in_docker():
         return False
 
 
-# benchmark only
-@pytest.mark.skipif(
-    _in_docker() or ('GITHUB_WORKFLOW' in os.environ),
-    reason='skip the benchmark test on github workflow or docker',
-)
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_benchmark(tmpdir, docker_compose):
-    nr_docs = 100000
+    # benchmark only
+    nr_docs = 1000000
+    if _in_docker() or ('GITHUB_WORKFLOW' in os.environ):
+        nr_docs = 1000
     return test_dump_reload(
         tmpdir,
         nr_docs=nr_docs,
-        emb_size=128,
+        emb_size=256,
         shards=3,
         docker_compose=compose_yml,
         benchmark=True,

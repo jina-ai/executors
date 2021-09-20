@@ -6,6 +6,6 @@ executors:
       jtype: PostgreSQLStorage
       metas:
         workspace: $STORAGE_WORKSPACE
-        name: psql
+        name: compound_indexer
     shards: $SHARDS
     polling: any
