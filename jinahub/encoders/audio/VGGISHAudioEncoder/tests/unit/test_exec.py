@@ -6,6 +6,7 @@ import pytest
 from executor.vggish import vggish_input
 from executor.vggish_audio_encoder import VggishAudioEncoder
 from jina import Document, DocumentArray, Executor
+from tensorflow.python.framework import ops
 
 
 @pytest.fixture(scope="function")
@@ -51,16 +52,19 @@ def test_config():
 
 
 def test_no_documents(encoder: VggishAudioEncoder):
+    ops.reset_default_graph()
     docs = DocumentArray()
     encoder.encode(docs=docs, parameters={})
     assert len(docs) == 0  # SUCCESS
 
 
 def test_none_docs(encoder: VggishAudioEncoder):
+    ops.reset_default_graph()
     encoder.encode(docs=None, parameters={})
 
 
 def test_docs_no_blobs(encoder: VggishAudioEncoder):
+    ops.reset_default_graph()
     docs = DocumentArray([Document()])
     encoder.encode(docs=DocumentArray(), parameters={})
     assert len(docs) == 1
@@ -68,6 +72,7 @@ def test_docs_no_blobs(encoder: VggishAudioEncoder):
 
 
 def test_encode_single_document(audio_sample_rate):
+    ops.reset_default_graph()
     x_audio, sample_rate = audio_sample_rate
     log_mel_examples = vggish_input.waveform_to_examples(x_audio, sample_rate)
     doc = DocumentArray([Document(blob=log_mel_examples)])
@@ -77,6 +82,7 @@ def test_encode_single_document(audio_sample_rate):
 
 
 def test_encode_multiple_documents(encoder: VggishAudioEncoder, audio_sample_rate):
+    ops.reset_default_graph()
     x_audio, sample_rate = audio_sample_rate
     log_mel_examples = vggish_input.waveform_to_examples(x_audio, sample_rate)
 
@@ -113,6 +119,7 @@ def test_traversal_path(
     nested_docs: DocumentArray,
     encoder: VggishAudioEncoder,
 ):
+    ops.reset_default_graph()
     encoder.encode(nested_docs, parameters={"traversal_paths": traversal_paths})
     for path, count in counts:
         embeddings = nested_docs.traverse_flat([path]).get_attributes('embedding')
