@@ -2,6 +2,7 @@ __copyright__ = 'Copyright (c) 2020-2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
 from pathlib import Path
+from typing import Tuple
 
 import librosa
 import numpy as np
@@ -19,6 +20,23 @@ def encoder() -> AudioCLIPEncoder:
 @pytest.fixture(scope="module")
 def gpu_encoder() -> AudioCLIPEncoder:
     return AudioCLIPEncoder(device='cuda')
+
+
+@pytest.fixture(scope="function")
+def nested_docs() -> DocumentArray:
+    blob, _ = librosa.load(str(Path(__file__).parents[1] / 'test_data/sample.wav'))
+    docs = DocumentArray([Document(id="root1", blob=blob)])
+    docs[0].chunks = [
+        Document(id="chunk11", blob=blob),
+        Document(id="chunk12", blob=blob),
+        Document(id="chunk13", blob=blob),
+    ]
+    docs[0].chunks[0].chunks = [
+        Document(id="chunk111", blob=blob),
+        Document(id="chunk112", blob=blob),
+    ]
+
+    return docs
 
 
 def test_config():
@@ -78,7 +96,7 @@ def test_encode_multiple_documents():
 
 
 @pytest.mark.gpu
-def test_embedding_dimension_gpu(gpu_encoder):
+def test_embedding_dimension_gpu(gpu_encoder: AudioCLIPEncoder):
     x_audio, sample_rate = librosa.load(
         str(Path(__file__).parents[1] / 'test_data/sample.wav')
     )
@@ -176,3 +194,24 @@ def test_no_sample_rate():
         BadDocType, match='sample rate is not given, please provide a valid sample rate'
     ):
         encoder.encode(docs, parameters={})
+
+
+@pytest.mark.parametrize(
+    "traversal_paths, counts",
+    [
+        [('c',), (('r', 0), ('c', 3), ('cc', 0))],
+        [('cc',), (("r", 0), ('c', 0), ('cc', 2))],
+        [('r',), (('r', 1), ('c', 0), ('cc', 0))],
+        [('cc', 'r'), (('r', 1), ('c', 0), ('cc', 2))],
+    ],
+)
+def test_traversal_path(
+    traversal_paths: Tuple[str],
+    counts: Tuple[str, int],
+    nested_docs: DocumentArray,
+    encoder: AudioCLIPEncoder,
+):
+    encoder.encode(nested_docs, parameters={"traversal_paths": traversal_paths})
+    for path, count in counts:
+        embeddings = nested_docs.traverse_flat([path]).get_attributes('embedding')
+        assert len([em for em in embeddings if em is not None]) == count
