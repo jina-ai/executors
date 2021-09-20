@@ -9,7 +9,7 @@ from jina import Document, DocumentArray, Executor
 from tensorflow.python.framework import ops
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def encoder() -> VggishAudioEncoder:
     return VggishAudioEncoder()
 
