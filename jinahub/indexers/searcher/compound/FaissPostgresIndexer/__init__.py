@@ -1,0 +1,1 @@
+from .faisspsql import FaissPostgresIndexer
