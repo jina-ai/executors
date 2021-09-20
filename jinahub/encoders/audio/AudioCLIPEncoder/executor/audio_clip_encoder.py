@@ -38,9 +38,14 @@ class AudioCLIPEncoder(Executor):
         super().__init__(*args, **kwargs)
         torch.set_grad_enabled(False)
         self.model_path = model_path
-        self.model = AudioCLIP(pretrained=model_path).to(device).eval()
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
+        try:
+            self.model = AudioCLIP(pretrained=model_path).to(device).eval()
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                'Please download AudioCLIP model and set the `model_path` argument.'
+            )
 
     @requests
     def encode(
