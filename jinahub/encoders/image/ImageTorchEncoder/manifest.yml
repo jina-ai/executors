@@ -1,5 +1,0 @@
-manifest_version: 1
-name: ImageTorchEncoder
-description: '`ImageTorchEncoder` encodes data from a `ndarray` into a d-dimensional vector space.'
-url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/ImageTorchEncoder
-keywords: [CNN, pytorch, Computer Vision, alexnet, resnet, image, encode]
