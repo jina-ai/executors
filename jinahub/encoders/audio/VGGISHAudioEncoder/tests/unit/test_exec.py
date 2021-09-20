@@ -8,10 +8,26 @@ from jina import Document, DocumentArray, Executor
 from tensorflow.python.framework import ops
 
 
+@pytest.fixture(scope="module")
+def encoder() -> VggishAudioEncoder:
+    return VggishAudioEncoder()
+
+
+@pytest.fixture(scope="module")
+def gpu_encoder() -> VggishAudioEncoder:
+    return VggishAudioEncoder(device='/GPU:0')
+
+
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert str(ex.vgg_model_path).endswith('vggish_model.ckpt')
     assert str(ex.pca_model_path).endswith('vggish_pca_params.ckpt')
+
+
+def test_no_documents(encoder: VggishAudioEncoder):
+    docs = DocumentArray()
+    encoder.encode(docs=docs, parameters={})
+    assert len(docs) == 0  # SUCCESS
 
 
 def test_embedding_dimension():
