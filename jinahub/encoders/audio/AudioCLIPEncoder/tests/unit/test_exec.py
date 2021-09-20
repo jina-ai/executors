@@ -200,6 +200,20 @@ def test_no_sample_rate():
         encoder.encode(docs, parameters={})
 
 
+@pytest.mark.parametrize('batch_size', [1, 2, 4, 8])
+def test_batch_size(encoder: AudioCLIPEncoder, batch_size: int):
+    audio, sample_rate = librosa.load(
+        str(Path(__file__).parents[1] / 'test_data/sample.mp3')
+    )
+    docs = DocumentArray(
+        [Document(blob=audio, tags={'sample_rate': sample_rate}) for _ in range(32)]
+    )
+    encoder.encode(docs, parameters={'batch_size': batch_size})
+
+    for doc in docs:
+        assert doc.embedding.shape == (1024,)
+
+
 @pytest.mark.parametrize(
     "traversal_paths, counts",
     [
