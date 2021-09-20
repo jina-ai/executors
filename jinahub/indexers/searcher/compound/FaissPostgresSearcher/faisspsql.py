@@ -1,5 +1,5 @@
-__copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
-__license__ = "Apache-2.0"
+__copyright__ = 'Copyright (c) 2021 Jina AI Limited. All rights reserved.'
+__license__ = 'Apache-2.0'
 
 import copy
 import datetime
@@ -48,6 +48,9 @@ class FaissPostgresSearcher(Executor):
                 'total_shards is None, rolling update '
                 'via PSQL import will not be possible.'
             )
+        else:
+            # shards is passed as str from Flow.add in yaml
+            self.total_shards = int(self.total_shards)
 
         # when constructed from rolling update
         # args are passed via runtime_args
@@ -68,7 +71,7 @@ class FaissPostgresSearcher(Executor):
     def _init_executors(self, dump_path, kwargs, startup_sync_args):
         # float32 because that's what faiss expects
         kv_indexer = PostgreSQLStorage(dump_dtype=np.float32, **kwargs)
-        vec_indexer = FaissSearcher(dump_path=dump_path, **kwargs)
+        vec_indexer = FaissSearcher(dump_path=dump_path, prefetch_size=16, **kwargs)
 
         if dump_path is None and startup_sync_args is None:
             name = getattr(self.metas, 'name', self.__class__.__name__)
@@ -99,7 +102,9 @@ class FaissPostgresSearcher(Executor):
                 self._kv_indexer.get_snapshot, total_shards=self.total_shards
             )
             timestamp = self._kv_indexer.last_snapshot_timestamp
-            self._vec_indexer = FaissSearcher(dump_func=dump_func, **self._init_kwargs)
+            self._vec_indexer = FaissSearcher(
+                dump_func=dump_func, prefetch_size=12, **self._init_kwargs
+            )
 
             if use_delta:
                 self.logger.info(f'Now adding delta from timestamp {timestamp}')
@@ -135,9 +140,11 @@ class FaissPostgresSearcher(Executor):
             dump_func = functools.partial(
                 self._kv_indexer._get_delta,
                 total_shards=self.total_shards,
-                timestamp=datetime.datetime.min,
+                timestamp=timestamp,
             )
-            self._vec_indexer = FaissSearcher(dump_func=dump_func, **self._init_kwargs)
+            self._vec_indexer = FaissSearcher(
+                dump_func=dump_func, prefetch_size=12, **self._init_kwargs
+            )
         else:
             self.logger.warning(
                 'Syncing via delta method. This cannot guarantee consistency'
@@ -220,3 +227,11 @@ class FaissPostgresSearcher(Executor):
             parameters['soft_delete'] = True
 
         self._kv_indexer.delete(docs, parameters, **kwargs)
+
+    @requests(on='/dump')
+    def dump(self, parameters: Dict, **kwargs):
+        """Dump the index
+
+        :param parameters: a dictionary containing the parameters for the dump
+        """
+        self._kv_indexer.dump(parameters)

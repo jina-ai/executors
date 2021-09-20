@@ -135,3 +135,6 @@ shell/jina-wizard.sh
 # Local model downloads
 .cache
 assets
+benchmark.txt
+dump.txt
+import.txt
