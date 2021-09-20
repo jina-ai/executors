@@ -8,7 +8,6 @@ import numpy as np
 import torch
 from jina import DocumentArray, Executor, requests
 from jina.excepts import BadDocType
-from jina_commons.batching import get_docs_batch_generator
 
 from .audio_clip.model import AudioCLIP
 
@@ -69,15 +68,11 @@ class AudioCLIPEncoder(Executor):
         if not docs:
             return
 
-        batch_generator = get_docs_batch_generator(
-            docs,
-            traversal_path=parameters.get('traversal_paths', self.traversal_paths),
-            batch_size=parameters.get('batch_size', self.batch_size),
-            needs_attr='blob',
-        )
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        batch_size = parameters.get('batch_size', self.batch_size)
 
         with torch.no_grad():
-            for batch in batch_generator:
+            for batch in docs.batch(batch_size, traversal_paths, required_attr='blob'):
                 self._create_embeddings(batch)
 
     def _create_embeddings(self, filtered_docs: Iterable):
