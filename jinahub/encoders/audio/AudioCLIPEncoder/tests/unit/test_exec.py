@@ -24,16 +24,20 @@ def gpu_encoder() -> AudioCLIPEncoder:
 
 @pytest.fixture(scope="function")
 def nested_docs() -> DocumentArray:
-    blob, _ = librosa.load(str(Path(__file__).parents[1] / 'test_data/sample.wav'))
-    docs = DocumentArray([Document(id="root1", blob=blob)])
+    blob, sample_rate = librosa.load(
+        str(Path(__file__).parents[1] / 'test_data/sample.wav')
+    )
+    docs = DocumentArray(
+        [Document(id="root1", blob=blob, tags={'sample_rate': sample_rate})]
+    )
     docs[0].chunks = [
-        Document(id="chunk11", blob=blob),
-        Document(id="chunk12", blob=blob),
-        Document(id="chunk13", blob=blob),
+        Document(id="chunk11", blob=blob, tags={'sample_rate': sample_rate}),
+        Document(id="chunk12", blob=blob, tags={'sample_rate': sample_rate}),
+        Document(id="chunk13", blob=blob, tags={'sample_rate': sample_rate}),
     ]
     docs[0].chunks[0].chunks = [
-        Document(id="chunk111", blob=blob),
-        Document(id="chunk112", blob=blob),
+        Document(id="chunk111", blob=blob, tags={'sample_rate': sample_rate}),
+        Document(id="chunk112", blob=blob, tags={'sample_rate': sample_rate}),
     ]
 
     return docs
