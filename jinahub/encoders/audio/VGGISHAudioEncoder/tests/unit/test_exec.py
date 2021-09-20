@@ -11,6 +11,7 @@ from tensorflow.python.framework import ops
 
 @pytest.fixture(scope="module")
 def encoder() -> VggishAudioEncoder:
+    ops.reset_default_graph()
     return VggishAudioEncoder()
 
 
