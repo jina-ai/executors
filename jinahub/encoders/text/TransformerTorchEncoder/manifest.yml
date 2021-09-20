@@ -1,5 +1,0 @@
-manifest_version: 1
-name: TransformerTorchEncoder
-description: '`TransformerTorchEncoder` encodes text using transformer models'
-url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/TransformerTorchEncoder
-keywords: [encoder, text, transformer, bert]

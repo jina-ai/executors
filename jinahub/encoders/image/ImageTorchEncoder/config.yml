@@ -1,4 +1,0 @@
-jtype: ImageTorchEncoder
-metas:
-  py_modules:
-    - executor/__init__.py
