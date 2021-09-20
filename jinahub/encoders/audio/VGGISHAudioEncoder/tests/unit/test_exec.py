@@ -8,7 +8,7 @@ from executor.vggish_audio_encoder import VggishAudioEncoder
 from jina import Document, DocumentArray, Executor
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def encoder() -> VggishAudioEncoder:
     return VggishAudioEncoder()
 
