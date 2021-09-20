@@ -21,23 +21,6 @@ def gpu_encoder() -> AudioCLIPEncoder:
     return AudioCLIPEncoder(device='cuda')
 
 
-@pytest.fixture(scope="function")
-def nested_docs() -> DocumentArray:
-    blob = np.ones((224, 224, 3), dtype=np.uint8)
-    docs = DocumentArray([Document(id="root1", blob=blob)])
-    docs[0].chunks = [
-        Document(id="chunk11", blob=blob),
-        Document(id="chunk12", blob=blob),
-        Document(id="chunk13", blob=blob),
-    ]
-    docs[0].chunks[0].chunks = [
-        Document(id="chunk111", blob=blob),
-        Document(id="chunk112", blob=blob),
-    ]
-
-    return docs
-
-
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.model_path.endswith('AudioCLIP-Full-Training.pt')
