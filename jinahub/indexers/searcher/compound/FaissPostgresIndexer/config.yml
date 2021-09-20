@@ -1,4 +1,4 @@
-jtype: FaissPostgresSearcher
+jtype: FaissPostgresIndexer
 with:
   {}
 metas:

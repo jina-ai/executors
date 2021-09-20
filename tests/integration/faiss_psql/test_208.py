@@ -3,9 +3,7 @@ import os
 import pytest
 from jina import Document, Flow
 
-from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
-    FaissPostgresSearcher,
-)
+from jinahub.indexers.searcher.compound.FaissPostgresIndexer import FaissPostgresIndexer
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.join(cur_dir, 'docker-compose.yml')
@@ -19,7 +17,7 @@ def test_shards_str(docker_compose):
     executors:
       - name: text_indexer
         shards: 1
-        uses: FaissPostgresSearcher
+        uses: FaissPostgresIndexer
         uses_with:
           startup_sync_args: 
             only_delta: True

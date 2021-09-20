@@ -3,7 +3,7 @@ version: '1'
 executors:
   - name: indexer_query
     uses:
-      jtype: FaissPostgresSearcher
+      jtype: FaissPostgresIndexer
       metas:
         name: compound_query_indexer
     shards: $SHARDS

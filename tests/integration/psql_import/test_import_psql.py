@@ -12,9 +12,7 @@ from jina import Document, DocumentArray, Executor, Flow, requests
 from jina.logging.profile import TimeContext
 from jina_commons.indexers.dump import import_metas, import_vectors
 
-from jinahub.indexers.searcher.compound.FaissPostgresSearcher import (
-    FaissPostgresSearcher,
-)
+from jinahub.indexers.searcher.compound.FaissPostgresIndexer import FaissPostgresIndexer
 from jinahub.indexers.storage.PostgreSQLStorage.postgres_indexer import (
     PostgreSQLStorage,
 )
@@ -28,7 +26,7 @@ METRIC = 'l2'
 def _flow(uses_after, total_shards, startup_args, polling, replicas=1, name='indexer'):
     return Flow().add(
         name=name,
-        uses=FaissPostgresSearcher,
+        uses=FaissPostgresIndexer,
         uses_with={
             'startup_sync_args': startup_args,
         },

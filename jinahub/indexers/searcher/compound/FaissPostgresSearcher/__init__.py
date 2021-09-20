@@ -1,1 +1,0 @@
-from .faisspsql import FaissPostgresSearcher

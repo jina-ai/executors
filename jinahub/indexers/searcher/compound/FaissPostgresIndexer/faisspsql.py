@@ -14,7 +14,7 @@ from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
 from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 
 
-class FaissPostgresSearcher(Executor):
+class FaissPostgresIndexer(Executor):
     """A Compound Indexer made up of a FaissSearcher (for vectors) and a
     PostgreSQLStorage
     """
