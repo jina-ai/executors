@@ -120,22 +120,21 @@ class VideoTorchEncoder(Executor):
         for batch in docs.batch(batch_size, traversal_paths):
             self._create_embeddings(batch)
 
-    def _create_embeddings(self, document_batches_generator: Iterable):
+    def _create_embeddings(self, batch_of_documents: DocumentArray):
         with torch.no_grad():
-            for document_batch in document_batches_generator:
-                if self.use_preprocessing:
-                    tensors = [
-                        self.transforms(torch.Tensor(d.blob).to(dtype=torch.uint8))
-                        for d in document_batch
-                    ]
-                    tensor = torch.stack(tensors).to(self.device)
-                else:
-                    tensor = torch.stack(
-                        [torch.Tensor(d.blob) for d in document_batch]
-                    ).to(self.device)
-                embedding_batch = self._get_embeddings(tensor)
-                numpy_embedding_batch = embedding_batch.cpu().numpy()
-                for document, numpy_embedding in zip(
-                    document_batch, numpy_embedding_batch
-                ):
-                    document.embedding = numpy_embedding
+            if self.use_preprocessing:
+                tensors = [
+                    self.transforms(torch.Tensor(d.blob).to(dtype=torch.uint8))
+                    for d in batch_of_documents
+                ]
+                tensor = torch.stack(tensors).to(self.device)
+            else:
+                tensor = torch.stack(
+                    [torch.Tensor(d.blob) for d in batch_of_documents]
+                ).to(self.device)
+            embedding_batch = self._get_embeddings(tensor)
+            numpy_embedding_batch = embedding_batch.cpu().numpy()
+            for document, numpy_embedding in zip(
+                batch_of_documents, numpy_embedding_batch
+            ):
+                document.embedding = numpy_embedding
