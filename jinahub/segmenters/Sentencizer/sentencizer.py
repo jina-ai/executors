@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import re
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
@@ -23,7 +23,7 @@ class Sentencizer(Executor):
         max_sent_len: int = 512,
         punct_chars: Optional[List[str]] = None,
         uniform_weight: bool = True,
-        traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: Tuple[str] = ('r',),
         *args,
         **kwargs
     ):
@@ -83,9 +83,7 @@ class Sentencizer(Executor):
         )
 
     @requests
-    def segment(
-        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
-    ):
+    def segment(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
         Split the text into sentences.
         :param docs: Documents that contain the text
