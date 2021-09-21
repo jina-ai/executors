@@ -7,7 +7,6 @@ import torch
 import torch.nn as nn
 import torchvision.models.video as models
 from jina import DocumentArray, Executor, requests
-from jina_commons.batching import get_docs_batch_generator
 from torchvision import transforms
 
 # https://github.com/pytorch/vision/blob/d391a0e992a35d7fb01e11110e2ccf8e445ad8a0/references/video_classification/transforms.py#L13
@@ -112,14 +111,14 @@ class VideoTorchEncoder(Executor):
             For example, `parameters={'traversal_paths': 'r', 'batch_size': 10}` will override
             the `self.traversal_paths` and `self.batch_size`.
         """
-        if docs:
-            document_batches_generator = get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
-                batch_size=parameters.get('batch_size', self.batch_size),
-                needs_attr='blob',
-            )
-            self._create_embeddings(document_batches_generator)
+        if not docs:
+            return
+
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        batch_size = parameters.get('batch_size', self.batch_size)
+
+        for batch in docs.batch(batch_size, traversal_paths):
+            self._create_embeddings(batch)
 
     def _create_embeddings(self, document_batches_generator: Iterable):
         with torch.no_grad():

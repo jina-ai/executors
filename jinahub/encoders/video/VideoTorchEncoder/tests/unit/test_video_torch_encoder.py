@@ -12,15 +12,73 @@ from torchvision import transforms
 from video_torch_encoder import ConvertFCHWtoCFHW, ConvertFHWCtoFCHW, VideoTorchEncoder
 
 
+@pytest.fixture(scope="module")
+def encoder() -> VideoTorchEncoder:
+    return VideoTorchEncoder()
+
+
+@pytest.fixture(scope="module")
+def encoder_with_processing() -> VideoTorchEncoder:
+    return VideoTorchEncoder(use_preprocessing=True)
+
+
+@pytest.fixture(scope="module")
+def gpu_encoder() -> VideoTorchEncoder:
+    return VideoTorchEncoder(device='cuda')
+
+
+@pytest.fixture()
+def kinects_videos():
+    from torchvision.datasets import Kinetics400
+
+    dataset = Kinetics400(
+        root=Path(__file__).parents[1] / 'data/kinetics400', frames_per_clip=20
+    )
+    return [dataset[0][0], dataset[0][0]]
+
+
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.batch_size == 32
 
 
+def test_no_documents(encoder: VideoTorchEncoder):
+    docs = DocumentArray()
+    encoder.encode(docs=docs, parameters={})
+    assert len(docs) == 0  # SUCCESS
+
+
+def test_none_docs(encoder: VideoTorchEncoder):
+    encoder.encode(docs=None, parameters={})
+
+
+def test_docs_no_blobs(encoder: VideoTorchEncoder):
+    docs = DocumentArray([Document()])
+    encoder.encode(docs=DocumentArray(), parameters={})
+    assert len(docs) == 1
+    assert docs[0].embedding is None
+
+
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-def test_video_torch_encoder(model_name):
+@pytest.mark.parametrize('use_preprocessing', [False, True])
+def test_encode_single_document(model_name, use_preprocessing):
     ex = VideoTorchEncoder(
-        model_name=model_name, use_preprocessing=False, download_progress=False
+        model_name=model_name, use_preprocessing=use_preprocessing, download_progress=False
+    )
+    da = DocumentArray(
+        [Document(blob=np.random.random((3, 2, 224, 224)))]
+    )
+    ex.encode(da, {})
+    assert len(da) == 1
+    for doc in da:
+        assert doc.embedding.shape == (512,)
+
+
+@pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
+@pytest.mark.parametrize('use_preprocessing', [False, True])
+def test_encode_multiple_documents(model_name, use_preprocessing):
+    ex = VideoTorchEncoder(
+        model_name=model_name, use_preprocessing=use_preprocessing, download_progress=False
     )
     da = DocumentArray(
         [Document(blob=np.random.random((3, 2, 224, 224))) for _ in range(10)]
@@ -48,30 +106,6 @@ def test_video_torch_encoder_traversal_paths(batch_size):
         assert len(doc.chunks) == 5
         for chunk in doc.chunks:
             assert chunk.embedding.shape == (512,)
-
-
-@pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-def test_video_torch_encoder_use_preprocessing(model_name):
-    ex = VideoTorchEncoder(
-        model_name=model_name, use_preprocessing=True, download_progress=False
-    )
-    da = DocumentArray(
-        [Document(blob=np.random.random((10, 270, 480, 3))) for _ in range(10)]
-    )
-    ex.encode(da, {})
-    assert len(da) == 10
-    for doc in da:
-        assert doc.embedding.shape == (512,)
-
-
-@pytest.fixture()
-def kinects_videos():
-    from torchvision.datasets import Kinetics400
-
-    dataset = Kinetics400(
-        root=Path(__file__).parents[1] / 'data/kinetics400', frames_per_clip=20
-    )
-    return [dataset[0][0], dataset[0][0]]
 
 
 @pytest.mark.parametrize('model_name', ['mc3_18', 'r2plus1d_18', 'r3d_18'])
@@ -126,12 +160,13 @@ def test_with_dataset_video(model_name, kinects_videos):
         )
 
 
-@pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
 @pytest.mark.gpu
-def test_video_torch_encoder_use_preprocessing_gpu(model_name):
+@pytest.mark.parametrize('use_preprocessing', [True, False])
+@pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
+def test_video_torch_encoder_gpu(model_name, use_preprocessing):
     ex = VideoTorchEncoder(
         model_name=model_name,
-        use_preprocessing=True,
+        use_preprocessing=use_preprocessing,
         device='cuda',
         download_progress=False,
     )
