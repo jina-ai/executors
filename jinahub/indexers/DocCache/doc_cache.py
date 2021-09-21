@@ -47,7 +47,7 @@ class DocCache(Executor):
         **kwargs,
     ):
         """
-        :param fields: Fields of the Document used for generating unique hashing code,
+        :param fields: One or more fields of the Document used for generating unique hashing code,
             which is further used to detect the duplicates. Refer to
             https://docs.jina.ai/fundamentals/document/document-api/#document-content
             for a complete list of fields/attributes.
@@ -96,6 +96,55 @@ class DocCache(Executor):
             f'Finished index op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
         )
 
+    @requests(on='/update')
+    def update(self, docs: Optional[DocumentArray], **kwargs):
+        """Update the Documents in the cache with the new content by id"""
+        if not docs:
+            return
+        for i, d in enumerate(docs):
+            old_cache_value = self.cache_handler.id_to_hash.get(d.id)
+
+            if old_cache_value is None:
+                continue
+
+            new_doc_hash = DocCache.hash_doc(d, self.fields)
+
+            self.cache_handler.id_to_hash[d.id] = new_doc_hash
+
+            try:
+                del self.cache_handler.hash_to_id[old_cache_value]
+            except KeyError:
+                # could have been deleted by a previous Document having the same hash
+                self.logger.warning(f'Failed to delete the old value of {d.id}')
+                pass
+
+            self.cache_handler.hash_to_id[new_doc_hash] = d.id
+        self.logger.info(
+            f'Finished update op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
+        )
+
+    @requests(on='/delete')
+    def delete(self, docs: Optional[DocumentArray], **kwargs):
+        """Delete the Documents from the cache with the with the same id as in the `docs`"""
+        if not docs:
+            return
+        for i, d in enumerate(docs):
+            old_cache_value = self.cache_handler.id_to_hash.get(d.id)
+
+            if old_cache_value is None:
+                continue
+
+            try:
+                del self.cache_handler.hash_to_id[old_cache_value]
+            except KeyError:
+                # no guarantee
+                self.logger.warning(f'Failed to delete {d.id}')
+                pass
+            del self.cache_handler.id_to_hash[d.id]
+        self.logger.info(
+            f'Finished delete op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
+        )
+
     def close(self) -> None:
         self.cache_handler.close()
 
@@ -128,51 +177,3 @@ class DocCache(Executor):
     def hashes_count(self):
         """Return the nr of distinct hashes"""
         return len(self.cache_handler.hash_to_id)
-
-    @requests(on='/update')
-    def update(self, docs: Optional[DocumentArray], **kwargs):
-        """Update the documents in the cache with the new content, by id"""
-        if not docs:
-            return
-        for i, d in enumerate(docs):
-            old_cache_value = self.cache_handler.id_to_hash.get(d.id)
-
-            if old_cache_value is None:
-                continue
-
-            new_doc_hash = DocCache.hash_doc(d, self.fields)
-
-            self.cache_handler.id_to_hash[d.id] = new_doc_hash
-
-            try:
-                del self.cache_handler.hash_to_id[old_cache_value]
-            except KeyError:
-                # could have been deleted by a previous Document having the same hash
-                self.logger.warning(f'Failed to delete the old value of {d.id}')
-                pass
-
-            self.cache_handler.hash_to_id[new_doc_hash] = d.id
-        self.logger.info(
-            f'Finished update op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
-        )
-
-    @requests(on='/delete')
-    def delete(self, docs: Optional[DocumentArray], **kwargs):
-        if not docs:
-            return
-        for i, d in enumerate(docs):
-            old_cache_value = self.cache_handler.id_to_hash.get(d.id)
-
-            if old_cache_value is None:
-                continue
-
-            try:
-                del self.cache_handler.hash_to_id[old_cache_value]
-            except KeyError:
-                # no guarantee
-                self.logger.warning(f'Failed to delete {d.id}')
-                pass
-            del self.cache_handler.id_to_hash[d.id]
-        self.logger.info(
-            f'Finished delete op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
-        )
