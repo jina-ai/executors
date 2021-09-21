@@ -22,11 +22,6 @@ def encoder_with_processing() -> VideoTorchEncoder:
     return VideoTorchEncoder(use_preprocessing=True)
 
 
-@pytest.fixture(scope="module")
-def gpu_encoder() -> VideoTorchEncoder:
-    return VideoTorchEncoder(device='cuda')
-
-
 @pytest.fixture()
 def kinects_videos():
     from torchvision.datasets import Kinetics400
@@ -163,7 +158,7 @@ def test_with_dataset_video(model_name, kinects_videos):
 @pytest.mark.gpu
 @pytest.mark.parametrize('use_preprocessing', [True, False])
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-def test_video_torch_encoder_gpu(model_name, use_preprocessing):
+def test_video_torch_encoder_gpu(model_name, use_preprocessing ):
     ex = VideoTorchEncoder(
         model_name=model_name,
         use_preprocessing=use_preprocessing,
