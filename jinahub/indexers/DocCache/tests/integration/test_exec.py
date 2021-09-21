@@ -25,7 +25,7 @@ def test_cache(tmp_path, cache_fields, value):
 
     with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as f:
         response = f.post(on='/index', inputs=DocumentArray(docs), return_results=True)
-        assert len(response[0].docs) == 1
+        assert len(response[0].docs) == len(value)
         if cache_fields == '[content_hash]':
             assert set([d.content for d in response[0].docs]) == {'a'}
         elif cache_fields == '[id]':
@@ -46,7 +46,7 @@ def test_cache_two_fields(tmp_path, content):
         assert len(response[0].docs) == len(set(content))
 
 
-def test_default_config():
+def test_default_config(tmp_path):
     import shutil
 
     shutil.rmtree(str(Path(__file__).parents[2] / 'cache'), ignore_errors=True)
@@ -60,7 +60,10 @@ def test_default_config():
 
     docs_to_update = DocumentArray([Document(id=2, content='🐼')])
 
-    with Flow().add(uses=str(Path(__file__).parents[2] / 'config.yml')) as f:
+    with Flow().add(
+        uses=str(Path(__file__).parents[2] / 'config.yml'),
+        uses_metas={'workspace': str(tmp_path / 'cache')},
+    ) as f:
         response = f.post(on='/index', inputs=docs, return_results=True)
         # the duplicated Document is removed from the request
         assert len(response[0].data.docs) == 2
