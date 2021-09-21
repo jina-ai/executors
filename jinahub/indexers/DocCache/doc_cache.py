@@ -54,7 +54,7 @@ class DocCache(Executor):
         """
         super().__init__(*args, **kwargs)
         if fields is None:
-            fields = (('content_hash',),)
+            fields = ('content_hash',)
         self.fields = fields
         self.logger = JinaLogger(getattr(self.metas, 'name', self.__class__.__name__))
         if not os.path.exists(self.workspace):
