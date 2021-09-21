@@ -62,6 +62,33 @@ def test_initialization():
     assert norm.target_dtype == np.uint8
 
 
+def test_initialize_from_string_target_dtype():
+    norm = ImageNormalizer(
+        target_dtype='np.uint8',
+    )
+    assert norm.target_dtype == np.uint8
+
+
+def test_initialize_from_string_target_dtype_failed():
+    with pytest.raises(Exception):
+        _ = ImageNormalizer(
+            target_dtype='invalid',
+        )
+
+
+def test_empty_docs():
+    norm = ImageNormalizer()
+    da = DocumentArray()
+    norm.craft(da)
+    assert len(da) == 0
+
+
+def test_input_none():
+    norm = ImageNormalizer()
+    da = DocumentArray()
+    norm.craft(None)
+
+
 def test_convert_image_to_blob(
     test_image_uri_doc, test_image_buffer_doc, test_image_blob_doc
 ):
@@ -83,7 +110,7 @@ def test_convert_image_to_blob(
 
 @pytest.mark.parametrize('dtype_conversion', [np.uint8, np.float32, np.float64])
 @pytest.mark.parametrize('manual_convert', [True, False])
-@pytest.mark.parametrize('traversal_paths', [(('r'),), (('c'),)])
+@pytest.mark.parametrize('traversal_paths', [('r',), ('c',)])
 def test_crafting_image(
     test_image_uri_doc, manual_convert, dtype_conversion, traversal_paths
 ):

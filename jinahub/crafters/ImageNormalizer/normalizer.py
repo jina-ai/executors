@@ -2,29 +2,28 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from pydoc import locate
-from typing import Iterable, Tuple, Union
+from typing import Iterable, Tuple, Union, Optional
 
 import numpy as np
 import PIL.Image as Image
 from jina import DocumentArray, Executor, requests
-from jina.logging.logger import JinaLogger
 
 
 class ImageNormalizer(Executor):
     """`ImageNormalizer` resizes, crops and normalizes images stored in Document blobs."""
 
     def __init__(
-        self,
-        target_size: Union[Iterable[int], int] = 224,
-        img_mean: Tuple[float] = (0, 0, 0),
-        img_std: Tuple[float] = (1, 1, 1),
-        resize_dim: Union[Iterable[int], int] = 256,
-        channel_axis: int = -1,
-        target_channel_axis: int = -1,
-        target_dtype: Union[str, np.dtype] = np.float32,
-        traversal_paths: Tuple[str] = ('r',),
-        *args,
-        **kwargs,
+            self,
+            target_size: Union[Iterable[int], int] = 224,
+            img_mean: Tuple[float] = (0, 0, 0),
+            img_std: Tuple[float] = (1, 1, 1),
+            resize_dim: Union[Iterable[int], int] = 256,
+            channel_axis: int = -1,
+            target_channel_axis: int = -1,
+            target_dtype: Union[str, np.dtype] = np.float32,
+            traversal_paths: Tuple[str] = ('r',),
+            *args,
+            **kwargs,
     ):
         """
         :param target_size: desired output size. If size is a sequence like
@@ -45,8 +44,8 @@ class ImageNormalizer(Executor):
         self.img_std = np.array(img_std).reshape((1, 1, 3))
         self.channel_axis = channel_axis
         self.target_channel_axis = target_channel_axis
-        self.logger = JinaLogger(getattr(self.metas, 'name', self.__class__.__name__))
         self.traversal_paths = traversal_paths
+        self.target_dtype = None
 
         # when passed from yaml it is string
         if isinstance(target_dtype, str):
@@ -54,31 +53,20 @@ class ImageNormalizer(Executor):
             if actual_type:
                 self.target_dtype = actual_type
             else:
-                self.logger.error(
-                    f'Could not resolve type "{target_dtype}". '
-                    f'Make sure you use "numpy.float32"-like syntax'
-                )
+                raise Exception(f'Could not resolve type "{target_dtype}". '
+                                f'Make sure you use "numpy.float32"-like syntax')
 
         else:
             self.target_dtype = target_dtype
 
     @requests
-    def craft(self, docs: DocumentArray, parameters: dict, **kwargs) -> DocumentArray:
+    def craft(self, docs: Optional[DocumentArray], parameters: dict, **kwargs) -> DocumentArray:
         if docs is None:
             return
 
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
 
-        filtered_docs = DocumentArray(
-            list(
-                filter(
-                    lambda d: 'image/' in d.mime_type,
-                    docs.traverse_flat(traversal_paths),
-                )
-            )
-        )
-
-        for doc in filtered_docs:
+        for doc in docs.traverse_flat(traversal_paths):
             self._convert_image_to_blob(doc)
             raw_img = self._load_image(doc.blob)
             _img = self._normalize(raw_img)
@@ -157,10 +145,10 @@ class ImageNormalizer(Executor):
         elif how == 'precise':
             assert w_beg is not None and h_beg is not None
             assert (
-                0 <= w_beg <= (img_w - target_w)
+                    0 <= w_beg <= (img_w - target_w)
             ), f'left must be within [0, {img_w - target_w}]: {w_beg}'
             assert (
-                0 <= h_beg <= (img_h - target_h)
+                    0 <= h_beg <= (img_h - target_h)
             ), f'top must be within [0, {img_h - target_h}]: {h_beg}'
         else:
             raise ValueError(f'unknown input how: {how}')
