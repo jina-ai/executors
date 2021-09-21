@@ -27,9 +27,10 @@ def test_cache(tmp_path, cache_fields, value):
         response = f.post(on='/index', inputs=DocumentArray(docs), return_results=True)
         assert len(response[0].docs) == len(value)
         if cache_fields == '[content_hash]':
-            assert set([d.content for d in response[0].docs]) == {'a'}
+            result_set = set([d.content for d in response[0].docs])
         elif cache_fields == '[id]':
-            assert set([d.id for d in response[0].docs]) == {'a'}
+            result_set = set([d.id for d in response[0].docs])
+        assert result_set == set(value)
 
 
 @pytest.mark.parametrize('content', [['a'], ['a', 'b']])
