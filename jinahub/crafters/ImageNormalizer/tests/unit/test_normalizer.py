@@ -9,6 +9,11 @@ from PIL.Image import Image, fromarray
 
 
 @pytest.fixture
+def default_normalizer():
+    return ImageNormalizer()
+
+
+@pytest.fixture
 def numpy_image_uri(tmpdir):
     blob = np.random.randint(255, size=(96, 96, 3), dtype='uint8')
     im = fromarray(blob)
@@ -41,9 +46,8 @@ def test_config():
     assert ex.target_size == 224
 
 
-def test_initialization():
-    norm = ImageNormalizer()
-    assert norm.target_size == 224
+def test_initialization(default_normalizer):
+    assert default_normalizer.target_size == 224
     norm = ImageNormalizer(
         target_size=96,
         img_mean=(1.0, 2.0, 3.0),
@@ -64,29 +68,26 @@ def test_initialization():
 
 def test_initialize_from_string_target_dtype():
     norm = ImageNormalizer(
-        target_dtype='np.uint8',
+        target_dtype='numpy.uint8',
     )
     assert norm.target_dtype == np.uint8
 
 
 def test_initialize_from_string_target_dtype_failed():
-    with pytest.raises(Exception):
+    with pytest.raises(RuntimeError):
         _ = ImageNormalizer(
             target_dtype='invalid',
         )
 
 
-def test_empty_docs():
-    norm = ImageNormalizer()
+def test_empty_docs(default_normalizer):
     da = DocumentArray()
-    norm.craft(da)
+    default_normalizer.craft(da, {})
     assert len(da) == 0
 
 
-def test_input_none():
-    norm = ImageNormalizer()
-    da = DocumentArray()
-    norm.craft(None)
+def test_input_none(default_normalizer):
+    default_normalizer.craft(None, {})
 
 
 def test_convert_image_to_blob(
