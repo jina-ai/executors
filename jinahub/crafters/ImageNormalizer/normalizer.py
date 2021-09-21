@@ -2,12 +2,11 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from pydoc import locate
-from typing import Iterable, Tuple, Union
+from typing import Iterable, Optional, Tuple, Union
 
 import numpy as np
 import PIL.Image as Image
 from jina import DocumentArray, Executor, requests
-from jina.logging.logger import JinaLogger
 
 
 class ImageNormalizer(Executor):
@@ -45,8 +44,8 @@ class ImageNormalizer(Executor):
         self.img_std = np.array(img_std).reshape((1, 1, 3))
         self.channel_axis = channel_axis
         self.target_channel_axis = target_channel_axis
-        self.logger = JinaLogger(getattr(self.metas, 'name', self.__class__.__name__))
         self.traversal_paths = traversal_paths
+        self.target_dtype = None
 
         # when passed from yaml it is string
         if isinstance(target_dtype, str):
@@ -54,7 +53,7 @@ class ImageNormalizer(Executor):
             if actual_type:
                 self.target_dtype = actual_type
             else:
-                self.logger.error(
+                raise RuntimeError(
                     f'Could not resolve type "{target_dtype}". '
                     f'Make sure you use "numpy.float32"-like syntax'
                 )
@@ -63,22 +62,15 @@ class ImageNormalizer(Executor):
             self.target_dtype = target_dtype
 
     @requests
-    def craft(self, docs: DocumentArray, parameters: dict, **kwargs) -> DocumentArray:
+    def craft(
+        self, docs: Optional[DocumentArray], parameters: dict, **kwargs
+    ) -> DocumentArray:
         if docs is None:
             return
 
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
 
-        filtered_docs = DocumentArray(
-            list(
-                filter(
-                    lambda d: 'image/' in d.mime_type,
-                    docs.traverse_flat(traversal_paths),
-                )
-            )
-        )
-
-        for doc in filtered_docs:
+        for doc in docs.traverse_flat(traversal_paths):
             self._convert_image_to_blob(doc)
             raw_img = self._load_image(doc.blob)
             _img = self._normalize(raw_img)

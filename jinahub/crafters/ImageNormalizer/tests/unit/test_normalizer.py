@@ -9,6 +9,11 @@ from PIL.Image import Image, fromarray
 
 
 @pytest.fixture
+def default_normalizer():
+    return ImageNormalizer()
+
+
+@pytest.fixture
 def numpy_image_uri(tmpdir):
     blob = np.random.randint(255, size=(96, 96, 3), dtype='uint8')
     im = fromarray(blob)
@@ -41,9 +46,8 @@ def test_config():
     assert ex.target_size == 224
 
 
-def test_initialization():
-    norm = ImageNormalizer()
-    assert norm.target_size == 224
+def test_initialization(default_normalizer):
+    assert default_normalizer.target_size == 224
     norm = ImageNormalizer(
         target_size=96,
         img_mean=(1.0, 2.0, 3.0),
@@ -60,6 +64,30 @@ def test_initialization():
     assert norm.channel_axis == 4
     assert norm.target_channel_axis == 5
     assert norm.target_dtype == np.uint8
+
+
+def test_initialize_from_string_target_dtype():
+    norm = ImageNormalizer(
+        target_dtype='numpy.uint8',
+    )
+    assert norm.target_dtype == np.uint8
+
+
+def test_initialize_from_string_target_dtype_failed():
+    with pytest.raises(RuntimeError):
+        _ = ImageNormalizer(
+            target_dtype='invalid',
+        )
+
+
+def test_empty_docs(default_normalizer):
+    da = DocumentArray()
+    default_normalizer.craft(da, {})
+    assert len(da) == 0
+
+
+def test_input_none(default_normalizer):
+    default_normalizer.craft(None, {})
 
 
 def test_convert_image_to_blob(
@@ -83,7 +111,7 @@ def test_convert_image_to_blob(
 
 @pytest.mark.parametrize('dtype_conversion', [np.uint8, np.float32, np.float64])
 @pytest.mark.parametrize('manual_convert', [True, False])
-@pytest.mark.parametrize('traversal_paths', [(('r'),), (('c'),)])
+@pytest.mark.parametrize('traversal_paths', [('r',), ('c',)])
 def test_crafting_image(
     test_image_uri_doc, manual_convert, dtype_conversion, traversal_paths
 ):
