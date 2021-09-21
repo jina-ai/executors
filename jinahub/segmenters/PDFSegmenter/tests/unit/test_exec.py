@@ -2,22 +2,40 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from pathlib import Path
 
-from jina import Executor
-from jina.executors import BaseExecutor
+import pytest
+from jina import Document, DocumentArray, Executor
+from pdf_segmenter import PDFSegmenter
 from PIL import Image
 
 
-def test_config():
-    ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
+@pytest.fixture()
+def executor():
+    return PDFSegmenter()
 
 
-def test_io_images_and_text(test_dir, doc_generator_img_text, expected_text):
-    crafter = BaseExecutor.load_config('config.yml')
+@pytest.fixture()
+def executor_from_config():
+    return Executor.load_config('config.yml')
+
+
+def test_empty_docs(executor):
+    da = DocumentArray()
+    executor.craft(da)
+    assert len(da) == 0
+
+
+def test_none_input(executor):
+    executor.craft(None)
+
+
+def test_io_images_and_text(
+    executor_from_config, test_dir, doc_generator_img_text, expected_text
+):
     doc_array = doc_generator_img_text
+    assert len(doc_array) > 0
     for doc in doc_array:
-        crafter.craft(doc)
+        executor_from_config.craft(doc)
         chunks = doc[0].chunks
         assert len(chunks) == 3
         # Check images
@@ -36,11 +54,11 @@ def test_io_images_and_text(test_dir, doc_generator_img_text, expected_text):
             assert chunks[2].mime_type == 'text/plain'
 
 
-def test_io_text(doc_generator_text, expected_text):
-    crafter = BaseExecutor.load_config('config.yml')
+def test_io_text(executor_from_config, doc_generator_text, expected_text):
     doc_array = doc_generator_text
+    assert len(doc_array) > 0
     for doc in doc_array:
-        crafter.craft(doc)
+        executor_from_config.craft(doc)
         chunks = doc[0].chunks
         assert len(chunks) == 1
         # Check test
@@ -48,11 +66,11 @@ def test_io_text(doc_generator_text, expected_text):
         assert chunks[0].mime_type == 'text/plain'
 
 
-def test_io_img(test_dir, doc_generator_img):
-    crafter = BaseExecutor.load_config('config.yml')
+def test_io_img(executor_from_config, test_dir, doc_generator_img):
     doc_array = doc_generator_img
+    assert len(doc_array) > 0
     for doc in doc_array:
-        crafter.craft(doc)
+        executor_from_config.craft(doc)
         chunks = doc[0].chunks
         assert len(chunks) == 3
         # Check images

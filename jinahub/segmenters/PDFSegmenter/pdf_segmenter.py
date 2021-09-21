@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import io
-from typing import List
+from typing import List, Optional
 
 import fitz
 import numpy as np
@@ -12,22 +12,21 @@ from jina.logging.logger import JinaLogger
 
 
 class PDFSegmenter(Executor):
-    """
-    :class:`PDFCrafter` Extracts data (text and images) from PDF files.
-    Stores images (`mime_type`=image/*) on chunk level ('c') and text segments (`mime_type`=text/plain)
-    on chunk level ('c') in the root ('r') Document.
-    """
-
     def __init__(
         self,
         *args,
         **kwargs,
     ):
+        """
+        :class:`PDFSegmenter` Extracts data (text and images) from PDF files.
+        Stores images (`mime_type`=image/*) on chunk level ('c') and text segments (`mime_type`=text/plain)
+        on chunk level ('c') in the root ('r') Document.
+        """
         super().__init__(*args, **kwargs)
         self.logger = JinaLogger(context=self.__class__.__name__)
 
     @requests
-    def craft(self, docs: DocumentArray, **kwargs):
+    def craft(self, docs: Optional[DocumentArray], **kwargs):
         """
         Read PDF files. Extracts data from them.
         Checks if the input is a string of the filename,
@@ -37,6 +36,8 @@ class PDFSegmenter(Executor):
 
         :param docs: Array of Documents.
         """
+        if not docs:
+            return None
         for doc in docs:
             pdf_img, pdf_text = self._parse_pdf(doc)
 
