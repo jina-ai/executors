@@ -58,3 +58,13 @@ def test_executor_empty_input():
 def test_executor_none_input():
     ex = Sentencizer()
     ex.segment(None, {})
+
+def test_executor_with_smart_tokenizer():
+    ex = Sentencizer()
+    da = DocumentArray([Document(text='Mr. Albert. Go? Back')])
+    ex.segment(da, {'smart_tokenizer':True})
+    assert len(da) == 1
+    assert len(da[0].chunks) == 3
+    assert da[0].chunks[0].text == 'Mr. Albert.'
+    assert da[0].chunks[1].text == 'Go?'
+    assert da[0].chunks[2].text == 'Back'

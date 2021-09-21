@@ -3,6 +3,7 @@ __license__ = "Apache-2.0"
 
 import re
 from typing import Dict, List, Optional, Tuple
+from nltk.tokenize import sent_tokenize
 
 from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
@@ -35,6 +36,8 @@ class Sentencizer(Executor):
         :param punct_chars: the punctuation characters to split on,
             whatever is in the list will be used,
             for example ['!', '.', '?'] will use '!', '.' and '?'
+            If smart_tokenizer=True is passed to segment, punct_chars is
+            no longer considered
         :param uniform_weight: the definition of it should have
             uniform weight or should be calculated
         :param traversal_paths: traverse path on docs, e.g. ['r'], ['c']
@@ -82,6 +85,32 @@ class Sentencizer(Executor):
             r'\s*([^{0}]+)(?<!\s)[{0}]*'.format(''.join(set(self.punct_chars)))
         )
 
+    def seg(self, text, **kwargs) -> List:
+        ret = [
+                (m.group(0), m.start(), m.end())
+                for m in re.finditer(self._slit_pat, text)
+            ]
+        return ret
+    
+    def smart_seg(self, text: str, language: str='english', **kwargs) -> List:
+        """
+        Split a string into a list of strings using nltk function sent_tokenize 
+        Implemented to give a smarter tokenization of abbreviation as Dr. or Mr
+        Example: 
+            - smart_seg: 'Mr. Charles. is sick' -> 'Mr. Charles.', 'is sick'
+            - seg: 'Mr. Charles. is sick' -> 'Mr.', 'Charles.', 'is sick'
+        Reference: https://www.nltk.org/api/nltk.tokenize.html
+        """
+        j = 0
+        ret = []
+        tokenization = sent_tokenize(text)
+        for sentence in tokenization:
+            start_idx = j + text[j:].find(sentence[0])
+            end_idx = start_idx + len(sentence)
+            j += len(sentence)
+            ret.append((sentence, start_idx, end_idx))
+        return ret
+
     @requests
     def segment(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
         """
@@ -95,12 +124,16 @@ class Sentencizer(Executor):
             return
         traversal_path = parameters.get('traversal_paths', self.traversal_paths)
         flat_docs = docs.traverse_flat(traversal_path)
+        smart_tokenizer = parameters.get('smart_tokenizer', False)
+        language = parameters.get('language', 'english')
+        if smart_tokenizer:
+            seg_function = self.smart_seg
+        else:
+            seg_function = self.seg
+
         for doc in flat_docs:
             text = doc.text
-            ret = [
-                (m.group(0), m.start(), m.end())
-                for m in re.finditer(self._slit_pat, text)
-            ]
+            ret = seg_function(text, language=language)
             if not ret:
                 ret = [(text, 0, len(text))]
             for ci, (r, s, e) in enumerate(ret):
