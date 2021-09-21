@@ -1,10 +1,5 @@
 jtype: DocCache
-with:
-  fields: [content_hash]
 metas:
-  name: cache
   py_modules:
     - doc_cache.py
-  workspace: cache
-
-
+  workspace: 'cache'

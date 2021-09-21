@@ -1,0 +1,10 @@
+jtype: Flow
+version: '1'
+executors:
+  - name: cacher
+    uses:
+      jtype: DocCache
+      with:
+        fields: $CACHE_FIELDS
+      metas:
+        workspace: $CACHE_WORKSPACE
