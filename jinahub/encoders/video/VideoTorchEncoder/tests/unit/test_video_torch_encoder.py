@@ -89,6 +89,25 @@ def test_encode_single_document(
 
 @pytest.mark.parametrize('use_preprocessing', [True, False])
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
+def test_encode_single_document_given_wrong_input_shape(
+    model_name, use_preprocessing, random_doc_cnhw, random_doc_nhwc
+):
+    ex = VideoTorchEncoder(
+        model_name=model_name,
+        use_preprocessing=use_preprocessing,
+        download_progress=False,
+    )
+    da = DocumentArray()
+    if use_preprocessing:
+        da.append(random_doc_cnhw)
+    else:
+        da.append(random_doc_nhwc)
+    with pytest.raises(RuntimeError):
+        ex.encode(da, {})
+
+
+@pytest.mark.parametrize('use_preprocessing', [True, False])
+@pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
 def test_encode_multiple_documents(
     model_name, use_preprocessing, random_doc_cnhw, random_doc_nhwc
 ):
