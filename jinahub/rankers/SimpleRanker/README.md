@@ -6,9 +6,11 @@ replaced by matches based on the parent documents of the chunks - they contain a
 `id` and the aggregated score only.
 
 This ranker is used to "bubble-up" the scores of matched chunks to the scores
-of the parent document. As an example, consider an application where we are matching
-song lyrics to an input query (like in the [multires lyrics search example](https://github.com/jina-ai/examples/tree/master/multires-lyrics-search)). During indexing we break down all the song lyrics into sentences.
+of the parent document. 
 
+## Usage
+As an example, consider an application where we are matching
+song lyrics to an input query (like in the [multires lyrics search example](https://github.com/jina-ai/examples/tree/master/multires-lyrics-search)). During indexing we break down all the song lyrics into sentences.
 During querying, we first match lyric sentences to the query, and
 then use this ranker to produce matching songs (whole songs/lyrics, not just
 sentences) for the query. Since the matches that this ranker produces contain only

@@ -15,15 +15,7 @@ class SimpleRanker(Executor):
     `id` and the aggregated score only.
 
     This ranker is used to "bubble-up" the scores of matched chunks to the scores
-    of the parent document. As an example, consider an application where we are matching
-    song lyrics to an input query. During indexing we break down all the song lyrics
-    into sentences.
-
-    During querying, we first match lyric sentences to the query, and
-    then use this ranker to produce matching songs (whole songs/lyrics, not just
-    sentences) for the query. Since the matches that this ranker produces contain only
-    document id, we add a final step where an indexer is used to retrieve the song
-    contents base on the id.
+    of the parent document. 
     """
 
     def __init__(
@@ -72,7 +64,7 @@ class SimpleRanker(Executor):
         self.matches_path = matches_path
 
     @requests(on='/search')
-    def rank(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def rank(self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs):
         """Aggregate the score of matched chunks to the score of their parent document.
 
         The matches of query documents that are passed in `docs` are replaced (if they
