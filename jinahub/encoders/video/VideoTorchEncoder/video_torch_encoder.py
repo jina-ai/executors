@@ -7,7 +7,6 @@ import torch
 import torch.nn as nn
 import torchvision.models.video as models
 from jina import DocumentArray, Executor, requests
-from torchvision import transforms
 
 # https://github.com/pytorch/vision/blob/d391a0e992a35d7fb01e11110e2ccf8e445ad8a0/references/video_classification/transforms.py#L13
 
@@ -60,29 +59,19 @@ class VideoTorchEncoder(Executor):
         self.device = device
         self.batch_size = batch_size
         self.traversal_paths = traversal_paths
-        self.model = (
-            getattr(models, model_name)(pretrained=True, progress=download_progress)
-            .eval()
-            .to(self.device)
+        self.model = getattr(models, model_name)(
+            pretrained=True, progress=download_progress
         )
+        self.model.eval().to(self.device)
+        self.mean = [0.43216, 0.394666, 0.37645]
+        self.std = [0.22803, 0.22145, 0.216989]
         self.use_preprocessing = use_preprocessing
-        if self.use_preprocessing:
-            # https://github.com/pytorch/vision/blob/master/references/video_classification/train.py
-            # Eval preset transformation
-            mean = (0.43216, 0.394666, 0.37645)
-            std = (0.22803, 0.22145, 0.216989)
-            resize_size = (128, 171)
-            crop_size = (112, 112)
-            self.transforms = transforms.Compose(
-                [
-                    ConvertFHWCtoFCHW(),
-                    transforms.ConvertImageDtype(torch.float32),
-                    transforms.Resize(resize_size),
-                    transforms.Normalize(mean=mean, std=std),
-                    transforms.CenterCrop(crop_size),
-                    ConvertFCHWtoCFHW(),
-                ]
-            )
+
+    def _normalize(self, vid, mean, std):
+        shape = (-1,) + (1,) * (vid.dim() - 1)
+        mean = torch.as_tensor(mean).reshape(shape)
+        std = torch.as_tensor(std).reshape(shape)
+        return (vid - mean) / std
 
     def _get_embeddings(self, x) -> torch.Tensor:
         embeddings = None
@@ -124,7 +113,7 @@ class VideoTorchEncoder(Executor):
         with torch.no_grad():
             if self.use_preprocessing:
                 tensors = [
-                    self.transforms(torch.Tensor(d.blob).to(dtype=torch.uint8))
+                    self._normalize(torch.Tensor(d.blob), self.mean, self.std)
                     for d in batch_of_documents
                 ]
                 tensor = torch.stack(tensors).to(self.device)
