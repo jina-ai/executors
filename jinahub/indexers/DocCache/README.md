@@ -37,6 +37,7 @@ with f:
 
     response = f.post(on='/index', inputs=docs[-1], return_results=True)
     assert len(response[0].data.docs) == 0  # the Document has been cached
+    
     f.post(on='/delete', inputs=docs[-1])
     response = f.post(on='/index', inputs=docs[-1], return_results=True)
     assert len(response[0].data.docs) == 1  # the Document is cached again after the deletion
