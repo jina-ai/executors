@@ -206,7 +206,7 @@ def test_video_torch_encoder_gpu(
 ):
     ex = VideoTorchEncoder(
         model_name=model_name,
-        use_preprocessing=True,
+        use_preprocessing=use_preprocessing,
         device='cuda',
         download_progress=False,
     )
