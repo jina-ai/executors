@@ -68,7 +68,12 @@ class DocCache(Executor):
         """Index Documents in the cache, by hashing `fields`
 
         If the document was already previously cached,
-        it is removed from the docs, so no further Executor will receive it
+        it is removed from the `docs`. The downstream Executors will NOT receive it.
+
+        If the `fields` do not exist in the document,
+        the hash is based on the empty string and therefore ALL the documents having
+        no such `fields` will be considered as duplicated and only the first one will
+        be kept.
 
         :param docs: the documents to cache
         """
@@ -98,7 +103,11 @@ class DocCache(Executor):
 
     @requests(on='/update')
     def update(self, docs: Optional[DocumentArray], **kwargs):
-        """Update the Documents in the cache with the new content by id"""
+        """Update the Documents in the cache with the new content by id
+
+        If the `fields` do not exist in the document,
+        the hash is based on the empty string.
+        """
         if not docs:
             return
         for i, d in enumerate(docs):
