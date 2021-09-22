@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 import pytest
-from jina import Executor
+from jina import Document, DocumentArray, Executor
 
 
 def test_config():
@@ -71,3 +71,23 @@ def test_rank_price_sensitive_model(
             >= predicted_relevances[2]
         )
         assert predicted_ids == expected_ids
+
+
+def test_rank_empty_docs(ranker):
+    da = DocumentArray([])
+    ranker.rank(da)
+    assert len(da) == 0
+
+
+def test_train_empty_docs(ranker):
+    da = DocumentArray([])
+    ranker.train(da)
+    assert len(da) == 0
+
+
+def test_rank_none(ranker):
+    ranker.rank(None)
+
+
+def test_train_none(ranker):
+    ranker.train(None)

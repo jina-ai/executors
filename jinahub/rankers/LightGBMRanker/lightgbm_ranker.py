@@ -137,7 +137,7 @@ class LightGBMRanker(Executor):
             )
 
     @requests(on='/train')
-    def train(self, docs: DocumentArray, **kwargs):
+    def train(self, docs: Optional[DocumentArray], **kwargs):
         """The :meth:`train` endpoint allows user to train the lightgbm ranker
         in an incremental manner. The features will be extracted from the `attr`:`tags`,
         including all the :attr:`query_features` and :attr:`match_features`. The label/groundtruth of the
@@ -146,6 +146,8 @@ class LightGBMRanker(Executor):
         :param docs: :class:`DocumentArray` passed by the user or previous executor.
         :param kwargs: Additional key value arguments.
         """
+        if not docs:
+            return
         train_set = self._get_features_dataset(docs)
         categorical_feature = []
         if self.categorical_query_features:
@@ -163,7 +165,7 @@ class LightGBMRanker(Executor):
         )
 
     @requests(on='/search')
-    def rank(self, docs: DocumentArray, **kwargs):
+    def rank(self, docs: Optional[DocumentArray], **kwargs):
         """The :meth:`rank` endpoint allows user to assign a score to their docs given by pre-trained
           :class:`LightGBMRanker`. Once load, the :class:`LightGBMRanker` will load the pre-trained model
           and make predictions on the documents. The predictions are made based on extracted dataset from
@@ -173,6 +175,8 @@ class LightGBMRanker(Executor):
         :param docs: :class:`DocumentArray` passed by the user or previous executor.
         :param kwargs: Additional key value arguments.
         """
+        if not docs:
+            return
         dataset = self._get_features_dataset(docs)
         if self.booster:
             predictions = self.booster.predict(dataset.get_data())
