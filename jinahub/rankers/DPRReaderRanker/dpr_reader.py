@@ -105,13 +105,14 @@ class DPRReaderRanker(Executor):
         if not docs:
             return None
 
-        for doc_arr in docs.batch(
-            batch_size=1,
-            traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-            require_attr='text',
-        ):
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        for doc in docs.traverse_flat(traversal_paths):
+            if not getattr(doc, 'text'):
+                continue
+
             new_matches = []
 
+            doc_arr = DocumentArray([doc])
             match_batches_generator = doc_arr.batch(
                 traversal_paths=['m'],
                 batch_size=parameters.get('batch_size', self.batch_size),
