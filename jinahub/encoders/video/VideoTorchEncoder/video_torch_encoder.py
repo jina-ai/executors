@@ -5,9 +5,9 @@ from typing import Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from torchvision import transforms
 import torchvision.models.video as models
 from jina import DocumentArray, Executor, requests
+from torchvision import transforms
 
 # https://github.com/pytorch/vision/blob/d391a0e992a35d7fb01e11110e2ccf8e445ad8a0/references/video_classification/transforms.py#L13
 
