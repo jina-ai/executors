@@ -101,6 +101,39 @@ class DocCache(Executor):
             f'Finished index op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
         )
 
+    def close(self) -> None:
+        self.cache_handler.close()
+
+    @staticmethod
+    def hash_doc(doc: Document, fields: Tuple[str]) -> bytes:
+        """Calculate hash by which we cache.
+
+        :param doc: the Document
+        :param fields: the list of fields
+        :return: the hash value of the fields
+        """
+        values = doc.get_attributes(*fields)
+        if not isinstance(values, list):
+            values = [values]
+        data = ''
+        for field, value in zip(fields, values):
+            data += f'{field}:{value};'
+        digest = hashlib.sha256(bytes(data.encode('utf8'))).digest()
+        return digest
+
+    @property
+    def ids_count(self):
+        """Return the size
+
+        NOTE: we only count nr of entries from id angle
+        """
+        return len(self.cache_handler.id_to_hash)
+
+    @property
+    def hashes_count(self):
+        """Return the nr of distinct hashes"""
+        return len(self.cache_handler.hash_to_id)
+
     @requests(on='/update')
     def update(self, docs: Optional[DocumentArray], **kwargs):
         """Update the Documents in the cache with the new content by id
@@ -153,36 +186,3 @@ class DocCache(Executor):
         self.logger.info(
             f'Finished delete op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
         )
-
-    def close(self) -> None:
-        self.cache_handler.close()
-
-    @staticmethod
-    def hash_doc(doc: Document, fields: Tuple[str]) -> bytes:
-        """Calculate hash by which we cache.
-
-        :param doc: the Document
-        :param fields: the list of fields
-        :return: the hash value of the fields
-        """
-        values = doc.get_attributes(*fields)
-        if not isinstance(values, list):
-            values = [values]
-        data = ''
-        for field, value in zip(fields, values):
-            data += f'{field}:{value};'
-        digest = hashlib.sha256(bytes(data.encode('utf8'))).digest()
-        return digest
-
-    @property
-    def ids_count(self):
-        """Return the size
-
-        NOTE: we only count nr of entries from id angle
-        """
-        return len(self.cache_handler.id_to_hash)
-
-    @property
-    def hashes_count(self):
-        """Return the nr of distinct hashes"""
-        return len(self.cache_handler.hash_to_id)
