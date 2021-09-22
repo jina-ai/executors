@@ -1,6 +1,10 @@
 # DPRReaderRanker
 
- **DPRReaderRanker** performs a re-ranking of the matches for each document (question), as well as the answer spans extraction for each match. It uses the DPR Reader model to re-rank documents based on cross-attention between the question and the potential answer passages.
+**DPRReaderRanker** uses the [DPR Reader model](https://huggingface.co/transformers/model_doc/dpr.html) to perform two tasks
+
+- re-rank the matches based on the query document
+- extract answer spans from each match
+
 
 The **DPR** model was originally proposed in [Dense Passage Retrieval for Open-Domain Question Answering](https://arxiv.org/abs/2004.04906). This ranker can be used together with **[DPRTextEncoder](https://hub.jina.ai/executor/awl0jxog)** to use the entire
 DPR pipeline for QA tasks.
