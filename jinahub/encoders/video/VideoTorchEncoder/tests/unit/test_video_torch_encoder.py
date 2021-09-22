@@ -55,11 +55,10 @@ def test_docs_no_blobs(encoder: VideoTorchEncoder):
 
 
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-@pytest.mark.parametrize('use_preprocessing', [False, True])
-def test_encode_single_document(model_name, use_preprocessing):
+def test_encode_single_document(model_name):
     ex = VideoTorchEncoder(
         model_name=model_name,
-        use_preprocessing=use_preprocessing,
+        use_preprocessing=False,
         download_progress=False,
     )
     da = DocumentArray([Document(blob=np.random.random((3, 2, 224, 224)))])
@@ -70,11 +69,10 @@ def test_encode_single_document(model_name, use_preprocessing):
 
 
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-@pytest.mark.parametrize('use_preprocessing', [False, True])
-def test_encode_multiple_documents(model_name, use_preprocessing):
+def test_encode_multiple_documents(model_name):
     ex = VideoTorchEncoder(
         model_name=model_name,
-        use_preprocessing=use_preprocessing,
+        use_preprocessing=False,
         download_progress=False,
     )
     da = DocumentArray(
@@ -158,12 +156,11 @@ def test_with_dataset_video(model_name, kinects_videos):
 
 
 @pytest.mark.gpu
-@pytest.mark.parametrize('use_preprocessing', [True, False])
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-def test_video_torch_encoder_gpu(model_name, use_preprocessing):
+def test_video_torch_encoder_gpu(model_name):
     ex = VideoTorchEncoder(
         model_name=model_name,
-        use_preprocessing=use_preprocessing,
+        use_preprocessing=False,
         device='cuda',
         download_progress=False,
     )
