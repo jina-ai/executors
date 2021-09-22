@@ -160,7 +160,7 @@ def test_with_dataset_video(model_name, kinects_videos):
 def test_video_torch_encoder_gpu(model_name):
     ex = VideoTorchEncoder(
         model_name=model_name,
-        use_preprocessing=False,
+        use_preprocessing=True,
         device='cuda',
         download_progress=False,
     )
