@@ -32,6 +32,18 @@ def kinects_videos():
     return [dataset[0][0], dataset[0][0]]
 
 
+@pytest.fixture()
+def random_doc_cnhw():
+    """Random document of (channel, num_frame, height, width)"""
+    return Document(blob=np.random.random((3, 2, 224, 224)))
+
+
+@pytest.fixture()
+def random_doc_nhwc():
+    """Random document of (num_frame, height, width, channel) allow pre-processing."""
+    return Document(blob=np.random.random((2, 224, 224, 3)))
+
+
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.batch_size == 32
@@ -54,32 +66,44 @@ def test_docs_no_blobs(encoder: VideoTorchEncoder):
     assert docs[0].embedding is None
 
 
+@pytest.mark.parametrize('use_preprocessing', [True, False])
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-def test_encode_single_document(model_name):
+def test_encode_single_document(
+    model_name, use_preprocessing, random_doc_cnhw, random_doc_nhwc
+):
     ex = VideoTorchEncoder(
         model_name=model_name,
-        use_preprocessing=False,
+        use_preprocessing=use_preprocessing,
         download_progress=False,
     )
-    da = DocumentArray([Document(blob=np.random.random((3, 2, 224, 224)))])
+    da = DocumentArray()
+    if use_preprocessing:
+        da.append(random_doc_nhwc)
+    else:
+        da.append(random_doc_cnhw)
     ex.encode(da, {})
     assert len(da) == 1
     for doc in da:
         assert doc.embedding.shape == (512,)
 
 
+@pytest.mark.parametrize('use_preprocessing', [True, False])
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-def test_encode_multiple_documents(model_name):
+def test_encode_multiple_documents(
+    model_name, use_preprocessing, random_doc_cnhw, random_doc_nhwc
+):
     ex = VideoTorchEncoder(
         model_name=model_name,
-        use_preprocessing=False,
+        use_preprocessing=use_preprocessing,
         download_progress=False,
     )
-    da = DocumentArray(
-        [Document(blob=np.random.random((3, 2, 224, 224))) for _ in range(10)]
-    )
+    da = DocumentArray()
+    if use_preprocessing:
+        da.extend([random_doc_nhwc, random_doc_nhwc])
+    else:
+        da.extend([random_doc_cnhw, random_doc_cnhw])
     ex.encode(da, {})
-    assert len(da) == 10
+    assert len(da) == 2
     for doc in da:
         assert doc.embedding.shape == (512,)
 
@@ -104,13 +128,13 @@ def test_video_torch_encoder_traversal_paths(batch_size):
 
 
 @pytest.mark.parametrize('model_name', ['mc3_18', 'r2plus1d_18', 'r3d_18'])
-def test_with_dataset_video(model_name, kinects_videos):
+def test_with_dataset_video(model_name, kinects_videos, use_preprocessing):
     da = DocumentArray(
         [Document(blob=video.detach().numpy()) for video in kinects_videos]
     )
 
     ex = VideoTorchEncoder(
-        use_preprocessing=True,
+        use_preprocessing=False,
         model_name=model_name,
         download_progress=False,
     )
@@ -156,17 +180,21 @@ def test_with_dataset_video(model_name, kinects_videos):
 
 
 @pytest.mark.gpu
+@pytest.mark.parametrize('use_preprocessing', [True, False])
 @pytest.mark.parametrize('model_name', ['r3d_18', 'mc3_18', 'r2plus1d_18'])
-def test_video_torch_encoder_gpu(model_name):
+def test_video_torch_encoder_gpu(
+    model_name, use_preprocessing, random_doc_nhwc, random_doc_cnhw
+):
     ex = VideoTorchEncoder(
         model_name=model_name,
         use_preprocessing=True,
         device='cuda',
         download_progress=False,
     )
-    da = DocumentArray(
-        [Document(blob=np.random.random((10, 270, 480, 3))) for _ in range(10)]
-    )
+    if use_preprocessing:
+        da = DocumentArray([Document(blob=random_doc_nhwc) for _ in range(10)])
+    else:
+        da = DocumentArray([Document(blob=random_doc_cnhw) for _ in range(10)])
     assert ex.device == 'cuda'
     ex.encode(da, {})
     assert len(da) == 10

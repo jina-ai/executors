@@ -47,7 +47,8 @@ class VideoTorchEncoder(Executor):
             Supported models include ``r3d_18``, ``mc3_18``, ``r2plus1d_18``
             Default is ``r3d_18``.
         :param use_preprocessing: if True, the same preprocessing is used which got used during training
-            - prevents training-serving gap.
+            - prevents training-serving gap. When setting `use_preprocessing=True`,
+              the input `blob` must have the size of `NumFrames x Height x Width x Channel`.
         :param traversal_paths: fallback traversal path in case there is not traversal path
             sent in the request.
         :param batch_size: fallback batch size in case there is not batch size sent in the request
@@ -117,7 +118,13 @@ class VideoTorchEncoder(Executor):
         batch_size = parameters.get('batch_size', self.batch_size)
 
         for batch in docs.batch(batch_size, traversal_paths):
-            self._create_embeddings(batch)
+            try:
+                self._create_embeddings(batch)
+            except RuntimeError:
+                error_msg = 'Input dim not match with expected dimensionality.'
+                error_msg += 'if `use_preprocessing=True` expected input is (NUM_FRAMES, H, W C),'
+                error_msg += 'if `use_preprocessing=False`, expected input is (C, NUM_FRAMES, H, W).'
+                raise RuntimeError(error_msg)
 
     def _create_embeddings(self, batch_of_documents: DocumentArray):
         with torch.no_grad():
