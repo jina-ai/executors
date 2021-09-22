@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 from collections import defaultdict
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Optional
 
 from jina import Document, DocumentArray, Executor, requests
 
@@ -15,7 +15,7 @@ class SimpleRanker(Executor):
     `id` and the aggregated score only.
 
     This ranker is used to "bubble-up" the scores of matched chunks to the scores
-    of the parent document. 
+    of the parent document.
     """
 
     def __init__(
@@ -64,7 +64,9 @@ class SimpleRanker(Executor):
         self.matches_path = matches_path
 
     @requests(on='/search')
-    def rank(self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs):
+    def rank(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """Aggregate the score of matched chunks to the score of their parent document.
 
         The matches of query documents that are passed in `docs` are replaced (if they

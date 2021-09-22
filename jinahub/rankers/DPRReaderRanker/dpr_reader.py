@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -74,7 +74,7 @@ class DPRReaderRanker(Executor):
 
     @requests
     def rank(
-        self, docs: Optional[DocumentArray], parameters: dict, **kwargs
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
     ) -> DocumentArray:
         """
         Extracts answers from existing matches, (re)ranks them, and replaces the current
