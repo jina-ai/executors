@@ -73,6 +73,9 @@ f = Flow().add(
 )
 ```
 
+## See Also
+- [DPRTextEncoder](https://hub.jina.ai/executor/awl0jxog)
+
 ## Reference
 
 - [DPR paper](https://arxiv.org/abs/2004.04906)
