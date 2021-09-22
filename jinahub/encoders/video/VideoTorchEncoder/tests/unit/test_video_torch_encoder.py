@@ -147,13 +147,13 @@ def test_video_torch_encoder_traversal_paths(batch_size):
 
 
 @pytest.mark.parametrize('model_name', ['mc3_18', 'r2plus1d_18', 'r3d_18'])
-def test_with_dataset_video(model_name, kinects_videos, use_preprocessing):
+def test_with_dataset_video(model_name, kinects_videos):
     da = DocumentArray(
         [Document(blob=video.detach().numpy()) for video in kinects_videos]
     )
 
     ex = VideoTorchEncoder(
-        use_preprocessing=False,
+        use_preprocessing=True,
         model_name=model_name,
         download_progress=False,
     )
