@@ -6,7 +6,7 @@
 - extract answer spans from each match
 
 
-The **DPR** model was originally proposed in [Dense Passage Retrieval for Open-Domain Question Answering](https://arxiv.org/abs/2004.04906). This ranker can be used together with **[DPRTextEncoder](https://hub.jina.ai/executor/awl0jxog)** to use the entire
+The **DPR** model was originally proposed in [Dense Passage Retrieval for Open-Domain Question Answering](https://arxiv.org/abs/2004.04906). This ranker should be used together with **[DPRTextEncoder](https://hub.jina.ai/executor/awl0jxog)** to use the entire
 DPR pipeline for QA tasks.
 
 ## Usage
