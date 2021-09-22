@@ -1,5 +1,5 @@
 manifest_version: 1
 name: TimmImageEncoder
-description: '`TimmImageEncoder` uses models from Timm library to encode data from a `ndarray` into a d-dimensional vector space.'
+description: TimmImageEncoder uses models from Timm library to encode images.
 url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/TimmImageEncoder
 keywords: [CNN, pytorch, timm, Computer Vision, image, encode]

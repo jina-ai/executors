@@ -112,6 +112,18 @@ def test_available_models(model_name: str, out_shape: Tuple):
     assert docs[0].embedding.shape == out_shape
 
 
+@pytest.mark.gpu
+def test_gpu():
+    encoder = TimmImageEncoder(device='cuda')
+
+    arr_in = np.ones((224, 224, 3), dtype=np.uint8)
+    docs = DocumentArray([Document(blob=arr_in)])
+
+    encoder.encode(docs=docs, parameters={})
+
+    assert docs[0].embedding.shape == (512,)
+
+
 def test_empty_doc_array():
     docs = DocumentArray()
     encoder = TimmImageEncoder()
