@@ -211,9 +211,9 @@ def test_video_torch_encoder_gpu(
         download_progress=False,
     )
     if use_preprocessing:
-        da = DocumentArray([Document(blob=random_doc_nhwc) for _ in range(10)])
+        da = DocumentArray([random_doc_nhwc for _ in range(10)])
     else:
-        da = DocumentArray([Document(blob=random_doc_cnhw) for _ in range(10)])
+        da = DocumentArray([random_doc_cnhw for _ in range(10)])
     assert ex.device == 'cuda'
     ex.encode(da, {})
     assert len(da) == 10
