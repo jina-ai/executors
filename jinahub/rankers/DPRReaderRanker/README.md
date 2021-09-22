@@ -38,17 +38,21 @@ f = Flow().add(
 
 def print_matches(response: Response):
     for match in response.data.docs[0].matches:
-        score = match.scores['relevance_score'].value
-        print(f'Napoleon was born on {match.text} [relevance {score:.2%}]')
+        rel_score = match.scores['relevance_score'].value
+        span_score = match.scores['span_score'].value
+        print(
+            f'Napoleon was born on {match.text} [rel. score: {rel_score:.2%},'
+            f' span score: {span_score:.2%}]'
+        )
 
 
 with f:
-    f.post('/rank', question1, on_done=print_matches)
+    f.post('/rank', question, on_done=print_matches)
 ```
 
 ```console
-Napoleon was born on 15 august 1769 [relevance 57.56%]
-Napoleon was born on 20 march 1811 [relevance 7.13%]
+Napoleon was born on 15 august 1769 [rel. score: 57.56%, span score: 65.04%]
+Napoleon was born on 20 march 1811 [rel. score: 7.13%, span score: 99.99%]
 ```
 
 Note that this way the Executor will download the model every time it starts up. You can
