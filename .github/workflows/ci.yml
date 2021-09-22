@@ -72,7 +72,11 @@ jobs:
             | sort -V | tail -1)
           pip install git+https://github.com/jina-ai/jina.git@v${JINA_VERSION}
       - name: Python requirements
-        run: pip install -r requirements.txt -r tests/requirements.txt
+        run: |
+          if [[ -f "requirements.txt" ]]; then
+            pip install -r requirements.txt; fi
+          if [[ -f "tests/requirements.txt" ]]; then
+            pip install -r tests/requirements.txt; fi
       - name: Create Dockerfile, if needed
         run: |
           if [[ ! -f "Dockerfile" ]]; then

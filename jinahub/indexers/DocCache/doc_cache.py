@@ -16,30 +16,28 @@ class _CacheHandler:
         :param logger: Instance of logger.
         """
         self.path = path
-        self.id_to_hash_fn = path + ".ids"
-        self.hash_to_id_fn = path + ".cache"
+        self.id_to_hash_fn = path + '.ids'
+        self.hash_to_id_fn = path + '.cache'
         try:
-            self.id_to_hash = pickle.load(open(self.id_to_hash_fn, "rb"))
-            self.hash_to_id = pickle.load(open(self.hash_to_id_fn, "rb"))
+            self.id_to_hash = pickle.load(open(self.id_to_hash_fn, 'rb'))
+            self.hash_to_id = pickle.load(open(self.hash_to_id_fn, 'rb'))
         except FileNotFoundError as e:
             logger.warning(
-                f"File path did not exist : {path}.ids or {path}.cache: {e!r}. Creating new CacheHandler..."
+                f'File path did not exist : {path}.ids or {path}.cache: {e!r}. Creating new CacheHandler...'
             )
             self.id_to_hash = dict()
             self.hash_to_id = dict()
 
     def close(self):
         """Flushes the in-memory cache to pickle files."""
-        pickle.dump(self.id_to_hash, open(self.id_to_hash_fn, "wb"))
-        pickle.dump(self.hash_to_id, open(self.hash_to_id_fn, "wb"))
+        pickle.dump(self.id_to_hash, open(self.id_to_hash_fn, 'wb'))
+        pickle.dump(self.hash_to_id, open(self.hash_to_id_fn, 'wb'))
 
 
 class DocCache(Executor):
     """An indexer that caches combinations of fields
     and filters out documents that have been previously cached
 
-    :param fields: Fields of the Document used for generating unique hashing code, which is further used to detect the
-        duplicates.
     """
 
     def __init__(
@@ -48,26 +46,39 @@ class DocCache(Executor):
         *args,
         **kwargs,
     ):
+        """
+        :param fields: One or more fields of the Document used for generating unique hashing code,
+            which is further used to detect the duplicates. Refer to
+            https://docs.jina.ai/fundamentals/document/document-api/#document-content
+            for a complete list of fields/attributes.
+        """
         super().__init__(*args, **kwargs)
         if fields is None:
-            fields = (("content_hash",),)
+            fields = ('content_hash',)
         self.fields = fields
-        self.logger = JinaLogger(getattr(self.metas, "name", self.__class__.__name__))
+        self.logger = JinaLogger(getattr(self.metas, 'name', self.__class__.__name__))
         if not os.path.exists(self.workspace):
             os.makedirs(self.workspace)
         self.cache_handler = _CacheHandler(
-            os.path.join(self.workspace, "cache"), self.logger
+            os.path.join(self.workspace, 'cache'), self.logger
         )
 
-    @requests(on="/index")
-    def index_or_remove_from_request(self, docs: DocumentArray, **kwargs):
-        """Index Documents in the cache, by hashing self.fields
+    @requests(on='/index')
+    def index_or_remove_from_request(self, docs: Optional[DocumentArray], **kwargs):
+        """Index Documents in the cache, by hashing `fields`
 
         If the document was already previously cached,
-        it is removed from the docs, so no further Executor will receive it
+        it is removed from the `docs`. The downstream Executors will NOT receive it.
+
+        If the `fields` do not exist in the document,
+        the hash is based on the empty string and therefore ALL the documents having
+        no such `fields` will be considered as duplicated and only the first one will
+        be kept.
 
         :param docs: the documents to cache
         """
+        if not docs:
+            return
 
         indices_to_remove = []
         for i, d in enumerate(docs):
@@ -87,7 +98,7 @@ class DocCache(Executor):
         for i in indices_to_remove:
             del docs[i]
         self.logger.info(
-            f"Finished index op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}"
+            f'Finished index op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
         )
 
     def close(self) -> None:
@@ -104,10 +115,10 @@ class DocCache(Executor):
         values = doc.get_attributes(*fields)
         if not isinstance(values, list):
             values = [values]
-        data = ""
+        data = ''
         for field, value in zip(fields, values):
-            data += f"{field}:{value};"
-        digest = hashlib.sha256(bytes(data.encode("utf8"))).digest()
+            data += f'{field}:{value};'
+        digest = hashlib.sha256(bytes(data.encode('utf8'))).digest()
         return digest
 
     @property
@@ -123,42 +134,55 @@ class DocCache(Executor):
         """Return the nr of distinct hashes"""
         return len(self.cache_handler.hash_to_id)
 
-    @requests(on="/update")
-    def update(self, docs: DocumentArray, **kwargs):
-        """Update the documents in the cache with the new content, by id"""
+    @requests(on='/update')
+    def update(self, docs: Optional[DocumentArray], **kwargs):
+        """Update the Documents in the cache with the new content by id
+
+        If the `fields` do not exist in the document,
+        the hash is based on the empty string.
+        """
+        if not docs:
+            return
         for i, d in enumerate(docs):
-            exists = d.id in self.cache_handler.id_to_hash.keys()
+            old_cache_value = self.cache_handler.id_to_hash.get(d.id)
 
-            if exists:
-                new_doc_hash = DocCache.hash_doc(d, self.fields)
-                old_cache_value = self.cache_handler.id_to_hash[d.id]
+            if old_cache_value is None:
+                continue
 
-                self.cache_handler.id_to_hash[d.id] = new_doc_hash
+            new_doc_hash = DocCache.hash_doc(d, self.fields)
 
-                try:
-                    del self.cache_handler.hash_to_id[old_cache_value]
-                except KeyError:
-                    # could have been deleted by a previous Document having the same hash
-                    pass
+            self.cache_handler.id_to_hash[d.id] = new_doc_hash
 
-                self.cache_handler.hash_to_id[new_doc_hash] = d.id
+            try:
+                del self.cache_handler.hash_to_id[old_cache_value]
+            except KeyError:
+                # could have been deleted by a previous Document having the same hash
+                self.logger.warning(f'Failed to delete the old value of {d.id}')
+                pass
+
+            self.cache_handler.hash_to_id[new_doc_hash] = d.id
         self.logger.info(
-            f"Finished update op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}"
+            f'Finished update op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
         )
 
-    @requests(on="/delete")
-    def delete(self, docs: DocumentArray, **kwargs):
+    @requests(on='/delete')
+    def delete(self, docs: Optional[DocumentArray], **kwargs):
+        """Delete the Documents from the cache with the with the same id as in the `docs`"""
+        if not docs:
+            return
         for i, d in enumerate(docs):
-            exists = d.id in self.cache_handler.id_to_hash.keys()
+            old_cache_value = self.cache_handler.id_to_hash.get(d.id)
 
-            if exists:
-                old_cache_value = self.cache_handler.id_to_hash[d.id]
-                try:
-                    del self.cache_handler.hash_to_id[old_cache_value]
-                except KeyError:
-                    # no guarantee
-                    pass
-                del self.cache_handler.id_to_hash[d.id]
+            if old_cache_value is None:
+                continue
+
+            try:
+                del self.cache_handler.hash_to_id[old_cache_value]
+            except KeyError:
+                # no guarantee
+                self.logger.warning(f'Failed to delete {d.id}')
+                pass
+            del self.cache_handler.id_to_hash[d.id]
         self.logger.info(
-            f"Finished delete op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}"
+            f'Finished delete op. Cached doc ids: {len(self.cache_handler.id_to_hash)}; cached hashes: {len(self.cache_handler.hash_to_id)}'
         )
