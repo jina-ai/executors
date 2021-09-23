@@ -1,13 +1,12 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn
 import torchvision.models.video as models
 from jina import DocumentArray, Executor, requests
-from jina_commons.batching import get_docs_batch_generator
 from torchvision import transforms
 
 # https://github.com/pytorch/vision/blob/d391a0e992a35d7fb01e11110e2ccf8e445ad8a0/references/video_classification/transforms.py#L13
@@ -48,7 +47,8 @@ class VideoTorchEncoder(Executor):
             Supported models include ``r3d_18``, ``mc3_18``, ``r2plus1d_18``
             Default is ``r3d_18``.
         :param use_preprocessing: if True, the same preprocessing is used which got used during training
-            - prevents training-serving gap.
+            - prevents training-serving gap. When setting `use_preprocessing=True`,
+              the input `blob` must have the size of `NumFrames x Height x Width x Channel`.
         :param traversal_paths: fallback traversal path in case there is not traversal path
             sent in the request.
         :param batch_size: fallback batch size in case there is not batch size sent in the request
@@ -61,11 +61,10 @@ class VideoTorchEncoder(Executor):
         self.device = device
         self.batch_size = batch_size
         self.traversal_paths = traversal_paths
-        self.model = (
-            getattr(models, model_name)(pretrained=True, progress=download_progress)
-            .eval()
-            .to(self.device)
+        self.model = getattr(models, model_name)(
+            pretrained=True, progress=download_progress
         )
+        self.model.eval().to(self.device)
         self.use_preprocessing = use_preprocessing
         if self.use_preprocessing:
             # https://github.com/pytorch/vision/blob/master/references/video_classification/train.py
@@ -112,31 +111,36 @@ class VideoTorchEncoder(Executor):
             For example, `parameters={'traversal_paths': 'r', 'batch_size': 10}` will override
             the `self.traversal_paths` and `self.batch_size`.
         """
-        if docs:
-            document_batches_generator = get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
-                batch_size=parameters.get('batch_size', self.batch_size),
-                needs_attr='blob',
-            )
-            self._create_embeddings(document_batches_generator)
+        if not docs:
+            return
 
-    def _create_embeddings(self, document_batches_generator: Iterable):
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        batch_size = parameters.get('batch_size', self.batch_size)
+
+        for batch in docs.batch(batch_size, traversal_paths):
+            try:
+                self._create_embeddings(batch)
+            except RuntimeError:
+                error_msg = 'Input dim not match with expected dimensionality.'
+                error_msg += 'if `use_preprocessing=True` expected input is (NUM_FRAMES, H, W C),'
+                error_msg += 'if `use_preprocessing=False`, expected input is (C, NUM_FRAMES, H, W).'
+                raise RuntimeError(error_msg)
+
+    def _create_embeddings(self, batch_of_documents: DocumentArray):
         with torch.no_grad():
-            for document_batch in document_batches_generator:
-                if self.use_preprocessing:
-                    tensors = [
-                        self.transforms(torch.Tensor(d.blob).to(dtype=torch.uint8))
-                        for d in document_batch
-                    ]
-                    tensor = torch.stack(tensors).to(self.device)
-                else:
-                    tensor = torch.stack(
-                        [torch.Tensor(d.blob) for d in document_batch]
-                    ).to(self.device)
-                embedding_batch = self._get_embeddings(tensor)
-                numpy_embedding_batch = embedding_batch.cpu().numpy()
-                for document, numpy_embedding in zip(
-                    document_batch, numpy_embedding_batch
-                ):
-                    document.embedding = numpy_embedding
+            if self.use_preprocessing:
+                tensors = [
+                    self.transforms(torch.Tensor(d.blob).to(dtype=torch.uint8))
+                    for d in batch_of_documents
+                ]
+                tensor = torch.stack(tensors).to(self.device)
+            else:
+                tensor = torch.stack(
+                    [torch.Tensor(d.blob) for d in batch_of_documents]
+                ).to(self.device)
+            embedding_batch = self._get_embeddings(tensor)
+            numpy_embedding_batch = embedding_batch.cpu().numpy()
+            for document, numpy_embedding in zip(
+                batch_of_documents, numpy_embedding_batch
+            ):
+                document.embedding = numpy_embedding
