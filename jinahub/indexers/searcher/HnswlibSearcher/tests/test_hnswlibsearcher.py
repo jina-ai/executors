@@ -8,7 +8,6 @@ import numpy as np
 import pytest
 from jina import Document, DocumentArray, Executor, Flow
 from jina.executors.metas import get_default_metas
-from jina_commons.indexers.dump import import_vectors
 
 from ..hnswlib_searcher import HnswlibSearcher
 
