@@ -13,6 +13,8 @@ from jina_commons import get_logger
 from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
 from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 
+FAISS_PREFETCH_SIZE = 16
+
 
 class FaissPostgresIndexer(Executor):
     """A Compound Indexer made up of a FaissSearcher (for vectors) and a
@@ -103,7 +105,9 @@ class FaissPostgresIndexer(Executor):
             )
             timestamp = self._kv_indexer.last_snapshot_timestamp
             self._vec_indexer = FaissSearcher(
-                dump_func=dump_func, prefetch_size=12, **self._init_kwargs
+                dump_func=dump_func,
+                prefetch_size=FAISS_PREFETCH_SIZE,
+                **self._init_kwargs,
             )
 
             if use_delta:
@@ -143,7 +147,9 @@ class FaissPostgresIndexer(Executor):
                 timestamp=timestamp,
             )
             self._vec_indexer = FaissSearcher(
-                dump_func=dump_func, prefetch_size=12, **self._init_kwargs
+                dump_func=dump_func,
+                prefetch_size=FAISS_PREFETCH_SIZE,
+                **self._init_kwargs,
             )
         else:
             self.logger.warning(
