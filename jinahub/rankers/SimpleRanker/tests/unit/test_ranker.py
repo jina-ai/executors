@@ -37,11 +37,6 @@ def test_wrong_ranking():
         SimpleRanker(ranking='wrong')
 
 
-def test_wrong_matches_path():
-    with pytest.raises(ValueError, match='matches_path should end'):
-        SimpleRanker(matches_path='c')
-
-
 @pytest.mark.parametrize('ranking', ['min', 'max', 'mean_min', 'mean_max'])
 def test_ranking_metrics(ranking: str):
     query = Document()
@@ -57,7 +52,7 @@ def test_ranking_metrics(ranking: str):
         Document(scores={'cosine': 0.5}, parent_id='2'),
     ]
 
-    ranker = SimpleRanker(matches_path='cm', ranking=ranking)
+    ranker = SimpleRanker(ranking=ranking)
     ranker.rank(DocumentArray([query]), {})
 
     expected_id = {'min': '1', 'mean_min': '1', 'max': '2', 'mean_max': '2'}
@@ -76,6 +71,7 @@ def test_ranking_metrics(ranking: str):
 @pytest.mark.parametrize('traversal_paths', (['r'], ['c'], ['c', 'r']))
 def test_traversal_paths(traversal_paths: List[str]):
     docs = DocumentArray([Document()])
+    docs[0].chunks = [Document()]
     matches = [
         Document(scores={'cosine': 0.1}, parent_id='1'),
         Document(scores={'cosine': 0.3}, parent_id='2'),
@@ -84,10 +80,10 @@ def test_traversal_paths(traversal_paths: List[str]):
     ]
 
     if 'r' in traversal_paths:
-        docs[0].matches = matches
-    elif 'c' in traversal_paths:
-        docs[0].chunks = [Document()]
         docs[0].chunks[0].matches = matches
+    elif 'c' in traversal_paths:
+        docs[0].chunks[0].chunks = [Document()]
+        docs[0].chunks[0].chunks.matches = matches
 
     ranker = SimpleRanker(
         matches_path='m', ranking='min', traversal_paths=traversal_paths
@@ -98,27 +94,3 @@ def test_traversal_paths(traversal_paths: List[str]):
         assert doc.matches[0].id == '1'
         np.testing.assert_almost_equal(doc.matches[0].scores['cosine'].value, 0.1)
         np.testing.assert_almost_equal(doc.matches[1].scores['cosine'].value, 0.3)
-
-
-@pytest.mark.parametrize('matches_path', ('cm', 'm'))
-def test_matches_path(matches_path: str):
-    query = Document()
-    matches = [
-        Document(scores={'cosine': 0.1}, parent_id='1'),
-        Document(scores={'cosine': 0.3}, parent_id='2'),
-        Document(scores={'cosine': 0.2}, parent_id='1'),
-        Document(scores={'cosine': 0.5}, parent_id='2'),
-    ]
-
-    if matches_path == 'cm':
-        query.chunks = [Document()]
-        query.chunks[0].matches = matches
-    elif matches_path == 'm':
-        query.matches = matches
-
-    ranker = SimpleRanker(metric='cosine', matches_path=matches_path, ranking='min')
-    ranker.rank(DocumentArray([query]), {})
-
-    assert query.matches[0].id == '1'
-    np.testing.assert_almost_equal(query.matches[0].scores['cosine'].value, 0.1)
-    np.testing.assert_almost_equal(query.matches[1].scores['cosine'].value, 0.3)

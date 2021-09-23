@@ -6,16 +6,18 @@ from typing import Dict, Iterable, Optional
 
 from jina import Document, DocumentArray, Executor, requests
 
+_ALLOWED_METRICS = ['min', 'max', 'mean_min', 'mean_max']
+
 
 class SimpleRanker(Executor):
     """
-    SimpleRanker aggregates the score of matched chunks (matches that are chunks) to the
-    score of the parent document of the matched chunks. The Document's matches are then
-    replaced by matches based on the parent documents of the chunks - they contain an
-    `id` and the aggregated score only.
+    SimpleRanker aggregates the score of matches of chunks, where these matches are just
+    chunks of some larger document as well, to the score of the parent document of the
+    matches. The Document's matches are then replaced by matches based on the parent
+    documents of the matches of chunks - they contain an `id` and the aggregated score only.
 
-    This ranker is used to "bubble-up" the scores of matched chunks to the scores
-    of the parent document.
+    This ranker is used to "bubble-up" the scores of matches of chunks to the scores
+    of the matches' parent document.
     """
 
     def __init__(
@@ -23,7 +25,6 @@ class SimpleRanker(Executor):
         metric: str = 'cosine',
         ranking: str = 'min',
         traversal_paths: Iterable[str] = ('r',),
-        matches_path: str = 'cm',
         *args,
         **kwargs,
     ):
@@ -42,37 +43,29 @@ class SimpleRanker(Executor):
         :param traversal_paths: The traversal paths, used to obtain the documents we
             want the ranker to work on - these are the "query" documents, for which
             we wish to create aggregated matches.
-        :param matches_path: The path (starting from the "query" document) where the
-            matched chunks can be found. The default here is "cm", which means that
-            we expecte the matched chunks to be the matches of the chunks of our query
-            document. This path should end with "m"
         """
         super().__init__(*args, **kwargs)
 
-        if ranking not in ['min', 'max', 'mean_min', 'mean_max']:
+        if ranking not in _ALLOWED_METRICS:
             raise ValueError(
-                'ranking should be one of "min", "max", "mean_min", "mean_max"',
-                f' got "{ranking}"',
+                f'ranking should be one of {_ALLOWED_METRICS}, got "{ranking}"',
             )
-
-        if matches_path[-1] != "m":
-            raise ValueError(f'matches_path should end with "m", got {matches_path}')
 
         self.metric = metric
         self.ranking = ranking
         self.traversal_paths = traversal_paths
-        self.matches_path = matches_path
 
     @requests(on='/search')
     def rank(
         self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
     ):
-        """Aggregate the score of matched chunks to the score of their parent document.
+        """Aggregate the score of matches of chunks to the score of their parent
+        document.
 
         The matches of query documents that are passed in `docs` are replaced (if they
         exist) by documents based on the aggregated score of the parent documents of
-        matched chunks - that is, by documents containing only parent id of matched
-        chunks, and the aggregated score corresponding to that id.
+        matches of chunks - that is, by documents containing only parent id of matches
+        of chunks, and the aggregated score corresponding to that id.
 
         :param docs: The documents for which to create aggregated matches (specifically,
             the aggregated matches will be created for documents that are on the
@@ -86,7 +79,7 @@ class SimpleRanker(Executor):
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         for doc in docs.traverse_flat(traversal_paths):
             parents_scores = defaultdict(list)
-            for m in DocumentArray([doc]).traverse_flat([self.matches_path]):
+            for m in DocumentArray([doc]).traverse_flat(['cm']):
                 parents_scores[m.parent_id].append(m.scores[self.metric].value)
 
             # Aggregate match scores for parent document and
