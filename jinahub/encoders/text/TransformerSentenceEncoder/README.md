@@ -4,4 +4,5 @@
 library into an `Jina` executor. 
 
 ## Reference
+
 - [Sentence Transformer Library](https://www.sbert.net/docs)

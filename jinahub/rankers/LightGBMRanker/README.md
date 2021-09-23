@@ -6,4 +6,5 @@
 
 
 ## Reference
+
 Refer to LightGBM [documentation](https://github.com/microsoft/LightGBM/tree/master/examples/lambdarank) to learn how to use LightGBM to train a ranker.

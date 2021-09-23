@@ -7,5 +7,6 @@ The **DPR** model was originally proposed in [Dense Passage Retrieval for Open-D
 
 ## Reference
 
+
 - [DPR paper](https://arxiv.org/abs/2004.04906)
 - [Huggingface transformers DPR model documentation](https://huggingface.co/transformers/model_doc/dpr.html)
