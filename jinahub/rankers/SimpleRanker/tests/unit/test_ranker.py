@@ -68,7 +68,7 @@ def test_ranking_metrics(ranking: str):
     )
 
 
-@pytest.mark.parametrize('traversal_paths', (['r'], ['c'], ['c', 'r']))
+@pytest.mark.parametrize('traversal_paths', (['r'], ['c']))
 def test_traversal_paths(traversal_paths: List[str]):
     docs = DocumentArray([Document()])
     docs[0].chunks = [Document()]
@@ -79,11 +79,11 @@ def test_traversal_paths(traversal_paths: List[str]):
         Document(scores={'cosine': 0.5}, parent_id='2'),
     ]
 
-    if 'r' in traversal_paths:
+    if traversal_paths == ['r']:
         docs[0].chunks[0].matches = matches
-    elif 'c' in traversal_paths:
+    elif traversal_paths == ['c']:
         docs[0].chunks[0].chunks = [Document()]
-        docs[0].chunks[0].chunks.matches = matches
+        docs[0].chunks[0].chunks[0].matches = matches
 
     ranker = SimpleRanker(
         matches_path='m', ranking='min', traversal_paths=traversal_paths
