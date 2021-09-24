@@ -1,5 +1,0 @@
-manifest_version: 1
-name: MatchMerger
-description: Merges the results of shards by appending all matches.
-url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/merger/MatchMerger
-keywords: [merger, sharding, search]
