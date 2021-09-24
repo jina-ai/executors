@@ -1,50 +1,15 @@
-import random
+import subprocess
+from pathlib import Path
 
 import pytest
-from jina import Document, DocumentArray
 
 
-@pytest.fixture
-def documents_chunk():
-    document_array = DocumentArray()
-    document = Document(tags={'query_size': 35, 'query_price': 31, 'query_brand': 1})
-    for i in range(0, 10):
-        chunk = Document()
-        for j in range(0, 10):
-            match = Document(
-                tags={
-                    'level': 'chunk',
-                }
-            )
-            match.scores['cosine'] = random.random()
-            match.parent_id = i
-            chunk.matches.append(match)
-        document.chunks.append(chunk)
-
-    document_array.extend([document])
-    return document_array
+@pytest.fixture(scope='session')
+def docker_image_name() -> str:
+    return Path(__file__).parents[1].stem.lower()
 
 
-@pytest.fixture
-def documents_chunk_chunk():
-    document_array = DocumentArray()
-    document = Document(tags={'query_size': 35, 'query_price': 31, 'query_brand': 1})
-    for i in range(0, 10):
-        chunk = Document()
-        for j in range(0, 10):
-            chunk_chunk = Document()
-            for k in range(0, 10):
-
-                match = Document(
-                    tags={
-                        'level': 'chunk',
-                    }
-                )
-                match.scores['cosine'] = random.random()
-                match.parent_id = j
-                chunk_chunk.matches.append(match)
-            chunk.chunks.append(chunk_chunk)
-        document.chunks.append(chunk)
-
-    document_array.extend([document])
-    return document_array
+@pytest.fixture(scope='session')
+def build_docker_image(docker_image_name: str) -> str:
+    subprocess.run(['docker', 'build', '-t', docker_image_name, '.'], check=True)
+    return docker_image_name

@@ -1,10 +1,8 @@
-from typing import Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import torch
 from jina import Document, DocumentArray, Executor, requests
-from jina.logging.logger import JinaLogger
-from jina_commons.batching import get_docs_batch_generator
 from transformers import DPRReader, DPRReaderTokenizerFast
 
 
@@ -42,10 +40,10 @@ class DPRReaderRanker(Executor):
             - the model id of a pretrained model hosted inside a model repo
               on huggingface.co.
             - A path to a directory containing model weights, saved using
-              the transformers model's ``save_pretrained()`` method
+              the transformers model's `save_pretrained()` method
         :param base_tokenizer_model: Base tokenizer model. The possible values are
-            the same as for the ``pretrained_model_name_or_path`` parameters. If not
-            provided, the ``pretrained_model_name_or_path`` parameter value will be used
+            the same as for the `pretrained_model_name_or_path` parameters. If not
+            provided, the `pretrained_model_name_or_path` parameter value will be used
         :param title_tag_key: The key of the tag that contains document title in the
             match documents. Specify it if you want the text of the matches to be combined
             with their titles (to mirror the method used in training of the original model)
@@ -62,7 +60,6 @@ class DPRReaderRanker(Executor):
         self.device = device
         self.max_length = max_length
         self.num_spans_per_match = num_spans_per_match
-        self.logger = JinaLogger(self.__class__.__name__)
 
         if not base_tokenizer_model:
             base_tokenizer_model = pretrained_model_name_or_path
@@ -77,59 +74,55 @@ class DPRReaderRanker(Executor):
 
     @requests
     def rank(
-        self, docs: Optional[DocumentArray], parameters: dict, **kwargs
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
     ) -> DocumentArray:
         """
         Extracts answers from existing matches, (re)ranks them, and replaces the current
         matches with extracted answers.
 
-        For each match ``num_spans_per_match`` of answers will be extracted, which
+        For each match `num_spans_per_match` of answers will be extracted, which
         means that the new matches of the document will have a length of previous
-        number of matches times ``num_spans_per_match``.
+        number of matches times `num_spans_per_match`.
 
-        The new matches will be have a score called ``relevance_score`` saved under
-        their scores. They will also have a tag ``span_score``, which refers to their
+        The new matches will be have a score called `relevance_score` saved under
+        their scores. They will also have a tag `span_score`, which refers to their
         span score, which is used to rank answers that come from the same match.
 
-        If you specified ``title_tag_key`` at initialization, the tag ``title`` will
+        If you specified `title_tag_key` at initialization, the tag `title` will
         also be added to the new matches, and will equal the title of the match from
         which they were extracted.
 
         :param docs: Documents whose matches to re-rank (specifically, the matches of
             the documents on the traversal paths will be re-ranked). The document's
-            ``text`` attribute is taken as the question, and the ``text`` attribute
-            of the matches as the context. If you specified ``title_tag_key`` at
+            `text` attribute is taken as the question, and the `text` attribute
+            of the matches as the context. If you specified `title_tag_key` at
             initialization, the matches must also have a title (under this tag).
-        :param parameters: dictionary to define the ``traversal_path`` and the
-            ``batch_size``. For example::
-            parameters={'traversal_paths': ['r'], 'batch_size': 10}
+        :param parameters: dictionary to define the `traversal_paths` and the
+            `batch_size`. For example
+            `parameters={'traversal_paths': ['r'], 'batch_size': 10}`
         """
 
         if not docs:
             return None
 
-        for doc in docs.traverse_flat(
-            parameters.get('traversal_paths', self.traversal_paths)
-        ):
-            if not doc.text:
-                self.logger.warning(
-                    f'No question (text) found for document with id {doc.id}; skipping'
-                    ' document. DPRReaderRanker requires a question from the main'
-                    ' document and context (text) from its matches.'
-                )
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        batch_size = parameters.get('batch_size', self.batch_size)
+
+        for doc in docs.traverse_flat(traversal_paths):
+            if not getattr(doc, 'text'):
                 continue
 
             new_matches = []
 
-            match_batches_generator = get_docs_batch_generator(
-                DocumentArray([doc]),
-                traversal_path=['m'],
-                batch_size=parameters.get('batch_size', self.batch_size),
-                needs_attr='text',
+            doc_arr = DocumentArray([doc])
+            match_batches_generator = doc_arr.batch(
+                traversal_paths=['m'],
+                batch_size=batch_size,
+                require_attr='text',
             )
             for matches in match_batches_generator:
-                inputs = self._prepare_inputs(doc, matches)
-                with torch.no_grad():
+                inputs = self._prepare_inputs(doc_arr[0].text, matches)
+                with torch.inference_mode():
                     new_matches += self._get_new_matches(*inputs)
 
             # Make sure answers are sorted by relevance scores
@@ -142,12 +135,11 @@ class DPRReaderRanker(Executor):
             )
 
             # Replace previous matches with actual answers
-            doc.matches = new_matches
+            doc_arr[0].matches = new_matches
 
     def _prepare_inputs(
-        self, doc: Document, matches: DocumentArray
+        self, question: str, matches: DocumentArray
     ) -> Tuple[str, List[str], Optional[List[str]]]:
-        question = doc.text
         contexts = matches.get_attributes('text')
 
         titles = None
