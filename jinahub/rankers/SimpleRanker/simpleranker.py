@@ -32,14 +32,14 @@ class SimpleRanker(Executor):
         :param metric: the distance metric used in `scores`
         :param ranking: The sort and aggregation function that the executor uses.
             The allowed options are:
-            - `min`: Set the chunk's score to the minimum score of its matches, sort
-                chunks in an ascending order.
-            - `max`: Set the match's score to the maximum score of its matches, sort
-                chunks in a descending order.
-            - `mean_min`: Set the match's score to the mean score of its matches, sort
-                chunks in an ascending order.
-            - `mean_max`: Set the match's score to the mean score of its matches, sort
-                chunks in an decending order.
+            - `min`: Set the (parent) match's score to the minimum score of its chunks,
+                sort matches in an ascending order.
+            - `max`: Set the (parent) match's score to the maximum score of its chunks,
+                sort matches in a descending order.
+            - `mean_min`: Set the (parent) match's score to the mean score of its
+                chunks, sort matches in an ascending order.
+            - `mean_max`: Set the (parent) match's score to the mean score of its
+                chunks, sort matches in an decending order.
         :param traversal_paths: The traversal paths, used to obtain the documents we
             want the ranker to work on - these are the "query" documents, for which
             we wish to create aggregated matches.
