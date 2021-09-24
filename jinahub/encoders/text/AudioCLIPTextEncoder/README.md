@@ -77,3 +77,5 @@ with f:
 
 - [AudioCLIP paper](https://arxiv.org/abs/2106.13043)
 - [AudioCLIP GitHub Repository](https://github.com/AndreyGuzhov/AudioCLIP)
+
+<!-- version=v0.1 -->

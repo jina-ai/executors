@@ -41,3 +41,5 @@ And then you will also need to pass the argument `model_path='.cache/AudioCLIP-P
 
 - [AudioCLIP paper](https://arxiv.org/abs/2106.13043)
 - [AudioCLIP GitHub Repository](https://github.com/AndreyGuzhov/AudioCLIP)
+
+<!-- version=v0.1 -->
