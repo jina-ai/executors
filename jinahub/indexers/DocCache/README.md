@@ -42,3 +42,5 @@ with f:
     response = f.post(on='/index', inputs=docs[-1], return_results=True)
     assert len(response[0].data.docs) == 1  # the Document is cached again after the deletion
 ```
+
+<!-- version=v0.1 -->

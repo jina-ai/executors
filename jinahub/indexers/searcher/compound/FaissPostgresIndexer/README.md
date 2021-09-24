@@ -38,3 +38,5 @@ The folder needs to contain the data exported from your Indexer. Again, see [doc
 
 Alternatively, you can use the import from PSQL feature. Check the [integration test](https://github.com/jina-ai/executors/tree/main/tests/integration/psql_import).
 
+<!-- version=v0.1 -->
+

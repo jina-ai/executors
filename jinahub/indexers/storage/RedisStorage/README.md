@@ -27,3 +27,5 @@ This indexer does not allow indexing two documents with the same `ID` and will i
 ## Reference
 
 - https://redis.io
+
+<!-- version=v0.1 -->

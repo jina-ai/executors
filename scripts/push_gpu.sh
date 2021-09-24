@@ -33,4 +33,23 @@ echo SECRET=`head -c 3 <(echo $exec_secret)`
 
 rm secrets.json
 
-jina hub push --force $exec_uuid --secret $exec_secret -t gpu -f Dockerfile.gpu .
+VERSION=`grep "version=" README.md | cut -f2 -d "=" | cut -f1 -d " "`
+
+# we only push to version once,
+# if it doesn't exist
+echo version = $VERSION
+
+if [ -z "$VERSION" ]
+then
+  echo WARNING, no version!
+else
+  jina hub pull jinahub+docker://$exec_name/$VERSION-gpu
+  exists=$?
+  if [[ $exists == 1 ]]; then
+    echo does NOT exist, pushing to latest-gpu and $VERSION-gpu
+    jina hub push --force $exec_uuid --secret $exec_secret . -t $VERSION-gpu -t latest-gpu -f Dockerfile.gpu
+  else
+    echo exists, only push to latest
+    jina hub push --force $exec_uuid --secret $exec_secret . -t latest-gpu -f Dockerfile.gpu
+  fi
+fi
