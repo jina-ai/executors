@@ -1,6 +1,4 @@
 jtype: HnswlibSearcher
-with:
-  distance: 'cosine'
 metas:
   py_modules:
     - hnswlib_searcher.py

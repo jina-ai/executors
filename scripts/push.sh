@@ -33,4 +33,24 @@ echo SECRET=`head -c 3 <(echo $exec_secret)`
 
 rm secrets.json
 
-jina hub push --force $exec_uuid --secret $exec_secret .
+
+VERSION=`grep "version=" README.md | cut -f2 -d "=" | cut -f1 -d " "`
+
+# we only push to version once,
+# if it doesn't exist
+echo version = $VERSION
+
+if [ -z "$VERSION" ]
+then
+  echo WARNING, no version!
+else
+  jina hub pull jinahub+docker://$exec_name/$VERSION
+  exists=$?
+  if [[ $exists == 1 ]]; then
+    echo does NOT exist, pushing to latest and $VERSION
+    jina hub push --force $exec_uuid --secret $exec_secret . -t $VERSION -t latest
+  else
+    echo exists, only push to latest
+    jina hub push --force $exec_uuid --secret $exec_secret .
+  fi
+fi

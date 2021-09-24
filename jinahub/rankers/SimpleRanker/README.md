@@ -19,3 +19,5 @@ contents base on the id.
 
 ## Reference
 - See the [multires lyrics search example](https://github.com/jina-ai/examples/tree/master/multires-lyrics-search) for example usage
+
+<!-- version=v0.1 -->
