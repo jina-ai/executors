@@ -9,7 +9,7 @@ from timm_encoder import TimmImageEncoder
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / "config.yml"))
-    assert ex.default_batch_size == 32
+    assert ex.batch_size == 32
 
 
 @pytest.mark.parametrize(
@@ -40,7 +40,7 @@ def test_preprocessing_reshape_correct(content: np.ndarray, out_shape: Tuple):
 def test_encode_image_returns_correct_length(
     traversal_paths: Tuple[str], docs: DocumentArray
 ) -> None:
-    encoder = TimmImageEncoder(default_traversal_path=traversal_paths)
+    encoder = TimmImageEncoder(traversal_path=traversal_paths)
 
     encoder.encode(docs=docs, parameters={})
 
@@ -110,6 +110,18 @@ def test_available_models(model_name: str, out_shape: Tuple):
     encoder.encode(docs=docs, parameters={})
 
     assert docs[0].embedding.shape == out_shape
+
+
+@pytest.mark.gpu
+def test_gpu():
+    encoder = TimmImageEncoder(device='cuda')
+
+    arr_in = np.ones((224, 224, 3), dtype=np.uint8)
+    docs = DocumentArray([Document(blob=arr_in)])
+
+    encoder.encode(docs=docs, parameters={})
+
+    assert docs[0].embedding.shape == (512,)
 
 
 def test_empty_doc_array():
