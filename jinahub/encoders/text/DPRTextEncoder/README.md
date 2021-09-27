@@ -11,3 +11,5 @@ This encoder supports both the DPR context and question encoders - you should sp
 
 - [DPR paper](https://arxiv.org/abs/2004.04906)
 - [Huggingface transformers DPR model documentation](https://huggingface.co/transformers/model_doc/dpr.html)
+
+<!-- version=v0.1 -->

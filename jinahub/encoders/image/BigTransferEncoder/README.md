@@ -10,3 +10,5 @@ f = Flow().add(uses='jinahub+docker://BigTransferEncoder')
 ```
 
 For more information, such as run executor on gpu, check out [documentation](https://docs.jina.ai/tutorials/gpu-executor/).
+
+<!-- version=v0.1 -->

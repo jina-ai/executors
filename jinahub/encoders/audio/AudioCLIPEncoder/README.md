@@ -10,3 +10,6 @@ For more information, such as run executor on gpu, check out [documentation](htt
 ## See Also
 - [AudioCLIPTextEncoder](https://hub.jina.ai/executor/jfe8kovq)
 - [AudioCLIPImageEncoder](https://hub.jina.ai/executor/3atsazub)
+
+
+<!-- version=v0.1 -->

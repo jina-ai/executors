@@ -82,3 +82,5 @@ print('\n\nembedding:\n\n', resp[0].docs[0].embedding)
 
 ## 🔍️ Reference
 - [Timm Models](https://rwightman.github.io/pytorch-image-models/models/)
+
+<!-- version=v0.1 -->
