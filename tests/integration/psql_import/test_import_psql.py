@@ -177,8 +177,6 @@ def test_psql_import(
     snapshot: bool,
     benchmark=False,
 ):
-    # for psql to start
-    time.sleep(2)
     top_k = 50
     batch_size = min(1000, nr_docs)
     docs = get_batch_iterator(
@@ -232,12 +230,13 @@ def test_psql_import(
                     flow_storage.post(
                         on='/snapshot',
                     )
+                with TimeContext(f'### importing {nr_docs} docs'):
+                    flow_query.post(on='/sync')
 
-            with TimeContext(f'### importing {nr_docs} docs'):
-                params = {}
-                if not snapshot:
+            else:
+                with TimeContext(f'### importing {nr_docs} docs'):
                     params = {'only_delta': True, 'startup': True}
-                flow_query.post(on='/sync', parameters=params)
+                    flow_query.post(on='/sync', parameters=params)
 
             params = {'top_k': nr_docs}
             if benchmark:
@@ -331,10 +330,6 @@ def test_psql_sync_delta(
     shards,
     docker_compose,
 ):
-    # for psql to start
-    time.sleep(2)
-
-    top_k = 5
     batch_size = min(1000, nr_docs)
     docs_original = get_batch_iterator(
         batches=nr_docs // batch_size, batch_size=batch_size, emb_size=emb_size
