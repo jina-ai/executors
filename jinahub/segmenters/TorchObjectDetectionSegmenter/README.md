@@ -8,3 +8,4 @@
 - [Mask R-CNN](https://arxiv.org/abs/1703.06870)
 - [TORCHVISION OBJECT DETECTION FINETUNING TUTORIAL](https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html)
 
+<!-- version=v0.1 -->
