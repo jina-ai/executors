@@ -1,7 +1,7 @@
 from pathlib import Path
+from typing import List
 
 import pytest
-import torch
 from dpr_reader import DPRReaderRanker
 from jina import Document, DocumentArray, Executor
 
@@ -155,6 +155,33 @@ def test_batch_size(
     basic_ranker.rank(example_docs, parameters={'batch_size': batch_size})
 
     for doc in example_docs:
+        # A quirk related to how HF chooses spans/overlapping
+        assert len(doc.matches) in [20, 19]
+        assert 'relevance_score' in doc.matches[0].scores
+        assert 'span_score' in doc.matches[0].scores
+
+
+@pytest.mark.parametrize('example_docs', [10], indirect=['example_docs'])
+@pytest.mark.parametrize('traversal_paths', [['r'], ['m'], ['m', 'c']])
+def test_traversal_paths(
+    basic_ranker: DPRReaderRanker,
+    traversal_paths: List[str],
+    example_docs: DocumentArray,
+):
+    # Set up document structure
+    if traversal_paths == ['r']:
+        docs = example_docs
+    elif traversal_paths == ['m']:
+        docs = DocumentArray([Document()])
+        docs[0].matches.extend(example_docs)
+    elif traversal_paths == ['m', 'c']:
+        docs = DocumentArray([Document()])
+        docs[0].matches.extend(example_docs[:5])
+        docs[0].chunks.extend(example_docs[5:])
+
+    basic_ranker.rank(docs, parameters={'traversal_paths': traversal_paths})
+
+    for doc in docs.traverse_flat(traversal_paths):
         # A quirk related to how HF chooses spans/overlapping
         assert len(doc.matches) in [20, 19]
         assert 'relevance_score' in doc.matches[0].scores

@@ -8,3 +8,5 @@
 ## Reference
 
 Refer to CatBoost [tutorial](https://github.com/catboost/tutorials/blob/master/ranking/ranking_tutorial.ipynb) to learn how to use CatBoost to train a ranker.
+
+<!-- version=v0.1 -->

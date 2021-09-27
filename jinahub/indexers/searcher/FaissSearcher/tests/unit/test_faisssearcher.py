@@ -406,7 +406,7 @@ def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
         )
 
 
-def test_faiss_train_before_index(metas, tmpdir, tmpdir_dump):
+def test_faiss_train_before_index(metas, tmpdir_dump):
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='IVF10,PQ2',
@@ -569,7 +569,7 @@ def test_faiss_save(metas, tmpdir):
         runtime_args={'pea_id': 0},
     )
 
-    indexer.save()
+    indexer.save({})
 
     new_indexer = FaissSearcher(
         prefetch_size=256,
@@ -588,3 +588,26 @@ def test_faiss_save(metas, tmpdir):
     new_indexer.search(docs, parameters={'top_k': 2})
     dist = docs.traverse_flat(['m']).get_attributes('scores')
     assert dist[0]['l2'].value == 1.0
+
+
+def test_search_input_None(metas, tmpdir_dump):
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='IVF10,PQ2',
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    indexer.search(None)
+
+
+def test_input_None(metas, tmpdir_dump):
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='IVF10,PQ2',
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    indexer.search(None)
+    indexer.fill_embedding(None)

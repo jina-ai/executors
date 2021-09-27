@@ -1,1 +1,2 @@
 hnswlib==0.5.2
+bidict==0.21.3

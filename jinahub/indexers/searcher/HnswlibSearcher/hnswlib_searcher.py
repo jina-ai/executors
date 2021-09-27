@@ -1,22 +1,20 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+import json
 from typing import Dict, Iterable, Optional
 
 import hnswlib
-import numpy as np
+from bidict import bidict
 from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
 
 class HnswlibSearcher(Executor):
-    """Hnswlib powered vector indexer
+    """Hnswlib powered vector indexer.
 
-    For more information about the Hnswlib supported parameters, please consult:
-        - https://github.com/nmslib/hnswlib
-
-    .. note::
-        Hnswlib package dependency is only required at the query time.
+    This indexer uses the HNSW algorithm to index and search for vectors. It does not
+    require training, and can be built up incrementally.
     """
 
     def __init__(
@@ -24,7 +22,7 @@ class HnswlibSearcher(Executor):
         top_k: int = 10,
         metric: str = 'cosine',
         dim: int = 0,
-        max_elements: int = 1000,
+        max_elements: int = 1_000_000,
         ef_construction: int = 400,
         ef_query: int = 50,
         max_connection: int = 64,
@@ -34,99 +32,209 @@ class HnswlibSearcher(Executor):
         **kwargs,
     ):
         """
-        Initialize an HnswlibSearcher
-
-        :param top_k: Number of results to get for each query document
+        :param top_k: Number of results to get for each query document in search
         :param distance: Distance type, can be 'l2', 'ip', or 'cosine'
         :param dim: The dimensionality of vectors to index
         :param max_elements: Maximum number of elements (vectors) to index
-        :param ef_construction: Defines a construction time/accuracy trade-off
-        :param ef_query: Sets the query time accuracy/speed trade-off
-        :param max_connection: defines tha maximum number of outgoing connections in the
+        :param ef_construction: The construction time/accuracy trade-off
+        :param ef_query: The query time accuracy/speed trade-off
+        :param max_connection: The maximum number of outgoing connections in the
             graph (the "M" parameter)
-        :param dump_path: The path from where to load ids and vectors
-        :param traversal_paths: The default traverseal path on docs, e.g. ['r'], ['c']
+        :param dump_path: The path to the directory from where to load, and where to
+            save the index state
+        :param traversal_paths: The default traverseal path on docs (used for indexing,
+            search and update), e.g. ['r'], ['c']
         """
         super().__init__(*args, **kwargs)
         self.top_k = top_k
         self.metric = metric
+        self.dim = dim
+        self.max_elements = max_elements
         self.traversal_paths = traversal_paths
         self.ef_construction = ef_construction
         self.ef_query = ef_query
         self.max_connection = max_connection
+        self.dump_path = dump_path
 
         self.logger = JinaLogger(self.__class__.__name__)
-        self._index = hnswlib.Index(space=self.metric, dim=dim)
+        self._index = hnswlib.Index(space=self.metric, dim=self.dim)
+        self._ids_to_inds = bidict()
 
-        dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path', None)
+        dump_path = self.dump_path or kwargs.get('runtime_args', {}).get(
+            'dump_path', None
+        )
         if dump_path is not None:
-            self.logger.info('Start building "HnswlibSearcher" from dump data')
+            self.logger.info('Starting to build HnswlibSearcher from dump data')
 
-            # Load index itself + saved ids
+            self._index.load_index(
+                f'{self.dump_path}/index.bin', max_elements=self.max_elements
+            )
+            with open(f'{self.dump_path}/ids.json', 'r') as f:
+                self._ids_to_inds = bidict(json.load(f))
 
         else:
-            self._indexer.init_index(
-                max_elements=max_elements,
+            self.logger.info('No `dump_path` provided, initializing empty index.')
+
+            self._index.init_index(
+                max_elements=self.max_elements,
                 ef_construction=self.ef_construction,
                 M=self.max_connection,
             )
 
-            self.logger.info(
-                'No data loaded in "HnswlibSearcher", initializing empty index.'
-            )
+        self._index.set_ef(ef_query)
 
     @requests(on='/search')
-    def search(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
-        """
+    def search(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
+        """Attach matches to the Documents in `docs`, each match containing only the
+        `id` of the matched document and the `score`.
 
-        :param docs: `Document` with `.embedding` the same shape as the `Documents`
-            it has stored.
-        :param parameters: dictionary to define the `traversal_paths` and the `top_k`.
-
-        :return: Attaches matches to the Documents sent as inputs, with the id of the
-            match, and its embedding.
+        :param docs: An array of `Documents` that should have the `embedding` property
+            of the same dimension as vectors in the index
+        :param parameters: Dictionary with optional parameters that can be used to
+            override the parameters set at initialization. Supported keys are
+            `traversal_paths`, `top_k` and `ef_query`.
         """
         if docs is None:
             return
-        if not hasattr(self, '_indexer'):
-            self.logger.warning('Querying against an empty index')
-            return
-        top_k = parameters.get('top_k', self.default_top_k)
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+
+        ef_query = parameters.get('ef_query', self.ef_query)
+        top_k = parameters.get('top_k', self.top_k)
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+
+        self._index.set_ef(ef_query)
+
+        if top_k > len(self._ids_to_inds):
+            self.logger.warning(
+                f'The `top_k` parameter is set to a value ({top_k}) that is higher than'
+                f' the number of documents in the index ({len(self._ids_to_inds)})'
+            )
+            top_k = len(self._ids_to_inds)
 
         for doc in docs.traverse_flat(traversal_paths):
-            indices, dists = self._indexer.knn_query(doc.embedding, k=top_k)
+            indices, dists = self._index.knn_query(doc.embedding, k=top_k)
+
             for idx, dist in zip(indices[0], dists[0]):
-                match = Document(id=self._ids[idx], embedding=self._vecs[idx])
+                match = Document(id=self._ids_to_inds.inverse[idx])
                 match.scores[self.metric] = dist
 
                 doc.matches.append(match)
 
-    @requests(on='/fill_embedding')
-    def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
+    @requests(on='/index')
+    def index(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
+        """Index the Documents' embeddings. The documents should not be already
+        present in the index - for that case, use the update endpoint.
+
+        :param docs: Documents whose `embedding` to index.
+        :param parameters: Dictionary with optional parameters that can be used to
+            override the parameters set at initialization. The only supported key is
+            `traversal_paths`.
+        """
         if docs is None:
             return
-        for doc in docs:
-            doc_idx = self._doc_id_to_offset.get(doc.id)
-            if doc_idx is not None:
-                doc.embedding = np.array(self._indexer.get_items([int(doc_idx)])[0])
-            else:
-                self.logger.warning(f'Document {doc.id} not found in index')
 
-    @requests(on='/index')
-    def index(self, docs: Optional[DocumentArray], **kwargs):
-        pass
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        docs_to_update = docs.traverse_flat(traversal_paths)
+        if len(docs_to_update) == 0:
+            return
+
+        embeddings = docs_to_update.embeddings
+        if embeddings.shape[-1] != self.dim:
+            raise ValueError(
+                f'Attempted to index vectors with dimension {embeddings.shape[-1]}'
+                f', but dimension of index is {self.dim}',
+            )
+
+        ids = docs_to_update.get_attributes('id')
+        index_size = self._index.element_count
+        doc_inds = list(range(index_size, index_size + len(ids)))
+
+        self._index.add_items(embeddings, ids=doc_inds)
+        self._ids_to_inds.update({_id: ind for _id, ind in zip(ids, doc_inds)})
 
     @requests(on='/update')
-    def update(self, docs: Optional[DocumentArray], **kwargs):
-        pass
+    def update(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
+        """Update the Documents' embeddings. If a Document is not already present in
+        the index, it gets added to it.
+
+        :param docs: Documents whose `embedding` to update.
+        :param parameters: Dictionary with optional parameters that can be used to
+            override the parameters set at initialization. The only supported key is
+            `traversal_paths`.
+        """
+        if docs is None:
+            return
+
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        docs_to_update = docs.traverse_flat(traversal_paths)
+        if len(docs_to_update) == 0:
+            return
+
+        embeddings = docs_to_update.embeddings
+        if embeddings.shape[-1] != self.dim:
+            raise ValueError(
+                f'Attempted to index vectors with dimension {embeddings.shape[-1]}'
+                f', but dimension of index is {self.dim}',
+            )
+
+        ids = docs_to_update.get_attributes('id')
+        index_size = self._index.element_count
+        doc_inds = []
+        for _id in ids:
+            if _id not in self._ids_to_inds:
+                doc_inds.append(index_size)
+                index_size += 1
+            else:
+                doc_inds.append(self._ids_to_inds[_id])
+
+        self._index.add_items(embeddings, ids=doc_inds)
+        self._ids_to_inds.update({_id: ind for _id, ind in zip(ids, doc_inds)})
 
     @requests(on='/delete')
-    def delete(self, docs: Optional[DocumentArray], **kwargs):
-        pass
+    def delete(self, parameters: Dict, **kwargs):
+        """Delete entries from the index by id
 
-    @requests(on='/save')
-    def save(self, target_path: Optional[str] = None, **kwargs):
-        pass
+        :param parameters: parameters to the request. Should contain the list of ids
+            of entries (Documents) to delete under the `ids` key
+        """
+        deleted_ids = parameters.get('ids', [])
+
+        for _id in set(deleted_ids).intersection(self._ids_to_inds.keys()):
+            ind = self._ids_to_inds[_id]
+            self._index.mark_deleted(ind)
+            del self._ids_to_inds[_id]
+
+    @requests(on='/dump')
+    def dump(self, parameters: Dict = {}, **kwargs):
+        """Save the index and document ids
+
+        :param parameters: Dictionary with optional parameters that can be used to
+            override the parameters set at initialization. The only supported key is
+            `dump_path`.
+        """
+
+        dump_path = parameters.get('dump_path', self.dump_path)
+        if dump_path is None:
+            raise ValueError(
+                'The `dump_path` must be provided to save the indexer state.'
+            )
+
+        self._index.save_index(f'{dump_path}/index.bin')
+        with open(f'{dump_path}/ids.json', 'w') as f:
+            self._ids = json.dump(dict(self._ids_to_inds), f)
+
+    @requests(on='/clear')
+    def clear(self, **kwargs):
+        """Clear the index of all entries."""
+        self._index = hnswlib.Index(space=self.metric, dim=self.dim)
+        self._index.init_index(
+            max_elements=self.max_elements,
+            ef_construction=self.ef_construction,
+            M=self.max_connection,
+        )
+        self._ids_to_inds = bidict()

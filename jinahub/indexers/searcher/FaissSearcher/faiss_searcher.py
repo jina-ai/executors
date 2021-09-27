@@ -300,8 +300,6 @@ class FaissSearcher(Executor):
             vecs = np.stack(batch_data).astype(np.float32)
             self._index(vecs)
 
-        return
-
     def _index(self, vecs: 'np.ndarray'):
         if self.normalize:
             from faiss import normalize_L2
@@ -311,7 +309,11 @@ class FaissSearcher(Executor):
 
     @requests(on='/search')
     def search(
-        self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
+        self,
+        docs: Optional[DocumentArray],
+        parameters: Optional[Dict] = None,
+        *args,
+        **kwargs,
     ):
         """Find the top-k vectors with smallest
         ``metric`` and return their ids in ascending order.
@@ -322,6 +324,8 @@ class FaissSearcher(Executor):
         :return: Attaches matches to the Documents sent as inputs, with the id of the
             match, and its embedding.
         """
+        if docs is None:
+            return
         if not hasattr(self, '_faiss_index'):
             self.logger.warning('Querying against an empty Index')
             return
@@ -378,12 +382,14 @@ class FaissSearcher(Executor):
                     break
 
     @requests(on='/save')
-    def save(self, target_path: Optional[str] = None, **kwargs):
+    def save(self, parameters: Dict, **kwargs):
         """
         Save a snapshot of the current indexer
         """
 
-        target_path = target_path if target_path else self.workspace
+        target_path = (
+            parameters['target_path'] if 'target_path' in parameters else self.workspace
+        )
 
         os.makedirs(target_path, exist_ok=True)
 
