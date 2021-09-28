@@ -335,13 +335,22 @@ class PostgreSQLHandler:
     def snapshot(self):
         """
         Saves the state of the data table in a new table
+
+        Required to be done in two steps because
+        1. create table like ... doesn't include data
+        2. insert into .. (select ...) doesn't include primary key definitions
         """
         try:
             cursor = self.connection.cursor()
             cursor.execute(
                 f'drop table if exists {self.snapshot_table}; '
                 f'create table {self.snapshot_table} '
-                f'as (select * from {self.table});'
+                f'(like {self.table} including all);'
+            )
+            self.connection.commit()
+            cursor = self.connection.cursor()
+            cursor.execute(
+                f'insert into {self.snapshot_table} (select * from {self.table});'
             )
             self.connection.commit()
             self.logger.info('Successfully created snapshot')
