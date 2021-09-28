@@ -6,4 +6,4 @@ For more information, such as run executor on gpu, check out [documentation](htt
 The VGGish paper was originally published [here](https://research.google/pubs/pub45611/).
 
 
-<!-- version=v0.1 -->
+<!-- version=v0.2 -->

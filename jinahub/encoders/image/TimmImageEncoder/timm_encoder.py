@@ -26,7 +26,7 @@ class TimmImageEncoder(Executor):
         self,
         model_name: str = 'resnet18',
         device: str = 'cpu',
-        traversal_path: Tuple[str] = ('r',),
+        traversal_paths: Tuple[str] = ('r',),
         batch_size: Optional[int] = 32,
         use_default_preprocessing: bool = True,
         *args,
@@ -51,11 +51,10 @@ class TimmImageEncoder(Executor):
         self.batch_size = batch_size
         self.use_default_preprocessing = use_default_preprocessing
 
-        self.traversal_path = traversal_path
+        self.traversal_paths = traversal_paths
 
         self._model = create_model(model_name, pretrained=True, num_classes=0)
-        self._model = self._model.to(device)
-        self._model.eval()
+        self._model = self._model.to(device).eval()
 
         config = resolve_data_config({}, model=self._model)
         self._preprocess = create_transform(**config)
@@ -76,7 +75,7 @@ class TimmImageEncoder(Executor):
         if docs is None:
             return
 
-        traversal_paths = parameters.get('traversal_paths', self.traversal_path)
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         batch_size = parameters.get('batch_size', self.batch_size)
         docs_batch_generator = docs.batch(
             traversal_paths=traversal_paths,

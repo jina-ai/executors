@@ -23,4 +23,4 @@ python -m laserembeddings download-models
 ## Reference
 - [LASER](https://github.com/facebookresearch/LASER#supported-languages) with the language code ([ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
 
-<!-- version=v0.1 -->
+<!-- version=v0.2 -->

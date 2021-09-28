@@ -5,7 +5,6 @@ from typing import Iterable, Optional, Tuple
 
 import numpy as np
 from jina import DocumentArray, Executor, requests
-from jina_commons.batching import get_docs_batch_generator
 
 
 class ImagePaddlehubEncoder(Executor):
@@ -97,11 +96,10 @@ class ImagePaddlehubEncoder(Executor):
             override the `self.traversal_paths` and `self.batch_size`.
         """
         if docs:
-            document_batches_generator = get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+            document_batches_generator = docs.batch(
+                traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
                 batch_size=parameters.get('batch_size', self.batch_size),
-                needs_attr='blob',
+                require_attr='blob',
             )
             self._create_embeddings(document_batches_generator)
 

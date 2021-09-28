@@ -11,5 +11,5 @@ Due to different interfaces of all these embedding models, using custom pre-trai
 
 - [flair GitHub repository](https://github.com/flairNLP/flair)
 
-<!-- version=v0.1 -->
+<!-- version=v0.2 -->
 

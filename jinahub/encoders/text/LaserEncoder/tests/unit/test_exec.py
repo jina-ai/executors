@@ -100,13 +100,6 @@ def test_traversal_path(
         assert len(list(filter(lambda x: x is not None, embeddings))) == count
 
 
-def test_no_documents():
-    encoder = LaserEncoder()
-    docs = []
-    encoder.encode(docs, parameters={'batch_size': 10, 'traversal_paths': ['r']})
-    assert not docs
-
-
 @pytest.mark.parametrize('batch_size', [1, 2, 4, 8])
 def test_batch_size(basic_encoder: LaserEncoder, batch_size: int):
     docs = DocumentArray([Document(text='hello there') for _ in range(32)])

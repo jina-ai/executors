@@ -8,4 +8,4 @@ For more information on the `gpu` usage and `volume` mounting, please refer to t
 For more information on CLIP model, please checkout the [blog post](https://openai.com/blog/clip/),
 [paper](https://arxiv.org/abs/2103.00020) and [hugging face documentation](https://huggingface.co/transformers/model_doc/clip.html)
 
-<!-- version=v0.1 -->
+<!-- version=v0.2 -->

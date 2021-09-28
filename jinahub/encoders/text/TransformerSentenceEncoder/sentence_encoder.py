@@ -5,7 +5,6 @@ from typing import Dict, Iterable, Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
-from jina_commons.batching import get_docs_batch_generator
 from sentence_transformers import SentenceTransformer
 
 
@@ -46,15 +45,17 @@ class TransformerSentenceEncoder(Executor):
             attribute get an embedding.
         :param parameters: Any additional parameters for the `encode` function.
         """
-        for batch in get_docs_batch_generator(
-            docs,
-            traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+        if docs is None:
+            return
+
+        for batch in docs.batch(
+            traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
             batch_size=parameters.get('batch_size', self.batch_size),
-            needs_attr='text',
+            require_attr='text',
         ):
             texts = batch.get_attributes('text')
 
-            with torch.no_grad():
+            with torch.inference_mode():
                 embeddings = self.model.encode(texts)
                 for doc, embedding in zip(batch, embeddings):
                     doc.embedding = embedding

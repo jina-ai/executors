@@ -3,7 +3,6 @@ from typing import Iterable, Optional
 import torch
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
-from jina_commons.batching import get_docs_batch_generator
 from transformers import (
     DPRContextEncoder,
     DPRContextEncoderTokenizerFast,
@@ -95,8 +94,8 @@ class DPRTextEncoder(Executor):
 
         self.model = self.model.to(self.device).eval()
 
-        self.default_traversal_paths = traversal_paths
-        self.default_batch_size = batch_size
+        self.traversal_paths = traversal_paths
+        self.batch_size = batch_size
 
     @requests
     def encode(
@@ -113,46 +112,45 @@ class DPRTextEncoder(Executor):
             ``parameters={'traversal_paths': ['r'], 'batch_size': 10}``
         """
 
-        if docs:
-            document_batches_generator = get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get(
-                    'traversal_paths', self.default_traversal_paths
-                ),
-                batch_size=parameters.get('batch_size', self.default_batch_size),
-                needs_attr='text',
-            )
+        if docs is None:
+            return
 
-            for batch_docs in document_batches_generator:
-                with torch.no_grad():
-                    texts = batch_docs.get_attributes('text')
-                    text_pairs = None
-                    if self.encoder_type == 'context' and self.title_tag_key:
-                        text_pairs = list(
-                            filter(
-                                lambda x: x is not None,
-                                batch_docs.get_attributes(
-                                    f'tags__{self.title_tag_key}'
-                                ),
-                            )
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        batch_size = parameters.get('batch_size', self.batch_size)
+        document_batches_generator = docs.batch(
+            traversal_paths=traversal_paths,
+            batch_size=batch_size,
+            require_attr='text',
+        )
+
+        for batch_docs in document_batches_generator:
+            with torch.inference_mode():
+                texts = batch_docs.get_attributes('text')
+                text_pairs = None
+                if self.encoder_type == 'context' and self.title_tag_key:
+                    text_pairs = list(
+                        filter(
+                            lambda x: x is not None,
+                            batch_docs.get_attributes(f'tags__{self.title_tag_key}'),
                         )
-                        if len(text_pairs) != len(batch_docs):
-                            raise ValueError(
-                                'If you set `title_tag_key` property, all documents'
-                                ' that you want to encode must have this tag. Found'
-                                f' {len(text_pairs) - len(batch_docs)} documents'
-                                ' without it.'
-                            )
+                    )
+                    if len(text_pairs) != len(batch_docs):
+                        raise ValueError(
+                            'If you set `title_tag_key` property, all documents'
+                            ' that you want to encode must have this tag. Found'
+                            f' {len(text_pairs) - len(batch_docs)} documents'
+                            ' without it.'
+                        )
 
-                    inputs = self.tokenizer(
-                        text=texts,
-                        text_pair=text_pairs,
-                        max_length=self.max_length,
-                        padding='longest',
-                        truncation=True,
-                        return_tensors='pt',
-                    ).to(self.device)
-                    embeddings = self.model(**inputs).pooler_output.cpu().numpy()
+                inputs = self.tokenizer(
+                    text=texts,
+                    text_pair=text_pairs,
+                    max_length=self.max_length,
+                    padding='longest',
+                    truncation=True,
+                    return_tensors='pt',
+                ).to(self.device)
+                embeddings = self.model(**inputs).pooler_output.cpu().numpy()
 
-                for doc, embedding in zip(batch_docs, embeddings):
-                    doc.embedding = embedding
+            for doc, embedding in zip(batch_docs, embeddings):
+                doc.embedding = embedding

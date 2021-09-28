@@ -5,7 +5,6 @@ from typing import Iterable, Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
-from jina_commons.batching import get_docs_batch_generator
 
 from .audio_clip.model import AudioCLIP
 
@@ -66,14 +65,13 @@ class AudioCLIPTextEncoder(Executor):
         if not docs:
             return
 
-        batch_generator = get_docs_batch_generator(
-            docs,
-            traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+        batch_generator = docs.batch(
+            traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
             batch_size=parameters.get('batch_size', self.batch_size),
-            needs_attr='text',
+            require_attr='text',
         )
 
-        with torch.no_grad():
+        with torch.inference_mode():
             for batch in batch_generator:
                 embeddings = self.model.encode_text(text=[[doc.text] for doc in batch])
                 embeddings = embeddings.cpu().numpy()

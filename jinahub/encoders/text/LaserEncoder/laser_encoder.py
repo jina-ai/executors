@@ -8,7 +8,6 @@ from typing import Iterable, Optional
 import torch
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
-from jina_commons.batching import get_docs_batch_generator
 from laserembeddings import Laser
 
 
@@ -97,18 +96,19 @@ class LaserEncoder(Executor):
             ``{'traversal_paths': ['r'], 'batch_size': 10}``. This will override the
             default parameters set at init.
         """
-        if docs:
-            document_batches_generator = get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
-                batch_size=parameters.get('batch_size', self.batch_size),
-                needs_attr='text',
-            )
+        if docs is None:
+            return
 
-            for document_batch in document_batches_generator:
-                text_batch = [d.text for d in document_batch]
+        document_batches_generator = docs.batch(
+            traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
+            batch_size=parameters.get('batch_size', self.batch_size),
+            require_attr='text',
+        )
 
-                language = parameters.get('language', self.language)
-                embeddings = self.model.embed_sentences(text_batch, lang=language)
-                for document, embedding in zip(document_batch, embeddings):
-                    document.embedding = embedding
+        for document_batch in document_batches_generator:
+            text_batch = document_batch.texts
+
+            language = parameters.get('language', self.language)
+            embeddings = self.model.embed_sentences(text_batch, lang=language)
+            for document, embedding in zip(document_batch, embeddings):
+                document.embedding = embedding
