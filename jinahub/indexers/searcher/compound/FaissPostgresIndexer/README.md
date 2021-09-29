@@ -61,14 +61,26 @@ with get_my_flow() as flow:
     flow.post(
         on='/sync',
         # we need some specific parameters here
+        # startup is only needed the 1st time, to actually
+        # create the FaissSearcher
         parameters={
             'only_delta': True, 'startup': True
         }
     )
     flow.search(search_docs)
+    ...
+    flow.index(new_docs)
+    flow.post(
+        on='/sync',
+        # startup is not needed anymore
+        # FaissSearcher is incrementally updated
+        parameters={
+            'only_delta': True,
+        }
+    )
 ```
 
-While thi can **not** guarantee consistency, it is fast and has low overhead.
+While this can **not** guarantee consistency, it is fast and has low overhead.
 
 If you need consistency, you can use the **snapshot** method.
 This guarantees consistency between the shards, but at the cost of speed, extra disk usage, and an extra API call.
