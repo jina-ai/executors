@@ -112,7 +112,7 @@ class AudioCLIPImageEncoder(Executor):
                                 " be of the format [H, W, C], in the RGB format (C=3),"
                                 f" but got C={doc.blob.shape[2]} instead."
                             )
-                        images.append(self._default_transforms(doc.blob.copy()))
+                        images.append(self._default_transforms(doc.blob))
                     else:
                         if doc.blob.shape[0] != 3:
                             raise ValueError(

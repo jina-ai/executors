@@ -95,13 +95,11 @@ class CLIPImageEncoder(Executor):
             for batch_docs in document_batches_generator:
                 blob_batch = [d.blob for d in batch_docs]
                 if self.use_default_preprocessing:
-                    tensor = self._generate_input_features(blob_batch.copy())
+                    tensor = self._generate_input_features(blob_batch)
                 else:
                     tensor = {
                         "pixel_values": torch.tensor(
-                            blob_batch.copy(),
-                            dtype=torch.float32,
-                            device=self.device,
+                            blob_batch, dtype=torch.float32, device=self.device
                         )
                     }
 
