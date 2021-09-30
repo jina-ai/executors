@@ -150,4 +150,7 @@ class DPRTextEncoder(Executor):
                     truncation=True,
                     return_tensors='pt',
                 ).to(self.device)
-                batch_docs.embeddings = self.model(**inputs).pooler_output.cpu().numpy()
+                embeddings = self.model(**inputs).pooler_output.cpu().numpy()
+
+            for doc, embedding in zip(batch_docs, embeddings):
+                doc.embedding = embedding

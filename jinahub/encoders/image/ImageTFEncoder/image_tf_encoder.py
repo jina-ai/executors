@@ -3,6 +3,7 @@ __license__ = "Apache-2.0"
 
 from typing import Dict, Iterable, Optional
 
+import numpy as np
 import tensorflow as tf
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
@@ -102,6 +103,8 @@ class ImageTFEncoder(Executor):
 
     def _create_embeddings(self, document_batches_generator: Iterable):
         for document_batch in document_batches_generator:
-            blob_batch = document_batch.blobs.copy()
+            blob_batch = np.stack([d.blob for d in document_batch])
             with self.device:
-                document_batch.embeddings = self.model(blob_batch)
+                embedding_batch = self.model(blob_batch)
+            for document, embedding in zip(document_batch, embedding_batch):
+                document.embedding = np.array(embedding)

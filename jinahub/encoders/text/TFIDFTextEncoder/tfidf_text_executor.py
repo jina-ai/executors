@@ -66,6 +66,7 @@ class TFIDFTextEncoder(Executor):
         )
 
         for document_batch in document_batches_generator:
-            iterable_of_texts = document_batch.texts
+            iterable_of_texts = [d.text for d in document_batch]
             embedding_matrix = self.tfidf_vectorizer.transform(iterable_of_texts)
-            document_batch.embeddings = embedding_matrix
+            for doc, doc_embedding in zip(document_batch, embedding_matrix):
+                doc.embedding = doc_embedding

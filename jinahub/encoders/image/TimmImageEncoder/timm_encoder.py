@@ -93,4 +93,7 @@ class TimmImageEncoder(Executor):
             with torch.inference_mode():
                 tensor = torch.from_numpy(images).to(self.device)
                 features = self._model(tensor)
-                document_batch.embeddings = features.cpu().numpy()
+                features = features.cpu().numpy()
+
+            for doc, embed in zip(document_batch, features):
+                doc.embedding = embed

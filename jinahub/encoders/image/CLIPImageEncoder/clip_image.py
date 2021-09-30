@@ -93,7 +93,7 @@ class CLIPImageEncoder(Executor):
 
         with torch.inference_mode():
             for batch_docs in document_batches_generator:
-                blob_batch = batch_docs.blobs
+                blob_batch = [d.blob for d in batch_docs]
                 if self.use_default_preprocessing:
                     tensor = self._generate_input_features(blob_batch.copy())
                 else:
@@ -107,7 +107,9 @@ class CLIPImageEncoder(Executor):
 
                 embeddings = self.model.get_image_features(**tensor)
                 embeddings = embeddings.cpu().numpy()
-                batch_docs.embeddings = embeddings
+
+                for doc, embed in zip(batch_docs, embeddings):
+                    doc.embedding = embed
 
     def _generate_input_features(self, images):
         input_tokens = self.preprocessor(

@@ -109,6 +109,6 @@ class LaserEncoder(Executor):
             text_batch = document_batch.texts
 
             language = parameters.get('language', self.language)
-            document_batch.embeddings = self.model.embed_sentences(
-                text_batch, lang=language
-            )
+            embeddings = self.model.embed_sentences(text_batch, lang=language)
+            for document, embedding in zip(document_batch, embeddings):
+                document.embedding = embedding

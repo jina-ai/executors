@@ -127,4 +127,5 @@ class AudioCLIPImageEncoder(Executor):
                 embeddings = self.model.encode_image(image=images.to(self.device))
                 embeddings = embeddings.cpu().numpy()
 
-                batch.embeddings = embeddings
+                for idx, doc in enumerate(batch):
+                    doc.embedding = embeddings[idx]

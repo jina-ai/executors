@@ -75,7 +75,7 @@ class SpacyTextEncoder(Executor):
                 require_attr='text',
             )
             for document_batch in document_batches_generator:
-                texts = document_batch.texts
+                texts = [doc.text for doc in document_batch]
                 for doc, spacy_doc in zip(
                     document_batch, self.spacy_model.pipe(texts, batch_size=batch_size)
                 ):

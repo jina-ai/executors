@@ -139,4 +139,8 @@ class VideoTorchEncoder(Executor):
                     [torch.Tensor(d.blob) for d in batch_of_documents]
                 ).to(self.device)
             embedding_batch = self._get_embeddings(tensor)
-            batch_of_documents.embeddings = embedding_batch.cpu().numpy()
+            numpy_embedding_batch = embedding_batch.cpu().numpy()
+            for document, numpy_embedding in zip(
+                batch_of_documents, numpy_embedding_batch
+            ):
+                document.embedding = numpy_embedding
