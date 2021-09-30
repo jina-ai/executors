@@ -8,4 +8,4 @@
 ## Reference
 Refer to LightGBM [documentation](https://github.com/microsoft/LightGBM/tree/master/examples/lambdarank) to learn how to use LightGBM to train a ranker.
 
-<!-- version=v0.1 -->
+<!-- version=v0.1.1 -->
