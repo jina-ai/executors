@@ -244,7 +244,7 @@ class HnswlibSearcher(Executor):
 
         self._index.save_index(f'{dump_path}/index.bin')
         with open(f'{dump_path}/ids.json', 'w') as f:
-            self._ids = json.dump(dict(self._ids_to_inds), f)
+            json.dump(dict(self._ids_to_inds), f)
 
     @requests(on='/clear')
     def clear(self, **kwargs):
@@ -252,3 +252,20 @@ class HnswlibSearcher(Executor):
         self._index = hnswlib.Index(space=self.metric, dim=self.dim)
         self._init_empty_index()
         self._index.set_ef(self.ef_query)
+
+    @requests(on='/status')
+    def status(self, **kwargs):
+        """Return the document containing status information about the indexer.
+
+        The status will contain information on the total number of indexed and deleted
+        documents, and on the number of (searchable) documents currently in the index.
+        """
+
+        status = Document(
+            tags={
+                'total_deleted': self._index.element_count - len(self._ids_to_inds),
+                'total_indexed': self._index.element_count,
+                'current_indexed': len(self._ids_to_inds),
+            }
+        )
+        return status

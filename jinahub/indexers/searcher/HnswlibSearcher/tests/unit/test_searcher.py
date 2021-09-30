@@ -207,9 +207,27 @@ def test_update(two_elem_index):
     assert [m.id for m in da_search[1].matches] == ['a', 'b']
 
 
-# TODO
-def test_update_ignore_non_existing():
-    pass
+def test_update_ignore_non_existing(two_elem_index):
+    index, da = two_elem_index
+    da_search = DocumentArray(
+        [
+            Document(embedding=np.ones(_DIM) * 1.1),
+            Document(embedding=np.ones(_DIM) * 2.1),
+        ]
+    )
+
+    # switch embeddings of a and b, and add a new element - it should not get indexed
+    da[0].embedding = np.ones(_DIM) * 2.0
+    da[1].embedding = np.ones(_DIM) * 1.0
+    da.append(Document(id='c', embedding=np.ones(_DIM) * 3.0))
+
+    index.update(da, {})
+    assert index._ids_to_inds == {'a': 0, 'b': 1}
+    assert index._index.element_count == 2
+
+    index.search(da_search, {})
+    assert [m.id for m in da_search[0].matches] == ['b', 'a']
+    assert [m.id for m in da_search[1].matches] == ['a', 'b']
 
 
 def test_update_wrong_dim():
@@ -285,3 +303,19 @@ def test_dump_load(tmp_path, two_elem_index):
     index.search(da, {})
     assert da[0].matches.get_attributes('id') == ['a', 'b']
     assert da[1].matches.get_attributes('id') == ['b', 'a']
+
+
+def test_status(two_elem_index):
+    index, _ = two_elem_index
+    status = index.status()
+
+    assert status.tags['current_indexed'] == 2
+    assert status.tags['total_indexed'] == 2
+    assert status.tags['total_deleted'] == 0
+
+    index.delete({'ids': ['a']})
+    status = index.status()
+
+    assert status.tags['current_indexed'] == 1
+    assert status.tags['total_indexed'] == 2
+    assert status.tags['total_deleted'] == 1
