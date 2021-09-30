@@ -8,6 +8,20 @@ from hnswlib_searcher import HnswlibSearcher
 _DIM = 10
 
 
+@pytest.fixture
+def two_elem_index():
+    index = HnswlibSearcher(dim=_DIM, metric='l2')
+    da = DocumentArray(
+        [
+            Document(id='a', embedding=np.ones(_DIM) * 1.0),
+            Document(id='b', embedding=np.ones(_DIM) * 2.0),
+        ]
+    )
+    index.index(da, {})
+
+    return index, da
+
+
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.metric == 'cosine'
@@ -164,21 +178,14 @@ def test_search_wrong_dim():
         index.search(da_search, {})
 
 
-def test_update():
-    index = HnswlibSearcher(dim=_DIM, metric='l2')
-    da = DocumentArray(
-        [
-            Document(id='a', embedding=np.ones(_DIM) * 1.0),
-            Document(id='b', embedding=np.ones(_DIM) * 2.0),
-        ]
-    )
+def test_update(two_elem_index):
+    index, da = two_elem_index
     da_search = DocumentArray(
         [
             Document(embedding=np.ones(_DIM) * 1.1),
             Document(embedding=np.ones(_DIM) * 2.1),
         ]
     )
-    index.index(da, {})
     assert index._ids_to_inds == {'a': 0, 'b': 1}
 
     index.search(da_search, {})
@@ -200,6 +207,7 @@ def test_update():
     assert [m.id for m in da_search[1].matches] == ['a', 'b']
 
 
+# TODO
 def test_update_ignore_non_existing():
     pass
 
@@ -218,15 +226,8 @@ def test_update_wrong_dim():
         index.update(da_index, {})
 
 
-def test_delete():
-    index = HnswlibSearcher(dim=_DIM, metric='l2')
-    da = DocumentArray(
-        [
-            Document(id='a', embedding=np.ones(_DIM) * 1.0),
-            Document(id='b', embedding=np.ones(_DIM) * 2.0),
-        ]
-    )
-    index.index(da, {})
+def test_delete(two_elem_index):
+    index, da = two_elem_index
 
     index.delete({'ids': ['a', 'c']})
     assert index._ids_to_inds == {'b': 1}
@@ -235,16 +236,9 @@ def test_delete():
     assert len(da[0].matches) == 1
 
 
-def test_delete_soft():
+def test_delete_soft(two_elem_index):
     """Test that we do not overwrite deleted indices"""
-    index = HnswlibSearcher(dim=_DIM, metric='l2')
-    da = DocumentArray(
-        [
-            Document(id='a', embedding=np.ones(_DIM) * 1.0),
-            Document(id='b', embedding=np.ones(_DIM) * 2.0),
-        ]
-    )
-    index.index(da, {})
+    index, da = two_elem_index
     assert index._ids_to_inds == {'a': 0, 'b': 1}
 
     index.delete({'ids': ['b']})
@@ -256,28 +250,38 @@ def test_delete_soft():
     assert index._index.element_count == 3
 
 
-def test_clear():
-    index = HnswlibSearcher(dim=_DIM, metric='l2')
-    da = DocumentArray(
-        [
-            Document(id='a', embedding=np.ones(_DIM) * 1.0),
-            Document(id='b', embedding=np.ones(_DIM) * 2.0),
-        ]
-    )
-    index.index(da, {})
+def test_clear(two_elem_index):
+    index, _ = two_elem_index
 
     index.clear()
     assert len(index._ids_to_inds) == 0
     assert index._index.element_count == 0
 
 
-def test_dump():
-    pass
+def test_dump(two_elem_index, tmp_path):
+    index, da = two_elem_index
+    index.dump({'dump_path': str(tmp_path)})
+
+    assert (tmp_path / 'index.bin').is_file()
+    assert (tmp_path / 'ids.json').is_file()
 
 
-def test_dump_no_path():
-    pass
+def test_dump_no_path(two_elem_index):
+    index, _ = two_elem_index
+
+    with pytest.raises(ValueError, match='The `dump_path` must be provided'):
+        index.dump()
 
 
-def test_dump_load():
-    pass
+def test_dump_load(tmp_path, two_elem_index):
+    index, da = two_elem_index
+    index.dump({'dump_path': str(tmp_path)})
+
+    index = HnswlibSearcher(dim=_DIM, metric='l2', dump_path=tmp_path)
+
+    assert index._ids_to_inds == {'a': 0, 'b': 1}
+    assert index._index.element_count == 2
+
+    index.search(da, {})
+    assert da[0].matches.get_attributes('id') == ['a', 'b']
+    assert da[1].matches.get_attributes('id') == ['b', 'a']

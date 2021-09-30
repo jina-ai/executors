@@ -227,7 +227,9 @@ class HnswlibSearcher(Executor):
 
     @requests(on='/dump')
     def dump(self, parameters: Dict = {}, **kwargs):
-        """Save the index and document ids
+        """Save the index and document ids.
+
+        The index and ids will be saved separately for each shard.
 
         :param parameters: Dictionary with optional parameters that can be used to
             override the parameters set at initialization. The only supported key is
