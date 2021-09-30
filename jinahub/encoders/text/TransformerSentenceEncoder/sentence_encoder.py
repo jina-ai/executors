@@ -57,5 +57,4 @@ class TransformerSentenceEncoder(Executor):
 
             with torch.inference_mode():
                 embeddings = self.model.encode(texts)
-                for doc, embedding in zip(batch, embeddings):
-                    doc.embedding = embedding
+                batch.embeddings = embeddings

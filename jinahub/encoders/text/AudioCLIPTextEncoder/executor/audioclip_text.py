@@ -74,7 +74,4 @@ class AudioCLIPTextEncoder(Executor):
         with torch.inference_mode():
             for batch in batch_generator:
                 embeddings = self.model.encode_text(text=[[doc.text] for doc in batch])
-                embeddings = embeddings.cpu().numpy()
-
-                for idx, doc in enumerate(batch):
-                    doc.embedding = embeddings[idx]
+                batch.embeddings = embeddings.cpu().numpy()

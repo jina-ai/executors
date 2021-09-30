@@ -6,7 +6,6 @@ import os
 import types
 from typing import Dict, Iterable, Optional
 
-import numpy as np
 import torch
 import torch.nn as nn
 from jina import DocumentArray, Executor, requests
@@ -123,12 +122,11 @@ class CustomImageTorchEncoder(Executor):
     def _create_embeddings(self, document_batches_generator: Iterable):
         with torch.inference_mode():
             for document_batch in document_batches_generator:
-                blob_batch = np.array([d.blob for d in document_batch])
+                blob_batch = document_batch.blobs
                 _input = torch.from_numpy(blob_batch.astype('float32'))
                 _input = _input.to(self.device)
                 _feature = self.adaptiveAvgPool2d(
                     self._get_features(content=_input).detach()
                 )
                 _feature = _feature.cpu().numpy()
-                for doc, embedding in zip(document_batch, _feature):
-                    doc.embedding = embedding.squeeze()
+                document_batch.embeddings = _feature

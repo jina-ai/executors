@@ -105,8 +105,7 @@ class ImagePaddlehubEncoder(Executor):
 
     def _create_embeddings(self, document_batches_generator: Iterable):
         for document_batch in document_batches_generator:
-            blob_batch = [d.blob for d in document_batch]
-            blob_batch = np.array(blob_batch)
+            blob_batch = document_batch.embeddings.copy()
             if self.channel_axis != self._default_channel_axis:
                 blob_batch = np.moveaxis(
                     blob_batch, self.channel_axis, self._default_channel_axis
@@ -123,8 +122,7 @@ class ImagePaddlehubEncoder(Executor):
             else:
                 embedding_batch = self._get_pooling(feature_map)
 
-            for document, embedding in zip(document_batch, embedding_batch):
-                document.embedding = embedding
+            document_batch.embeddings = embedding_batch
 
     def _get_pooling(self, content: 'np.ndarray') -> 'np.ndarray':
         """Get ndarray with selected pooling strategy"""
