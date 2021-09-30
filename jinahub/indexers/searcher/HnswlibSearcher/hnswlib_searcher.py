@@ -58,7 +58,6 @@ class HnswlibSearcher(Executor):
 
         self.logger = JinaLogger(self.__class__.__name__)
         self._index = hnswlib.Index(space=self.metric, dim=self.dim)
-        self._ids_to_inds = bidict()
 
         dump_path = self.dump_path or kwargs.get('runtime_args', {}).get(
             'dump_path', None
@@ -74,14 +73,17 @@ class HnswlibSearcher(Executor):
 
         else:
             self.logger.info('No `dump_path` provided, initializing empty index.')
+            self._init_empty_index()
 
-            self._index.init_index(
-                max_elements=self.max_elements,
-                ef_construction=self.ef_construction,
-                M=self.max_connection,
-            )
+        self._index.set_ef(self.ef_query)
 
-        self._index.set_ef(ef_query)
+    def _init_empty_index(self):
+        self._index.init_index(
+            max_elements=self.max_elements,
+            ef_construction=self.ef_construction,
+            M=self.max_connection,
+        )
+        self._ids_to_inds = bidict()
 
     @requests(on='/search')
     def search(
@@ -99,9 +101,13 @@ class HnswlibSearcher(Executor):
         if docs is None:
             return
 
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        docs_search = docs.traverse_flat(traversal_paths)
+        if len(docs_search) == 0:
+            return
+
         ef_query = parameters.get('ef_query', self.ef_query)
         top_k = parameters.get('top_k', self.top_k)
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
 
         self._index.set_ef(ef_query)
 
@@ -112,14 +118,12 @@ class HnswlibSearcher(Executor):
             )
             top_k = len(self._ids_to_inds)
 
-        docs_search = docs.traverse_flat(traversal_paths)
         embeddings_search = docs_search.embeddings
-
         if embeddings_search.shape[1] != self.dim:
             raise ValueError(
-                'Query documents have embeddings with dimensionality'
-                f' {embeddings_search.shape[1]}, which does not match the'
-                f' the dimensionality of the index ({self.dim})'
+                'Query documents have embeddings with dimension'
+                f' {embeddings_search.shape[1]}, which does not match the dimension of'
+                f' the index ({self.dim})'
             )
 
         indices, dists = self._index.knn_query(docs_search.embeddings, k=top_k)
@@ -130,6 +134,43 @@ class HnswlibSearcher(Executor):
                 match.scores[self.metric] = dist
 
                 docs_search[i].matches.append(match)
+
+    def _index_vectors(
+        self,
+        traversal_paths: Iterable[str],
+        docs: Optional[DocumentArray],
+        update: bool = False,
+    ):
+        if docs is None:
+            return
+
+        docs_to_update = docs.traverse_flat(traversal_paths)
+        if len(docs_to_update) == 0:
+            return
+
+        embeddings = docs_to_update.embeddings
+        if embeddings.shape[-1] != self.dim:
+            action_str = 'update' if update else 'index'
+            raise ValueError(
+                f'Attempted to {action_str} vectors with dimension'
+                f'{embeddings.shape[-1]}, but dimension of index is {self.dim}'
+            )
+
+        ids = docs_to_update.get_attributes('id')
+        index_size = self._index.element_count
+        if update:
+            doc_inds = []
+            for _id in ids:
+                if _id not in self._ids_to_inds:
+                    doc_inds.append(index_size)
+                    index_size += 1
+                else:
+                    doc_inds.append(self._ids_to_inds[_id])
+        else:
+            doc_inds = list(range(index_size, index_size + len(ids)))
+
+        self._index.add_items(embeddings, ids=doc_inds)
+        self._ids_to_inds.update({_id: ind for _id, ind in zip(ids, doc_inds)})
 
     @requests(on='/index')
     def index(
@@ -143,27 +184,8 @@ class HnswlibSearcher(Executor):
             override the parameters set at initialization. The only supported key is
             `traversal_paths`.
         """
-        if docs is None:
-            return
-
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        docs_to_update = docs.traverse_flat(traversal_paths)
-        if len(docs_to_update) == 0:
-            return
-
-        embeddings = docs_to_update.embeddings
-        if embeddings.shape[-1] != self.dim:
-            raise ValueError(
-                f'Attempted to index vectors with dimension {embeddings.shape[-1]}'
-                f', but dimension of index is {self.dim}',
-            )
-
-        ids = docs_to_update.get_attributes('id')
-        index_size = self._index.element_count
-        doc_inds = list(range(index_size, index_size + len(ids)))
-
-        self._index.add_items(embeddings, ids=doc_inds)
-        self._ids_to_inds.update({_id: ind for _id, ind in zip(ids, doc_inds)})
+        self._index_vectors(traversal_paths, docs, update=False)
 
     @requests(on='/update')
     def update(
@@ -177,33 +199,8 @@ class HnswlibSearcher(Executor):
             override the parameters set at initialization. The only supported key is
             `traversal_paths`.
         """
-        if docs is None:
-            return
-
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        docs_to_update = docs.traverse_flat(traversal_paths)
-        if len(docs_to_update) == 0:
-            return
-
-        embeddings = docs_to_update.embeddings
-        if embeddings.shape[-1] != self.dim:
-            raise ValueError(
-                f'Attempted to index vectors with dimension {embeddings.shape[-1]}'
-                f', but dimension of index is {self.dim}',
-            )
-
-        ids = docs_to_update.get_attributes('id')
-        index_size = self._index.element_count
-        doc_inds = []
-        for _id in ids:
-            if _id not in self._ids_to_inds:
-                doc_inds.append(index_size)
-                index_size += 1
-            else:
-                doc_inds.append(self._ids_to_inds[_id])
-
-        self._index.add_items(embeddings, ids=doc_inds)
-        self._ids_to_inds.update({_id: ind for _id, ind in zip(ids, doc_inds)})
+        self._index_vectors(traversal_paths, docs, update=True)
 
     @requests(on='/delete')
     def delete(self, parameters: Dict, **kwargs):
@@ -242,9 +239,5 @@ class HnswlibSearcher(Executor):
     def clear(self, **kwargs):
         """Clear the index of all entries."""
         self._index = hnswlib.Index(space=self.metric, dim=self.dim)
-        self._index.init_index(
-            max_elements=self.max_elements,
-            ef_construction=self.ef_construction,
-            M=self.max_connection,
-        )
-        self._ids_to_inds = bidict()
+        self._init_empty_index()
+        self._index.set_ef(self.ef_query)
