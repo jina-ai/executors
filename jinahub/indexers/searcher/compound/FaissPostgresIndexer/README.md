@@ -57,27 +57,12 @@ Currently, we can only guarantee eventual consistency via manual delta updates.
 
 ```python
 with get_my_flow() as flow:
-    flow.index(your_docs)
-    flow.post(
-        on='/sync',
-        # we need some specific parameters here
-        # startup is only needed the 1st time, to actually
-        # create the FaissSearcher
-        parameters={
-            'only_delta': True, 'startup': True
-        }
-    )
-    flow.search(search_docs)
+    flow.post(on='/index', inputs=your_docs)
+    flow.post(on='/sync')
+    flow.post(on='/search', inputs=search_docs)
     ...
-    flow.index(new_docs)
-    flow.post(
-        on='/sync',
-        # startup is not needed anymore
-        # FaissSearcher is incrementally updated
-        parameters={
-            'only_delta': True,
-        }
-    )
+    flow.post(on='/index', inputs=new_docs)
+    flow.post(on='/sync')
 ```
 
 While this can **not** guarantee consistency, it is fast and has low overhead.
@@ -89,12 +74,12 @@ This way all the shards import from the same view/version of your data.
 
 ```python
 with get_my_flow() as flow:
-    flow.index(your_docs)
+    flow.post(on='/index', inputs=your_docs)
     # extra call required: this creates the snapshot
-    flow.snapshot()
+    flow.post(on='/snapshot')
 
     flow.post(on='/sync')
-    flow.search(search_docs)
+    flow.post(on='/search', inputs=search_docs)
 ```
 
 #### Note on polling

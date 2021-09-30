@@ -87,9 +87,24 @@ class FaissPostgresIndexer(Executor):
     def sync(self, parameters: Optional[Dict], **kwargs):
         """
         Sync the data from the PSQLStorage into the FaissSearcher
+
+        :param parameters: dictionary of parameters
+
+            `only_delta`: whether to do delta- or snapshot-based import.
+            Snapshot requires a snapshot to have been created in PSQL
+            delta imports Documents one by one
+
+            If Faiss has size 0, a new Faiss will be created. (if no index
+            exists, delta resolving won't work)
+
+            If `only_delta` is None, we try to resolve it:
+            Is there a snapshot in PSQL? If so, use snapshot.
+            If there isn't, use delta import
+
+            `use_delta`: Whether to also import delta after a snapshot.
         """
+        only_delta = parameters.get('only_delta', not self._use_snapshot())
         use_delta = parameters.get('use_delta', False)
-        only_delta = parameters.get('only_delta', False)
 
         if only_delta:
             self._sync_only_delta(parameters, **kwargs)
@@ -127,15 +142,28 @@ class FaissPostgresIndexer(Executor):
             )
 
     def _sync_only_delta(self, parameters, **kwargs):
+        """
+        `startup` is determined by either being passed or
+        by checking if the vec indexer (Faiss) has been initialized.
+        If it has already been initialized, then startup cannot be True.
+        If it has NOT been initialized, then startup has to be True
+
+        `timestamp`. If startup, then it becomes datetime.min.
+        Else, we get it from self._vec_indexer.last_timestamp
+
+        """
         timestamp = parameters.get('timestamp', None)
-        startup = parameters.get('startup', False)
+        startup = parameters.get('startup', not self._vec_indexer_is_initialized())
         if timestamp is None:
             if startup:
                 timestamp = datetime.datetime.min
+            elif self._vec_indexer.last_timestamp:
+                timestamp = self._vec_indexer.last_timestamp
             else:
                 self.logger.error(
                     f'No timestamp provided in parameters: '
-                    f'{parameters}. Cannot do sync delta'
+                    f'"{parameters}" and vec_indexer.last_timestamp'
+                    f'was None. Cannot do sync with delta'
                 )
                 return
 
@@ -241,3 +269,9 @@ class FaissPostgresIndexer(Executor):
         :param parameters: a dictionary containing the parameters for the dump
         """
         self._kv_indexer.dump(parameters)
+
+    def _use_snapshot(self):
+        return self._kv_indexer.snapshot_size > 0
+
+    def _vec_indexer_is_initialized(self):
+        return self._vec_indexer and self._vec_indexer.size > 0

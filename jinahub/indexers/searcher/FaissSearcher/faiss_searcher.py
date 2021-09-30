@@ -102,6 +102,7 @@ class FaissSearcher(Executor):
             endpoint and reconstruct vectors by id
         """
         super().__init__(*args, **kwargs)
+        self.last_timestamp = datetime.min
         self.index_key = index_key
         self.requires_training = requires_training
         self.trained_index_file = trained_index_file
@@ -639,7 +640,9 @@ class FaissSearcher(Executor):
             self.logger.warning('No data received in Faiss._add_delta. Skipping...')
             return
 
-        for doc_id, vec_array, _ in delta:
+        for doc_id, vec_array, doc_timestamp in delta:
+            self._update_timestamp(doc_timestamp)
+
             idx = self._doc_id_to_offset.get(doc_id)
             if idx is None:  # add new item
                 if vec_array is None:
@@ -658,3 +661,13 @@ class FaissSearcher(Executor):
                 # shape [1, D]
                 vec = vec_array.reshape(1, -1).astype(np.float32)
                 self._append_vecs_and_ids([doc_id], vec)
+
+    def _update_timestamp(self, doc_timestamp):
+        if doc_timestamp:
+            if self.last_timestamp.tzname() is None:
+                self.last_timestamp = self.last_timestamp.replace(
+                    tzinfo=doc_timestamp.tzinfo
+                )
+
+            if doc_timestamp > self.last_timestamp:
+                self.last_timestamp = doc_timestamp
