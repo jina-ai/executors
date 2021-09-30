@@ -127,7 +127,7 @@ class VideoTorchEncoder(Executor):
                 raise RuntimeError(error_msg)
 
     def _create_embeddings(self, batch_of_documents: DocumentArray):
-        with torch.no_grad():
+        with torch.inference_mode():
             if self.use_preprocessing:
                 tensors = [
                     self.transforms(torch.Tensor(d.blob).to(dtype=torch.uint8))

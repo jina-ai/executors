@@ -1,7 +1,7 @@
 FROM jinaai/jina:2-py37-perf
 
 # install git
-RUN apt-get -y update && apt-get install -y git curl  && apt-get install -y libsndfile-dev
+RUN apt-get -y update && apt-get install -y curl && apt-get install -y libsndfile-dev
 
 # install requirements before copying the workspace
 COPY requirements.txt /requirements.txt

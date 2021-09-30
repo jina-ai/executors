@@ -13,7 +13,6 @@ from flair.embeddings import (
     WordEmbeddings,
 )
 from jina import DocumentArray, Executor, requests
-from jina_commons.batching import get_docs_batch_generator
 
 
 class FlairTextEncoder(Executor):
@@ -111,18 +110,19 @@ class FlairTextEncoder(Executor):
             `parameters={'traversal_paths': ['r'], 'batch_size': 10}`
             will set the parameters for traversal_paths, batch_size and that are actually used
         """
-        if docs:
-            document_batches_generator = get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
-                batch_size=parameters.get('batch_size', self.batch_size),
-                needs_attr='text',
-            )
+        if docs is None:
+            return
 
-            for document_batch in document_batches_generator:
+        document_batches_generator = docs.batch(
+            traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
+            batch_size=parameters.get('batch_size', self.batch_size),
+            require_attr='text',
+        )
 
-                c_batch = [Sentence(d.text) for d in document_batch]
+        for document_batch in document_batches_generator:
 
-                self.model.embed(c_batch)
-                for document, c_text in zip(document_batch, c_batch):
-                    document.embedding = c_text.embedding.cpu().numpy()
+            c_batch = [Sentence(d.text) for d in document_batch]
+
+            self.model.embed(c_batch)
+            for document, c_text in zip(document_batch, c_batch):
+                document.embedding = c_text.embedding.cpu().numpy()

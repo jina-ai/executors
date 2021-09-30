@@ -12,4 +12,4 @@ For more information, such as run executor on gpu, check out [documentation](htt
 - [AudioCLIPImageEncoder](https://hub.jina.ai/executor/3atsazub)
 
 
-<!-- version=v0.1 -->
+<!-- version=v0.2 -->

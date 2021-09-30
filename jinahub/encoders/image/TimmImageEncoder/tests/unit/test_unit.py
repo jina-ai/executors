@@ -40,7 +40,7 @@ def test_preprocessing_reshape_correct(content: np.ndarray, out_shape: Tuple):
 def test_encode_image_returns_correct_length(
     traversal_paths: Tuple[str], docs: DocumentArray
 ) -> None:
-    encoder = TimmImageEncoder(traversal_path=traversal_paths)
+    encoder = TimmImageEncoder(traversal_paths=traversal_paths)
 
     encoder.encode(docs=docs, parameters={})
 

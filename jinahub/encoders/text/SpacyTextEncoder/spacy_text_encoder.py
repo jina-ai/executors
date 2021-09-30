@@ -6,7 +6,6 @@ from typing import Dict, Iterable, Optional
 
 import spacy
 from jina import DocumentArray, Executor, requests
-from jina_commons.batching import get_docs_batch_generator
 
 _EXCLUDE_COMPONENTS = [
     'tagger',
@@ -70,11 +69,10 @@ class SpacyTextEncoder(Executor):
             from cupy import asnumpy
         if docs:
             batch_size = parameters.get('batch_size', self.batch_size)
-            document_batches_generator = get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+            document_batches_generator = docs.batch(
+                traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
                 batch_size=batch_size,
-                needs_attr='text',
+                require_attr='text',
             )
             for document_batch in document_batches_generator:
                 texts = [doc.text for doc in document_batch]

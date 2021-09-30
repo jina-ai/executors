@@ -1,2 +1,1 @@
 lightgbm==3.2.0
-jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons

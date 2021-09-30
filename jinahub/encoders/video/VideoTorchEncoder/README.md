@@ -8,5 +8,5 @@ For more information, such as run executor on gpu, check out [documentation](htt
 ## Reference
 - https://pytorch.org/vision/stable/models.html#video-classification
 
-<!-- version=v0.1 -->
+<!-- version=v0.2 -->
 

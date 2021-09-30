@@ -12,7 +12,6 @@ import torch.nn as nn
 from jina import DocumentArray, Executor, requests
 from jina.excepts import PretrainedModelFileDoesNotExist
 from jina.logging.logger import JinaLogger
-from jina_commons.batching import get_docs_batch_generator
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -114,16 +113,15 @@ class CustomImageTorchEncoder(Executor):
             `self.default_batch_size`.
         """
         if docs:
-            document_batches_generator = get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+            document_batches_generator = docs.batch(
+                traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
                 batch_size=parameters.get('batch_size', self.batch_size),
-                needs_attr='blob',
+                require_attr='blob',
             )
             self._create_embeddings(document_batches_generator)
 
     def _create_embeddings(self, document_batches_generator: Iterable):
-        with torch.no_grad():
+        with torch.inference_mode():
             for document_batch in document_batches_generator:
                 blob_batch = np.array([d.blob for d in document_batch])
                 _input = torch.from_numpy(blob_batch.astype('float32'))

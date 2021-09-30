@@ -5,7 +5,6 @@ from typing import Optional, Tuple
 
 from jina import DocumentArray, Executor, requests
 from jina.excepts import PretrainedModelFileDoesNotExist
-from jina_commons.batching import get_docs_batch_generator
 
 
 class TFIDFTextEncoder(Executor):
@@ -57,16 +56,17 @@ class TFIDFTextEncoder(Executor):
             `parameters={'traversal_paths': ['r'], 'batch_size': 10}`.
         """
 
-        if docs:
-            document_batches_generator = get_docs_batch_generator(
-                docs,
-                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
-                batch_size=parameters.get('batch_size', self.batch_size),
-                needs_attr='text',
-            )
+        if docs is None:
+            return
 
-            for document_batch in document_batches_generator:
-                iterable_of_texts = [d.text for d in document_batch]
-                embedding_matrix = self.tfidf_vectorizer.transform(iterable_of_texts)
-                for doc, doc_embedding in zip(document_batch, embedding_matrix):
-                    doc.embedding = doc_embedding
+        document_batches_generator = docs.batch(
+            traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
+            batch_size=parameters.get('batch_size', self.batch_size),
+            require_attr='text',
+        )
+
+        for document_batch in document_batches_generator:
+            iterable_of_texts = [d.text for d in document_batch]
+            embedding_matrix = self.tfidf_vectorizer.transform(iterable_of_texts)
+            for doc, doc_embedding in zip(document_batch, embedding_matrix):
+                doc.embedding = doc_embedding

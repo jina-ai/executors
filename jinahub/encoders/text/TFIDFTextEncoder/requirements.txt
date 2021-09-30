@@ -1,2 +1,1 @@
 scikit-learn==0.24.1
-jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons

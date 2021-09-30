@@ -1,7 +1,7 @@
 FROM jinaai/jina:2-py37-perf
 
 # install git
-RUN apt-get -y update && apt-get install -y git wget \
+RUN apt-get -y update && apt-get install -y wget \
     && rm -rf /var/lib/apt/lists/*
 
 # install requirements before copying the workspace
