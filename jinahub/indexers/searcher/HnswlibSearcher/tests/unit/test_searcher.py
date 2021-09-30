@@ -69,12 +69,62 @@ def test_search_basic(metric: str, top_k: int):
             assert m.id in indexed_ids
 
 
+def test_topk_max():
+    """Test that even with top_k set to more than size of index, at most size of
+    index elements are returned"""
+    index = HnswlibSearcher(dim=_DIM, top_k=1000)
+    embeddings = np.random.normal(size=(10, _DIM))
+    da = DocumentArray([Document(embedding=emb) for emb in embeddings])
+
+    index.index(da, {})
+    index.search(da, {})
+
+    for d in da:
+        assert len(d.matches) == 10
+
+
 def test_search_quality():
-    pass
+    """Test that we get everything correct for a small index"""
+    index = HnswlibSearcher(dim=_DIM, metric='l2')
+    da = DocumentArray(
+        [
+            Document(id='a', embedding=np.ones(_DIM) * 1.1),
+            Document(id='b', embedding=np.ones(_DIM) * 2.0),
+            Document(id='c', embedding=np.ones(_DIM) * 4.0),
+            Document(id='d', embedding=np.ones(_DIM) * 7.0),
+            Document(id='e', embedding=np.ones(_DIM) * 11.0),
+        ]
+    )
+    index.index(da, {})
+    index.search(da)
+
+    matches_a = [m.id for m in da[0].matches]
+    matches_b = [m.id for m in da[1].matches]
+    matches_c = [m.id for m in da[2].matches]
+    matches_d = [m.id for m in da[3].matches]
+    matches_e = [m.id for m in da[4].matches]
+
+    assert matches_a == ['a', 'b', 'c', 'd', 'e']
+    assert matches_b == ['b', 'a', 'c', 'd', 'e']
+    assert matches_c == ['c', 'b', 'a', 'd', 'e']
+    assert matches_d == ['d', 'c', 'e', 'b', 'a']
+    assert matches_e == ['e', 'd', 'c', 'b', 'a']
+
+    for doc in da:
+        assert doc.matches[0].scores['l2'].value == 0
 
 
 def test_search_wrong_dim():
-    pass
+    index = HnswlibSearcher(dim=_DIM)
+    embeddings_ind = np.random.normal(size=(1000, _DIM))
+    embeddings_search = np.random.normal(size=(10, 17))
+    da_index = DocumentArray([Document(embedding=emb) for emb in embeddings_ind])
+    da_search = DocumentArray([Document(embedding=emb) for emb in embeddings_search])
+
+    index.index(da_index, {})
+
+    with pytest.raises(ValueError, match='Query documents have embeddings'):
+        index.search(da_search, {})
 
 
 def test_update():

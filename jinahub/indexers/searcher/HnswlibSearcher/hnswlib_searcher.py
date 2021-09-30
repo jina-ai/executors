@@ -112,14 +112,24 @@ class HnswlibSearcher(Executor):
             )
             top_k = len(self._ids_to_inds)
 
-        for doc in docs.traverse_flat(traversal_paths):
-            indices, dists = self._index.knn_query(doc.embedding, k=top_k)
+        docs_search = docs.traverse_flat(traversal_paths)
+        embeddings_search = docs_search.embeddings
 
-            for idx, dist in zip(indices[0], dists[0]):
+        if embeddings_search.shape[1] != self.dim:
+            raise ValueError(
+                'Query documents have embeddings with dimensionality'
+                f' {embeddings_search.shape[1]}, which does not match the'
+                f' the dimensionality of the index ({self.dim})'
+            )
+
+        indices, dists = self._index.knn_query(docs_search.embeddings, k=top_k)
+
+        for i, (indices_i, dists_i) in enumerate(zip(indices, dists)):
+            for idx, dist in zip(indices_i, dists_i):
                 match = Document(id=self._ids_to_inds.inverse[idx])
                 match.scores[self.metric] = dist
 
-                doc.matches.append(match)
+                docs_search[i].matches.append(match)
 
     @requests(on='/index')
     def index(
