@@ -165,12 +165,18 @@ def flatten(it):
 @pytest.mark.parametrize('nr_docs', [100])
 @pytest.mark.parametrize('emb_size', [10])
 @pytest.mark.parametrize('replicas', [1])
+@pytest.mark.parametrize('snapshot', [True, False])
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_psql_import(
-    tmpdir, nr_docs, emb_size, shards, replicas, docker_compose, benchmark=False
+    tmpdir,
+    nr_docs,
+    emb_size,
+    shards,
+    replicas,
+    docker_compose,
+    snapshot: bool,
+    benchmark=False,
 ):
-    # for psql to start
-    time.sleep(2)
     top_k = 50
     batch_size = min(1000, nr_docs)
     docs = get_batch_iterator(
@@ -219,15 +225,18 @@ def test_psql_import(
             )
             assert len(results[0].docs[0].matches) == 0
 
-            with TimeContext(f'### snapshotting {nr_docs} docs'):
-                flow_storage.post(
-                    on='/snapshot',
-                )
+            if snapshot:
+                with TimeContext(f'### snapshotting {nr_docs} docs'):
+                    flow_storage.post(
+                        on='/snapshot',
+                    )
+                with TimeContext(f'### importing {nr_docs} docs'):
+                    flow_query.post(on='/sync')
 
-            with TimeContext(f'### importing {nr_docs} docs'):
-                flow_query.post(
-                    on='/sync',
-                )
+            else:
+                with TimeContext(f'### importing {nr_docs} docs'):
+                    params = {'only_delta': True, 'startup': True}
+                    flow_query.post(on='/sync', parameters=params)
 
             params = {'top_k': nr_docs}
             if benchmark:
@@ -258,14 +267,16 @@ def _in_docker():
         return False
 
 
+@pytest.mark.parametrize('snapshot', [True, False])
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
-def test_benchmark(tmpdir, docker_compose):
+def test_benchmark(tmpdir, snapshot, docker_compose):
     # benchmark only
     nr_docs = 1000000
     if _in_docker() or ('GITHUB_WORKFLOW' in os.environ):
         nr_docs = 1000
     return test_psql_import(
         tmpdir,
+        snapshot=snapshot,
         nr_docs=nr_docs,
         emb_size=256,
         shards=2 * 2,  # to make up for replicas, in comparison
@@ -319,10 +330,6 @@ def test_psql_sync_delta(
     shards,
     docker_compose,
 ):
-    # for psql to start
-    time.sleep(2)
-
-    top_k = 5
     batch_size = min(1000, nr_docs)
     docs_original = get_batch_iterator(
         batches=nr_docs // batch_size, batch_size=batch_size, emb_size=emb_size
