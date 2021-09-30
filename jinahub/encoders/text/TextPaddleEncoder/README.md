@@ -5,4 +5,4 @@
 ## Reference
 - https://www.paddlepaddle.org.cn/hublist?filter=en_category&value=SemanticModel
 
-<!-- version=v0.2 -->
+<!-- version=v0.1 -->

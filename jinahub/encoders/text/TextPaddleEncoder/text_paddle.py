@@ -6,6 +6,7 @@ from typing import Dict, Iterable, Optional
 import numpy as np
 import paddlehub as hub
 from jina import DocumentArray, Executor, requests
+from jina_commons.batching import get_docs_batch_generator
 
 
 class TextPaddleEncoder(Executor):
@@ -60,20 +61,20 @@ class TextPaddleEncoder(Executor):
             `parameters={'traversal_paths': ['r'], 'batch_size': 10}`.
         :param kwargs: Additional key value arguments.
         """
-        if docs is None:
-            return
-
-        document_batches_generator = docs.batch(
-            traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-            batch_size=parameters.get('batch_size', self.batch_size),
-            require_attr='text',
-        )
-        for batch in document_batches_generator:
-            pooled_features = []
-            results = self.model.get_embedding(
-                [[x] for x in batch.texts], use_gpu=self.device == 'gpu'
+        if docs:
+            document_batches_generator = get_docs_batch_generator(
+                docs,
+                traversal_path=parameters.get('traversal_paths', self.traversal_paths),
+                batch_size=parameters.get('batch_size', self.batch_size),
+                needs_attr='text',
             )
-            for pooled_feature, _ in results:
-                pooled_features.append(pooled_feature)
-            for doc, feature in zip(batch, pooled_features):
-                doc.embedding = np.asarray(feature)
+            for batch_of_docs in document_batches_generator:
+                pooled_features = []
+                contents = [[doc.content] for doc in batch_of_docs]
+                results = self.model.get_embedding(
+                    contents, use_gpu=self.device == 'gpu'
+                )
+                for pooled_feature, _ in results:
+                    pooled_features.append(pooled_feature)
+                for doc, feature in zip(batch_of_docs, pooled_features):
+                    doc.embedding = np.asarray(feature)

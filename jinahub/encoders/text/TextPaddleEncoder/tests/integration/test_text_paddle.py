@@ -4,26 +4,45 @@ import pytest
 from jina import Document, DocumentArray, Flow
 from text_paddle import TextPaddleEncoder
 
-_EMBEDDING_DIM = 1024
+
+@pytest.fixture(scope='function')
+def flow():
+    return Flow().add(uses=TextPaddleEncoder)
 
 
-@pytest.mark.parametrize('request_size', [1, 10, 50, 100])
-def test_integration(request_size: int):
-    docs = DocumentArray(
-        [Document(text='just some random text here') for _ in range(50)]
-    )
-    with Flow(return_results=True).add(uses=TextPaddleEncoder) as flow:
-        resp = flow.post(
-            on='/index',
-            inputs=docs,
-            request_size=request_size,
-            return_results=True,
-        )
+@pytest.fixture(scope='function')
+def content():
+    return 'hello world'
 
-    assert sum(len(resp_batch.docs) for resp_batch in resp) == 50
-    for r in resp:
-        for doc in r.docs:
-            assert doc.embedding.shape == (_EMBEDDING_DIM,)
+
+@pytest.fixture(scope='function')
+def document_array(content):
+    return DocumentArray([Document(content=content)])
+
+
+def validate_callback(mock, validate_func):
+    for args, kwargs in mock.call_args_list:
+        validate_func(*args, **kwargs)
+    mock.assert_called()
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        {'traverse_paths': ['r'], 'batch_size': 10},
+        {'traverse_paths': ['m'], 'batch_size': 10},
+        {'traverse_paths': ['r', 'c'], 'batch_size': 5},
+    ],
+)
+def test_text_paddle(flow, content, document_array, parameters):
+    def validate(resp):
+        for doc in resp.docs:
+            assert doc.embedding.shape == (1024,)
+            assert doc.embedding.all()
+
+    with flow as f:
+        results = f.index(inputs=document_array, return_results=True)
+    validate(results[0])
 
 
 @pytest.mark.docker
