@@ -135,43 +135,6 @@ class HnswlibSearcher(Executor):
 
                 docs_search[i].matches.append(match)
 
-    def _index_vectors(
-        self,
-        traversal_paths: Iterable[str],
-        docs: Optional[DocumentArray],
-        update: bool = False,
-    ):
-        if docs is None:
-            return
-
-        docs_to_update = docs.traverse_flat(traversal_paths)
-        if len(docs_to_update) == 0:
-            return
-
-        embeddings = docs_to_update.embeddings
-        if embeddings.shape[-1] != self.dim:
-            action_str = 'update' if update else 'index'
-            raise ValueError(
-                f'Attempted to {action_str} vectors with dimension'
-                f'{embeddings.shape[-1]}, but dimension of index is {self.dim}'
-            )
-
-        ids = docs_to_update.get_attributes('id')
-        index_size = self._index.element_count
-        if update:
-            doc_inds = []
-            for _id in ids:
-                if _id not in self._ids_to_inds:
-                    doc_inds.append(index_size)
-                    index_size += 1
-                else:
-                    doc_inds.append(self._ids_to_inds[_id])
-        else:
-            doc_inds = list(range(index_size, index_size + len(ids)))
-
-        self._index.add_items(embeddings, ids=doc_inds)
-        self._ids_to_inds.update({_id: ind for _id, ind in zip(ids, doc_inds)})
-
     @requests(on='/index')
     def index(
         self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
@@ -185,14 +148,33 @@ class HnswlibSearcher(Executor):
             `traversal_paths`.
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        self._index_vectors(traversal_paths, docs, update=False)
+        if docs is None:
+            return
+
+        docs_to_update = docs.traverse_flat(traversal_paths)
+        if len(docs_to_update) == 0:
+            return
+
+        embeddings = docs_to_update.embeddings
+        if embeddings.shape[-1] != self.dim:
+            raise ValueError(
+                f'Attempted to index vectors with dimension'
+                f' {embeddings.shape[-1]}, but dimension of index is {self.dim}'
+            )
+
+        ids = docs_to_update.get_attributes('id')
+        index_size = self._index.element_count
+        doc_inds = list(range(index_size, index_size + len(ids)))
+
+        self._index.add_items(embeddings, ids=doc_inds)
+        self._ids_to_inds.update({_id: ind for _id, ind in zip(ids, doc_inds)})
 
     @requests(on='/update')
     def update(
         self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
     ):
         """Update the Documents' embeddings. If a Document is not already present in
-        the index, it gets added to it.
+        the index, it will get ignored, and a warning will be raised.
 
         :param docs: Documents whose `embedding` to update.
         :param parameters: Dictionary with optional parameters that can be used to
@@ -200,7 +182,34 @@ class HnswlibSearcher(Executor):
             `traversal_paths`.
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        self._index_vectors(traversal_paths, docs, update=True)
+        if docs is None:
+            return
+
+        docs_to_update = docs.traverse_flat(traversal_paths)
+        if len(docs_to_update) == 0:
+            return
+
+        doc_inds, docs_filtered = [], []
+        for doc in docs_to_update:
+            if doc.id not in self._ids_to_inds:
+                self.logger.warning(
+                    f'Attempting to update document with id {doc.id} which is not'
+                    ' indexed, skipping. To add documents to index, use the /index'
+                    ' endpoint'
+                )
+            else:
+                docs_filtered.append(doc)
+                doc_inds.append(self._ids_to_inds[doc.id])
+        docs_filtered = DocumentArray(docs_filtered)
+
+        embeddings = docs_filtered.embeddings
+        if embeddings.shape[-1] != self.dim:
+            raise ValueError(
+                f'Attempted to update vectors with dimension'
+                f' {embeddings.shape[-1]}, but dimension of index is {self.dim}'
+            )
+
+        self._index.add_items(embeddings, ids=doc_inds)
 
     @requests(on='/delete')
     def delete(self, parameters: Dict, **kwargs):

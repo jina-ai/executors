@@ -172,28 +172,48 @@ def test_update():
             Document(id='b', embedding=np.ones(_DIM) * 2.0),
         ]
     )
+    da_search = DocumentArray(
+        [
+            Document(embedding=np.ones(_DIM) * 1.1),
+            Document(embedding=np.ones(_DIM) * 2.1),
+        ]
+    )
     index.index(da, {})
     assert index._ids_to_inds == {'a': 0, 'b': 1}
 
-    # Add a new element, switch embeddings of a and b
-    da.append(Document(id='c', embedding=np.ones(_DIM) * 3.0))
+    index.search(da_search, {})
+    assert [m.id for m in da_search[0].matches] == ['a', 'b']
+    assert [m.id for m in da_search[1].matches] == ['b', 'a']
+    for d in da_search:
+        d.pop('matches')
+
+    # switch embeddings of a and b
     da[0].embedding = np.ones(_DIM) * 2.0
     da[1].embedding = np.ones(_DIM) * 1.0
 
     index.update(da, {})
-    assert index._ids_to_inds == {'a': 0, 'b': 1, 'c': 2}
-    assert index._index.element_count == 3
+    assert index._ids_to_inds == {'a': 0, 'b': 1}
+    assert index._index.element_count == 2
 
-    index.search(da[2:3], {})
-    assert [m.id for m in da[2].matches] == ['c', 'a', 'b']
-    assert [m.scores['l2'].value for m in da[2].matches] == [0.0, 10.0, 40.0]
+    index.search(da_search, {})
+    assert [m.id for m in da_search[0].matches] == ['b', 'a']
+    assert [m.id for m in da_search[1].matches] == ['a', 'b']
+
+
+def test_update_ignore_non_existing():
+    pass
 
 
 def test_update_wrong_dim():
     index = HnswlibSearcher(dim=_DIM)
-    embeddings_ind = np.random.normal(size=(10, 17))
+    embeddings_ind = np.random.normal(size=(10, _DIM))
+    embeddings_update = np.random.normal(size=(10, 17))
     da_index = DocumentArray([Document(embedding=emb) for emb in embeddings_ind])
 
+    index.index(da_index, {})
+
+    for doc, emb in zip(da_index, embeddings_update):
+        doc.embedding = emb
     with pytest.raises(ValueError, match='Attempted to update vectors with dimension'):
         index.update(da_index, {})
 
@@ -217,10 +237,38 @@ def test_delete():
 
 def test_delete_soft():
     """Test that we do not overwrite deleted indices"""
+    index = HnswlibSearcher(dim=_DIM, metric='l2')
+    da = DocumentArray(
+        [
+            Document(id='a', embedding=np.ones(_DIM) * 1.0),
+            Document(id='b', embedding=np.ones(_DIM) * 2.0),
+        ]
+    )
+    index.index(da, {})
+    assert index._ids_to_inds == {'a': 0, 'b': 1}
+
+    index.delete({'ids': ['b']})
+    assert index._ids_to_inds == {'a': 0}
+    assert index._index.element_count == 2
+
+    index.index(da[1:2], {})
+    assert index._ids_to_inds == {'a': 0, 'b': 2}
+    assert index._index.element_count == 3
 
 
 def test_clear():
-    pass
+    index = HnswlibSearcher(dim=_DIM, metric='l2')
+    da = DocumentArray(
+        [
+            Document(id='a', embedding=np.ones(_DIM) * 1.0),
+            Document(id='b', embedding=np.ones(_DIM) * 2.0),
+        ]
+    )
+    index.index(da, {})
+
+    index.clear()
+    assert len(index._ids_to_inds) == 0
+    assert index._index.element_count == 0
 
 
 def test_dump():
