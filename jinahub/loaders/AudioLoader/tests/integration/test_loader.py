@@ -9,7 +9,7 @@ from jina import Document, DocumentArray, Flow
 
 
 def test_integration():
-    docs = DocumentArray([Document(uri='tests/test_data/example_mp3.wav')])
+    docs = DocumentArray([Document(uri='tests/test_data/example_mp3.mp3')])
     with Flow().add(uses=AudioLoader) as flow:
         resp = flow.post(
             on="/index",
@@ -20,7 +20,7 @@ def test_integration():
     for r in resp:
         assert len(r.docs) == 1
         for doc in r.docs:
-            assert doc.buffer is not None
+            assert doc.blob is not None
 
 
 @pytest.mark.docker
