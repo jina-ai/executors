@@ -17,35 +17,20 @@ Thus, you can perform all the [CRUD operations](https://docs.jina.ai/advanced/ex
 
 Check the usage in [integration tests](../../../../../tests/integration/psql_import/test_import_psql.py).
 
-## Loading data
+## Syncing data into the FaissSearcher
 
-### Via dump
-
-Since this contains a "Searcher"-type Executor it can take as data source a `dump_path`.
-
-This can be provided in different ways:
-
-- in the YAML definition
-
-```yaml
-jtype: FaissPostgresIndexer
-with:
-    dump_path: /tmp/your_dump_location
-...
-```
-
-- from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/advanced/experimental/indexers/).
-
-The folder needs to contain the data exported from your Indexer.
-Again, see [docs](https://docs.jina.ai/advanced/experimental/indexers/).
-
-Check [integration tests](https://github.com/jina-ai/executors/tree/main/tests/integration/psql_dump_reload) for an example on how to use it.
+This is a Compound Indexer. The data is stored in your PostgreSQL instance, outside of the Jina Flow itself.
+If you search as it is, you will not get any results.
+This is because you need to "sync" the data from your database into the FaissSearcher.
+This can be done in two ways:
 
 ### Direct import from PSQL
 
-Alternatively, you can use the import from PSQL feature.
+The recommended way is to use the import from PSQL feature. 
+This is currently unique to this Indexer.
 
-This allows you to bypass the expensive writing to disk operation.
+By default, you would do [dump-reload](#via-dump). 
+But this method bypasses the expensive writing to disk operation.
 It also removes the complexities that can arise when doing this in a cloud environment.
 There, you would need to mount the volume in one instance, dump, migrate it, then perform the import.
 
@@ -93,6 +78,15 @@ All the others will fail and emit warning.
 To avoid this, you will need to split the Flow into two Flows, one for storage, and one for search, and use different polling methods.
 This is shown in the integration tests as well.
 
+### Via dump
+
+Alternatively, you can use the dump-reload method.
+
+See [docs](https://docs.jina.ai/advanced/experimental/indexers/#dump-and-rolling-update)
+
+Check [integration tests](https://github.com/jina-ai/executors/tree/main/tests/integration/psql_dump_reload) for an example on how to use it.
+
+## Usage
 
 For more advanced, full-fledged examples, check the [integration tests](https://github.com/jina-ai/executors/tree/main/tests/integration/psql_import).
 

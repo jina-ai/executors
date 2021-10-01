@@ -67,7 +67,7 @@ class FaissPostgresIndexer(Executor):
             self._vec_indexer,
         ) = self._init_executors(dump_path, kwargs, startup_sync_args)
         if startup_sync_args:
-            startup_sync_args['startup'] = True
+            startup_sync_args['train_faiss'] = True
             self.sync(parameters=startup_sync_args)
 
     def _init_executors(self, dump_path, kwargs, startup_sync_args):
@@ -143,19 +143,21 @@ class FaissPostgresIndexer(Executor):
 
     def _sync_only_delta(self, parameters, **kwargs):
         """
-        `startup` is determined by either being passed or
+        `train_faiss` is determined by either being passed or
         by checking if the vec indexer (Faiss) has been initialized.
-        If it has already been initialized, then startup cannot be True.
-        If it has NOT been initialized, then startup has to be True
+        If it has already been initialized, then train_faiss cannot be True.
+        If it has NOT been initialized, then train_faiss has to be True
 
-        `timestamp`. If startup, then it becomes datetime.min.
+        `timestamp`. If train_faiss, then it becomes datetime.min.
         Else, we get it from self._vec_indexer.last_timestamp
 
         """
         timestamp = parameters.get('timestamp', None)
-        startup = parameters.get('startup', not self._vec_indexer_is_initialized())
+        train_faiss = parameters.get(
+            'train_faiss', not self._vec_indexer_is_initialized()
+        )
         if timestamp is None:
-            if startup:
+            if train_faiss:
                 timestamp = datetime.datetime.min
             elif self._vec_indexer.last_timestamp:
                 timestamp = self._vec_indexer.last_timestamp
@@ -167,7 +169,7 @@ class FaissPostgresIndexer(Executor):
                 )
                 return
 
-        if startup:
+        if train_faiss:
             # this was startup, so treat the method as a dump_func
             dump_func = functools.partial(
                 self._kv_indexer._get_delta,
