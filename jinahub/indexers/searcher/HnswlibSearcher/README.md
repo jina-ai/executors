@@ -1,48 +1,92 @@
 # HnswlibSearcher
 
-**HnswlibSearcher** is a Hnswlib-powered vector Searcher.
+**HnswlibSearcher** is a vector searcher and indexer, based on the `hnswlib` library.
 
-Hnswlib is a fast approximate nearest neighbor search library and clustering of dense vectors.
+It uses the state-of-the-art HNSW aproximate nearest neighbors algorithm to find matches for query documents. The main advantage of this searcher (compared to searchers like FAISS) is that it does not require training, and has native support for incremental indexing.
 
-
-
-
-
+This indexer has full support for CRUD operations, although only soft delete is possible.
 
 ## Usage
 
-Check [tests](tests) for an example on how to use it.
+## Index and search
 
-### Loading data
+This example show a common usage pattern where we first index some documents, and then
+perform search on the index. 
 
-Since this is a "Searcher"-type Executor, it does not _index_ new data. Rather they are write-once classes, which take as data source a `dump_path`. 
+Note that to achieved the desired tradeoff between index and query
+time on one hand, and search accuracy on the other, you will need to "finetune" the
+index parameters. For more information on that, see [hnswlib documentation](https://github.com/nmslib/hnswlib/blob/master/ALGO_PARAMS.md).
 
-This can be provided in different ways:
+```python
+import numpy as np
+from jina import Document, Flow
 
-- in the YAML definition
-  
-```yaml
-jtype: HnswlibSearcher
-with:
-    dump_path: /tmp/your_dump_location
-...
+
+def generate_index_docs(num_docs):
+    def _gen_fn():
+        for _ in range(num_docs):
+            yield Document(embedding=np.random.rand(512))
+
+    return _gen_fn
+
+
+f = Flow().add(
+    uses='jinahub+docker://HnswlibSearcher', uses_with={'dim': 512, 'top_k': 100}
+)
+with f:
+    # Index 10k docs
+    f.index(generate_index_docs(10_000), show_progress=True, request_size=100)
+
+    # Check that we have 10k docs in index
+    status = f.post('/status', return_results=True)
+    num_docs = int(status[0].data.docs[0].tags['current_indexed'])
+    print(f'Indexed {num_docs} documents')
+
+    # Search for some docs
+    f.search(generate_index_docs(1000), show_progress=True)
 ```
 
-- from the `Flow.rolling_update` method. See [docs](https://docs.jina.ai/fundamentals/executor/indexers/).
 
-The folder needs to contain the data exported from your Indexer. Again, see [docs](https://docs.jina.ai/fundamentals/executor/indexers/).
+## Save and load
+
+This example shows how to save (dump) the index, and then re-create the executor based
+on the saved index.
+
+```python
+import numpy as np
+from jina import Document, Flow
 
 
-### Inputs 
+def generate_index_docs(num_docs):
+    def _gen_fn():
+        for _ in range(num_docs):
+            yield Document(embedding=np.random.rand(512))
+
+    return _gen_fn
 
 
-### Returns
+f = Flow().add(
+    uses='jinahub+docker://HnswlibSearcher', uses_with={'dim': 512, 'top_k': 100}
+)
+with f:
+    # Index 10k docs and save index
+    f.index(generate_index_docs(10_000), show_progress=True, request_size=100)
+    f.post('/dump', parameters={'dump_path': '.'})
 
-Attaches matches to the Documents sent as inputs, with the id of the match, and its embedding. 
-
+# Create new flow so that Hnswlibsearcher loads dumped files on start
+f = Flow().add(
+    uses='jinahub+docker://HnswlibSearcher', 
+    uses_with={'dim': 512, 'top_k': 100, 'dump_path': '.'}
+)
+with f:
+    # Check that index was properly re-built
+    status = f.post('/status', return_results=True)
+    num_docs = int(status[0].data.docs[0].tags['current_indexed'])
+    print(f'{num_docs} documents in index')
+```
 
 ## Reference
 
 - [Hnswlib](https://github.com/nmslib/hnswlib)
 
-<!-- version=v0.1 -->
+<!-- version=v0.2 -->
