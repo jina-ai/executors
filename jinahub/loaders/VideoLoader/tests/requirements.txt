@@ -2,4 +2,4 @@ pytest==6.2.4
 jina==2.1.4
 ffmpeg==1.4
 Pillow==8.3.2
-librosa=0.8.1
+librosa==0.8.1
