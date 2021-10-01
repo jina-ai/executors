@@ -1,7 +1,6 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-
 import glob
 import io
 import os
@@ -13,7 +12,6 @@ import urllib.request
 from typing import Optional
 
 import librosa
-import moviepy.editor as mp
 import numpy as np
 from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
@@ -100,12 +98,12 @@ class VideoLoader(Executor):
         try:
             subprocess.check_call(
                 f'ffmpeg -loglevel panic -i {source_fn} -vsync 0 -vf fps={self.fps} -frame_pts true -s 960x540 '
-                f'{os.path.join(target_path_frames, f"%d.jpg")} 2>&1',
+                f'{os.path.join(target_path_frames, f"%d.jpg")} >/dev/null 2>&1',
                 shell=True,
             )
             subprocess.check_call(
                 f'ffmpeg -loglevel panic -i {source_fn} -ab 160k -ac 2 -ar 44100 -vn '
-                f'{os.path.join(target_path_audio, f"audio.wav")} 2>&1',
+                f'{os.path.join(target_path_audio, f"audio.wav")} >/dev/null 2>&1',
                 shell=True,
             )
         except subprocess.CalledProcessError as e:
@@ -144,10 +142,6 @@ class VideoLoader(Executor):
                 shutil.rmtree(_path)
             except OSError as e:
                 self.logger.error(f'Error in deleting {_path}: {e}')
-
-    def convert_uri_to_audio_blob(self, uri):
-        my_clip = mp.VideoFileClip(uri)
-        my_clip.audio.write_audiofile('tests/toy_data/abc.mp3')
 
     def _get_timestamp_from_filename(self, uri):
         return os.path.basename(uri).split('.')[0]
