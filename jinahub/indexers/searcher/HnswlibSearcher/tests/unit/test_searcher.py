@@ -2,8 +2,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray, Executor
 from hnswlib_searcher import HnswlibSearcher
+from jina import Document, DocumentArray, Executor
 
 _DIM = 10
 
@@ -307,7 +307,7 @@ def test_dump_load(tmp_path, two_elem_index):
 
 def test_status(two_elem_index):
     index, _ = two_elem_index
-    status = index.status()
+    status = index.status()[0]
 
     assert status.tags['current_indexed'] == 2
     assert status.tags['total_indexed'] == 2

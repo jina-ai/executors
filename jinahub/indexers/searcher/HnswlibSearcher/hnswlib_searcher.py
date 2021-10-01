@@ -254,7 +254,7 @@ class HnswlibSearcher(Executor):
         self._index.set_ef(self.ef_query)
 
     @requests(on='/status')
-    def status(self, **kwargs):
+    def status(self, **kwargs) -> DocumentArray:
         """Return the document containing status information about the indexer.
 
         The status will contain information on the total number of indexed and deleted
@@ -268,4 +268,4 @@ class HnswlibSearcher(Executor):
                 'current_indexed': len(self._ids_to_inds),
             }
         )
-        return status
+        return DocumentArray([status])
