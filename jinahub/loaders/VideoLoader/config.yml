@@ -1,0 +1,5 @@
+jtype: VideoLoader
+metas:
+  workspace: 'workspace'
+  py_modules:
+    - executor.py

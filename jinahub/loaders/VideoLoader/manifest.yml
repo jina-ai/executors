@@ -1,0 +1,5 @@
+manifest_version: 1
+name: VideoLoader
+description: An executor that extracts all the frames and audio from videos with `ffmpeg`
+url: https://github.com/jina-ai/executors
+keywords: [audio frames loader extractor video ffmpeg wav]
