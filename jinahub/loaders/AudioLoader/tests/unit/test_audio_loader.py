@@ -1,6 +1,4 @@
-
 import pytest
-
 from executor.audio_loader import AudioLoader
 from jina import Document, DocumentArray
 
@@ -22,4 +20,3 @@ def test_loading_wav():
 
 def test_loading_mixed():
     audio_loader = AudioLoader()
-

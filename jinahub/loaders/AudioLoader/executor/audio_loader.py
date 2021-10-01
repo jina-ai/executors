@@ -1,13 +1,12 @@
 from typing import Iterable
-from jina import Executor, DocumentArray, requests
+
+from jina import DocumentArray, Executor, requests
 
 
 class AudioLoader(Executor):
     """AudioLoader loads audio file into the Document buffer."""
 
-    def __init__(self,
-                 audio_types: Iterable[str] = None,
-                 **kwargs):
+    def __init__(self, audio_types: Iterable[str] = None, **kwargs):
         """
         Initializer function for AudioLoader executor
         Args:

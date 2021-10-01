@@ -9,11 +9,7 @@ from jina import Document, DocumentArray, Flow
 
 
 def test_integration():
-    docs = DocumentArray(
-        [
-            Document(uri='tests/test_data/example_mp3.wav')
-        ]
-    )
+    docs = DocumentArray([Document(uri='tests/test_data/example_mp3.wav')])
     with Flow().add(uses=AudioLoader) as flow:
         resp = flow.post(
             on="/index",
