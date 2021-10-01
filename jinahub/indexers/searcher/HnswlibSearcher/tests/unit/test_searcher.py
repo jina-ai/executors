@@ -314,7 +314,7 @@ def test_status(two_elem_index):
     assert status.tags['total_deleted'] == 0
 
     index.delete({'ids': ['a']})
-    status = index.status()
+    status = index.status()[0]
 
     assert status.tags['current_indexed'] == 1
     assert status.tags['total_indexed'] == 2
