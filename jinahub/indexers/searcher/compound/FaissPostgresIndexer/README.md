@@ -90,5 +90,5 @@ Check [integration tests](https://github.com/jina-ai/executors/tree/main/tests/i
 
 For more advanced, full-fledged examples, check the [integration tests](https://github.com/jina-ai/executors/tree/main/tests/integration/psql_import).
 
-<!-- version=v0.1 -->
+<!-- version=v0.2 -->
 
