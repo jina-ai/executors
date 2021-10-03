@@ -139,8 +139,8 @@ class HnswlibSearcher(Executor):
     def index(
         self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
     ):
-        """Index the Documents' embeddings. The documents should not be already
-        present in the index - for that case, use the update endpoint.
+        """Index the Documents' embeddings. If the document is already in index, it
+        will be updated.
 
         :param docs: Documents whose `embedding` to index.
         :param parameters: Dictionary with optional parameters that can be used to
@@ -164,7 +164,16 @@ class HnswlibSearcher(Executor):
 
         ids = docs_to_update.get_attributes('id')
         index_size = self._index.element_count
-        doc_inds = list(range(index_size, index_size + len(ids)))
+        doc_inds = []
+        for doc in docs_to_update:
+            if doc.id not in self._ids_to_inds:
+                doc_inds.append(index_size)
+                index_size += 1
+            else:
+                self.logger.info(
+                    f'Document with id {doc.id} already in index, updating.'
+                )
+                doc_inds.append(self._ids_to_inds[doc.id])
 
         self._index.add_items(embeddings, ids=doc_inds)
         self._ids_to_inds.update({_id: ind for _id, ind in zip(ids, doc_inds)})

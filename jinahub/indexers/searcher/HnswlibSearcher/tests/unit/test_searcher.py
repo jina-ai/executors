@@ -88,6 +88,27 @@ def test_index():
     )
 
 
+def test_index_with_update(two_elem_index):
+    index, da = two_elem_index
+    da_search = DocumentArray(
+        [
+            Document(embedding=np.ones(_DIM) * 1.1),
+            Document(embedding=np.ones(_DIM) * 2.1),
+        ]
+    )
+    # switch embeddings of a and b
+    da[0].embedding = np.ones(_DIM) * 2.0
+    da[1].embedding = np.ones(_DIM) * 1.0
+
+    index.update(da, {})
+    assert index._ids_to_inds == {'a': 0, 'b': 1}
+    assert index._index.element_count == 2
+
+    index.search(da_search, {})
+    assert [m.id for m in da_search[0].matches] == ['b', 'a']
+    assert [m.id for m in da_search[1].matches] == ['a', 'b']
+
+
 def test_index_wrong_dim():
     index = HnswlibSearcher(dim=10)
     embeddings = np.random.normal(size=(2, 11))

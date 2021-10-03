@@ -28,6 +28,7 @@ def test_index_search_flow(uses: str, build_docker_image: str):
 
         result_search = f.search(da, return_results=True)
         result_search = result_search[0].data.docs
+        assert len(result_search) == 2
 
         for ind in range(2):
             assert result_search[ind].matches[0].id == ('a' if ind == 0 else 'b')
@@ -82,6 +83,7 @@ def test_save_load(tmp_path):
         # Check that we indeed have same items in index
         result_search = f.search(da, return_results=True)
         result_search = result_search[0].data.docs
+        assert len(result_search) == 2
 
         for ind in range(2):
             assert result_search[ind].matches[0].id == ('a' if ind == 0 else 'b')

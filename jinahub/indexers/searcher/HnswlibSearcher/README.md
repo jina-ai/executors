@@ -10,7 +10,7 @@ This indexer has full support for CRUD operations, although only soft delete is 
 
 ## Index and search
 
-This example show a common usage pattern where we first index some documents, and then
+This example shows a common usage pattern where we first index some documents, and then
 perform search on the index. 
 
 Note that to achieved the desired tradeoff between index and query
@@ -22,7 +22,7 @@ import numpy as np
 from jina import Document, Flow
 
 
-def generate_index_docs(num_docs):
+def generate_docs(num_docs):
     def _gen_fn():
         for _ in range(num_docs):
             yield Document(embedding=np.random.rand(512))
@@ -35,7 +35,7 @@ f = Flow().add(
 )
 with f:
     # Index 10k docs
-    f.index(generate_index_docs(10_000), show_progress=True, request_size=100)
+    f.index(generate_docs(10_000), show_progress=True, request_size=100)
 
     # Check that we have 10k docs in index
     status = f.post('/status', return_results=True)
@@ -43,7 +43,7 @@ with f:
     print(f'Indexed {num_docs} documents')
 
     # Search for some docs
-    f.search(generate_index_docs(1000), show_progress=True)
+    f.search(generate_docs(1000), show_progress=True)
 ```
 
 
@@ -57,7 +57,7 @@ import numpy as np
 from jina import Document, Flow
 
 
-def generate_index_docs(num_docs):
+def generate_docs(num_docs):
     def _gen_fn():
         for _ in range(num_docs):
             yield Document(embedding=np.random.rand(512))
@@ -70,7 +70,7 @@ f = Flow().add(
 )
 with f:
     # Index 10k docs and save index
-    f.index(generate_index_docs(10_000), show_progress=True, request_size=100)
+    f.index(generate_docs(10_000), show_progress=True, request_size=100)
     f.post('/dump', parameters={'dump_path': '.'})
 
 # Create new flow so that Hnswlibsearcher loads dumped files on start
