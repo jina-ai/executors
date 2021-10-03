@@ -100,7 +100,7 @@ def test_index_with_update(two_elem_index):
     da[0].embedding = np.ones(_DIM) * 2.0
     da[1].embedding = np.ones(_DIM) * 1.0
 
-    index.update(da, {})
+    index.index(da, {})
     assert index._ids_to_inds == {'a': 0, 'b': 1}
     assert index._index.element_count == 2
 
