@@ -17,6 +17,11 @@ Note that to achieved the desired tradeoff between index and query
 time on one hand, and search accuracy on the other, you will need to "finetune" the
 index parameters. For more information on that, see [hnswlib documentation](https://github.com/nmslib/hnswlib/blob/master/ALGO_PARAMS.md).
 
+Be aware that this indexer does not return embeddings of documents in its search results.
+To obtain the embedding (and other attributes), you should be using a storage indexer,
+such as [LMDBStorage](https://hub.jina.ai/executor/scdc6dop).
+
+
 ```python
 import numpy as np
 from jina import Document, Flow
