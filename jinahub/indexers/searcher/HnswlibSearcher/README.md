@@ -13,7 +13,7 @@ This indexer has full support for CRUD operations, although only soft delete is 
 This example shows a common usage pattern where we first index some documents, and then
 perform search on the index. 
 
-Note that to achieved the desired tradeoff between index and query
+Note that to achieve the desired trade-off between index and query
 time on one hand, and search accuracy on the other, you will need to "finetune" the
 index parameters. For more information on that, see [hnswlib documentation](https://github.com/nmslib/hnswlib/blob/master/ALGO_PARAMS.md).
 
