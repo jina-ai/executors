@@ -10,7 +10,7 @@ _DIM = 10
 
 @pytest.fixture
 def two_elem_index():
-    index = HnswlibSearcher(dim=_DIM, metric='l2')
+    index = HnswlibSearcher(dim=_DIM, distance='l2')
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.0),
@@ -24,7 +24,7 @@ def two_elem_index():
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.metric == 'cosine'
+    assert ex.distance == 'cosine'
 
 
 def test_empty_search():
@@ -118,10 +118,10 @@ def test_index_wrong_dim():
         index.index(da1, {})
 
 
-@pytest.mark.parametrize('metric', ['cosine', 'l2', 'ip'])
+@pytest.mark.parametrize('distance', ['cosine', 'l2', 'ip'])
 @pytest.mark.parametrize('top_k', [5, 10])
-def test_search_basic(metric: str, top_k: int):
-    index = HnswlibSearcher(dim=_DIM, metric=metric, top_k=top_k)
+def test_search_basic(distance: str, top_k: int):
+    index = HnswlibSearcher(dim=_DIM, distance=distance, top_k=top_k)
     embeddings_ind = np.random.normal(size=(1000, _DIM))
     embeddings_search = np.random.normal(size=(10, _DIM))
     da_index = DocumentArray([Document(embedding=emb) for emb in embeddings_ind])
@@ -134,7 +134,7 @@ def test_search_basic(metric: str, top_k: int):
 
     for d in da_search:
         ms = d.matches
-        scores = [m.scores[metric].value for m in ms]
+        scores = [m.scores[distance].value for m in ms]
         assert len(ms) == top_k
         assert sorted(scores) == scores
         for m in ms:
@@ -157,7 +157,7 @@ def test_topk_max():
 
 def test_search_quality():
     """Test that we get everything correct for a small index"""
-    index = HnswlibSearcher(dim=_DIM, metric='l2')
+    index = HnswlibSearcher(dim=_DIM, distance='l2')
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.1),
@@ -316,7 +316,7 @@ def test_dump_load(tmp_path, two_elem_index):
     index, da = two_elem_index
     index.dump({'dump_path': str(tmp_path)})
 
-    index = HnswlibSearcher(dim=_DIM, metric='l2', dump_path=tmp_path)
+    index = HnswlibSearcher(dim=_DIM, distance='l2', dump_path=tmp_path)
 
     assert index._ids_to_inds == {'a': 0, 'b': 1}
     assert index._index.element_count == 2

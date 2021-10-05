@@ -8,7 +8,7 @@ _DIM = 10
 
 @pytest.mark.parametrize('uses', ['HnswlibSearcher', 'docker://hnswlibsearcher'])
 def test_index_search_flow(uses: str, build_docker_image: str):
-    f = Flow().add(uses=uses, uses_with={'metric': 'l2', 'dim': _DIM})
+    f = Flow().add(uses=uses, uses_with={'distance': 'l2', 'dim': _DIM})
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.0),
@@ -39,7 +39,7 @@ def test_index_search_flow(uses: str, build_docker_image: str):
 
 def test_save_load(tmp_path):
     f = Flow().add(
-        name='hnsw', uses=HnswlibSearcher, uses_with={'metric': 'l2', 'dim': _DIM}
+        name='hnsw', uses=HnswlibSearcher, uses_with={'distance': 'l2', 'dim': _DIM}
     )
     da = DocumentArray(
         [
@@ -70,7 +70,7 @@ def test_save_load(tmp_path):
     f = Flow().add(
         name='hnsw',
         uses=HnswlibSearcher,
-        uses_with={'metric': 'l2', 'dim': _DIM, 'dump_path': str(tmp_path)},
+        uses_with={'distance': 'l2', 'dim': _DIM, 'dump_path': str(tmp_path)},
     )
     with f:
         status_ind = f.post('/status', return_results=True)
