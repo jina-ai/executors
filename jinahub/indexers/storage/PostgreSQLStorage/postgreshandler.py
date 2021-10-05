@@ -444,10 +444,15 @@ class PostgreSQLHandler:
         self._close_connection(connection)
 
     def get_snapshot_size(self):
+        """
+        Get the size of the snapshot, if it exists.
+        else 0
+        """
         try:
             cursor = self.connection.cursor()
             cursor.execute(f'SELECT COUNT(*) FROM {self.snapshot_table}')
             records = cursor.fetchall()
             return records[0][0]
         except Exception as e:
-            self.logger.error(f'Could not get size of snapshot: {e}')
+            self.logger.warning(f'Could not get size of snapshot: {e}')
+        return 0

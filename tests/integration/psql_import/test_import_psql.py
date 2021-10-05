@@ -230,13 +230,9 @@ def test_psql_import(
                     flow_storage.post(
                         on='/snapshot',
                     )
-                with TimeContext(f'### importing {nr_docs} docs'):
-                    flow_query.post(on='/sync')
 
-            else:
-                with TimeContext(f'### importing {nr_docs} docs'):
-                    params = {'only_delta': True, 'startup': True}
-                    flow_query.post(on='/sync', parameters=params)
+            with TimeContext(f'### importing {nr_docs} docs'):
+                flow_query.post(on='/sync')
 
             params = {'top_k': nr_docs}
             if benchmark:
@@ -291,25 +287,25 @@ def test_benchmark(tmpdir, snapshot, docker_compose):
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_start_up(docker_compose):
-    docs = list(get_batch_iterator(batches=10, batch_size=10, emb_size=7))
+    docs = list(get_documents(nr=100, index_start=0, emb_size=10))
     shards = 1
 
     with _flow(
         uses_after='MatchMerger', total_shards=shards, startup_args={}, polling='any'
     ) as flow:
         flow.post(on='/index', inputs=docs)
+        results = flow.post(
+            on='/search',
+            inputs=docs,
+            parameters={'top_k': len(docs)},
+            return_results=True,
+        )
+        assert len(results[0].docs[0].matches) == 0
 
-    # here we show how you can avoid having to do a snapshot
-    # and then call sync
-    # and automatically start a Searcher that loads their data from PSQL
-    # WARNING: this cannot guarantee consistency if you do
-    # any writes to the PSQL while the shards are loading
-    with _flow(
-        uses_after='MatchMerger',
-        total_shards=shards,
-        startup_args={'only_delta': True},
-        polling='all',
-    ) as flow:
+        flow.post(
+            on='/sync',
+        )
+
         results = flow.post(
             on='/search',
             inputs=docs,
@@ -317,6 +313,21 @@ def test_start_up(docker_compose):
             return_results=True,
         )
         assert len(results[0].docs[0].matches) == len(docs)
+
+        flow.delete(inputs=docs)
+        # not synced, data is still there in Faiss
+        assert len(results[0].docs[0].matches) == len(docs)
+
+        flow.post(
+            on='/sync',
+        )
+        results = flow.post(
+            on='/search',
+            inputs=docs,
+            parameters={'top_k': len(docs)},
+            return_results=True,
+        )
+        assert len(results[0].docs[0].matches) == 0
 
 
 @pytest.mark.parametrize('shards', [1])
