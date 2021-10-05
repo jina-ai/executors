@@ -20,7 +20,7 @@ class HnswlibSearcher(Executor):
     def __init__(
         self,
         top_k: int = 10,
-        metric: str = 'cosine',
+        distance: str = 'cosine',
         dim: int = 0,
         max_elements: int = 1_000_000,
         ef_construction: int = 400,
@@ -47,7 +47,7 @@ class HnswlibSearcher(Executor):
         """
         super().__init__(*args, **kwargs)
         self.top_k = top_k
-        self.metric = metric
+        self.distance = distance
         self.dim = dim
         self.max_elements = max_elements
         self.traversal_paths = traversal_paths
@@ -57,7 +57,7 @@ class HnswlibSearcher(Executor):
         self.dump_path = dump_path
 
         self.logger = JinaLogger(self.__class__.__name__)
-        self._index = hnswlib.Index(space=self.metric, dim=self.dim)
+        self._index = hnswlib.Index(space=self.distance, dim=self.dim)
 
         dump_path = self.dump_path or kwargs.get('runtime_args', {}).get(
             'dump_path', None
@@ -131,7 +131,7 @@ class HnswlibSearcher(Executor):
         for i, (indices_i, dists_i) in enumerate(zip(indices, dists)):
             for idx, dist in zip(indices_i, dists_i):
                 match = Document(id=self._ids_to_inds.inverse[idx])
-                match.scores[self.metric] = dist
+                match.scores[self.distance] = dist
 
                 docs_search[i].matches.append(match)
 
@@ -258,7 +258,7 @@ class HnswlibSearcher(Executor):
     @requests(on='/clear')
     def clear(self, **kwargs):
         """Clear the index of all entries."""
-        self._index = hnswlib.Index(space=self.metric, dim=self.dim)
+        self._index = hnswlib.Index(space=self.distance, dim=self.dim)
         self._init_empty_index()
         self._index.set_ef(self.ef_query)
 
