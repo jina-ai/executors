@@ -36,7 +36,7 @@ def generate_docs(num_docs):
 
 
 f = Flow().add(
-    uses='jinahub+docker://HnswlibSearcher/v0.2', uses_with={'dim': 512, 'top_k': 100}
+    uses='jinahub+docker://HnswlibSearcher/v0.2', uses_with={'dim': 512, 'limit': 100}
 )
 with f:
     # Index 10k docs
@@ -44,7 +44,7 @@ with f:
 
     # Check that we have 10k docs in index
     status = f.post('/status', return_results=True)
-    num_docs = int(status[0].data.docs[0].tags['current_indexed'])
+    num_docs = int(status[0].docs[0].tags['current_indexed'])
     print(f'Indexed {num_docs} documents')
 
     # Search for some docs
@@ -65,20 +65,8 @@ be better to re-create the index from scratch.
 The example below shows how to use the update and delte operations on the index
 
 ```python
-import numpy as np
-from jina import Document, Flow
-
-
-def generate_docs(num_docs):
-    def _gen_fn():
-        for _ in range(num_docs):
-            yield Document(embedding=np.random.rand(512))
-
-    return _gen_fn
-
-
 f = Flow().add(
-    uses='jinahub+docker://HnswlibSearcher/v0.2', uses_with={'dim': 512, 'top_k': 100}
+    uses='jinahub+docker://HnswlibSearcher/v0.2', uses_with={'dim': 512, 'limit': 100}
 )
 with f:
     # Index 10k docs
@@ -87,11 +75,11 @@ with f:
 
     # Delete the last 100 docs
     ids_delete = [doc.id for doc in docs[-100:]]
-    f.post('/delete', parameters={'ids': ids_delete})
+    f.delete(parameters={'ids': ids_delete})
 
     # Make sure that we have deleted 100 items
     status = f.post('/status', return_results=True)
-    num_docs = int(status[0].data.docs[0].tags['current_indexed'])
+    num_docs = int(status[0].docs[0].tags['count_active'])
     print(f'{num_docs} documents in index')
 
     # Update first 100 documents
@@ -107,20 +95,8 @@ This example shows how to save (dump) the index, and then re-create the executor
 on the saved index.
 
 ```python
-import numpy as np
-from jina import Document, Flow
-
-
-def generate_docs(num_docs):
-    def _gen_fn():
-        for _ in range(num_docs):
-            yield Document(embedding=np.random.rand(512))
-
-    return _gen_fn
-
-
 f = Flow().add(
-    uses='jinahub+docker://HnswlibSearcher/v0.2', uses_with={'dim': 512, 'top_k': 100}
+    uses='jinahub+docker://HnswlibSearcher/v0.2', uses_with={'dim': 512, 'limit': 100}
 )
 with f:
     # Index 10k docs and save index
@@ -130,12 +106,12 @@ with f:
 # Create new flow so that Hnswlibsearcher loads dumped files on start
 f = Flow().add(
     uses='jinahub+docker://HnswlibSearcher/v0.2', 
-    uses_with={'dim': 512, 'top_k': 100, 'dump_path': '.'}
+    uses_with={'dim': 512, 'limit': 100, 'dump_path': '.'}
 )
 with f:
     # Check that index was properly re-built
     status = f.post('/status', return_results=True)
-    num_docs = int(status[0].data.docs[0].tags['current_indexed'])
+    num_docs = int(status[0].docs[0].tags['count_active'])
     print(f'{num_docs} documents in index')
 ```
 

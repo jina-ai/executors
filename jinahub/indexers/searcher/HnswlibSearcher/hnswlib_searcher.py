@@ -19,8 +19,8 @@ class HnswlibSearcher(Executor):
 
     def __init__(
         self,
-        top_k: int = 10,
-        distance: str = 'cosine',
+        limit: int = 10,
+        metric: str = 'cosine',
         dim: int = 0,
         max_elements: int = 1_000_000,
         ef_construction: int = 400,
@@ -32,8 +32,8 @@ class HnswlibSearcher(Executor):
         **kwargs,
     ):
         """
-        :param top_k: Number of results to get for each query document in search
-        :param distance: Distance type, can be 'l2', 'ip', or 'cosine'
+        :param limit: Number of results to get for each query document in search
+        :param metric: Distance metric type, can be 'l2', 'ip', or 'cosine'
         :param dim: The dimensionality of vectors to index
         :param max_elements: Maximum number of elements (vectors) to index
         :param ef_construction: The construction time/accuracy trade-off
@@ -46,8 +46,8 @@ class HnswlibSearcher(Executor):
             search and update), e.g. ['r'], ['c']
         """
         super().__init__(*args, **kwargs)
-        self.top_k = top_k
-        self.distance = distance
+        self.limit = limit
+        self.metric = metric
         self.dim = dim
         self.max_elements = max_elements
         self.traversal_paths = traversal_paths
@@ -57,7 +57,7 @@ class HnswlibSearcher(Executor):
         self.dump_path = dump_path
 
         self.logger = JinaLogger(self.__class__.__name__)
-        self._index = hnswlib.Index(space=self.distance, dim=self.dim)
+        self._index = hnswlib.Index(space=self.metric, dim=self.dim)
 
         dump_path = self.dump_path or kwargs.get('runtime_args', {}).get(
             'dump_path', None
@@ -96,7 +96,7 @@ class HnswlibSearcher(Executor):
             of the same dimension as vectors in the index
         :param parameters: Dictionary with optional parameters that can be used to
             override the parameters set at initialization. Supported keys are
-            `traversal_paths`, `top_k` and `ef_query`.
+            `traversal_paths`, `limit` and `ef_query`.
         """
         if docs is None:
             return
@@ -107,16 +107,16 @@ class HnswlibSearcher(Executor):
             return
 
         ef_query = parameters.get('ef_query', self.ef_query)
-        top_k = parameters.get('top_k', self.top_k)
+        limit = parameters.get('limit', self.limit)
 
         self._index.set_ef(ef_query)
 
-        if top_k > len(self._ids_to_inds):
+        if limit > len(self._ids_to_inds):
             self.logger.warning(
-                f'The `top_k` parameter is set to a value ({top_k}) that is higher than'
+                f'The `limit` parameter is set to a value ({limit}) that is higher than'
                 f' the number of documents in the index ({len(self._ids_to_inds)})'
             )
-            top_k = len(self._ids_to_inds)
+            limit = len(self._ids_to_inds)
 
         embeddings_search = docs_search.embeddings
         if embeddings_search.shape[1] != self.dim:
@@ -126,12 +126,12 @@ class HnswlibSearcher(Executor):
                 f' the index ({self.dim})'
             )
 
-        indices, dists = self._index.knn_query(docs_search.embeddings, k=top_k)
+        indices, dists = self._index.knn_query(docs_search.embeddings, k=limit)
 
         for i, (indices_i, dists_i) in enumerate(zip(indices, dists)):
             for idx, dist in zip(indices_i, dists_i):
                 match = Document(id=self._ids_to_inds.inverse[idx])
-                match.scores[self.distance] = dist
+                match.scores[self.metric] = dist
 
                 docs_search[i].matches.append(match)
 
@@ -258,7 +258,7 @@ class HnswlibSearcher(Executor):
     @requests(on='/clear')
     def clear(self, **kwargs):
         """Clear the index of all entries."""
-        self._index = hnswlib.Index(space=self.distance, dim=self.dim)
+        self._index = hnswlib.Index(space=self.metric, dim=self.dim)
         self._init_empty_index()
         self._index.set_ef(self.ef_query)
 
@@ -272,9 +272,9 @@ class HnswlibSearcher(Executor):
 
         status = Document(
             tags={
-                'total_deleted': self._index.element_count - len(self._ids_to_inds),
-                'total_indexed': self._index.element_count,
-                'current_indexed': len(self._ids_to_inds),
+                'count_deleted': self._index.element_count - len(self._ids_to_inds),
+                'count_indexed': self._index.element_count,
+                'count_active': len(self._ids_to_inds),
             }
         )
         return DocumentArray([status])

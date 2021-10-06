@@ -10,7 +10,7 @@ _DIM = 10
 
 @pytest.fixture
 def two_elem_index():
-    index = HnswlibSearcher(dim=_DIM, distance='l2')
+    index = HnswlibSearcher(dim=_DIM, metric='l2')
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.0),
@@ -24,7 +24,7 @@ def two_elem_index():
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.distance == 'cosine'
+    assert ex.metric == 'cosine'
 
 
 def test_empty_search():
@@ -118,10 +118,10 @@ def test_index_wrong_dim():
         index.index(da1, {})
 
 
-@pytest.mark.parametrize('distance', ['cosine', 'l2', 'ip'])
-@pytest.mark.parametrize('top_k', [5, 10])
-def test_search_basic(distance: str, top_k: int):
-    index = HnswlibSearcher(dim=_DIM, distance=distance, top_k=top_k)
+@pytest.mark.parametrize('metric', ['cosine', 'l2', 'ip'])
+@pytest.mark.parametrize('limit', [5, 10])
+def test_search_basic(metric: str, limit: int):
+    index = HnswlibSearcher(dim=_DIM, metric=metric, limit=limit)
     embeddings_ind = np.random.normal(size=(1000, _DIM))
     embeddings_search = np.random.normal(size=(10, _DIM))
     da_index = DocumentArray([Document(embedding=emb) for emb in embeddings_ind])
@@ -134,17 +134,17 @@ def test_search_basic(distance: str, top_k: int):
 
     for d in da_search:
         ms = d.matches
-        scores = [m.scores[distance].value for m in ms]
-        assert len(ms) == top_k
+        scores = [m.scores[metric].value for m in ms]
+        assert len(ms) == limit
         assert sorted(scores) == scores
         for m in ms:
             assert m.id in indexed_ids
 
 
 def test_topk_max():
-    """Test that even with top_k set to more than size of index, at most size of
+    """Test that even with limit set to more than size of index, at most size of
     index elements are returned"""
-    index = HnswlibSearcher(dim=_DIM, top_k=1000)
+    index = HnswlibSearcher(dim=_DIM, limit=1000)
     embeddings = np.random.normal(size=(10, _DIM))
     da = DocumentArray([Document(embedding=emb) for emb in embeddings])
 
@@ -157,7 +157,7 @@ def test_topk_max():
 
 def test_search_quality():
     """Test that we get everything correct for a small index"""
-    index = HnswlibSearcher(dim=_DIM, distance='l2')
+    index = HnswlibSearcher(dim=_DIM, metric='l2')
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.1),
@@ -271,7 +271,7 @@ def test_delete(two_elem_index):
     index.delete({'ids': ['a', 'c']})
     assert index._ids_to_inds == {'b': 1}
 
-    index.search(da, {'top_k': 10})
+    index.search(da, {'limit': 10})
     assert len(da[0].matches) == 1
 
 
@@ -316,7 +316,7 @@ def test_dump_load(tmp_path, two_elem_index):
     index, da = two_elem_index
     index.dump({'dump_path': str(tmp_path)})
 
-    index = HnswlibSearcher(dim=_DIM, distance='l2', dump_path=tmp_path)
+    index = HnswlibSearcher(dim=_DIM, metric='l2', dump_path=tmp_path)
 
     assert index._ids_to_inds == {'a': 0, 'b': 1}
     assert index._index.element_count == 2
@@ -330,13 +330,13 @@ def test_status(two_elem_index):
     index, _ = two_elem_index
     status = index.status()[0]
 
-    assert status.tags['current_indexed'] == 2
-    assert status.tags['total_indexed'] == 2
-    assert status.tags['total_deleted'] == 0
+    assert status.tags['count_active'] == 2
+    assert status.tags['count_indexed'] == 2
+    assert status.tags['count_deleted'] == 0
 
     index.delete({'ids': ['a']})
     status = index.status()[0]
 
-    assert status.tags['current_indexed'] == 1
-    assert status.tags['total_indexed'] == 2
-    assert status.tags['total_deleted'] == 1
+    assert status.tags['count_active'] == 1
+    assert status.tags['count_indexed'] == 2
+    assert status.tags['count_deleted'] == 1

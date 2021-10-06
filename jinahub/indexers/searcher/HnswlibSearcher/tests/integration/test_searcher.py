@@ -8,7 +8,7 @@ _DIM = 10
 
 @pytest.mark.parametrize('uses', ['HnswlibSearcher', 'docker://hnswlibsearcher'])
 def test_index_search_flow(uses: str, build_docker_image: str):
-    f = Flow().add(uses=uses, uses_with={'distance': 'l2', 'dim': _DIM})
+    f = Flow().add(uses=uses, uses_with={'metric': 'l2', 'dim': _DIM})
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.0),
@@ -22,9 +22,9 @@ def test_index_search_flow(uses: str, build_docker_image: str):
         status_ind = f.post('/status', return_results=True)
         status_ind = status_ind[0].data.docs[0].tags
 
-        assert status_ind['current_indexed'] == 2
-        assert status_ind['total_deleted'] == 0
-        assert status_ind['total_indexed'] == 2
+        assert status_ind['count_active'] == 2
+        assert status_ind['count_deleted'] == 0
+        assert status_ind['count_indexed'] == 2
 
         result_search = f.search(da, return_results=True)
         result_search = result_search[0].data.docs
@@ -39,7 +39,7 @@ def test_index_search_flow(uses: str, build_docker_image: str):
 
 def test_save_load(tmp_path):
     f = Flow().add(
-        name='hnsw', uses=HnswlibSearcher, uses_with={'distance': 'l2', 'dim': _DIM}
+        name='hnsw', uses=HnswlibSearcher, uses_with={'metric': 'l2', 'dim': _DIM}
     )
     da = DocumentArray(
         [
@@ -63,22 +63,22 @@ def test_save_load(tmp_path):
     with f:
         status_ind = f.post('/status', return_results=True)
         status_ind = status_ind[0].data.docs[0].tags
-        assert status_ind['current_indexed'] == 0
-        assert status_ind['total_indexed'] == 0
+        assert status_ind['count_active'] == 0
+        assert status_ind['count_indexed'] == 0
 
     # Load
     f = Flow().add(
         name='hnsw',
         uses=HnswlibSearcher,
-        uses_with={'distance': 'l2', 'dim': _DIM, 'dump_path': str(tmp_path)},
+        uses_with={'metric': 'l2', 'dim': _DIM, 'dump_path': str(tmp_path)},
     )
     with f:
         status_ind = f.post('/status', return_results=True)
         status_ind = status_ind[0].data.docs[0].tags
 
-        assert status_ind['current_indexed'] == 2
-        assert status_ind['total_deleted'] == 0
-        assert status_ind['total_indexed'] == 2
+        assert status_ind['count_active'] == 2
+        assert status_ind['count_deleted'] == 0
+        assert status_ind['count_indexed'] == 2
 
         # Check that we indeed have same items in index
         result_search = f.search(da, return_results=True)
