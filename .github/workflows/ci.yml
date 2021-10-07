@@ -84,7 +84,7 @@ jobs:
             jinahub/hubble-normalizer:v0.1.1 . --jina-version=2
             sudo chown -R $(id -u ${USER}):$(id -g ${USER}) . ; fi
       - name: Run unit tests
-        run: pytest -s -v -m "not gpu"
+        run: python -m pytest -s -v -m "not gpu"
       # - name: Print image size
       #   run: |
       #     IMG_NAME=$(echo "${PWD##*/}" | tr '[:upper:]' '[:lower:]')
