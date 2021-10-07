@@ -21,6 +21,6 @@ This file, along with the `__init__.py`s in each of the folders, do not matter w
 
 If you want to develop a `CompoundExecutor`-type Executor based on one of the classes provided in this package, you can either:
 
-- fork this repo and add it as a separate folder. Start with `jina hub new`, and then follow the design patterns we have established in [here](jinahub/indexers/searcher/compound) and in the [docs](https://docs.jina.ai/fundamentals/executor/).
+- fork this repo and add it as a separate folder. Start with `jina hub new`, and then follow the design patterns we have established in [here](jinahub/indexers/compound) and in the [docs](https://docs.jina.ai/fundamentals/executor/).
 - copy-paste the class you want to have a component of your `CompoundExecutor`, and add it as a class in your Executor's package
 

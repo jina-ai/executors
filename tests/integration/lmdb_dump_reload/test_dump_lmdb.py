@@ -6,20 +6,15 @@ from typing import Dict
 
 import numpy as np
 import pytest
-from jina import Flow, Document, Executor, DocumentArray, requests
+from jina import Document, DocumentArray, Executor, Flow, requests
 from jina.logging.profile import TimeContext
-from jina_commons.indexers.dump import (
-    import_vectors,
-    import_metas,
-)
+from jina_commons.indexers.dump import import_metas, import_vectors
 
-from jinahub.indexers.searcher.compound.FaissLMDBSearcher.faiss_lmdb import FaissLMDBSearcher
-
+from jinahub.indexers.compound.FaissLMDBSearcher.faiss_lmdb import FaissLMDBSearcher
 from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
     doc_without_embedding,
 )
-
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 storage_flow_yml = os.path.join(cur_dir, 'flow_storage.yml')

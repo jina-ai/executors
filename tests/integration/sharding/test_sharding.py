@@ -5,10 +5,10 @@ from typing import Dict, OrderedDict
 
 import numpy as np
 import pytest
-from jina import Document, Flow, DocumentArray, requests, Executor
+from jina import Document, DocumentArray, Executor, Flow, requests
 from jina_commons.indexers.dump import dump_docs
 
-from jinahub.indexers.searcher.compound.FaissLMDBSearcher.faiss_lmdb import FaissLMDBSearcher
+from jinahub.indexers.compound.FaissLMDBSearcher.faiss_lmdb import FaissLMDBSearcher
 from jinahub.indexers.storage.LMDBStorage.lmdb_storage import LMDBStorage
 
 random.seed(0)
@@ -49,8 +49,8 @@ class TagMatchMerger(Executor):
 
 class TaggingFileSearcher(LMDBStorage):
     def __init__(
-            self,
-            **kwargs,
+        self,
+        **kwargs,
     ):
         super().__init__(**kwargs)
 
@@ -65,9 +65,9 @@ class TaggingFileSearcher(LMDBStorage):
 
 class FaissTaggingFileSearcher(FaissLMDBSearcher):
     def __init__(
-            self,
-            dump_path=None,
-            **kwargs,
+        self,
+        dump_path=None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self._kv_indexer = TaggingFileSearcher(dump_path=dump_path, **kwargs)

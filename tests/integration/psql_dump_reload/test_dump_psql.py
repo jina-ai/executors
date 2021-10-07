@@ -30,7 +30,7 @@ def docker_compose(request):
 
 # required in order to be found by Flow creation
 # noinspection PyUnresolvedReferences
-from jinahub.indexers.searcher.compound.FaissPostgresIndexer import FaissPostgresIndexer
+from jinahub.indexers.compound.FaissPostgresIndexer import FaissPostgresIndexer
 
 # noinspection PyUnresolvedReferences
 from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
