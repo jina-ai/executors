@@ -12,7 +12,7 @@ from jina import Document, DocumentArray, Executor, Flow, requests
 from jina.logging.profile import TimeContext
 from jina_commons.indexers.dump import import_metas, import_vectors
 
-from jinahub.indexers.searcher.compound.FaissPostgresIndexer import FaissPostgresIndexer
+from jinahub.indexers.compound.FaissPostgresIndexer import FaissPostgresIndexer
 from jinahub.indexers.storage.PostgreSQLStorage.postgres_indexer import (
     PostgreSQLStorage,
 )

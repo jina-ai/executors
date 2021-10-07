@@ -1,5 +1,4 @@
 psycopg2-binary==2.8.6
 faiss-cpu==1.6.5
 git+https://github.com/jina-ai/jina-commons
-git+https://github.com/jina-ai/jina.git@v2.1.1#egg=jina[standard]
 git+https://github.com/jina-ai/executors # only required to start. DO NOT add real tests here, but in top-level integration
