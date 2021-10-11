@@ -200,7 +200,7 @@ class PyNgramSpell:
             ).keys()
         )
 
-    def _correct_with_bigrams(self, tokenized_sentence: List[int]) -> List[int]:
+    def _correct_with_bigrams(self, tokenized_sentence: List[str]) -> List[str]:
         """Correct the words in the tokenized_sentence that are not part of the vocabulary
         :param tokenized_sentence : sentence tokenized
         """
@@ -272,7 +272,7 @@ class PyNgramSpell:
 
         tokenized_sentence = self._correct_with_bigrams(tokenized_sentence)
 
-        return tokenized_sentence
+        return ' '.join(tokenized_sentence)
 
     def save(self, file_path: str):
         """Save the instance an PyNgramSpell to the provided path.
