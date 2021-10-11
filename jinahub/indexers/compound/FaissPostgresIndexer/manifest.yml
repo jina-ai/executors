@@ -1,6 +1,6 @@
 manifest_version: 1
 name: FaissPostgresIndexer
 description: A compound FAISS- and PostgreSQL-based query indexer
-url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/searcher/compound/FaissPostgresIndexer
+url: https://github.com/jina-ai/executors/tree/main/jinahub/indexers/compound/FaissPostgresIndexer
 keywords: [database, compound, indexer, Faiss, FileSearcher]
 
