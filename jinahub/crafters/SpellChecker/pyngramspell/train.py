@@ -44,10 +44,6 @@ def train_model(model_path: str = os.path.join(cur_dir, '../model/model.pickle')
     train_data = [' '.join(x) for x in y_tr]
     speller = PyNgramSpell()
     speller.fit(train_data)
-    assert (
-        ' '.join(speller.transform('the maan went to the store'))
-        == 'the man went to the store'
-    )
     os.makedirs(Path(model_path).parent, exist_ok=True)
     speller.save(model_path)
 
