@@ -128,6 +128,8 @@ class PostgreSQLHandler:
                 shard int,
                 last_updated timestamp with time zone default current_timestamp
             );
+            CREATE INDEX idx_shard ON {self.table}(shard);
+            CREATE INDEX idx_last_updated ON {self.table}(last_updated);
             INSERT INTO {SCHEMA_VERSIONS_TABLE_NAME} VALUES (%s, %s);''',
             (self.table, SCHEMA_VERSION),
         )
