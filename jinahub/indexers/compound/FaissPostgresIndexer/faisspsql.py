@@ -73,7 +73,12 @@ class FaissPostgresIndexer(Executor):
     def _init_executors(self, dump_path, kwargs, startup_sync_args):
         # float32 because that's what faiss expects
         kv_indexer = PostgreSQLStorage(dump_dtype=np.float32, **kwargs)
-        vec_indexer = FaissSearcher(dump_path=dump_path, prefetch_size=16, **kwargs)
+        vec_indexer = FaissSearcher(
+            dump_path=dump_path,
+            prefetch_size=16,
+            shard_id=self.runtime_args.pea_id,
+            **kwargs,
+        )
 
         if dump_path is None and startup_sync_args is None:
             name = getattr(self.metas, 'name', self.__class__.__name__)
@@ -122,6 +127,7 @@ class FaissPostgresIndexer(Executor):
             self._vec_indexer = FaissSearcher(
                 dump_func=dump_func,
                 prefetch_size=FAISS_PREFETCH_SIZE,
+                shard_id=self.runtime_args.pea_id,
                 **self._init_kwargs,
             )
 
@@ -179,6 +185,7 @@ class FaissPostgresIndexer(Executor):
             self._vec_indexer = FaissSearcher(
                 dump_func=dump_func,
                 prefetch_size=FAISS_PREFETCH_SIZE,
+                shard_id=self.runtime_args.pea_id,
                 **self._init_kwargs,
             )
         else:
@@ -228,6 +235,7 @@ class FaissPostgresIndexer(Executor):
         Completely removes rows in PSQL that have been marked for soft-deletion
         """
         self._kv_indexer.cleanup()
+        self._vec_indexer.cleanup()
 
     @requests(on='/snapshot')
     def snapshot(self, **kwargs):

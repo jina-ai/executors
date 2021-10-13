@@ -65,6 +65,7 @@ class FaissSearcher(Executor):
         is_distance: bool = False,
         default_top_k: int = 5,
         on_gpu: bool = False,
+        shard_id: Optional[int] = None,
         *args,
         **kwargs,
     ):
@@ -97,9 +98,7 @@ class FaissSearcher(Executor):
         :param nprobe: Number of clusters to consider at search time.
         :param is_distance: Boolean flag that describes if distance metric need to be
             reinterpreted as similarities.
-        :param make_direct_map: Boolean flag that describes if direct map has to be
-            computed after building the index. Useful if you need to call `fill_embedding`
-            endpoint and reconstruct vectors by id
+        :param shard_id: the shard index number
         """
         super().__init__(*args, **kwargs)
         self.last_timestamp = datetime.min
@@ -117,6 +116,8 @@ class FaissSearcher(Executor):
         self.default_top_k = default_top_k
         self.default_traversal_paths = default_traversal_paths
         self.is_distance = is_distance
+
+        self.shard_id = shard_id
 
         self._doc_ids = []
         self._doc_id_to_offset = {}
@@ -140,11 +141,11 @@ class FaissSearcher(Executor):
                 f'Start building "FaissIndexer" from dump data {dump_path}'
             )
             ids_iter, vecs_iter = import_vectors(
-                dump_path, str(self.runtime_args.pea_id)
+                dump_path, str(self.shard_id or self.runtime_args.pea_id)
             )
             iterator = zip(ids_iter, vecs_iter)
         elif dump_func is not None:
-            iterator = dump_func(shard_id=self.runtime_args.pea_id)
+            iterator = dump_func(shard_id=self.shard_id or self.runtime_args.pea_id)
         else:
             self.logger.warning(
                 'No "dump_path" or "dump_func" passed to "FaissIndexer".'
@@ -404,6 +405,9 @@ class FaissSearcher(Executor):
 
         with open(os.path.join(target_path, DELETE_MARKS_FILENAME), "wb") as fp:
             pickle.dump(self._is_deleted, fp)
+
+    def cleanup(self):
+        self._faiss_index.reset()
 
     def _faiss_index_exist(self, folder_path: str):
         index_path = os.path.join(folder_path, FAISS_INDEX_FILENAME)
