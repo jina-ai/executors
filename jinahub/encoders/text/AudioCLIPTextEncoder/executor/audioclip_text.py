@@ -40,7 +40,7 @@ class AudioCLIPTextEncoder(Executor):
             import os
             import subprocess
 
-            root_path = os.path.dirname(os.getcwd())
+            root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             subprocess.call(['sh', 'scripts/download_full.sh'], cwd=root_path)
 
         self.model = (
