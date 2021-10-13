@@ -54,7 +54,6 @@ class AudioCLIPTextEncoder(Executor):
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
 
-
     @requests
     def encode(
         self,
