@@ -28,6 +28,7 @@ class AudioCLIPImageEncoder(Executor):
         traversal_paths: Iterable[str] = ('r',),
         batch_size: int = 32,
         device: str = 'cpu',
+        download_model: bool = True,
         *args,
         **kwargs,
     ):
@@ -45,6 +46,13 @@ class AudioCLIPImageEncoder(Executor):
             where X is the index of the GPU on the machine)
         """
         super().__init__(*args, **kwargs)
+
+        if download_model:
+            import os
+            import subprocess
+
+            root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            subprocess.call(['sh', 'scripts/download_full.sh'], cwd=root_path)
 
         self.device = device
         self.model = AudioCLIP(pretrained=model_path).to(device).eval()

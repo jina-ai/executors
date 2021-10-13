@@ -25,6 +25,7 @@ class AudioCLIPEncoder(Executor):
         traversal_paths: Iterable[str] = ('r',),
         batch_size: int = 32,
         device: str = 'cpu',
+        download_model: bool = True,
         *args,
         **kwargs
     ):
@@ -39,6 +40,14 @@ class AudioCLIPEncoder(Executor):
         self.model_path = model_path
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
+
+        if download_model:
+            import os
+            import subprocess
+
+            root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            subprocess.call(['sh', 'scripts/download_model.sh'], cwd=root_path)
+
         try:
             self.model = AudioCLIP(pretrained=model_path).to(device).eval()
         except FileNotFoundError:
