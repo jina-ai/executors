@@ -47,6 +47,13 @@ class AudioCLIPImageEncoder(Executor):
         """
         super().__init__(*args, **kwargs)
 
+        if download_model:
+            import os
+            import subprocess
+
+            root_path = os.path.dirname(os.getcwd())
+            subprocess.call(['sh', 'scripts/download_full.sh'], cwd=root_path)
+
         self.device = device
         self.model = AudioCLIP(pretrained=model_path).to(device).eval()
         self.traversal_paths = traversal_paths
@@ -62,12 +69,6 @@ class AudioCLIPImageEncoder(Executor):
             ]
         )
 
-        if download_model:
-            import os
-            import subprocess
-
-            root_path = os.path.dirname(os.getcwd())
-            subprocess.call(['sh', 'scripts/download_full.sh'], cwd=root_path)
 
     @requests
     def encode(

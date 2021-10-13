@@ -35,6 +35,14 @@ class AudioCLIPTextEncoder(Executor):
             where X is the index of the GPU on the machine)
         """
         super().__init__(*args, **kwargs)
+
+        if download_model:
+            import os
+            import subprocess
+
+            root_path = os.path.dirname(os.getcwd())
+            subprocess.call(['sh', 'scripts/download_full.sh'], cwd=root_path)
+
         self.model = (
             AudioCLIP(
                 pretrained=model_path,
@@ -46,12 +54,6 @@ class AudioCLIPTextEncoder(Executor):
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
 
-        if download_model:
-            import os
-            import subprocess
-
-            root_path = os.path.dirname(os.getcwd())
-            subprocess.call(['sh', 'scripts/download_full.sh'], cwd=root_path)
 
     @requests
     def encode(
