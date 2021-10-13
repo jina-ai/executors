@@ -47,12 +47,11 @@ class AudioCLIPEncoder(Executor):
                 'Please download AudioCLIP model and set the `model_path` argument.'
             )
         if download_model:
-            import subprocess
             import os
-            root_path = os.path.dirname(os.getcwd())
-            subprocess.call(['sh', 'scripts/download_model.sh'],
-                            cwd=root_path)
+            import subprocess
 
+            root_path = os.path.dirname(os.getcwd())
+            subprocess.call(['sh', 'scripts/download_model.sh'], cwd=root_path)
 
     @requests
     def encode(

@@ -47,11 +47,11 @@ class AudioCLIPTextEncoder(Executor):
         self.batch_size = batch_size
 
         if download_model:
-            import subprocess
             import os
+            import subprocess
+
             root_path = os.path.dirname(os.getcwd())
-            subprocess.call(['sh', 'scripts/download_full.sh'],
-                            cwd=root_path)
+            subprocess.call(['sh', 'scripts/download_full.sh'], cwd=root_path)
 
     @requests
     def encode(
