@@ -25,6 +25,7 @@ class AudioCLIPEncoder(Executor):
         traversal_paths: Iterable[str] = ('r',),
         batch_size: int = 32,
         device: str = 'cpu',
+        download_model: bool = True,
         *args,
         **kwargs
     ):
@@ -45,6 +46,13 @@ class AudioCLIPEncoder(Executor):
             raise FileNotFoundError(
                 'Please download AudioCLIP model and set the `model_path` argument.'
             )
+        if download_model:
+            import subprocess
+            import os
+            root_path = os.path.dirname(os.getcwd())
+            subprocess.call(['sh', 'scripts/download_model.sh'],
+                            cwd=root_path)
+
 
     @requests
     def encode(

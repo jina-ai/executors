@@ -12,6 +12,4 @@ RUN pip install -r requirements.txt --no-cache-dir
 COPY . /workdir
 WORKDIR /workdir
 
-RUN ./scripts/download_full.sh
-
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

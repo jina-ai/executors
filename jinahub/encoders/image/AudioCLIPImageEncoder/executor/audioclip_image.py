@@ -28,6 +28,7 @@ class AudioCLIPImageEncoder(Executor):
         traversal_paths: Iterable[str] = ('r',),
         batch_size: int = 32,
         device: str = 'cpu',
+        download_model: bool = True,
         *args,
         **kwargs,
     ):
@@ -60,6 +61,13 @@ class AudioCLIPImageEncoder(Executor):
                 transforms.Normalize(_IMAGE_MEAN, _IMAGE_STD),
             ]
         )
+
+        if download_model:
+            import subprocess
+            import os
+            root_path = os.path.dirname(os.getcwd())
+            subprocess.call(['sh', 'scripts/download_full.sh'],
+                            cwd=root_path)
 
     @requests
     def encode(

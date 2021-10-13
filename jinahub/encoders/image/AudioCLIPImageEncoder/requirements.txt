@@ -9,3 +9,4 @@ ftfy==6.0.3
 librosa==0.8.0
 regex==2021.7.6
 ffmpeg
+subprocess
