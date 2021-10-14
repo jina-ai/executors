@@ -101,7 +101,7 @@ class AudioCLIPEncoder(Executor):
                 'sample rate is not given, please provide a valid sample rate'
             )
         if orig_sr == AudioCLIPEncoder.TARGET_SAMPLE_RATE:
-            return
+            return blob, orig_sr
         return (
             lr.resample(blob, orig_sr, AudioCLIPEncoder.TARGET_SAMPLE_RATE),
             AudioCLIPEncoder.TARGET_SAMPLE_RATE,
