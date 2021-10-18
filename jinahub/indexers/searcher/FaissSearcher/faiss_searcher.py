@@ -54,15 +54,13 @@ class FaissSearcher(Executor):
         index_key: str = 'Flat',
         trained_index_file: Optional[str] = None,
         max_num_training_points: Optional[int] = None,
-        requires_training: bool = True,
-        metric: str = 'l2',
-        normalize: bool = False,
+        metric: str = 'euclidean',
         nprobe: int = 1,
         dump_path: Optional[str] = None,
-        prefetch_size: Optional[int] = 512,
         dump_func: Optional[Callable] = None,
+        prefetch_size: Optional[int] = 512,
         default_traversal_paths: List[str] = ['r'],
-        is_distance: bool = False,
+        is_distance: bool = True,
         default_top_k: int = 5,
         on_gpu: bool = False,
         *args,
@@ -81,36 +79,31 @@ class FaissSearcher(Executor):
             from `NumpyIndexer`. If none is provided, `indexed` data will be used
             to train the Indexer (In that case, one must be careful when sharding
             is enabled, because every shard will be trained with its own part of data).
-            The data will only be loaded if `requires_training` is set to True.
+            The data will only be loaded if the index type requires training to be run
+            before building index.
         :param max_num_training_points: Optional argument to consider only a subset of
         training points to training data from `train_filepath`.
             The points will be selected randomly from the available points
         :param prefetch_size: the number of data to pre-load into RAM
-        :param requires_training: Boolean flag indicating if the index type
-            requires training to be run before building index.
-        :param metric: 'l2' or 'inner_product' accepted. Determines which distances to
-            optimize by FAISS. l2...smaller is better, inner_product...larger is better
-        :param normalize: whether or not to normalize the vectors e.g. for the cosine
-            similarity
-            https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances#how
-            -can-i-index-vectors-for-cosine-similarity
+        :param metric: 'euclidean', 'cosine' or 'inner_product' accepted. Determines which distances to
+            optimize by FAISS. euclidean...smaller is better, cosine...larger is better
         :param nprobe: Number of clusters to consider at search time.
         :param is_distance: Boolean flag that describes if distance metric need to be
             reinterpreted as similarities.
-        :param make_direct_map: Boolean flag that describes if direct map has to be
-            computed after building the index. Useful if you need to call `fill_embedding`
-            endpoint and reconstruct vectors by id
         """
         super().__init__(*args, **kwargs)
         self.last_timestamp = datetime.min
         self.index_key = index_key
-        self.requires_training = requires_training
         self.trained_index_file = trained_index_file
 
         self.max_num_training_points = max_num_training_points
         self.prefetch_size = prefetch_size
         self.metric = metric
-        self.normalize = normalize
+
+        self.normalize = False
+        if self.metric == 'cosine':
+            self.normalize = True
+
         self.nprobe = nprobe
         self.on_gpu = on_gpu
 
@@ -120,15 +113,16 @@ class FaissSearcher(Executor):
 
         self._doc_ids = []
         self._doc_id_to_offset = {}
+
         self._is_deleted = []
         self._prefetch_data = []
 
         self.logger = get_logger(self)
-        is_loaded = False
-        if self._faiss_index_exist(self.workspace):
-            is_loaded = self._load(self.workspace)
-        if not is_loaded:
+
+        if dump_path or dump_func:
             self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
+        else:
+            self._load(self.workspace)
 
     def _load_dump(self, dump_path, dump_func, prefetch_size, **kwargs):
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
@@ -164,9 +158,12 @@ class FaissSearcher(Executor):
             else:
                 self._prefetch_data = list(iterator)
 
+            if len(self._prefetch_data) == 0:
+                return
+
             self.num_dim = self._prefetch_data[0].shape[0]
             self.dtype = self._prefetch_data[0].dtype
-            self.index = self._build_index(iterator)
+            self._build_index(iterator)
 
     def _iterate_vectors_and_save_ids(self, iterator):
         for position, id_vector in enumerate(iterator):
@@ -236,8 +233,8 @@ class FaissSearcher(Executor):
 
         self._init_faiss_index(self.num_dim, trained_index_file=self.trained_index_file)
 
-        if self.requires_training and (not self._faiss_index.is_trained):
-            self.logger.info('Taking indexed data as training points')
+        if not self._faiss_index.is_trained:
+            self.logger.info('Taking indexed data as training points...')
             if self.max_num_training_points is None:
                 self._prefetch_data.extend(list(vecs_iter))
             else:
@@ -250,6 +247,9 @@ class FaissSearcher(Executor):
                         self._prefetch_data.append(next(vecs_iter))
                     except Exception as _:  # noqa: F841
                         break
+
+            if len(self._prefetch_data) == 0:
+                return
 
             train_data = np.stack(self._prefetch_data)
             train_data = train_data.astype(np.float32)
@@ -274,16 +274,6 @@ class FaissSearcher(Executor):
             if self.normalize:
                 faiss.normalize_L2(train_data)
             self._train(train_data)
-
-        # TODO: Experimental features
-        # if 'IVF' in self.index_key:
-        #     # Support for searching several inverted lists in parallel (
-        #     parallel_mode != 0)
-        #     self.logger.info(
-        #         'We will setting `parallel_mode=1` to supporting searching
-        #         several inverted lists in parallel'
-        #     )
-        #     index.parallel_mode = 1
 
         self.logger.info('Building the Faiss index...')
         self._build_partial_index(vecs_iter)
@@ -345,7 +335,7 @@ class FaissSearcher(Executor):
 
         query_docs = docs.traverse_flat(traversal_paths)
 
-        vecs = np.array(query_docs.get_attributes('embedding'), dtype=np.float32)
+        vecs = np.array(query_docs.get_attributes('embedding')).astype(np.float32)
 
         if self.normalize:
             from faiss import normalize_L2
@@ -354,7 +344,7 @@ class FaissSearcher(Executor):
 
         dists, ids = self._faiss_index.search(vecs, expand_topk)
 
-        if self.metric == 'inner_product':
+        if self.metric in ['cosine', 'inner_product']:
             dists = 1 - dists
 
         for doc_idx, matches in enumerate(zip(ids, dists)):
@@ -370,7 +360,7 @@ class FaissSearcher(Executor):
                 if self.is_distance:
                     match.scores[self.metric] = dist
                 else:
-                    if self.metric == 'inner_product':
+                    if self.metric in ['cosine', 'inner_product']:
                         match.scores[self.metric] = 1 - dist
                     else:
                         match.scores[self.metric] = 1 / (1 + dist)
@@ -411,7 +401,7 @@ class FaissSearcher(Executor):
 
     def _load(self, from_path: Optional[str] = None):
         from_path = from_path if from_path else self.workspace
-        self.logger.info(f'Try to load indexer from {from_path}...')
+        self.logger.info(f'Try to restore indexer from {from_path}...')
         try:
             with open(os.path.join(from_path, DOC_IDS_FILENAME), 'rb') as fp:
                 self._doc_ids = pickle.load(fp)
@@ -454,7 +444,7 @@ class FaissSearcher(Executor):
             'trained_index_file', self.trained_index_file
         )
         if not trained_index_file:
-            raise ValueError('No "trained_index_file" provided for training {self}')
+            raise ValueError(f'No "trained_index_file" provided for training {self}')
 
         train_data = self._load_training_data(train_data_file)
         if train_data is None:
@@ -608,15 +598,16 @@ class FaissSearcher(Executor):
     @property
     def metric_type(self):
         metric_type = faiss.METRIC_L2
-        if self.metric == 'inner_product':
+        if self.metric in ['cosine', 'inner_product']:
             self.logger.warning(
-                'inner_product will be output as distance instead of similarity.'
+                f'{self.metric} will be output as distance instead of similarity.'
             )
             metric_type = faiss.METRIC_INNER_PRODUCT
-        if self.metric not in {'inner_product', 'l2'}:
+
+        if self.metric not in {'euclidean', 'cosine', 'inner_product'}:
             self.logger.warning(
                 'Invalid distance metric for Faiss index construction. Defaulting '
-                'to l2 distance'
+                'to euclidean distance'
             )
         return metric_type
 
