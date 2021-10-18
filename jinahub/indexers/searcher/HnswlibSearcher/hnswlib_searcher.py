@@ -20,7 +20,7 @@ class HnswlibSearcher(Executor):
     def __init__(
         self,
         limit: int = 10,
-        metric: str = 'cosine',
+        metric: str = 'euclidean',
         dim: int = 0,
         max_elements: int = 1_000_000,
         ef_construction: int = 400,
@@ -28,12 +28,13 @@ class HnswlibSearcher(Executor):
         max_connection: int = 64,
         dump_path: Optional[str] = None,
         traversal_paths: Iterable[str] = ('r',),
+        is_distance: bool = True,
         *args,
         **kwargs,
     ):
         """
         :param limit: Number of results to get for each query document in search
-        :param metric: Distance metric type, can be 'l2', 'ip', or 'cosine'
+        :param metric: Distance metric type, can be 'euclidean', 'inner_product', or 'cosine'
         :param dim: The dimensionality of vectors to index
         :param max_elements: Maximum number of elements (vectors) to index
         :param ef_construction: The construction time/accuracy trade-off
@@ -44,6 +45,7 @@ class HnswlibSearcher(Executor):
             save the index state
         :param traversal_paths: The default traverseal path on docs (used for indexing,
             search and update), e.g. ['r'], ['c']
+        :param is_distance: Boolean flag that describes if distance metric need to be reinterpreted as similarities.
         """
         super().__init__(*args, **kwargs)
         self.limit = limit
@@ -55,9 +57,10 @@ class HnswlibSearcher(Executor):
         self.ef_query = ef_query
         self.max_connection = max_connection
         self.dump_path = dump_path
+        self.is_distance = is_distance
 
         self.logger = JinaLogger(self.__class__.__name__)
-        self._index = hnswlib.Index(space=self.metric, dim=self.dim)
+        self._index = hnswlib.Index(space=self.metric_type, dim=self.dim)
 
         dump_path = self.dump_path or kwargs.get('runtime_args', {}).get(
             'dump_path', None
@@ -131,7 +134,12 @@ class HnswlibSearcher(Executor):
         for i, (indices_i, dists_i) in enumerate(zip(indices, dists)):
             for idx, dist in zip(indices_i, dists_i):
                 match = Document(id=self._ids_to_inds.inverse[idx])
-                match.scores[self.metric] = dist
+                if self.is_distance:
+                    match.scores[self.metric] = dist
+                elif self.metric in ["inner_product", "cosine"]:
+                    match.scores[self.metric] = 1 - dist
+                else:
+                    match.scores[self.metric] = 1 / (1 + dist)
 
                 docs_search[i].matches.append(match)
 
@@ -258,7 +266,7 @@ class HnswlibSearcher(Executor):
     @requests(on='/clear')
     def clear(self, **kwargs):
         """Clear the index of all entries."""
-        self._index = hnswlib.Index(space=self.metric, dim=self.dim)
+        self._index = hnswlib.Index(space=self.metric_type, dim=self.dim)
         self._init_empty_index()
         self._index.set_ef(self.ef_query)
 
@@ -278,3 +286,19 @@ class HnswlibSearcher(Executor):
             }
         )
         return DocumentArray([status])
+
+    @property
+    def metric_type(self):
+        metric_type = 'l2'
+        if self.metric == 'cosine':
+            metric_type = 'cosine'
+        elif self.metric == 'inner_product':
+            metric_type = 'ip'
+
+        if self.metric not in ['euclidean', 'cosine', 'inner_product']:
+            self.logger.warning(
+                f'Invalid distance metric {self.metric} for HNSW index construction! '
+                'Default to euclidean distance'
+            )
+
+        return metric_type

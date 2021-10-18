@@ -24,7 +24,7 @@ def two_elem_index():
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.metric == 'cosine'
+    assert ex.metric == 'euclidean'
 
 
 def test_empty_search():
@@ -118,10 +118,22 @@ def test_index_wrong_dim():
         index.index(da1, {})
 
 
-@pytest.mark.parametrize('metric', ['cosine', 'l2', 'ip'])
 @pytest.mark.parametrize('limit', [5, 10])
-def test_search_basic(metric: str, limit: int):
-    index = HnswlibSearcher(dim=_DIM, metric=metric, limit=limit)
+@pytest.mark.parametrize(
+    ['metric', 'is_distance'],
+    [
+        ('cosine', True),
+        ('euclidean', True),
+        ('inner_product', True),
+        ('cosine', False),
+        ('euclidean', False),
+        ('inner_product', False),
+    ],
+)
+def test_search_basic(limit: int, metric: str, is_distance: bool):
+    index = HnswlibSearcher(
+        dim=_DIM, metric=metric, limit=limit, is_distance=is_distance
+    )
     embeddings_ind = np.random.normal(size=(1000, _DIM))
     embeddings_search = np.random.normal(size=(10, _DIM))
     da_index = DocumentArray([Document(embedding=emb) for emb in embeddings_ind])
@@ -136,9 +148,14 @@ def test_search_basic(metric: str, limit: int):
         ms = d.matches
         scores = [m.scores[metric].value for m in ms]
         assert len(ms) == limit
-        assert sorted(scores) == scores
         for m in ms:
             assert m.id in indexed_ids
+
+        for i in range(len(ms) - 1):
+            if not is_distance:
+                assert ms[i].scores[metric].value >= ms[i + 1].scores[metric].value
+            else:
+                assert ms[i].scores[metric].value <= ms[i + 1].scores[metric].value
 
 
 def test_topk_max():

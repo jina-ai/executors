@@ -8,7 +8,7 @@ _DIM = 10
 
 @pytest.mark.parametrize('uses', ['HnswlibSearcher', 'docker://hnswlibsearcher'])
 def test_index_search_flow(uses: str, build_docker_image: str):
-    f = Flow().add(uses=uses, uses_with={'metric': 'l2', 'dim': _DIM})
+    f = Flow().add(uses=uses, uses_with={'metric': 'euclidean', 'dim': _DIM})
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.0),
@@ -32,14 +32,16 @@ def test_index_search_flow(uses: str, build_docker_image: str):
 
         for ind in range(2):
             assert result_search[ind].matches[0].id == ('a' if ind == 0 else 'b')
-            assert result_search[ind].matches[0].scores['l2'].value == 0.0
+            assert result_search[ind].matches[0].scores['euclidean'].value == 0.0
             assert result_search[ind].matches[1].id == ('b' if ind == 0 else 'a')
-            assert result_search[ind].matches[1].scores['l2'].value == 10.0
+            assert result_search[ind].matches[1].scores['euclidean'].value == 10.0
 
 
 def test_save_load(tmp_path):
     f = Flow().add(
-        name='hnsw', uses=HnswlibSearcher, uses_with={'metric': 'l2', 'dim': _DIM}
+        name='hnsw',
+        uses=HnswlibSearcher,
+        uses_with={'metric': 'euclidean', 'dim': _DIM},
     )
     da = DocumentArray(
         [
@@ -70,7 +72,7 @@ def test_save_load(tmp_path):
     f = Flow().add(
         name='hnsw',
         uses=HnswlibSearcher,
-        uses_with={'metric': 'l2', 'dim': _DIM, 'dump_path': str(tmp_path)},
+        uses_with={'metric': 'euclidean', 'dim': _DIM, 'dump_path': str(tmp_path)},
     )
     with f:
         status_ind = f.post('/status', return_results=True)
@@ -85,8 +87,10 @@ def test_save_load(tmp_path):
         result_search = result_search[0].data.docs
         assert len(result_search) == 2
 
+        print(result_search)
+
         for ind in range(2):
             assert result_search[ind].matches[0].id == ('a' if ind == 0 else 'b')
-            assert result_search[ind].matches[0].scores['l2'].value == 0.0
+            assert result_search[ind].matches[0].scores['euclidean'].value == 0.0
             assert result_search[ind].matches[1].id == ('b' if ind == 0 else 'a')
-            assert result_search[ind].matches[1].scores['l2'].value == 10.0
+            assert result_search[ind].matches[1].scores['euclidean'].value == 10.0
