@@ -27,14 +27,14 @@ class AnnoySearcher(Executor):
         num_trees: int = 10,
         dump_path: Optional[str] = None,
         default_traversal_paths: List[str] = ["r"],
-        is_distance: bool = False,
+        is_distance: bool = True,
         **kwargs,
     ):
         """
         Initialize an AnnoyIndexer
 
         :param default_top_k: get tok k vectors
-        :param metric: Metric can be "angular", "euclidean", "manhattan", "hamming", or "dot"
+        :param metric: Metric can be "euclidean", "cosine", or "inner_product"
         :param num_trees: builds a forest of n_trees trees. More trees gives higher precision when querying.
         :param dump_path: the path to load ids and vecs
         :param traverse_path: traverse path on docs, e.g. ['r'], ['c']
@@ -55,7 +55,7 @@ class AnnoySearcher(Executor):
             self._ids = np.array(list(ids))
             self._vecs = np.array(list(vecs))
             num_dim = self._vecs.shape[1]
-            self._indexer = AnnoyIndex(num_dim, self.metric)
+            self._indexer = AnnoyIndex(num_dim, self.metric_type)
             self._load_index(self._ids, self._vecs)
             self.logger.info("Done building Annoy index")
         else:
@@ -87,14 +87,14 @@ class AnnoySearcher(Executor):
             for idx, dist in zip(indices, dists):
                 match = Document(id=self._ids[idx], embedding=self._vecs[idx])
                 if self.is_distance:
-                    if self.metric == "dot":
+                    if self.metric == "inner_product":
                         match.scores[self.metric] = 1 - dist
                     else:
                         match.scores[self.metric] = dist
                 else:
-                    if self.metric == "dot":
+                    if self.metric == "inner_product":
                         match.scores[self.metric] = dist
-                    elif self.metric == "angular" or self.metric == "hamming":
+                    elif self.metric == "cosine":
                         match.scores[self.metric] = 1 - dist
                     else:
                         match.scores[self.metric] = 1 / (1 + dist)
@@ -108,3 +108,19 @@ class AnnoySearcher(Executor):
                 doc.embedding = np.array(self._indexer.get_item_vector(int(doc_idx)))
             else:
                 self.logger.warning(f"Document {doc.id} not found in index")
+
+    @property
+    def metric_type(self):
+        metric_type = 'euclidean'
+        if self.metric == 'cosine':
+            metric_type = 'angular'
+        elif self.metric == 'inner_product':
+            metric_type = 'dot'
+
+        if self.metric not in ['euclidean', 'cosine', 'inner_product']:
+            self.logger.warning(
+                f'Invalid distance metric {self.metric} for Annoy index construction! '
+                'Default to euclidean distance'
+            )
+
+        return metric_type
