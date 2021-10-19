@@ -92,8 +92,8 @@ def validate_diff_sources(results, num_shards, docs_before: DocumentArray):
             if match.tags[ORIGIN_TAG] not in distinct_shards:
                 distinct_shards[match.tags[ORIGIN_TAG]] = 0
             distinct_shards[match.tags[ORIGIN_TAG]] += 1
-    # TODO: distinct_shards is not determined
-    # np.testing.assert_equal(len(distinct_shards.keys()), num_shards)
+
+    np.testing.assert_equal(len(distinct_shards.keys()), num_shards)
     np.testing.assert_equal(sum(distinct_shards.values()), TOP_K)
 
 

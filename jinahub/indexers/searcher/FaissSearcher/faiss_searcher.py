@@ -348,6 +348,11 @@ class FaissSearcher(Executor):
             count = 0
             for m_info in zip(*matches):
                 idx, dist = m_info
+
+                # this is related with the issue of faiss
+                if idx < 0:
+                    continue
+
                 doc_id = self._doc_ids[idx]
 
                 if self.is_deleted(idx):
