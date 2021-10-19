@@ -172,7 +172,11 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards):
             )
             assert len(results[0].docs[0].matches) == top_k
             # TODO score is not deterministic
-            assert results[0].docs[0].matches[0].scores['l2'].value > 0.0
+            for i in range(len(results[0].docs[0].matches) - 1):
+                assert (
+                    results[0].docs[0].matches[i].scores['euclidean'].value
+                    <= results[0].docs[0].matches[i + 1].scores['euclidean'].value
+                )
 
     idx = LMDBStorage(
         metas={'workspace': os.environ['STORAGE_WORKSPACE'], 'name': 'lmdb'},

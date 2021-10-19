@@ -11,7 +11,7 @@ from jina import Document, DocumentArray, Executor, Flow, requests
 from jina.logging.profile import TimeContext
 from jina_commons.indexers.dump import import_metas, import_vectors
 
-METRIC = 'l2'
+METRIC = 'euclidean'
 
 
 @pytest.fixture()
@@ -212,7 +212,11 @@ def test_dump_reload(
             )
             assert len(results[0].docs[0].matches) == top_k
             # TODO score is not deterministic
-            assert results[0].docs[0].matches[0].scores[METRIC].value > 0.0
+            for i in range(len(results[0].docs[0].matches) - 1):
+                assert (
+                    results[0].docs[0].matches[i].scores[METRIC].value
+                    <= results[0].docs[0].matches[i + 1].scores[METRIC].value
+                )
 
     # assert data dumped is correct
     if not benchmark:

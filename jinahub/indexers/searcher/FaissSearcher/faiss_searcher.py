@@ -119,16 +119,13 @@ class FaissSearcher(Executor):
 
         self.logger = get_logger(self)
 
+        dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
         if dump_path or dump_func:
             self._load_dump(dump_path, dump_func, prefetch_size, **kwargs)
         else:
             self._load(self.workspace)
 
     def _load_dump(self, dump_path, dump_func, prefetch_size, **kwargs):
-        dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
-
-        iterator = None
-
         if dump_path is not None:
             self.logger.info(
                 f'Start building "FaissIndexer" from dump data {dump_path}'

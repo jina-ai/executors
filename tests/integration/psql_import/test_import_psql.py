@@ -248,7 +248,11 @@ def test_psql_import(
             else:
                 assert len(results[0].docs[0].matches) == nr_docs
             # TODO score is not deterministic
-            assert results[0].docs[0].matches[0].scores[METRIC].value > 0.0
+            for i in range(len(results[0].docs[0].matches) - 1):
+                assert (
+                    results[0].docs[0].matches[i].scores[METRIC].value
+                    <= results[0].docs[0].matches[i + 1].scores[METRIC].value
+                )
 
     idx = PostgreSQLStorage()
     assert idx.size == nr_docs
