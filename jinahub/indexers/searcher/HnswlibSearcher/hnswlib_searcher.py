@@ -138,9 +138,10 @@ class HnswlibSearcher(Executor):
                     match.scores[self.metric] = dist
                 elif self.metric in ["inner_product", "cosine"]:
                     match.scores[self.metric] = 1 - dist
-                else:
+                elif self.metric == 'euclidean':
                     match.scores[self.metric] = 1 / (1 + dist)
-
+                else:
+                    match.scores[self.metric] = dist
                 docs_search[i].matches.append(match)
 
     @requests(on='/index')
@@ -289,8 +290,9 @@ class HnswlibSearcher(Executor):
 
     @property
     def metric_type(self):
-        metric_type = 'l2'
-        if self.metric == 'cosine':
+        if self.metric == 'euclidean':
+            metric_type = 'l2'
+        elif self.metric == 'cosine':
             metric_type = 'cosine'
         elif self.metric == 'inner_product':
             metric_type = 'ip'
@@ -300,5 +302,6 @@ class HnswlibSearcher(Executor):
                 f'Invalid distance metric {self.metric} for HNSW index construction! '
                 'Default to euclidean distance'
             )
+            metric_type = 'l2'
 
         return metric_type
