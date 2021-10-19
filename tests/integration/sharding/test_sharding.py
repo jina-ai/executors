@@ -107,7 +107,7 @@ def assert_folder(dump_path, num_shards):
         assert os.path.exists(os.path.join(dump_path, str(i), 'metas'))
 
 
-@pytest.mark.parametrize('num_shards', (7,))
+@pytest.mark.parametrize('num_shards', (2, 3, 7))
 def test_shards_numpy_filequery(tmpdir, num_shards):
     pod_name = 'index'
     os.environ['WORKSPACE'] = str(tmpdir)
