@@ -94,7 +94,7 @@ def test_faiss_indexer(metas, tmpdir_dump):
     for d in query_docs:
         assert (
             d.matches[0].scores[indexer.metric].value
-            >= d.matches[1].scores[indexer.metric].value
+            <= d.matches[1].scores[indexer.metric].value
         )
 
 
@@ -138,7 +138,14 @@ def test_fill_embeddings_fail(index_key, metas, tmpdir_dump):
 
 @pytest.mark.parametrize(
     ['metric', 'is_distance'],
-    [('l2', True), ('inner_product', True), ('l2', False), ('inner_product', False)],
+    [
+        ('euclidean', True),
+        ('cosine', True),
+        ('inner_product', True),
+        ('euclidean', False),
+        ('cosine', False),
+        ('inner_product', False),
+    ],
 )
 def test_faiss_metric(metas, tmpdir_dump, metric, is_distance):
     indexer = FaissSearcher(
@@ -236,7 +243,6 @@ def test_faiss_indexer_known_big(metas, tmpdir):
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='Flat',
-        requires_training=True,
         metas=metas,
         dump_path=dump_path,
         runtime_args={'pea_id': 0},
@@ -292,7 +298,6 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
         prefetch_size=256,
         index_key='IVF10,PQ4',
         max_num_training_points=max_num_points,
-        requires_training=True,
         metas=metas,
         dump_path=dump_path,
         runtime_args={'pea_id': 0},
@@ -307,42 +312,6 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
 
     assert len(idx) == len(dist)
     assert len(idx) == num_query * top_k
-
-
-@pytest.mark.parametrize('metric', ['l2', 'inner_product'])
-def test_faiss_normalization(metas, metric, tmpdir):
-    num_data = 2
-    num_dims = 64
-
-    vecs = np.zeros((num_data, num_dims))
-    vecs[:, 0] = 2
-    vecs[0, 1] = 3
-    keys = np.arange(0, num_data).astype(str)
-
-    dump_path = os.path.join(tmpdir, 'dump')
-    export_dump_streaming(
-        dump_path,
-        1,
-        len(keys),
-        zip(keys, vecs, [b'' for _ in range(len(vecs))]),
-    )
-
-    indexer = FaissSearcher(
-        prefetch_size=256,
-        index_key='Flat',
-        metric=metric,
-        normalize=True,
-        requires_training=True,
-        metas=metas,
-        dump_path=dump_path,
-        runtime_args={'pea_id': 0},
-    )
-    query = np.zeros((1, num_dims))
-    query[0, 0] = 5
-    docs = _get_docs_from_vecs(query.astype('float32'))
-    indexer.search(docs, parameters={'top_k': 2})
-    dist = docs.traverse_flat(['m']).get_attributes('scores')
-    assert dist[0][metric].value == 1.0
 
 
 @pytest.mark.parametrize('max_num_points', [257, 500, None])
@@ -402,7 +371,7 @@ def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
     for d in docs:
         assert (
             d.matches[0].scores[indexer.metric].value
-            >= d.matches[1].scores[indexer.metric].value
+            <= d.matches[1].scores[indexer.metric].value
         )
 
 
@@ -421,7 +390,7 @@ def test_faiss_train_before_index(metas, tmpdir_dump):
     for d in docs:
         assert (
             d.matches[0].scores[indexer.metric].value
-            >= d.matches[1].scores[indexer.metric].value
+            <= d.matches[1].scores[indexer.metric].value
         )
 
 
@@ -462,7 +431,7 @@ def test_gpu_indexer(metas, tmpdir, tmpdir_dump):
     for d in docs:
         assert (
             d.matches[0].scores[indexer.metric].value
-            >= d.matches[1].scores[indexer.metric].value
+            <= d.matches[1].scores[indexer.metric].value
         )
 
 
@@ -472,7 +441,6 @@ def test_faiss_delta(metas, tmpdir):
 
     vecs = np.zeros((num_data, num_dims))
     vecs[:, 0] = 2
-    vecs[0, 1] = 3
     keys = np.arange(0, num_data).astype(str)
 
     dump_path = os.path.join(tmpdir, 'dump')
@@ -486,8 +454,7 @@ def test_faiss_delta(metas, tmpdir):
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='Flat',
-        normalize=True,
-        requires_training=True,
+        metric='cosine',
         metas=metas,
         dump_path=dump_path,
         runtime_args={'pea_id': 0},
@@ -535,11 +502,11 @@ def test_faiss_delta(metas, tmpdir):
     assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5', '4', '5', '2', '3']
 
     query = np.zeros((1, num_dims))
-    query[0, 0] = 5
+    query[0, 1] = 5
     docs = _get_docs_from_vecs(query.astype('float32'))
     indexer.search(docs, parameters={'top_k': 2})
     dist = docs.traverse_flat(['m']).get_attributes('scores')
-    assert dist[0]['l2'].value == 1.0
+    assert dist[0]['cosine'].value == 1.0
 
 
 def test_faiss_save(metas, tmpdir):
@@ -548,7 +515,6 @@ def test_faiss_save(metas, tmpdir):
 
     vecs = np.zeros((num_data, num_dims))
     vecs[:, 0] = 2
-    vecs[0, 1] = 3
     keys = np.arange(0, num_data).astype(str)
 
     dump_path = os.path.join(tmpdir, 'dump')
@@ -562,8 +528,7 @@ def test_faiss_save(metas, tmpdir):
     indexer = FaissSearcher(
         prefetch_size=256,
         index_key='Flat',
-        normalize=True,
-        requires_training=True,
+        metric='cosine',
         metas=metas,
         dump_path=dump_path,
         runtime_args={'pea_id': 0},
@@ -574,8 +539,7 @@ def test_faiss_save(metas, tmpdir):
     new_indexer = FaissSearcher(
         prefetch_size=256,
         index_key='Flat',
-        normalize=True,
-        requires_training=True,
+        metric='cosine',
         metas=metas,
         runtime_args={'pea_id': 0},
     )
@@ -583,11 +547,11 @@ def test_faiss_save(metas, tmpdir):
     assert new_indexer.size == 2
 
     query = np.zeros((1, num_dims))
-    query[0, 0] = 5
+    query[0, 1] = 5
     docs = _get_docs_from_vecs(query.astype('float32'))
     new_indexer.search(docs, parameters={'top_k': 2})
     dist = docs.traverse_flat(['m']).get_attributes('scores')
-    assert dist[0]['l2'].value == 1.0
+    assert dist[0]['cosine'].value == 1.0
 
 
 def test_search_input_None(metas, tmpdir_dump):

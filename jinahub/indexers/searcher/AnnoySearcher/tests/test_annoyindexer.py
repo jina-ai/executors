@@ -51,16 +51,12 @@ def test_simple_annoy():
 @pytest.mark.parametrize(
     ['metric', 'is_distance'],
     [
-        ('angular', True),
+        ('cosine', True),
         ('euclidean', True),
-        ('manhattan', True),
-        ('hamming', True),
-        ('dot', True),
-        ('angular', False),
+        ('inner_product', True),
+        ('cosine', False),
         ('euclidean', False),
-        ('manhattan', False),
-        ('hamming', False),
-        ('dot', False),
+        ('inner_product', False),
     ],
 )
 def test_metric(tmpdir, metric, is_distance):

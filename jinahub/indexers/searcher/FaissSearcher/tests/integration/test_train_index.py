@@ -79,7 +79,10 @@ def test_train_and_index(metas, tmpdir):
         )[0].docs
         assert len(result[0].matches) == 4
         for d in result:
-            assert d.matches[0].scores['l2'].value >= d.matches[1].scores['l2'].value
+            assert (
+                d.matches[0].scores['euclidean'].value
+                <= d.matches[1].scores['euclidean'].value
+            )
 
 
 @pytest.mark.gpu
