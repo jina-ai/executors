@@ -20,7 +20,7 @@ from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
     doc_without_embedding,
 )
 
-METRIC = 'l2'
+METRIC = 'euclidean'
 
 
 def _flow(uses_after, total_shards, startup_args, polling, replicas=1, name='indexer'):
@@ -81,9 +81,7 @@ class MatchMerger(Executor):
             for doc in results.values():
                 try:
                     doc.matches = sorted(
-                        doc.matches,
-                        key=lambda m: m.scores['cosine'].value,
-                        reverse=True,
+                        doc.matches, key=lambda m: m.scores[METRIC].value
                     )[:top_k]
                 except TypeError as e:
                     print(f'##### {e}')
