@@ -68,9 +68,7 @@ class MatchMerger(Executor):
             for doc in results.values():
                 try:
                     doc.matches = sorted(
-                        doc.matches,
-                        key=lambda m: m.scores['cosine'].value,
-                        reverse=True,
+                        doc.matches, key=lambda m: m.scores[METRIC].value
                     )[:top_k]
                 except TypeError as e:
                     print(f'##### {e}')
