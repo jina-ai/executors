@@ -97,9 +97,7 @@ def test_save_load(tmp_path):
 
 
 def test_search_limit(tmp_path):
-    f = Flow().add(
-        name='hnsw', uses=HnswlibSearcher, uses_with={'dim': _DIM}
-    )
+    f = Flow().add(name='hnsw', uses=HnswlibSearcher, uses_with={'dim': _DIM})
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.0),
