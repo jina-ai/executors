@@ -20,6 +20,8 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 storage_flow_yml = os.path.join(cur_dir, 'flow_storage.yml')
 query_flow_yml = os.path.join(cur_dir, 'flow_query.yml')
 
+METRIC = 'euclidean'
+
 
 @pytest.fixture()
 def docker_compose(request):
@@ -56,11 +58,9 @@ class MatchMerger(Executor):
                 top_k = int(top_k)
 
             for doc in results.values():
-                doc.matches = sorted(
-                    doc.matches,
-                    key=lambda m: m.scores['cosine'].value,
-                    reverse=True,
-                )[:top_k]
+                doc.matches = sorted(doc.matches, key=lambda m: m.scores[METRIC].value)[
+                    :top_k
+                ]
 
             docs = DocumentArray(list(results.values()))
             return docs
@@ -172,7 +172,11 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards):
             )
             assert len(results[0].docs[0].matches) == top_k
             # TODO score is not deterministic
-            assert results[0].docs[0].matches[0].scores['l2'].value > 0.0
+            for i in range(len(results[0].docs[0].matches) - 1):
+                assert (
+                    results[0].docs[0].matches[i].scores[METRIC].value
+                    <= results[0].docs[0].matches[i + 1].scores[METRIC].value
+                )
 
     idx = LMDBStorage(
         metas={'workspace': os.environ['STORAGE_WORKSPACE'], 'name': 'lmdb'},

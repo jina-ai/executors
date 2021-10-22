@@ -11,7 +11,4 @@ RUN pip install -r requirements.txt
 COPY . /workdir
 WORKDIR /workdir
 
-
-RUN ./scripts/download_model.sh
-
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
