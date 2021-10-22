@@ -94,3 +94,22 @@ def test_save_load(tmp_path):
             assert result_search[ind].matches[0].scores['euclidean'].value == 0.0
             assert result_search[ind].matches[1].id == ('b' if ind == 0 else 'a')
             assert result_search[ind].matches[1].scores['euclidean'].value == 10.0
+
+
+def test_search_limit(tmp_path):
+    f = Flow().add(name='hnsw', uses=HnswlibSearcher, uses_with={'dim': _DIM})
+    da = DocumentArray(
+        [
+            Document(id='a', embedding=np.ones(_DIM) * 1.0),
+            Document(id='b', embedding=np.ones(_DIM) * 2.0),
+        ]
+    )
+
+    # Index
+    with f:
+        f.index(da)
+
+        # Search by specifying limit
+        result_search = f.search(da, return_results=True, parameters={'limit': 1})
+        for doc in result_search[0].docs:
+            assert len(doc.matches) == 1

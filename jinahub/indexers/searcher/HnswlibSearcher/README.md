@@ -119,4 +119,4 @@ with f:
 
 - [Hnswlib](https://github.com/nmslib/hnswlib)
 
-<!-- version=v0.2 -->
+<!-- version=v0.3 -->

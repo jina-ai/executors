@@ -110,7 +110,7 @@ class HnswlibSearcher(Executor):
             return
 
         ef_query = parameters.get('ef_query', self.ef_query)
-        limit = parameters.get('limit', self.limit)
+        limit = int(parameters.get('limit', self.limit))
 
         self._index.set_ef(ef_query)
 
