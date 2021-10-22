@@ -1,6 +1,7 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+import math
 import os
 from pathlib import Path
 
@@ -70,6 +71,24 @@ def test_faiss_indexer_empty(metas):
     )
     indexer.search(query_docs, parameters={'top_k': 4})
     assert len(query_docs[0].matches) == 0
+
+
+@pytest.mark.parametrize('metric', ['cosine', 'euclidean'])
+def test_faiss_search(metas, tmpdir_dump, metric):
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='Flat',
+        metric=metric,
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    query_docs = _get_docs_from_vecs(vec)
+    indexer.search(query_docs)
+    for q in query_docs:
+        np.testing.assert_almost_equal(
+            q.matches[0].scores[metric].value, 0.0, decimal=5
+        )
 
 
 def test_faiss_indexer(metas, tmpdir_dump):
