@@ -20,7 +20,7 @@ from jinahub.indexers.storage.PostgreSQLStorage.postgreshandler import (
     doc_without_embedding,
 )
 
-METRIC = 'euclidean'
+METRIC = 'cosine'
 
 
 def _flow(uses_after, total_shards, startup_args, polling, replicas=1, name='indexer'):

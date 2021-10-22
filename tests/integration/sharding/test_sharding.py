@@ -18,6 +18,8 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 ORIGIN_TAG = 'origin'
 TOP_K = 100
 
+METRIC = 'cosine'
+
 
 class TagMatchMerger(Executor):
     @requests(on='/tag_search')
@@ -39,7 +41,7 @@ class TagMatchMerger(Executor):
             for doc in results.values():
                 doc.matches = sorted(
                     doc.matches,
-                    key=lambda m: m.scores['euclidean'].value,
+                    key=lambda m: m.scores[METRIC].value,
                     reverse=True,
                 )[:top_k]
 

@@ -20,7 +20,7 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 storage_flow_yml = os.path.join(cur_dir, 'flow_storage.yml')
 query_flow_yml = os.path.join(cur_dir, 'flow_query.yml')
 
-METRIC = 'euclidean'
+METRIC = 'cosine'
 
 
 @pytest.fixture()
