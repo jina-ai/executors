@@ -20,7 +20,7 @@ class HnswlibSearcher(Executor):
     def __init__(
         self,
         limit: int = 10,
-        metric: str = 'euclidean',
+        metric: str = 'cosine',
         dim: int = 0,
         max_elements: int = 1_000_000,
         ef_construction: int = 400,

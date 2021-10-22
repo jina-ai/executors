@@ -24,7 +24,7 @@ def two_elem_index():
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.metric == 'euclidean'
+    assert ex.metric == 'cosine'
 
 
 def test_empty_search():

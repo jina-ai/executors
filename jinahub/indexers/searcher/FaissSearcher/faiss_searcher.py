@@ -54,7 +54,7 @@ class FaissSearcher(Executor):
         index_key: str = 'Flat',
         trained_index_file: Optional[str] = None,
         max_num_training_points: Optional[int] = None,
-        metric: str = 'euclidean',
+        metric: str = 'cosine',
         nprobe: int = 1,
         dump_path: Optional[str] = None,
         dump_func: Optional[Callable] = None,

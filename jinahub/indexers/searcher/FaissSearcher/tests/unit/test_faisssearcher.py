@@ -77,7 +77,7 @@ def test_faiss_indexer(metas, tmpdir_dump):
 
     trained_index_file = os.path.join(os.environ['TEST_WORKSPACE'], 'faiss.index')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    faiss_index = faiss.index_factory(10, 'IVF10,PQ2')
+    faiss_index = faiss.index_factory(10, 'IVF10,PQ2', faiss.METRIC_INNER_PRODUCT)
     faiss_index.train(train_data)
     faiss.write_index(faiss_index, trained_index_file)
 
@@ -191,6 +191,7 @@ def test_faiss_indexer_known(metas, tmpdir):
         prefetch_size=256,
         index_key='Flat',
         metas=metas,
+        metric='euclidean',
         dump_path=os.path.join(tmpdir, 'dump'),
         runtime_args={'pea_id': 0},
     )
@@ -244,6 +245,7 @@ def test_faiss_indexer_known_big(metas, tmpdir):
         prefetch_size=256,
         index_key='Flat',
         metas=metas,
+        metric='euclidean',
         dump_path=dump_path,
         runtime_args={'pea_id': 0},
     )

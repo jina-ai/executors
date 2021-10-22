@@ -80,8 +80,8 @@ def test_train_and_index(metas, tmpdir):
         assert len(result[0].matches) == 4
         for d in result:
             assert (
-                d.matches[0].scores['euclidean'].value
-                <= d.matches[1].scores['euclidean'].value
+                d.matches[0].scores['cosine'].value
+                <= d.matches[1].scores['cosine'].value
             )
 
 
