@@ -78,6 +78,7 @@ def test_faiss_indexer(metas, tmpdir_dump):
     trained_index_file = os.path.join(os.environ['TEST_WORKSPACE'], 'faiss.index')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
     faiss_index = faiss.index_factory(10, 'IVF10,PQ2', faiss.METRIC_INNER_PRODUCT)
+    faiss.normalize_L2(train_data)
     faiss_index.train(train_data)
     faiss.write_index(faiss_index, trained_index_file)
 
