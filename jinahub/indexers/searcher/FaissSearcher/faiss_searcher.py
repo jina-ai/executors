@@ -295,6 +295,30 @@ class FaissSearcher(Executor):
             normalize_L2(vecs)
         self._faiss_index.add(vecs)
 
+    @requests(on='/index')
+    def index(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
+        """Index the Documents' embeddings.
+
+        :param docs: Documents whose `embedding` to index.
+        :param parameters: Dictionary with optional parameters that can be used to
+            override the parameters set at initialization. The only supported key is
+            `traversal_paths`.
+        """
+
+        if docs is None:
+            return
+
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        flat_docs = docs.traverse_flat(traversal_paths)
+        if len(flat_docs) == 0:
+            return
+
+        ids = flat_docs.get_attributes('id')
+
+        self._append_vecs_and_ids(ids, flat_docs.embeddings)
+
     @requests(on='/search')
     def search(
         self,
