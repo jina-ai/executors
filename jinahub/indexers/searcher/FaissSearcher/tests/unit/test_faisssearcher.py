@@ -378,6 +378,18 @@ def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
         }
     )
 
+    indexer._load_dump(tmpdir_dump, None, 256)
+
+    query = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query)
+    indexer.search(docs, parameters={'top_k': 4})
+    assert len(docs[0].matches) == 4
+    for d in docs:
+        assert (
+            d.matches[0].scores[indexer.metric].value
+            <= d.matches[1].scores[indexer.metric].value
+        )
+
     trained_indexer = FaissSearcher(
         prefetch_size=256,
         index_key='IVF10,PQ2',
