@@ -24,7 +24,7 @@ def two_elem_index():
 
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
-    assert ex.metric == 'euclidean'
+    assert ex.metric == 'cosine'
 
 
 def test_empty_search():
@@ -174,7 +174,7 @@ def test_topk_max():
 
 def test_search_quality():
     """Test that we get everything correct for a small index"""
-    index = HnswlibSearcher(dim=_DIM, metric='l2')
+    index = HnswlibSearcher(dim=_DIM, metric='euclidean')
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.1),
@@ -200,7 +200,7 @@ def test_search_quality():
     assert matches_e == ['e', 'd', 'c', 'b', 'a']
 
     for doc in da:
-        assert doc.matches[0].scores['l2'].value == 0
+        assert doc.matches[0].scores['euclidean'].value == 0
 
 
 def test_search_wrong_dim():

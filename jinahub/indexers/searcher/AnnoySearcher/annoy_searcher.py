@@ -23,7 +23,7 @@ class AnnoySearcher(Executor):
     def __init__(
         self,
         default_top_k: int = 10,
-        metric: str = "euclidean",
+        metric: str = "cosine",
         num_trees: int = 10,
         dump_path: Optional[str] = None,
         default_traversal_paths: List[str] = ["r"],

@@ -1,6 +1,7 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+import math
 import os
 from pathlib import Path
 
@@ -72,12 +73,31 @@ def test_faiss_indexer_empty(metas):
     assert len(query_docs[0].matches) == 0
 
 
+@pytest.mark.parametrize('metric', ['cosine', 'euclidean'])
+def test_faiss_search(metas, tmpdir_dump, metric):
+    indexer = FaissSearcher(
+        prefetch_size=256,
+        index_key='Flat',
+        metric=metric,
+        dump_path=tmpdir_dump,
+        metas=metas,
+        runtime_args={'pea_id': 0},
+    )
+    query_docs = _get_docs_from_vecs(vec)
+    indexer.search(query_docs)
+    for q in query_docs:
+        np.testing.assert_almost_equal(
+            q.matches[0].scores[metric].value, 0.0, decimal=5
+        )
+
+
 def test_faiss_indexer(metas, tmpdir_dump):
     import faiss
 
     trained_index_file = os.path.join(os.environ['TEST_WORKSPACE'], 'faiss.index')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    faiss_index = faiss.index_factory(10, 'IVF10,PQ2')
+    faiss_index = faiss.index_factory(10, 'IVF10,PQ2', faiss.METRIC_INNER_PRODUCT)
+    faiss.normalize_L2(train_data)
     faiss_index.train(train_data)
     faiss.write_index(faiss_index, trained_index_file)
 
@@ -191,6 +211,7 @@ def test_faiss_indexer_known(metas, tmpdir):
         prefetch_size=256,
         index_key='Flat',
         metas=metas,
+        metric='euclidean',
         dump_path=os.path.join(tmpdir, 'dump'),
         runtime_args={'pea_id': 0},
     )
@@ -244,6 +265,7 @@ def test_faiss_indexer_known_big(metas, tmpdir):
         prefetch_size=256,
         index_key='Flat',
         metas=metas,
+        metric='euclidean',
         dump_path=dump_path,
         runtime_args={'pea_id': 0},
     )
@@ -355,6 +377,18 @@ def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
             'train_data_file': train_data_file,
         }
     )
+
+    indexer._load_dump(tmpdir_dump, None, 256)
+
+    query = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query)
+    indexer.search(docs, parameters={'top_k': 4})
+    assert len(docs[0].matches) == 4
+    for d in docs:
+        assert (
+            d.matches[0].scores[indexer.metric].value
+            <= d.matches[1].scores[indexer.metric].value
+        )
 
     trained_indexer = FaissSearcher(
         prefetch_size=256,

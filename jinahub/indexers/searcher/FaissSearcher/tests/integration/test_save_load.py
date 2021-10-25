@@ -70,4 +70,7 @@ def test_save(metas, tmpdir):
         )[0].docs
         assert len(result[0].matches) == 4
         for d in result:
-            assert d.matches[0].scores['l2'].value >= d.matches[1].scores['l2'].value
+            assert (
+                d.matches[0].scores['cosine'].value
+                <= d.matches[1].scores['cosine'].value
+            )
