@@ -3,6 +3,7 @@ from itertools import cycle
 from pathlib import Path
 
 import pytest
+from doc_cache import DocCache
 from jina import Document, DocumentArray, Flow
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
