@@ -336,71 +336,21 @@ def test_indexer_train(metas, train_data, max_num_points, tmpdir):
     assert len(idx) == num_query * top_k
 
 
-@pytest.mark.parametrize('max_num_points', [257, 500, None])
-def test_faiss_indexer_train(metas, tmpdir, max_num_points):
-    train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
+def test_faiss_train_and_index(metas):
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    np.save(train_data_file, train_data)
+    docs = _get_docs_from_vecs(train_data)
 
-    trained_index_file = os.path.join(tmpdir, 'faiss.index')
     indexer = FaissSearcher(
         index_key='IVF10,PQ2',
-        trained_index_file=trained_index_file,
         metas=metas,
         runtime_args={'pea_id': 0},
         prefetch_size=256,
     )
-    indexer.train(
-        parameters={
-            'train_data_file': train_data_file,
-            'max_num_training_points': max_num_points,
-        }
-    )
-    assert indexer._faiss_index.is_trained
+    indexer.train(docs, parameters={})
 
-
-def test_faiss_train_and_index(metas, tmpdir, tmpdir_dump):
-    train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
-    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    np.save(train_data_file, train_data)
-
-    trained_index_file = os.path.join(tmpdir, 'faiss.index')
-    indexer = FaissSearcher(
-        index_key='IVF10,PQ2',
-        trained_index_file=trained_index_file,
-        metas=metas,
-        runtime_args={'pea_id': 0},
-        prefetch_size=256,
-    )
-    indexer.train(
-        parameters={
-            'train_data_file': train_data_file,
-        }
-    )
-
-    indexer._load_dump(tmpdir_dump, None, 256)
-
-    query = np.array(np.random.random([10, 10]), dtype=np.float32)
-    docs = _get_docs_from_vecs(query)
+    query_data = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query_data)
     indexer.search(docs, parameters={'top_k': 4})
-    assert len(docs[0].matches) == 4
-    for d in docs:
-        assert (
-            d.matches[0].scores[indexer.metric].value
-            <= d.matches[1].scores[indexer.metric].value
-        )
-
-    trained_indexer = FaissSearcher(
-        prefetch_size=256,
-        index_key='IVF10,PQ2',
-        trained_index_file=trained_index_file,
-        dump_path=tmpdir_dump,
-        metas=metas,
-        runtime_args={'pea_id': 0},
-    )
-    query = np.array(np.random.random([10, 10]), dtype=np.float32)
-    docs = _get_docs_from_vecs(query)
-    trained_indexer.search(docs, parameters={'top_k': 4})
     assert len(docs[0].matches) == 4
     for d in docs:
         assert (
@@ -430,37 +380,20 @@ def test_faiss_train_before_index(metas, tmpdir_dump):
 
 @pytest.mark.gpu
 def test_gpu_indexer(metas, tmpdir, tmpdir_dump):
-    train_data_file = os.path.join(os.environ['TEST_WORKSPACE'], 'train.npy')
     train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
-    np.save(train_data_file, train_data)
-
-    trained_index_file = os.path.join(tmpdir, 'faiss.index')
+    docs = _get_docs_from_vecs(train_data)
     indexer = FaissSearcher(
         index_key='IVF10,PQ2',
-        trained_index_file=trained_index_file,
         on_gpu=True,
         metas=metas,
         runtime_args={'pea_id': 0},
         prefetch_size=256,
     )
-    indexer.train(
-        parameters={
-            'train_data_file': train_data_file,
-        }
-    )
+    indexer.train(docs, parameters={})
 
-    trained_indexer = FaissSearcher(
-        prefetch_size=256,
-        index_key='IVF10,PQ2',
-        trained_index_file=trained_index_file,
-        on_gpu=True,
-        dump_path=tmpdir_dump,
-        metas=metas,
-        runtime_args={'pea_id': 0},
-    )
-    query = np.array(np.random.random([10, 10]), dtype=np.float32)
-    docs = _get_docs_from_vecs(query)
-    trained_indexer.search(docs, parameters={'top_k': 4})
+    query_data = np.array(np.random.random([10, 10]), dtype=np.float32)
+    docs = _get_docs_from_vecs(query_data)
+    indexer.search(docs, parameters={'top_k': 4})
     assert len(docs[0].matches) == 4
     for d in docs:
         assert (
