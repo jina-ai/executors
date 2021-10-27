@@ -144,9 +144,7 @@ def flatten(it):
             yield x
 
 
-# replicas w 1 shard doesn't work
-# @pytest.mark.parametrize('shards', [1, 3, 7])
-@pytest.mark.parametrize('shards', [3, 7])
+@pytest.mark.parametrize('shards', [1, 3, 7])
 @pytest.mark.parametrize('nr_docs', [100])
 @pytest.mark.parametrize('emb_size', [10])
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
