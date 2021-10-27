@@ -50,13 +50,13 @@ class LMDBStorage(Executor):
     """
 
     def __init__(
-        self,
-        map_size: int = 1048576000,  # in bytes, 1000 MB
-        default_traversal_paths: List[str] = ['r'],
-        dump_path: str = None,
-        default_return_embeddings: bool = True,
-        *args,
-        **kwargs,
+            self,
+            map_size: int = 1048576000,  # in bytes, 1000 MB
+            default_traversal_paths: List[str] = ['r'],
+            dump_path: str = None,
+            default_return_embeddings: bool = True,
+            *args,
+            **kwargs,
     ):
         """
         :param map_size: the maximal size of teh database. Check more information at
@@ -160,6 +160,10 @@ class LMDBStorage(Executor):
         return_embeddings = parameters.get(
             'return_embeddings', self.default_return_embeddings
         )
+
+        remove_matches_fields = parameters.get('remove_matches_fields')
+        remove_docs_fields = parameters.get('remove_docs_fields')
+
         if docs is None:
             return
         docs_to_get = docs.traverse_flat(traversal_paths)
@@ -172,6 +176,15 @@ class LMDBStorage(Executor):
                         serialized_doc.pop('embedding')
                     d.update(serialized_doc)
                     d.id = id
+
+                    # remove unnecessary documents fields
+                    if remove_docs_fields:
+                        d.pop(remove_docs_fields)
+
+                    # remove unnecessary matches fields
+                    if remove_matches_fields:
+                        for match in d.matches:
+                            match.pop(remove_matches_fields)
 
     @requests(on='/dump')
     def dump(self, parameters: Dict, **kwargs):

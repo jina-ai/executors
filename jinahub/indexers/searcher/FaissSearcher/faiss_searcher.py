@@ -49,22 +49,22 @@ class FaissSearcher(Executor):
     """
 
     def __init__(
-        self,
-        # exhaustive search, which corresponds to what NumpySearcher was doing
-        index_key: str = 'Flat',
-        trained_index_file: Optional[str] = None,
-        max_num_training_points: Optional[int] = None,
-        metric: str = 'cosine',
-        nprobe: int = 1,
-        dump_path: Optional[str] = None,
-        dump_func: Optional[Callable] = None,
-        prefetch_size: Optional[int] = 512,
-        default_traversal_paths: List[str] = ['r'],
-        is_distance: bool = True,
-        default_top_k: int = 5,
-        on_gpu: bool = False,
-        *args,
-        **kwargs,
+            self,
+            # exhaustive search, which corresponds to what NumpySearcher was doing
+            index_key: str = 'Flat',
+            trained_index_file: Optional[str] = None,
+            max_num_training_points: Optional[int] = None,
+            metric: str = 'cosine',
+            nprobe: int = 1,
+            dump_path: Optional[str] = None,
+            dump_func: Optional[Callable] = None,
+            prefetch_size: Optional[int] = 512,
+            default_traversal_paths: List[str] = ['r'],
+            is_distance: bool = True,
+            default_top_k: int = 5,
+            on_gpu: bool = False,
+            *args,
+            **kwargs,
     ):
         """
         :param trained_index_file: the index file dumped from a trained
@@ -237,8 +237,8 @@ class FaissSearcher(Executor):
             else:
                 self.logger.info('Taking indexed data as training points')
                 while (
-                    self.max_num_training_points
-                    and len(self._prefetch_data) < self.max_num_training_points
+                        self.max_num_training_points
+                        and len(self._prefetch_data) < self.max_num_training_points
                 ):
                     try:
                         self._prefetch_data.append(next(vecs_iter))
@@ -252,8 +252,8 @@ class FaissSearcher(Executor):
             train_data = train_data.astype(np.float32)
 
             if (
-                self.max_num_training_points
-                and self.max_num_training_points < train_data.shape[0]
+                    self.max_num_training_points
+                    and self.max_num_training_points < train_data.shape[0]
             ):
                 self.logger.warning(
                     f'From train_data with num_points {train_data.shape[0]}, '
@@ -297,11 +297,11 @@ class FaissSearcher(Executor):
 
     @requests(on='/search')
     def search(
-        self,
-        docs: Optional[DocumentArray],
-        parameters: Optional[Dict] = None,
-        *args,
-        **kwargs,
+            self,
+            docs: Optional[DocumentArray],
+            parameters: Optional[Dict] = None,
+            *args,
+            **kwargs,
     ):
         """Find the top-k vectors with smallest
         ``metric`` and return their ids in ascending order.
@@ -366,6 +366,16 @@ class FaissSearcher(Executor):
                         match.scores[self.metric] = 1 - dist
                     else:
                         match.scores[self.metric] = 1 / (1 + dist)
+
+                # remove unnecessary matches fields
+                remove_matches_fields = parameters.get('remove_matches_fields')
+                if remove_matches_fields:
+                    match.pop(remove_matches_fields)
+
+                # remove unnecessary documents fields
+                remove_docs_fields = parameters.get('remove_docs_fields')
+                if remove_docs_fields:
+                    query_docs[doc_idx].pop(remove_docs_fields)
 
                 query_docs[doc_idx].matches.append(match)
 
