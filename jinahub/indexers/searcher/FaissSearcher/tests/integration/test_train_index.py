@@ -30,23 +30,36 @@ def metas(tmpdir):
     del os.environ['TEST_WORKSPACE']
 
 
-def test_train_and_index(metas):
+def test_train_and_index(metas, tmpdir):
     query = np.array(np.random.random([10, 10]), dtype=np.float32)
     query_docs = _get_docs_from_vecs(query)
 
-    train_data = np.array(np.random.random([512, 10]), dtype=np.float32)
-    train_docs = _get_docs_from_vecs(train_data)
+    import faiss
+
+    trained_index_file = os.path.join(tmpdir, 'faiss.index')
+    train_data = np.array(np.random.random([1024, 10]), dtype=np.float32)
+    faiss_index = faiss.index_factory(
+        10, 'IVF10_HNSW32,PQ2', faiss.METRIC_INNER_PRODUCT
+    )
+    faiss.normalize_L2(train_data)
+    faiss_index.train(train_data)
+    faiss.write_index(faiss_index, trained_index_file)
+
+    index_data = np.array(np.random.random([512, 10]), dtype=np.float32)
+    index_docs = _get_docs_from_vecs(index_data)
 
     f = Flow().add(
         uses=FaissSearcher,
         timeout_ready=-1,
         uses_with={
             'index_key': 'IVF10_HNSW32,PQ2',
+            'trained_index_file': trained_index_file,
         },
     )
+
     with f:
         # train and index docs first
-        f.post(on='/train', data=train_docs, request_size=0)
+        f.post(on='/index', data=index_docs)
 
         result = f.post(
             on='/search', data=query_docs, return_results=True, parameters={'top_k': 4}

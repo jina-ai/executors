@@ -457,7 +457,6 @@ class FaissSearcher(Executor):
 
         return True
 
-    @requests(on='/train')
     def train(
         self,
         docs: Optional[DocumentArray] = None,
