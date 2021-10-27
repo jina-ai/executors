@@ -388,7 +388,9 @@ class FaissSearcher(Executor):
         if docs is None:
             return
 
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        traversal_paths = parameters.get(
+            'traversal_paths', self.default_traversal_paths
+        )
         flat_docs = docs.traverse_flat(traversal_paths)
         if len(flat_docs) == 0:
             return
@@ -470,7 +472,9 @@ class FaissSearcher(Executor):
         if docs is None:
             return
 
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        traversal_paths = parameters.get(
+            'traversal_paths', self.default_traversal_paths
+        )
         flat_docs = docs.traverse_flat(traversal_paths)
         if len(flat_docs) == 0:
             return
