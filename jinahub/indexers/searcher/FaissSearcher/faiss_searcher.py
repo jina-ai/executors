@@ -479,10 +479,6 @@ class FaissSearcher(Executor):
         if len(flat_docs) == 0:
             return
 
-        max_num_training_points = parameters.get(
-            'max_num_training_points', self.max_num_training_points
-        )
-
         try:
             train_data = flat_docs.embeddings
         except Exception as ex:
@@ -495,18 +491,6 @@ class FaissSearcher(Executor):
         train_data = train_data.astype(np.float32)
 
         self._init_faiss_index(self.num_dim)
-
-        if max_num_training_points and max_num_training_points < train_data.shape[0]:
-            self.logger.warning(
-                f'From train_data with num_points {train_data.shape[0]}, '
-                f'sample {max_num_training_points} points'
-            )
-            random_indices = np.random.choice(
-                train_data.shape[0],
-                size=min(max_num_training_points, train_data.shape[0]),
-                replace=False,
-            )
-            train_data = train_data[random_indices, :]
 
         if self.normalize:
             faiss.normalize_L2(train_data)
