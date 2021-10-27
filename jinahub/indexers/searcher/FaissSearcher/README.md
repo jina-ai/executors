@@ -18,28 +18,29 @@ search and clustering of dense vectors.
 ### Training
 
 To use a trainable Faiss indexer (e.g., _IVF_, _PQ_ based),
-we can first train the indexer with the data from `train_data_file`:
+we can first train the indexer with pure `faiss` api:
 
 ```python
 import numpy as np
 from jina import Flow
+import faiss
 
-train_data_file = 'train.npy'
 train_data = np.array(np.random.random([10240, 256]), dtype=np.float32)
-np.save(train_data_file, train_data)
+
+trained_index_file = 'faiss.index'
+
+faiss_index = faiss.index_factory(256, 'IVF64,SQ8', faiss.METRIC_INNER_PRODUCT)
+faiss_index.train(train_data)
+faiss.write_index(faiss_index, trained_index_file)
 
 f = Flow().add(
     uses='jinahub://FaissSearcher',
     timeout_ready=-1,
     uses_with={
-      'index_key': 'IVF10_HNSW32,PQ64',
+      'index_key': 'IVF64,SQ8',
       'trained_index_file': 'faiss.index',
     },
 )
-
-with f:
-    # the trained index will be dumped to "faiss.index"
-    f.post(on='/train', parameters={'train_data_file': train_data_file})
 ```
 
 Then, we can directly use the trained indexer with providing `trained_index_file`:
