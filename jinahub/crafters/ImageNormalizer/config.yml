@@ -1,4 +1,0 @@
-jtype: ImageNormalizer
-metas:
-  py_modules:
-    - normalizer.py

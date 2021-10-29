@@ -1,5 +1,0 @@
-manifest_version: 1
-name: ImageNormalizer
-description: '`ImageNormalizer` resizes and normalizes images'
-url: https://github.com/jina-ai/executors/tree/main/jinahub/crafters/ImageNormalizer
-keywords: [image, normalization, reader, resize]
