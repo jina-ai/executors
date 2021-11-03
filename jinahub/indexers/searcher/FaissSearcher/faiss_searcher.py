@@ -291,9 +291,7 @@ class FaissSearcher(Executor):
 
     def _index(self, vecs: 'np.ndarray'):
         if self.normalize:
-            from faiss import normalize_L2
-
-            normalize_L2(vecs)
+            faiss.normalize_L2(vecs)
         self._faiss_index.add(vecs)
 
     @requests(on='/search')
@@ -336,9 +334,7 @@ class FaissSearcher(Executor):
         vecs = np.array(query_docs.get_attributes('embedding')).astype(np.float32)
 
         if self.normalize:
-            from faiss import normalize_L2
-
-            normalize_L2(vecs)
+            faiss.normalize_L2(vecs)
 
         dists, ids = self._faiss_index.search(vecs, expand_topk)
 
