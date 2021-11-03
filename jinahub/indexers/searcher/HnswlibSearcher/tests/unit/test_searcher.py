@@ -80,6 +80,12 @@ def test_index():
     assert index._index.element_count == NUM_DOCS
     assert set(index._ids_to_inds.keys()) == set(da1.get_attributes('id'))
 
+    da3 = DocumentArray([Document() for emb in embeddings])
+    index.index(da1, {})
+    assert len(index._ids_to_inds) == NUM_DOCS
+    assert index._index.element_count == NUM_DOCS
+    assert set(index._ids_to_inds.keys()) == set(da1.get_attributes('id'))
+
     index.index(da2, {})
     assert len(index._ids_to_inds) == 2 * NUM_DOCS
     assert index._index.element_count == 2 * NUM_DOCS

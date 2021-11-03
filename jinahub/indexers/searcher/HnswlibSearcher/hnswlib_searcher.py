@@ -160,7 +160,9 @@ class HnswlibSearcher(Executor):
         if docs is None:
             return
 
-        docs_to_update = docs.traverse_flat(traversal_paths)
+        docs_to_update = docs.traverse_flat(
+            traversal_paths, filter_fn=lambda d: d.embedding is not None
+        )
         if len(docs_to_update) == 0:
             return
 
@@ -203,7 +205,9 @@ class HnswlibSearcher(Executor):
         if docs is None:
             return
 
-        docs_to_update = docs.traverse_flat(traversal_paths)
+        docs_to_update = docs.traverse_flat(
+            traversal_paths, filter_fn=lambda d: d.embedding is not None
+        )
         if len(docs_to_update) == 0:
             return
 
