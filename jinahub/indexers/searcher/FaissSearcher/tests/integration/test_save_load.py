@@ -53,6 +53,7 @@ def test_save(metas, tmpdir):
             'index_key': 'Flat',
             'dump_path': dump_path,
         },
+        uses_meta=metas,
     )
     with f:
         f.post(on='/save')
@@ -63,6 +64,7 @@ def test_save(metas, tmpdir):
         uses_with={
             'index_key': 'Flat',
         },
+        uses_meta=metas,
     )
     with new_f:
         result = new_f.post(

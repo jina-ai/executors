@@ -314,7 +314,7 @@ class FaissSearcher(Executor):
         """
         if docs is None:
             return
-        if not hasattr(self, '_faiss_index'):
+        if self._faiss_index is None:
             self.logger.warning('Querying against an empty Index')
             return
 
