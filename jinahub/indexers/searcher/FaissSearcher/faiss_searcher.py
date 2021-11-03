@@ -214,6 +214,7 @@ class FaissSearcher(Executor):
             index = faiss.read_index(trained_index_file)
             assert index.metric_type == self.metric_type
             assert index.ntotal == 0
+
             assert not hasattr(self, 'num_dim') or index.d == self.num_dim
             assert index.is_trained
         else:
@@ -453,7 +454,8 @@ class FaissSearcher(Executor):
             )
             return False
         except Exception as ex:
-            raise ex
+            self.logger.warning(f'Exception: {ex}')
+            return False
 
         return True
 
