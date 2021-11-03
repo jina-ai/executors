@@ -116,7 +116,7 @@ class FaissSearcher(Executor):
 
         self._is_deleted = []
         self._prefetch_data = []
-
+        self._faiss_index = None
         self.logger = get_logger(self)
 
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
@@ -214,7 +214,7 @@ class FaissSearcher(Executor):
             index = faiss.read_index(trained_index_file)
             assert index.metric_type == self.metric_type
             assert index.ntotal == 0
-            assert index.d == self.num_dim
+            assert not hasattr(self, 'num_dim') or index.d == self.num_dim
             assert index.is_trained
         else:
             index = faiss.index_factory(num_dim, self.index_key, self.metric_type)
@@ -628,6 +628,11 @@ class FaissSearcher(Executor):
 
     def _append_vecs_and_ids(self, doc_ids: List[str], vecs: np.ndarray):
         assert len(doc_ids) == vecs.shape[0]
+        if self._faiss_index is None:
+            self._init_faiss_index(
+                vecs.shape[-1], trained_index_file=self.trained_index_file
+            )
+
         for doc_id in doc_ids:
             self._doc_id_to_offset[doc_id] = len(self._doc_ids)
             self._doc_ids.append(doc_id)

@@ -52,6 +52,7 @@ def test_train_and_index(metas, tmpdir):
             'index_key': 'IVF6,PQ2',
             'trained_index_file': trained_index_file,
         },
+        uses_meta=metas,
     )
 
     with f:
