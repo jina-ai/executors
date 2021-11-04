@@ -10,7 +10,7 @@ _DIM = 10
 
 @pytest.fixture
 def two_elem_index():
-    index = HnswlibSearcher(dim=_DIM, metric='l2')
+    index = HnswlibSearcher(dim=_DIM, metric='euclidean')
     da = DocumentArray(
         [
             Document(id='a', embedding=np.ones(_DIM) * 1.0),
@@ -117,13 +117,35 @@ def test_index_with_update(two_elem_index):
     da[0].embedding = np.ones(_DIM) * 2.0
     da[1].embedding = np.ones(_DIM) * 1.0
 
-    index.index(da, {})
+    index.update(da, {})
     assert index._ids_to_inds == {'a': 0, 'b': 1}
     assert index._index.element_count == 2
 
     index.search(da_search, {})
     assert [m.id for m in da_search[0].matches] == ['b', 'a']
     assert [m.id for m in da_search[1].matches] == ['a', 'b']
+
+
+def test_update_with_filter(two_elem_index):
+    index, da = two_elem_index
+    da_search = DocumentArray(
+        [
+            Document(embedding=np.ones(_DIM) * 1.1),
+            Document(embedding=np.ones(_DIM) * 2.1),
+        ]
+    )
+
+    da[0].pop('embedding')
+    da[1].embedding = np.ones(_DIM) * 1.5
+    index.update(da, {})
+
+    index.search(da_search, {})
+    assert [m.id for m in da_search[0].matches] == ['a', 'b']
+    assert [m.id for m in da_search[1].matches] == ['b', 'a']
+
+    index.ignore_invalid_docs = False
+    with pytest.raises(ValueError):
+        index.update(da, {})
 
 
 def test_index_wrong_dim():
