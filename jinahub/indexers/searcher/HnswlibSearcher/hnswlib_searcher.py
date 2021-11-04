@@ -29,6 +29,7 @@ class HnswlibSearcher(Executor):
         dump_path: Optional[str] = None,
         traversal_paths: Iterable[str] = ('r',),
         is_distance: bool = True,
+        ignore_invalid_docs: bool = True,
         *args,
         **kwargs,
     ):
@@ -46,6 +47,7 @@ class HnswlibSearcher(Executor):
         :param traversal_paths: The default traverseal path on docs (used for indexing,
             search and update), e.g. ['r'], ['c']
         :param is_distance: Boolean flag that describes if distance metric need to be reinterpreted as similarities.
+        :param ignore_invalid_docs: Boolean flat that determine whether filter out invalid docs (i.e., without embedding)
         """
         super().__init__(*args, **kwargs)
         self.limit = limit
@@ -58,6 +60,7 @@ class HnswlibSearcher(Executor):
         self.max_connection = max_connection
         self.dump_path = dump_path
         self.is_distance = is_distance
+        self.ignore_invalid_docs = ignore_invalid_docs
 
         self.logger = JinaLogger(self.__class__.__name__)
         self._index = hnswlib.Index(space=self.metric_type, dim=self.dim)
@@ -160,13 +163,23 @@ class HnswlibSearcher(Executor):
         if docs is None:
             return
 
-        docs_to_update = docs.traverse_flat(
-            traversal_paths, filter_fn=lambda d: d.embedding is not None
-        )
+        docs_to_update = docs.traverse_flat(traversal_paths)
         if len(docs_to_update) == 0:
             return
 
-        embeddings = docs_to_update.embeddings
+        try:
+            embeddings = docs_to_update.embeddings
+        except (TypeError, ValueError) as ex:
+            if self.ignore_invalid_docs:
+                docs_to_update = docs_to_update.traverse_flat(
+                    ['r'], filter_fn=lambda d: d.embedding is not None
+                )
+                if len(docs_to_update) == 0:
+                    return
+                embeddings = docs_to_update.embeddings
+            else:
+                raise ex
+
         if embeddings.shape[-1] != self.dim:
             raise ValueError(
                 f'Attempted to index vectors with dimension'

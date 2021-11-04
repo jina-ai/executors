@@ -80,18 +80,29 @@ def test_index():
     assert index._index.element_count == NUM_DOCS
     assert set(index._ids_to_inds.keys()) == set(da1.get_attributes('id'))
 
-    da3 = DocumentArray([Document() for emb in embeddings])
-    index.index(da1, {})
-    assert len(index._ids_to_inds) == NUM_DOCS
-    assert index._index.element_count == NUM_DOCS
-    assert set(index._ids_to_inds.keys()) == set(da1.get_attributes('id'))
-
     index.index(da2, {})
     assert len(index._ids_to_inds) == 2 * NUM_DOCS
     assert index._index.element_count == 2 * NUM_DOCS
     assert set(index._ids_to_inds.keys()) == set(da1.get_attributes('id')).union(
         da2.get_attributes('id')
     )
+
+
+def test_index_with_filter():
+    NUM_DOCS = 1000
+    index = HnswlibSearcher(dim=_DIM)
+    embeddings = np.random.normal(size=(NUM_DOCS, _DIM))
+    da = DocumentArray([Document(embedding=emb) for emb in embeddings])
+    da.extend([Document() for emb in embeddings])
+
+    index.index(da, {})
+    assert len(index._ids_to_inds) == NUM_DOCS
+    assert index._index.element_count == NUM_DOCS
+    assert set(index._ids_to_inds.keys()) == set(da.get_attributes('id')[:NUM_DOCS])
+
+    index2 = HnswlibSearcher(dim=_DIM, ignore_invalid_docs=False)
+    with pytest.raises(ValueError):
+        index2.index(da, {})
 
 
 def test_index_with_update(two_elem_index):
