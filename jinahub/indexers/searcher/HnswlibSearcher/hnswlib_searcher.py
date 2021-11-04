@@ -218,9 +218,7 @@ class HnswlibSearcher(Executor):
         if docs is None:
             return
 
-        docs_to_update = docs.traverse_flat(
-            traversal_paths, filter_fn=lambda d: d.embedding is not None
-        )
+        docs_to_update = docs.traverse_flat(traversal_paths)
         if len(docs_to_update) == 0:
             return
 
@@ -232,6 +230,11 @@ class HnswlibSearcher(Executor):
                     ' indexed, skipping. To add documents to index, use the /index'
                     ' endpoint'
                 )
+            elif doc.embedding is None:
+                if not self.ignore_invalid_docs:
+                    raise ValueError(
+                        f'The document {doc.id} does not contain embedding'
+                    )
             else:
                 docs_filtered.append(doc)
                 doc_inds.append(self._ids_to_inds[doc.id])
