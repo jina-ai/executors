@@ -447,6 +447,16 @@ def test_faiss_delta(metas, tmpdir):
     assert indexer._is_deleted == [0, 0, 1, 1, 0, 0]
     assert indexer._doc_ids == ['0', '1', '2', '3', '4', '5']
 
+    def _generate_update_delta_bad():
+        for i in range(4, 6):
+            x = np.zeros((1, num_dims+3))
+            yield f'{i}', x, None
+
+    try:
+        indexer._add_delta(_generate_update_delta_bad())
+    except:
+        pass
+
     def _generate_update_delta():
         for i in range(4, 6):
             x = np.zeros((1, num_dims))

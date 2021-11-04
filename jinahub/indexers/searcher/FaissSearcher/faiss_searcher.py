@@ -628,11 +628,11 @@ class FaissSearcher(Executor):
 
     def _append_vecs_and_ids(self, doc_ids: List[str], vecs: np.ndarray):
         assert len(doc_ids) == vecs.shape[0]
+        self._index(vecs)
         for doc_id in doc_ids:
             self._doc_id_to_offset[doc_id] = len(self._doc_ids)
             self._doc_ids.append(doc_id)
             self._is_deleted.append(0)
-        self._index(vecs)
 
     def _add_delta(self, delta: GENERATOR_DELTA):
         """
