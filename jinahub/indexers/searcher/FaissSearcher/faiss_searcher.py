@@ -575,6 +575,13 @@ class FaissSearcher(Executor):
         )
         return DocumentArray([status])
 
+    @requests(on='/clear')
+    def clear(self, **kwargs):
+        if self._faiss_index is not None:
+            self._faiss_index.reset()
+            self._ids_to_inds.clear()
+            self._is_deleted.clear()
+
     @property
     def size(self):
         """Return the nr of elements in the index"""
