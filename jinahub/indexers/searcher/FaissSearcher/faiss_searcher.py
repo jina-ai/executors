@@ -116,7 +116,7 @@ class FaissSearcher(Executor):
 
         self._is_deleted = []
         self._prefetch_data = []
-
+        self._faiss_index = None
         self.logger = get_logger(self)
 
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
@@ -214,7 +214,8 @@ class FaissSearcher(Executor):
             index = faiss.read_index(trained_index_file)
             assert index.metric_type == self.metric_type
             assert index.ntotal == 0
-            assert index.d == self.num_dim
+
+            assert not hasattr(self, 'num_dim') or index.d == self.num_dim
             assert index.is_trained
         else:
             index = faiss.index_factory(num_dim, self.index_key, self.metric_type)
@@ -290,9 +291,7 @@ class FaissSearcher(Executor):
 
     def _index(self, vecs: 'np.ndarray'):
         if self.normalize:
-            from faiss import normalize_L2
-
-            normalize_L2(vecs)
+            faiss.normalize_L2(vecs)
         self._faiss_index.add(vecs)
 
     @requests(on='/search')
@@ -314,7 +313,7 @@ class FaissSearcher(Executor):
         """
         if docs is None:
             return
-        if not hasattr(self, '_faiss_index'):
+        if self._faiss_index is None:
             self.logger.warning('Querying against an empty Index')
             return
 
@@ -335,9 +334,7 @@ class FaissSearcher(Executor):
         vecs = np.array(query_docs.get_attributes('embedding')).astype(np.float32)
 
         if self.normalize:
-            from faiss import normalize_L2
-
-            normalize_L2(vecs)
+            faiss.normalize_L2(vecs)
 
         dists, ids = self._faiss_index.search(vecs, expand_topk)
 
@@ -373,6 +370,35 @@ class FaissSearcher(Executor):
                 count += 1
                 if count >= top_k:
                     break
+
+    @requests(on='/index')
+    def index(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
+        """Index the Documents' embeddings.
+        :param docs: `Document` with same shaped `.embedding`.
+        :param parameters: Dictionary with optional parameters that can be used to
+            override the parameters set at initialization. The only supported key is
+            `traversal_paths`.
+        """
+
+        if docs is None:
+            return
+
+        traversal_paths = parameters.get(
+            'traversal_paths', self.default_traversal_paths
+        )
+        flat_docs = docs.traverse_flat(traversal_paths)
+        if len(flat_docs) == 0:
+            return
+
+        try:
+            ids = flat_docs.get_attributes('id')
+            vecs = flat_docs.embeddings
+            self._append_vecs_and_ids(ids, vecs)
+        except Exception as ex:
+            self.logger.error(f'failed to index docs, {ex}')
+            raise ex
 
     @requests(on='/save')
     def save(self, parameters: Dict, **kwargs):
@@ -424,36 +450,37 @@ class FaissSearcher(Executor):
             )
             return False
         except Exception as ex:
-            raise ex
+            self.logger.warning(f'Exception: {ex}')
+            return False
 
         return True
 
-    @requests(on='/train')
-    def train(self, parameters: Dict, **kwargs):
+    def train(
+        self,
+        docs: Optional[DocumentArray] = None,
+        parameters: Optional[Dict] = None,
+        **kwargs,
+    ):
         """Train the index
 
+        :param docs: docs for training index
         :param parameters: a dictionary containing the parameters for the training
         """
+        if docs is None:
+            return
 
-        train_data_file = parameters.get('train_data_file')
-        if train_data_file is None:
-            raise ValueError(f'No "train_data_file" provided for training {self}')
-
-        max_num_training_points = parameters.get(
-            'max_num_training_points', self.max_num_training_points
+        traversal_paths = parameters.get(
+            'traversal_paths', self.default_traversal_paths
         )
-        trained_index_file = parameters.get(
-            'trained_index_file', self.trained_index_file
-        )
-        if not trained_index_file:
-            raise ValueError(f'No "trained_index_file" provided for training {self}')
+        flat_docs = docs.traverse_flat(traversal_paths)
+        if len(flat_docs) == 0:
+            return
 
-        train_data = self._load_training_data(train_data_file)
-        if train_data is None:
-            raise ValueError(
-                'Loading training data failed. some faiss indexes require previous '
-                'training.'
-            )
+        try:
+            train_data = flat_docs.embeddings
+        except Exception as ex:
+            self.logger.error(f'failed to train the index, {ex}')
+            raise ex
 
         self.num_dim = train_data.shape[1]
         self.dtype = train_data.dtype
@@ -462,32 +489,13 @@ class FaissSearcher(Executor):
 
         self._init_faiss_index(self.num_dim)
 
-        if max_num_training_points and max_num_training_points < train_data.shape[0]:
-            self.logger.warning(
-                f'From train_data with num_points {train_data.shape[0]}, '
-                f'sample {max_num_training_points} points'
-            )
-            random_indices = np.random.choice(
-                train_data.shape[0],
-                size=min(max_num_training_points, train_data.shape[0]),
-                replace=False,
-            )
-            train_data = train_data[random_indices, :]
-
         if self.normalize:
             faiss.normalize_L2(train_data)
         self._train(train_data)
 
-        self.logger.info(f'Dumping the trained Faiss index to {trained_index_file}')
-        if self.on_gpu:
-            self._faiss_index = faiss.index_gpu_to_cpu(self._faiss_index)
-
-        if os.path.exists(trained_index_file):
-            self.logger.warning(
-                f'We are going to overwrite the index file located at '
-                f'{trained_index_file}'
-            )
-        faiss.write_index(self._faiss_index, trained_index_file)
+        index_data = parameters.get('index_data', True)
+        if index_data:
+            self.index(docs=docs, parameters=parameters)
 
     def _train(self, data: 'np.ndarray', *args, **kwargs) -> None:
         _num_samples, _num_dim = data.shape
@@ -618,6 +626,11 @@ class FaissSearcher(Executor):
 
     def _append_vecs_and_ids(self, doc_ids: List[str], vecs: np.ndarray):
         assert len(doc_ids) == vecs.shape[0]
+        if self._faiss_index is None:
+            self._init_faiss_index(
+                vecs.shape[-1], trained_index_file=self.trained_index_file
+            )
+
         for doc_id in doc_ids:
             self._doc_id_to_offset[doc_id] = len(self._doc_ids)
             self._doc_ids.append(doc_id)
