@@ -68,7 +68,7 @@ def test_save(metas, tmpdir):
     )
     with new_f:
         result = new_f.post(
-            on='/search', data=query_docs, return_results=True, parameters={'top_k': 4}
+            on='/search', data=query_docs, return_results=True, parameters={'limit': 4}
         )[0].docs
         assert len(result[0].matches) == 4
         for d in result:
