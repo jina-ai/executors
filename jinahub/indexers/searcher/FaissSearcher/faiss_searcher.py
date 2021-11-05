@@ -558,6 +558,23 @@ class FaissSearcher(Executor):
     #         else:
     #             self.logger.debug(f'Document {doc.id} not found in index')
 
+    @requests(on='/status')
+    def status(self, **kwargs) -> DocumentArray:
+        """Return the document containing status information about the indexer.
+
+        The status will contain information on the total number of indexed and deleted
+        documents, and on the number of (searchable) documents currently in the index.
+        """
+
+        status = Document(
+            tags={
+                'count_active': self.size,
+                'count_indexed': self._faiss_index.ntotal,
+                'count_deleted': len(self._is_deleted),
+            }
+        )
+        return DocumentArray([status])
+
     @property
     def size(self):
         """Return the nr of elements in the index"""
