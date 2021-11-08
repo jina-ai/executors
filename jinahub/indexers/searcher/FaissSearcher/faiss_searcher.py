@@ -630,12 +630,11 @@ class FaissSearcher(Executor):
             self._init_faiss_index(
                 vecs.shape[-1], trained_index_file=self.trained_index_file
             )
-
+        self._index(vecs)
         for doc_id in doc_ids:
             self._doc_id_to_offset[doc_id] = len(self._doc_ids)
             self._doc_ids.append(doc_id)
             self._is_deleted.append(0)
-        self._index(vecs)
 
     def _add_delta(self, delta: GENERATOR_DELTA):
         """
