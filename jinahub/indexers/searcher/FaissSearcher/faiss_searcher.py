@@ -122,7 +122,6 @@ class FaissSearcher(Executor):
         self._is_deleted = set()
         self._prefetch_data = []
         self._faiss_index = None
-        self.logger = get_logger(self)
 
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
         if dump_path:
@@ -229,7 +228,7 @@ class FaissSearcher(Executor):
             index.hnsw.efConstruction = self.ef_construction
 
         if not hasattr(index, 'id_map'):
-            index = faiss.IndexIDMap(index)
+            index = faiss.IndexIDMap2(index)
 
         self._faiss_index = self.to_device(index)
 
@@ -309,16 +308,19 @@ class FaissSearcher(Executor):
             if len(batch_data) == 0:
                 break
 
-    def _index(self, vecs: 'np.ndarray'):
-        if self.normalize:
-            faiss.normalize_L2(vecs)
-        self._faiss_index.add(vecs)
+            embeddings = []
+            doc_ids = []
+            for doc_id, x in batch_data:
+                doc_ids.append(doc_id)
+                embeddings.append(x)
+            embeddings = np.stack(embeddings).astype(np.float32)
+            self._append_vecs_and_ids(embeddings, doc_ids)
 
     @requests(on='/search')
     def search(
         self,
         docs: Optional[DocumentArray],
-        parameters: Optional[Dict] = None,
+        parameters: Optional[Dict] = dict(),
         *args,
         **kwargs,
     ):
@@ -336,9 +338,6 @@ class FaissSearcher(Executor):
         if self._faiss_index is None:
             self.logger.warning('Querying against an empty Index')
             return
-
-        if parameters is None:
-            parameters = {}
 
         limit = int(parameters.get('limit', self.limit))
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
@@ -398,17 +397,21 @@ class FaissSearcher(Executor):
         if docs is None:
             return
 
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+        if self._faiss_index is None:
+            self.num_dim = docs.embeddings.shape[-1]
+            self._init_faiss_index(
+                self.num_dim, trained_index_file=self.trained_index_file
+            )
+
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         flat_docs = docs.traverse_flat(traversal_paths)
         if len(flat_docs) == 0:
             return
 
         try:
-            ids = flat_docs.get_attributes('id')
+            doc_ids = flat_docs.get_attributes('id')
             vecs = flat_docs.embeddings
-            self._append_vecs_and_ids(ids, vecs)
+            self._append_vecs_and_ids(vecs, doc_ids)
         except Exception as ex:
             self.logger.error(f'failed to index docs, {ex}')
             raise ex
@@ -460,7 +463,7 @@ class FaissSearcher(Executor):
                 index.hnsw.efConstruction = self.ef_construction
 
             if not hasattr(index, 'id_map'):
-                index = faiss.IndexIDMap(index)
+                index = faiss.IndexIDMap2(index)
 
             self._faiss_index = self.to_device(index)
             self._faiss_index.nprobe = self.nprobe
@@ -490,9 +493,7 @@ class FaissSearcher(Executor):
         if docs is None:
             return
 
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         flat_docs = docs.traverse_flat(traversal_paths)
         if len(flat_docs) == 0:
             return
@@ -535,28 +536,28 @@ class FaissSearcher(Executor):
 
         self._faiss_index.train(data)
 
-    # @requests(on='/fill_embedding')
-    # def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
-    #     if docs is None:
-    #         return
-    #     for doc in docs:
-    #         if doc.id in self._ids_to_inds:
-    #             try:
-    #                 reconstruct_embedding = self._faiss_index.reconstruct(
-    #                     self._ids_to_inds[doc.id]
-    #                 )
-    #                 doc.embedding = np.array(reconstruct_embedding)
-    #             except RuntimeError as exception:
-    #                 self.logger.warning(
-    #                     f'Trying to reconstruct from '
-    #                     f'document id failed. Most '
-    #                     f'likely the index built '
-    #                     f'from index key {self.index_key} \
-    #                      does not support this '
-    #                     f'operation. {repr(exception)}'
-    #                 )
-    #         else:
-    #             self.logger.debug(f'Document {doc.id} not found in index')
+    @requests(on='/fill_embedding')
+    def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
+        if docs is None:
+            return
+        for doc in docs:
+            if doc.id in self._ids_to_inds:
+                try:
+                    reconstruct_embedding = self._faiss_index.reconstruct(
+                        self._ids_to_inds[doc.id]
+                    )
+                    doc.embedding = np.array(reconstruct_embedding)
+                except RuntimeError as exception:
+                    self.logger.warning(
+                        f'Trying to reconstruct from '
+                        f'document id failed. Most '
+                        f'likely the index built '
+                        f'from index key {self.index_key} \
+                         does not support this '
+                        f'operation. {repr(exception)}'
+                    )
+            else:
+                self.logger.debug(f'Document {doc.id} not found in index')
 
     @requests(on='/status')
     def status(self, **kwargs) -> DocumentArray:
@@ -612,15 +613,19 @@ class FaissSearcher(Executor):
 
     def _append_vecs_and_ids(self, vecs: np.ndarray, doc_ids: List[str]):
         assert len(doc_ids) == vecs.shape[0]
-        if self._faiss_index is None:
-            self._init_faiss_index(
-                vecs.shape[-1], trained_index_file=self.trained_index_file
-            )
-        self._index(vecs)
-        for doc_id in doc_ids:
-            self._doc_id_to_offset[doc_id] = len(self._doc_ids)
-            self._doc_ids.append(doc_id)
-            self._is_deleted.append(0)
+        size = 0
+        if len(self._ids_to_inds) > 0:
+            size = max(list(self._ids_to_inds.values())) + 1
+        indices = []
+        for i, doc_id in enumerate(doc_ids):
+            idx = size + i
+            indices.append(idx)
+            if doc_id in self._ids_to_inds:
+                self._is_deleted.add(self._ids_to_inds[doc_id])
+
+            self._ids_to_inds.update({doc_id: idx})
+        indices = np.array(indices, dtype=np.int64)
+        self._faiss_index.add_with_ids(vecs, indices)
 
     def _add_delta(self, delta: GENERATOR_DELTA):
         """

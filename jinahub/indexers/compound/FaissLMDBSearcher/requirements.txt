@@ -1,4 +1,5 @@
 jina_executors @ git+https://github.com/jina-ai/executors.git@main#egg=jinahub
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git@v0.0.2#egg=jina-commons
+bidict
 faiss-cpu==1.7.1
 lmdb==1.2.1

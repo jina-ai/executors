@@ -120,9 +120,11 @@ class FaissPostgresIndexer(Executor):
             )
             timestamp = self._kv_indexer.last_snapshot_timestamp
             self._vec_indexer = FaissSearcher(
-                dump_func=dump_func,
                 prefetch_size=FAISS_PREFETCH_SIZE,
                 **self._init_kwargs,
+            )
+            self._vec_indexer._load_from_iterator(
+                dump_func, prefetch_size=FAISS_PREFETCH_SIZE
             )
 
             if use_delta:
