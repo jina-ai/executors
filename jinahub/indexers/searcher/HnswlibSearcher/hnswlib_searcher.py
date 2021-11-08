@@ -2,6 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import json
+import os
 from typing import Dict, Iterable, Optional
 
 import hnswlib
@@ -255,6 +256,8 @@ class HnswlibSearcher(Executor):
         """
 
         dump_path = parameters.get('dump_path', self.dump_path)
+        dump_path = os.path.join(dump_path, str(self.runtime_args.pea_id))
+        os.mkdir(dump_path)
         if dump_path is None:
             raise ValueError(
                 'The `dump_path` must be provided to save the indexer state.'

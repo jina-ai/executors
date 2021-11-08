@@ -120,13 +120,17 @@ def test_search_limit(tmp_path):
 def test_multi_shards(tmp_path):
     num_shards = 3
     f = Flow().add(
-        name='indexer', uses=HnswlibSearcher, uses_with={'dim': _DIM}, shards=num_shards
+        name='indexer',
+        uses=HnswlibSearcher,
+        uses_with={'dim': _DIM},
+        shards=num_shards,
+        polling='all',
     )
     da = DocumentArray()
-    for _ in range(10_000):
+    for _ in range(100):
         d = Document(embedding=np.random.rand(_DIM))
         da.append(d)
     with f:
         f.index(da)
         f.post(on='/dump', parameters={'dump_path': f'{tmp_path}'})
-        assert len([x[0] for x in os.walk(tmp_path)]) == num_shards
+        assert len([x[0] for x in os.walk(tmp_path)]) == num_shards + 1
