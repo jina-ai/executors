@@ -4,17 +4,11 @@ __license__ = 'Apache-2.0'
 from typing import Dict, List
 
 import numpy as np
-from jina import Document, DocumentArray, Executor, requests
+from jina import DocumentArray, Executor, requests
 from jina_commons import get_logger
 from jina_commons.indexers.dump import export_dump_streaming
 
 from .postgreshandler import PostgreSQLHandler
-
-
-def doc_without_embedding(d: Document):
-    new_doc = Document(d, copy=True)
-    new_doc.ClearField('embedding')
-    return new_doc.SerializeToString()
 
 
 class PostgreSQLStorage(Executor):
@@ -29,8 +23,9 @@ class PostgreSQLStorage(Executor):
         database: str = 'postgres',
         table: str = 'default_table',
         max_connections=5,
-        default_traversal_paths: List[str] = ['r'],
-        default_return_embeddings: bool = True,
+        index_traversal_paths: List[str] = ['r'],
+        search_traversal_paths: List[str] = ['r'],
+        return_embeddings: bool = True,
         dry_run: bool = False,
         virtual_shards: int = 128,
         dump_dtype: type = np.float64,
@@ -46,13 +41,12 @@ class PostgreSQLStorage(Executor):
         :param password: the password to authenticate
         :param database: the database name
         :param table: the table name to use
-        :param default_return_embeddings: whether to return embeddings on search or not
+        :param return_embeddings: whether to return embeddings on search or not
         :param dry_run: If True, no database connection will be build.
         :param virtual_shards: the number of shards to distribute
          the data (used when rolling update on Searcher side)
         """
         super().__init__(*args, **kwargs)
-        self.default_traversal_paths = default_traversal_paths
         self.hostname = hostname
         self.port = port
         self.username = username
@@ -73,7 +67,10 @@ class PostgreSQLStorage(Executor):
             virtual_shards=virtual_shards,
             dump_dtype=dump_dtype,
         )
-        self.default_return_embeddings = default_return_embeddings
+
+        self.index_traversal_paths = index_traversal_paths
+        self.search_traversal_paths = search_traversal_paths
+        self.return_embeddings = return_embeddings
 
     @property
     def dump_dtype(self):
@@ -106,9 +103,7 @@ class PostgreSQLStorage(Executor):
         """
         if docs is None:
             return
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+        traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
         with self.handler as postgres_handler:
             postgres_handler.add(docs.traverse_flat(traversal_paths))
 
@@ -121,20 +116,18 @@ class PostgreSQLStorage(Executor):
         """
         if docs is None:
             return
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+        traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
         with self.handler as postgres_handler:
             postgres_handler.update(docs.traverse_flat(traversal_paths))
 
-    @requests(on='/cleanup')
-    def cleanup(self, **kwargs):
+    @requests(on='/prune')
+    def prune(self, **kwargs):
         """
         Full deletion of the entries that
         have been marked for soft-deletion
         """
         with self.handler as postgres_handler:
-            postgres_handler.cleanup()
+            postgres_handler.prune()
 
     @requests(on='/delete')
     def delete(self, docs: DocumentArray, parameters: Dict, **kwargs):
@@ -143,19 +136,20 @@ class PostgreSQLStorage(Executor):
         NOTE: This is a soft-deletion, required by the snapshotting
         mechanism in the PSQLFaissCompound
 
-        For a real delete, use the /cleanup endpoint
+        For a real delete, use the /prune endpoint
 
         :param docs: list of Documents
         :param parameters: parameters to the request
         """
         if docs is None:
             return
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
-        soft_delete = parameters.get('soft_delete', False)
+
+        traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
+        soft_delete = parameters.get('soft_delete', True)
         with self.handler as postgres_handler:
-            postgres_handler.delete(docs.traverse_flat(traversal_paths), soft_delete)
+            postgres_handler.delete(
+                docs.traverse_flat(traversal_paths), soft_delete=soft_delete
+            )
 
     @requests(on='/dump')
     def dump(self, parameters: Dict, **kwargs):
@@ -198,15 +192,13 @@ class PostgreSQLStorage(Executor):
         """
         if docs is None:
             return
-        traversal_paths = parameters.get(
-            'traversal_paths', self.default_traversal_paths
-        )
+        traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
 
         with self.handler as postgres_handler:
             postgres_handler.search(
                 docs.traverse_flat(traversal_paths),
                 return_embeddings=parameters.get(
-                    'return_embeddings', self.default_return_embeddings
+                    'return_embeddings', self.return_embeddings
                 ),
             )
 
@@ -220,7 +212,9 @@ class PostgreSQLStorage(Executor):
         with self.handler as postgres_handler:
             postgres_handler.snapshot()
 
-    def get_snapshot(self, shard_id: int, total_shards: int):
+    def get_snapshot(
+        self, shard_id: int, total_shards: int, filter_deleted: bool = True
+    ):
         """Get the data meant out of the snapshot, distributed
         to this shard id, out of X total shards, based on the virtual
         shards allocated.
@@ -231,10 +225,26 @@ class PostgreSQLStorage(Executor):
             )
 
             with self.handler as postgres_handler:
-                return postgres_handler.get_snapshot(shards_to_get)
+                return postgres_handler.get_snapshot(
+                    shards_to_get, filter_deleted=filter_deleted
+                )
         else:
             self.logger.warning('Not data in PSQL db snapshot. Nothing to export...')
         return None
+
+    def get_document_iterator(self, limit: int = 0, check_embedding: bool = False):
+        with self.handler as postgres_handler:
+            return postgres_handler.get_document_iterator(
+                limit=limit, check_embedding=check_embedding
+            )
+
+    def get_trained_model(self):
+        with self.handler as postgres_handler:
+            return postgres_handler.get_trained_model()
+
+    def save_trained_model(self, model: bytes, checksum: str):
+        with self.handler as postgres_handler:
+            return postgres_handler.save_trained_model(model, checksum)
 
     @staticmethod
     def _vshards_to_get(shard_id, total_shards, virtual_shards):
@@ -258,7 +268,9 @@ class PostgreSQLStorage(Executor):
             ]
         return [str(shard_id) for shard_id in shards_to_get]
 
-    def _get_delta(self, shard_id, total_shards, timestamp):
+    def _get_delta(
+        self, shard_id, total_shards, timestamp, filter_deleted: bool = False
+    ):
         """
         Get the rows that have changed since the last timestamp, per shard
         """
@@ -269,7 +281,9 @@ class PostgreSQLStorage(Executor):
             )
 
             with self.handler as postgres_handler:
-                return postgres_handler._get_delta(shards_to_get, timestamp)
+                return postgres_handler._get_delta(
+                    shards_to_get, timestamp, filter_deleted=filter_deleted
+                )
         else:
             self.logger.warning('No data in PSQL to export with _get_delta...')
         return None

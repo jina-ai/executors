@@ -311,10 +311,16 @@ class FaissSearcher(Executor):
             embeddings = []
             doc_ids = []
             for doc_id, x in batch_data:
+                if x is None:
+                    continue
                 doc_ids.append(doc_id)
                 embeddings.append(x)
             embeddings = np.stack(embeddings).astype(np.float32)
             self._append_vecs_and_ids(embeddings, doc_ids)
+
+    @property
+    def is_trained(self):
+        return self._faiss_index.is_trained if self._faiss_index else False
 
     @requests(on='/search')
     def search(
@@ -536,6 +542,14 @@ class FaissSearcher(Executor):
 
         self._faiss_index.train(data)
 
+    def save_trained_model(self, target_path: str):
+        if self._faiss_index and self._faiss_index.is_trained:
+            faiss.write_index(self._faiss_index, target_path)
+            return True
+        else:
+            self.logger.error('The index instance is not initialized or not trained')
+            return False
+
     @requests(on='/fill_embedding')
     def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
         if docs is None:
@@ -636,12 +650,13 @@ class FaissSearcher(Executor):
             self.logger.warning('No data received in Faiss._add_delta. Skipping...')
             return
 
-        for doc_id, vec_array, doc_timestamp in delta:
+        for doc_id, vec_array, doc_timestamp, is_deleted in delta:
             self._update_timestamp(doc_timestamp)
             idx = self._ids_to_inds.get(doc_id, None)
             if idx is None:  # add new item
-                if vec_array is None:
+                if is_deleted or (vec_array is None):
                     continue
+
                 # shape [1, D]
                 vec = vec_array.reshape(1, -1).astype(np.float32)
 
@@ -654,7 +669,7 @@ class FaissSearcher(Executor):
                     self.logger.warning(f'{ex}')
                     self._is_deleted.add(idx)
 
-                if vec_array is not None:
+                if (not is_deleted) and (vec_array is not None):
                     # then add the updated doc
                     # shape [1, D]
                     vec = vec_array.reshape(1, -1).astype(np.float32)

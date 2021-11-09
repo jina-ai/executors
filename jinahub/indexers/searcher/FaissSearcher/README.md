@@ -73,4 +73,5 @@ for more details
 - [Facebook Research's Faiss](https://github.com/facebookresearch/faiss)
 
 
-<!-- version=v0.4 -->
+<!-- version=v0.5 -->
+

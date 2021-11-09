@@ -8,7 +8,7 @@ from typing import Dict, Optional
 
 import numpy as np
 from jina import DocumentArray, Executor, requests
-from jina_commons import get_logger
+from jina.logging.logger import JinaLogger
 
 from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
 from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
@@ -26,6 +26,7 @@ class FaissPostgresIndexer(Executor):
         dump_path: Optional[str] = None,
         startup_sync_args: Optional[Dict] = None,
         total_shards: Optional[int] = None,
+        max_num_training_points: int = 0,
         **kwargs,
     ):
         """
@@ -38,7 +39,7 @@ class FaissPostgresIndexer(Executor):
             NOTE: This is REQUIRED in k8s, since there `runtime_args.parallel` is always 1
         """
         super().__init__(**kwargs)
-        self.logger = get_logger(self)
+        self.logger = JinaLogger(self.__class__.__name__)
 
         if total_shards is None:
             self.total_shards = getattr(self.runtime_args, 'parallel', None)
@@ -54,6 +55,8 @@ class FaissPostgresIndexer(Executor):
             # shards is passed as str from Flow.add in yaml
             self.total_shards = int(self.total_shards)
 
+        self.max_num_training_points = max_num_training_points
+
         # when constructed from rolling update
         # args are passed via runtime_args
         dump_path = dump_path or kwargs.get('runtime_args').get('dump_path')
@@ -62,18 +65,39 @@ class FaissPostgresIndexer(Executor):
         self._vec_indexer = None
         self._init_kwargs = kwargs
 
-        (
-            self._kv_indexer,
-            self._vec_indexer,
-        ) = self._init_executors(dump_path, kwargs, startup_sync_args)
+        self._init_executors(dump_path, kwargs, startup_sync_args)
+
         if startup_sync_args:
             startup_sync_args['train_faiss'] = True
             self.sync(parameters=startup_sync_args)
 
     def _init_executors(self, dump_path, kwargs, startup_sync_args):
         # float32 because that's what faiss expects
-        kv_indexer = PostgreSQLStorage(dump_dtype=np.float32, **kwargs)
-        vec_indexer = FaissSearcher(dump_path=dump_path, prefetch_size=16, **kwargs)
+        self._kv_indexer = PostgreSQLStorage(dump_dtype=np.float32, **kwargs)
+
+        try:
+            import tempfile
+
+            temp_trained_file = tempfile.NamedTemporaryFile(
+                suffix='.bin', prefix='trained_faiss_'
+            )
+
+            trained_index_file = kwargs.pop('trained_index_file', None)
+
+            # get trained model if available
+            trained_model, trained_model_checksum = self._kv_indexer.get_trained_model()
+            if (trained_model is not None) and (trained_index_file is None):
+                temp_trained_file.write(trained_model)
+                trained_index_file = temp_trained_file.name
+
+            self._vec_indexer = FaissSearcher(
+                dump_path=dump_path,
+                trained_index_file=trained_index_file,
+                prefetch_size=FAISS_PREFETCH_SIZE,
+                **kwargs,
+            )
+        finally:
+            temp_trained_file.close()
 
         if dump_path is None and startup_sync_args is None:
             name = getattr(self.metas, 'name', self.__class__.__name__)
@@ -81,7 +105,53 @@ class FaissPostgresIndexer(Executor):
                 f'No "dump_path" or "use_dump_func" provided '
                 f'for {name}. Use .rolling_update() to re-initialize...'
             )
-        return kv_indexer, vec_indexer
+
+    @requests(on='/train')
+    def train(self, parameters: Optional[Dict] = {}, **kwargs):
+        """
+        Train the index by fetching training data from PSQLStorage
+        :param parameters:
+        :param kwargs:
+        :return:
+        """
+
+        force_retrain = parameters.get('force', False)
+
+        if self._vec_indexer.is_trained and not force_retrain:
+            self.logger.warning(
+                'The index has already been trained. '
+                'Please use the `force=True` in parameters to retrain the index'
+            )
+            return
+
+        max_num_training_points = int(
+            parameters.get('max_num_training_points', self.max_num_training_points)
+        )
+
+        train_docs = DocumentArray()
+        for doc in self._kv_indexer.get_document_generator(
+            limit=max_num_training_points, check_embedding=True
+        ):
+            train_docs.append(doc)
+
+        self._vec_indexer.train(train_docs, parameters={'index_data': False})
+        import hashlib
+        import tempfile
+
+        temp = tempfile.NamedTemporaryFile(suffix='.bin', prefix='trained_faiss_')
+        try:
+            success = self._vec_indexer.save_trained_model(temp.name)
+            if success:
+                temp.seek(0)
+
+                model_data = temp.read()
+                hash_md5 = hashlib.md5()
+                hash_md5.update(model_data)
+                model_checksum = hash_md5.hexdigest()
+
+                self._kv_indexer.save_trained_model(model_data, model_checksum)
+        finally:
+            temp.close()
 
     @requests(on='/sync')
     def sync(self, parameters: Optional[Dict], **kwargs):
@@ -119,10 +189,6 @@ class FaissPostgresIndexer(Executor):
                 self._kv_indexer.get_snapshot, total_shards=self.total_shards
             )
             timestamp = self._kv_indexer.last_snapshot_timestamp
-            self._vec_indexer = FaissSearcher(
-                prefetch_size=FAISS_PREFETCH_SIZE,
-                **self._init_kwargs,
-            )
             self._vec_indexer._load_from_iterator(
                 dump_func, prefetch_size=FAISS_PREFETCH_SIZE
             )
@@ -177,12 +243,9 @@ class FaissPostgresIndexer(Executor):
                 self._kv_indexer._get_delta,
                 total_shards=self.total_shards,
                 timestamp=timestamp,
+                filter_deleted=True,
             )
-            self._vec_indexer = FaissSearcher(
-                dump_func=dump_func,
-                prefetch_size=FAISS_PREFETCH_SIZE,
-                **self._init_kwargs,
-            )
+            self._vec_indexer._load_from_iterator(dump_func, FAISS_PREFETCH_SIZE)
         else:
             self.logger.warning(
                 'Syncing via delta method. This cannot guarantee consistency'
@@ -224,12 +287,12 @@ class FaissPostgresIndexer(Executor):
             self.logger.warning('Indexers have not been initialized. Empty results')
             return
 
-    @requests(on='/cleanup')
-    def cleanup(self, **kwargs):
+    @requests(on='/prune')
+    def prune(self, **kwargs):
         """
         Completely removes rows in PSQL that have been marked for soft-deletion
         """
-        self._kv_indexer.cleanup()
+        self._kv_indexer.prune()
 
     @requests(on='/snapshot')
     def snapshot(self, **kwargs):

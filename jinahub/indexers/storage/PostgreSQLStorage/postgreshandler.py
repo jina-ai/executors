@@ -19,8 +19,8 @@ def doc_without_embedding(d: Document):
     return new_doc.SerializeToString()
 
 
-SCHEMA_VERSION = 2
-SCHEMA_VERSIONS_TABLE_NAME = 'schema_versions'
+SCHEMA_VERSION = 3
+META_TABLE_PREFIX = 'metas'
 
 
 class PostgreSQLHandler:
@@ -90,7 +90,7 @@ class PostgreSQLHandler:
         Create table if needed with id, vecs and metas.
         """
         with self:
-            self._create_schema_version()
+            self._create_meta_table()
 
             if self._table_exists():
                 self._assert_table_schema_version()
@@ -111,10 +111,12 @@ class PostgreSQLHandler:
         self.connection.commit()
         return cursor
 
-    def _create_schema_version(self):
+    def _create_meta_table(self):
         self._execute_sql_gracefully(
-            f'''CREATE TABLE IF NOT EXISTS {SCHEMA_VERSIONS_TABLE_NAME} (
+            f'''CREATE TABLE IF NOT EXISTS {META_TABLE_PREFIX}_{self.table} (
                 table_name varchar,
+                model_blob BYTEA,
+                model_checksum varchar,
                 schema_version integer
             );'''
         )
@@ -126,9 +128,11 @@ class PostgreSQLHandler:
                 embedding BYTEA,
                 doc BYTEA,
                 shard int,
-                last_updated timestamp with time zone default current_timestamp
+                created_at timestamp with time zone default current_timestamp,
+                updated_at timestamp with time zone default current_timestamp,
+                is_deleted BOOL DEFAULT FALSE
             );
-            INSERT INTO {SCHEMA_VERSIONS_TABLE_NAME} VALUES (%s, %s);''',
+            INSERT INTO {META_TABLE_PREFIX}_{self.table} (table_name, schema_version) VALUES (%s, %s);''',
             (self.table, SCHEMA_VERSION),
         )
 
@@ -146,7 +150,7 @@ class PostgreSQLHandler:
         cursor = self.connection.cursor()
         cursor.execute(
             f'SELECT schema_version FROM '
-            f'{SCHEMA_VERSIONS_TABLE_NAME} '
+            f'{META_TABLE_PREFIX}_{self.table} '
             f'WHERE table_name=%s;',
             (self.table,),
         )
@@ -184,8 +188,8 @@ class PostgreSQLHandler:
             psycopg2.extras.execute_batch(
                 cursor,
                 f'INSERT INTO {self.table} '
-                f'(doc_id, embedding, doc, shard, last_updated) '
-                f'VALUES (%s, %s, %s, %s, current_timestamp)',
+                f'(doc_id, embedding, doc, shard, created_at, updated_at) '
+                f'VALUES (%s, %s, %s, %s, current_timestamp, current_timestamp)',
                 [
                     (
                         doc.id,
@@ -220,7 +224,8 @@ class PostgreSQLHandler:
             f'UPDATE {self.table}\
              SET embedding = %s,\
              doc = %s,\
-             last_updated = current_timestamp \
+             is_deleted = false, \
+             updated_at = current_timestamp \
             WHERE doc_id = %s',
             [
                 (
@@ -233,7 +238,7 @@ class PostgreSQLHandler:
         )
         self.connection.commit()
 
-    def cleanup(self):
+    def prune(self):
         """
         Full deletion of the entries that
         have been marked for soft-deletion
@@ -241,7 +246,7 @@ class PostgreSQLHandler:
         cursor = self.connection.cursor()
         psycopg2.extras.execute_batch(
             cursor,
-            f'DELETE FROM {self.table} ' f'WHERE doc == NULL',
+            f'DELETE FROM {self.table} ' f'WHERE is_deleted = true',
         )
         self.connection.commit()
         return
@@ -269,9 +274,8 @@ class PostgreSQLHandler:
             psycopg2.extras.execute_batch(
                 cursor,
                 f'UPDATE {self.table} '
-                f'SET embedding = NULL, '
-                f'doc = NULL, '
-                f'last_updated = current_timestamp '
+                f'SET is_deleted = true, '
+                f'updated_at = current_timestamp '
                 f'WHERE doc_id = %s;',
                 [(doc.id,) for doc in docs],
             )
@@ -298,16 +302,53 @@ class PostgreSQLHandler:
         for doc in docs:
             # retrieve metadata
             cursor.execute(
-                f'SELECT doc {embeddings_field} FROM {self.table} WHERE doc_id = %s;',
+                f'SELECT doc {embeddings_field} FROM {self.table} WHERE doc_id = %s and is_deleted = false;',
                 (doc.id,),
             )
             result = cursor.fetchone()
+
+            if result is None:
+                continue
+
             data = bytes(result[0])
             retrieved_doc = Document(data)
             if return_embeddings and result[1] is not None:
                 embedding = np.frombuffer(result[1], dtype=self.dump_dtype)
                 retrieved_doc.embedding = embedding
             doc.MergeFrom(retrieved_doc)
+
+    def get_trained_model(self):
+        """Use the Postgres db to store the trained index parameters
+
+        :return: the trained index
+        """
+        cursor = self.connection.cursor()
+        cursor.execute(
+            f'SELECT model, model_checksum FROM '
+            f'{META_TABLE_PREFIX}_{self.table} '
+            f'WHERE table_name=%s;',
+            (self.table,),
+        )
+
+        result = cursor.fetchone()
+        if result:
+            return result[0], result[1]
+        return None, None
+
+    def save_trained_model(self, model: bytes, checksum: str):
+        cursor = self.connection.cursor()
+        cursor.execute(
+            f'UPDATE {META_TABLE_PREFIX}_{self.table} '
+            f'SET model = %s, '
+            f'checksum = %s '
+            f'where table_name = {self.table}',
+            (
+                model,
+                checksum,
+            ),
+        )
+        self.connection.commit()
+        self.logger.info('Successfully save model')
 
     def _close_connection(self, connection):
         # restore it to the pool
@@ -323,7 +364,7 @@ class PostgreSQLHandler:
 
     def get_size(self):
         cursor = self.connection.cursor()
-        cursor.execute(f'SELECT COUNT(*) FROM {self.table}')
+        cursor.execute(f'SELECT COUNT(*) FROM {self.table} WHERE is_deleted = false')
         records = cursor.fetchall()
         return records[0][0]
 
@@ -358,7 +399,7 @@ class PostgreSQLHandler:
             self.logger.error(f'Error snapshotting: {error}')
             self.connection.rollback()
 
-    def get_snapshot(self, shards_to_get: List[int]):
+    def get_snapshot(self, shards_to_get: List[int], filter_deleted: bool = True):
         """
         Get the data from the snapshot, for a specific range of virtual shards
         """
@@ -369,7 +410,9 @@ class PostgreSQLHandler:
             cursor.execute(
                 f'SELECT doc_id, embedding from {self.snapshot_table} '
                 f'WHERE shard in %s '
-                f'ORDER BY doc_id',
+                f'and is_deleted = false'
+                if filter_deleted
+                else '',
                 (shards_quoted,),
             )
             for rec in cursor:
@@ -384,6 +427,39 @@ class PostgreSQLHandler:
             self.connection.rollback()
         self.connection.commit()
 
+    def get_document_iterator(
+        self, limit: int = 0, check_embedding: bool = True
+    ) -> Generator[Document]:
+        try:
+            cursor = self.connection.cursor('iterator')
+            cursor.itersize = 10000
+            cursor.execute(
+                f'SELECT doc_id, doc, embedding from {self.table} '
+                f'WHERE is_deleted = false'
+                f' limit = {limit}'
+                if limit > 0
+                else ''
+            )
+            for sample in cursor:
+                doc_id = sample[0]
+                if sample[1] is not None:
+                    doc = Document(sample[1])
+                else:
+                    doc = Document(id=doc_id)
+
+                if sample[2] is not None:
+                    embedding = np.frombuffer(sample[1], dtype=self.dump_dtype)
+                    doc.embedding = embedding
+
+                    yield doc
+                elif not check_embedding:
+                    yield doc
+
+        except (Exception, psycopg2.Error) as error:
+            self.logger.error(f'Error importing snapshot: {error}')
+            self.connection.rollback()
+        self.connection.commit()
+
     def get_generator(
         self, include_metas=True
     ) -> Generator[Tuple[str, bytes, Optional[bytes]], None, None]:
@@ -392,7 +468,7 @@ class PostgreSQLHandler:
         cursor.itersize = 10000
         if include_metas:
             cursor.execute(
-                f'SELECT doc_id, embedding, doc FROM {self.table} ORDER BY doc_id'
+                f'SELECT doc_id, embedding, doc FROM {self.table} ORDER BY doc_id WHERE is_deleted = false'
             )
             for rec in cursor:
                 yield rec[0], np.frombuffer(rec[1]) if rec[
@@ -400,7 +476,7 @@ class PostgreSQLHandler:
                 ] is not None else None, rec[2]
         else:
             cursor.execute(
-                f'SELECT doc_id, embedding FROM {self.table} ORDER BY doc_id'
+                f'SELECT doc_id, embedding FROM {self.table} ORDER BY doc_id where is_deleted = false'
             )
             for rec in cursor:
                 yield rec[0], np.frombuffer(rec[1]) if rec[
@@ -420,19 +496,20 @@ class PostgreSQLHandler:
             self.logger.error(f'Could not obtain timestamp from snapshot: {e}')
 
     def _get_delta(
-        self, shards_to_get, timestamp
+        self, shards_to_get, timestamp, filter_deleted: bool = False
     ) -> Generator[Tuple[str, bytes, datetime.datetime], None, None]:
         connection = self._get_connection()
         cursor = connection.cursor('generator')  # server-side cursor
         cursor.itersize = 10000
         shards_quoted = tuple(int(shard) for shard in shards_to_get)
         cursor.execute(
-            f'SELECT doc_id, embedding, last_updated '
+            f'SELECT doc_id, embedding, updated_at, is_deleted '
             f'from {self.table} '
             f'WHERE shard in %s '
-            f'and last_updated > %s '
-            f'ORDER BY doc_id',
-            (shards_quoted, timestamp),
+            f'and updated_at > %s'
+            f' and is_deleted = false'
+            if filter_deleted
+            else ''(shards_quoted, timestamp),
         )
         for rec in cursor:
             second_val = (
@@ -440,7 +517,7 @@ class PostgreSQLHandler:
                 if rec[1] is not None
                 else None
             )
-            yield rec[0], second_val, rec[2]
+            yield rec[0], second_val, rec[2], rec[3]
         self._close_connection(connection)
 
     def get_snapshot_size(self):
