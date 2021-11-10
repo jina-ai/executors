@@ -402,5 +402,5 @@ def test_psql_sync_delta(
         #     np.testing.assert_almost_equal(d.matches[0].embedding, d.embedding)
 
     idx = PostgreSQLStorage()
-    # size stays the same because it was only soft delete
-    assert idx.size == nr_docs
+
+    assert idx.size == nr_docs - nr_docs_to_delete
