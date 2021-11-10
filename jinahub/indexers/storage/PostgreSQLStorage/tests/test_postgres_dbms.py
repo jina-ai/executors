@@ -204,6 +204,29 @@ def test_get_documents(docker_compose):
 
     indexer.delete(docs)
     assert len(list(indexer.get_document_iterator())) == 0
+    assert indexer.size == 0
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_clear(docker_compose):
+    indexer = PostgreSQLStorage()
+
+    NR = 10
+    docs = DocumentArray(
+        list(
+            get_documents(
+                nr=NR,
+                chunks=0,
+                same_content=False,
+            )
+        )
+    )
+
+    indexer.add(docs)
+    assert len(list(indexer.get_document_iterator())) == NR
+
+    indexer.clear()
+    assert indexer.size == 0
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])

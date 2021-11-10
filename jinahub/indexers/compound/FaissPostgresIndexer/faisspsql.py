@@ -7,7 +7,7 @@ import functools
 from typing import Dict, Optional
 
 import numpy as np
-from jina import DocumentArray, Executor, requests
+from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
 from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
@@ -78,17 +78,23 @@ class FaissPostgresIndexer(Executor):
         try:
             import tempfile
 
+            trained_index_file = kwargs.pop('trained_index_file', None)
             temp_trained_file = tempfile.NamedTemporaryFile(
                 suffix='.bin', prefix='trained_faiss_'
             )
 
-            trained_index_file = kwargs.pop('trained_index_file', None)
+            # check the model from PSQL
+            if not trained_index_file:
+                (
+                    trained_model,
+                    trained_model_checksum,
+                ) = self._kv_indexer.get_trained_model()
 
-            # get trained model if available
-            trained_model, trained_model_checksum = self._kv_indexer.get_trained_model()
-            if (trained_model is not None) and (trained_index_file is None):
-                temp_trained_file.write(trained_model)
-                trained_index_file = temp_trained_file.name
+                if trained_model is not None:
+                    temp_trained_file.write(trained_model)
+                    temp_trained_file.flush()
+
+                    trained_index_file = temp_trained_file.name
 
             self._vec_indexer = FaissSearcher(
                 dump_path=dump_path,
@@ -102,7 +108,7 @@ class FaissPostgresIndexer(Executor):
         if dump_path is None and startup_sync_args is None:
             name = getattr(self.metas, 'name', self.__class__.__name__)
             self.logger.warning(
-                f'No "dump_path" or "use_dump_func" provided '
+                f'No "dump_path" provided '
                 f'for {name}. Use .rolling_update() to re-initialize...'
             )
 
@@ -128,13 +134,19 @@ class FaissPostgresIndexer(Executor):
             parameters.get('max_num_training_points', self.max_num_training_points)
         )
 
+        self.logger.info('Taking indexed data as training points...')
         train_docs = DocumentArray()
         for doc in self._kv_indexer.get_document_generator(
-            limit=max_num_training_points, check_embedding=True
+            limit=max_num_training_points, check_embedding=True, return_embedding=True
         ):
             train_docs.append(doc)
 
+        if len(train_docs) == 0:
+            self.logger.error('The training failed as there is no data for training!')
+            return
+
         self._vec_indexer.train(train_docs, parameters={'index_data': False})
+
         import hashlib
         import tempfile
 
@@ -142,6 +154,7 @@ class FaissPostgresIndexer(Executor):
         try:
             success = self._vec_indexer.save_trained_model(temp.name)
             if success:
+                self.logger.info('Dumping the trained indexer into PSQL database...')
                 temp.seek(0)
 
                 model_data = temp.read()
@@ -184,9 +197,15 @@ class FaissPostgresIndexer(Executor):
 
     def _sync_snapshot(self, use_delta):
         self.logger.info('Syncing via snapshot...')
+
+        # clear the faiss indexer first
+        self._vec_indexer.clear()
+
         if self.total_shards:
             dump_func = functools.partial(
-                self._kv_indexer.get_snapshot, total_shards=self.total_shards
+                self._kv_indexer.get_snapshot,
+                total_shards=self.total_shards,
+                filter_deleted=True,
             )
             timestamp = self._kv_indexer.last_snapshot_timestamp
             self._vec_indexer._load_from_iterator(
@@ -196,13 +215,14 @@ class FaissPostgresIndexer(Executor):
             if use_delta:
                 self.logger.info(f'Now adding delta from timestamp {timestamp}')
 
-                deltas = self._kv_indexer._get_delta(
+                deltas = self._kv_indexer.get_delta_updates(
                     shard_id=self.runtime_args.pea_id,
                     total_shards=self.total_shards,
                     timestamp=timestamp,
+                    filter_deleted=True,
                 )
                 # deltas will be like DOC_ID, OPERATION, DATA
-                self._vec_indexer._add_delta(deltas)
+                self._vec_indexer.add_delta_updates(deltas)
         else:
             self.logger.warning(
                 'total_shards is None, rolling update '
@@ -211,21 +231,21 @@ class FaissPostgresIndexer(Executor):
 
     def _sync_only_delta(self, parameters, **kwargs):
         """
-        `train_faiss` is determined by either being passed or
+        `init_faiss` is determined by either being passed or
         by checking if the vec indexer (Faiss) has been initialized.
-        If it has already been initialized, then train_faiss cannot be True.
-        If it has NOT been initialized, then train_faiss has to be True
+        If it has already been initialized, then init_faiss cannot be True.
+        If it has NOT been initialized, then init_faiss has to be True
 
         `timestamp`. If train_faiss, then it becomes datetime.min.
         Else, we get it from self._vec_indexer.last_timestamp
 
         """
         timestamp = parameters.get('timestamp', None)
-        train_faiss = parameters.get(
-            'train_faiss', not self._vec_indexer_is_initialized()
+        init_faiss = parameters.get(
+            'init_faiss', not self._vec_indexer_is_initialized()
         )
         if timestamp is None:
-            if train_faiss:
+            if init_faiss:
                 timestamp = datetime.datetime.min
             elif self._vec_indexer.last_timestamp:
                 timestamp = self._vec_indexer.last_timestamp
@@ -237,10 +257,10 @@ class FaissPostgresIndexer(Executor):
                 )
                 return
 
-        if train_faiss:
+        if init_faiss:
             # this was startup, so treat the method as a dump_func
             dump_func = functools.partial(
-                self._kv_indexer._get_delta,
+                self._kv_indexer.get_delta_updates,
                 total_shards=self.total_shards,
                 timestamp=timestamp,
                 filter_deleted=True,
@@ -250,16 +270,17 @@ class FaissPostgresIndexer(Executor):
             self.logger.warning(
                 'Syncing via delta method. This cannot guarantee consistency'
             )
-            deltas = self._kv_indexer._get_delta(
+            delta_updates = self._kv_indexer.get_delta_updates(
                 shard_id=self.runtime_args.pea_id,
                 total_shards=self.total_shards,
                 timestamp=timestamp,
+                filter_deleted=False,
             )
             # deltas will be like DOC_ID, OPERATION, DATA
-            self._vec_indexer._add_delta(deltas)
+            self._vec_indexer.add_delta_updates(delta_updates)
 
     @requests(on='/search')
-    def search(self, docs: 'DocumentArray', parameters: Dict = None, **kwargs):
+    def search(self, docs: 'DocumentArray', parameters: Optional[Dict] = {}, **kwargs):
         """
         Search the vec embeddings in Faiss and then lookup the metadata in PSQL
 
@@ -279,8 +300,9 @@ class FaissPostgresIndexer(Executor):
         if self._kv_indexer and self._vec_indexer:
             self._vec_indexer.search(docs, parameters)
             kv_parameters = copy.deepcopy(parameters)
-            kv_parameters['traversal_paths'] = [
-                path + 'm' for path in kv_parameters.get('traversal_paths', ['r'])
+            kv_parameters['search_traversal_paths'] = [
+                path + 'm'
+                for path in kv_parameters.get('search_traversal_paths', ['r'])
             ]
             self._kv_indexer.search(docs, kv_parameters)
         else:
@@ -302,7 +324,9 @@ class FaissPostgresIndexer(Executor):
         self._kv_indexer.snapshot()
 
     @requests(on='/index')
-    def index(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
+    def index(
+        self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs
+    ):
         """Index new documents
 
         NOTE: PSQL has a uniqueness constraint on ID
@@ -310,14 +334,18 @@ class FaissPostgresIndexer(Executor):
         self._kv_indexer.add(docs, parameters, **kwargs)
 
     @requests(on='/update')
-    def update(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
+    def update(
+        self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs
+    ):
         """
         Update documents in PSQL, based on id
         """
         self._kv_indexer.update(docs, parameters, **kwargs)
 
     @requests(on='/delete')
-    def delete(self, docs: Optional[DocumentArray], parameters: Dict, **kwargs):
+    def delete(
+        self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs
+    ):
         """
         Delete docs from PSQL, based on id.
 
@@ -328,6 +356,23 @@ class FaissPostgresIndexer(Executor):
             parameters['soft_delete'] = True
 
         self._kv_indexer.delete(docs, parameters, **kwargs)
+
+    @requests(on='/clear')
+    def clear(self, **kwargs):
+        self._kv_indexer.clear()
+        self._vec_indexer.clear()
+
+    @requests(on='/status')
+    def status(self, **kwargs):
+        """Return the document containing status information about the indexer."""
+
+        status = Document(
+            tags={
+                'count_active': self._kv_indexer.size,
+                'count_indexed': self._vec_indexer.size,
+            }
+        )
+        return DocumentArray([status])
 
     @requests(on='/dump')
     def dump(self, parameters: Dict, **kwargs):

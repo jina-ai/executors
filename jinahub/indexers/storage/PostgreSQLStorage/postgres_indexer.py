@@ -132,6 +132,16 @@ class PostgreSQLStorage(Executor):
         with self.handler as postgres_handler:
             postgres_handler.prune()
 
+    @requests(on='/clear')
+    def clear(self, **kwargs):
+        """
+        Full deletion of the entries (hard-delete)
+        :param kwargs:
+        :return:
+        """
+        with self.handler as postgres_handler:
+            postgres_handler.clear()
+
     @requests(on='/delete')
     def delete(self, docs: DocumentArray, parameters: Optional[dict] = {}, **kwargs):
         """Delete document from the database.

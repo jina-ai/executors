@@ -253,6 +253,16 @@ class PostgreSQLHandler:
         self.connection.commit()
         return
 
+    def clear(self):
+        """
+        Full hard-deletion of the entries
+        :return:
+        """
+        cursor = self.connection.cursor()
+        cursor.execute(f'DELETE FROM {self.table}')
+        self.connection.commit()
+        return
+
     def delete(self, docs: DocumentArray, soft_delete=False, *args, **kwargs):
         """Delete document from the database.
 
