@@ -132,8 +132,9 @@ class PostgreSQLHandler:
                 updated_at timestamp with time zone default current_timestamp,
                 is_deleted BOOL DEFAULT FALSE
             );
-            CREATE INDEX idx_shard ON {self.table}(shard);
-            CREATE INDEX idx_updated_at ON {self.table}(updated_at);
+            CREATE INDEX IF NOT EXISTS idx_shard ON {self.table}(shard);
+            CREATE INDEX IF NOT EXISTS idx_is_deleted ON {self.table}(is_deleted);
+            CREATE INDEX IF NOT EXISTS idx_updated_at ON {self.table}(updated_at);
             INSERT INTO {META_TABLE_NAME} (table_name, schema_version) VALUES (%s, %s);''',
             (self.table, SCHEMA_VERSION),
         )
@@ -278,6 +279,7 @@ class PostgreSQLHandler:
         :return record: List of Document's id after deletion
         """
         cursor = self.connection.cursor()
+
         if soft_delete:
             self.logger.warning(
                 'Performing soft-delete. Use /prune or a hard '
@@ -343,7 +345,7 @@ class PostgreSQLHandler:
         )
 
         result = cursor.fetchone()
-        if result:
+        if result and (result[0] is not None):
             return bytes(result[0]), result[1]
         return None, None
 
@@ -428,7 +430,7 @@ class PostgreSQLHandler:
                     if rec[1] is not None
                     else None
                 )
-                yield rec[0], vec
+                yield rec[0], vec, None, None
         except (Exception, psycopg2.Error) as error:
             self.logger.error(f'Error importing snapshot: {error}')
             self.connection.rollback()
@@ -475,7 +477,7 @@ class PostgreSQLHandler:
         cursor.itersize = 10000
         if include_metas:
             cursor.execute(
-                f'SELECT doc_id, embedding, doc FROM {self.table} ORDER BY doc_id WHERE is_deleted = false'
+                f'SELECT doc_id, embedding, doc FROM {self.table} WHERE is_deleted = false ORDER BY doc_id'
             )
             for rec in cursor:
                 yield rec[0], np.frombuffer(rec[1]) if rec[
@@ -483,7 +485,7 @@ class PostgreSQLHandler:
                 ] is not None else None, rec[2]
         else:
             cursor.execute(
-                f'SELECT doc_id, embedding FROM {self.table} ORDER BY doc_id where is_deleted = false'
+                f'SELECT doc_id, embedding FROM {self.table} WHERE is_deleted = false ORDER BY doc_id'
             )
             for rec in cursor:
                 yield rec[0], np.frombuffer(rec[1]) if rec[
@@ -517,6 +519,7 @@ class PostgreSQLHandler:
             + (' and is_deleted = false' if filter_deleted else ''),
             (shards_quoted, timestamp),
         )
+
         for rec in cursor:
             second_val = (
                 np.frombuffer(rec[1], dtype=self.dump_dtype)

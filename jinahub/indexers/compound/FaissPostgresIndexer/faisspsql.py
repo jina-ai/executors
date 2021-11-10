@@ -3,7 +3,6 @@ __license__ = 'Apache-2.0'
 
 import copy
 import datetime
-import functools
 from typing import Dict, Optional
 
 import numpy as np
@@ -13,7 +12,7 @@ from jina.logging.logger import JinaLogger
 from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
 from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
 
-FAISS_PREFETCH_SIZE = 16
+FAISS_PREFETCH_SIZE = 256
 
 
 class FaissPostgresIndexer(Executor):
@@ -68,7 +67,7 @@ class FaissPostgresIndexer(Executor):
         self._init_executors(dump_path, kwargs, startup_sync_args)
 
         if startup_sync_args:
-            startup_sync_args['train_faiss'] = True
+            startup_sync_args['init_faiss'] = True
             self.sync(parameters=startup_sync_args)
 
     def _init_executors(self, dump_path, kwargs, startup_sync_args):
@@ -142,7 +141,7 @@ class FaissPostgresIndexer(Executor):
             train_docs.append(doc)
 
         if len(train_docs) == 0:
-            self.logger.error('The training failed as there is no data for training!')
+            self.logger.warning('The training failed as there is no data for training!')
             return
 
         self._vec_indexer.train(train_docs, parameters={'index_data': False})
@@ -198,18 +197,18 @@ class FaissPostgresIndexer(Executor):
     def _sync_snapshot(self, use_delta):
         self.logger.info('Syncing via snapshot...')
 
-        # clear the faiss indexer first
+        # reset the faiss indexer first
         self._vec_indexer.clear()
 
         if self.total_shards:
-            dump_func = functools.partial(
-                self._kv_indexer.get_snapshot,
+            updates = self._kv_indexer.get_snapshot(
+                shard_id=self.runtime_args.pea_id,
                 total_shards=self.total_shards,
                 filter_deleted=True,
             )
             timestamp = self._kv_indexer.last_snapshot_timestamp
-            self._vec_indexer._load_from_iterator(
-                dump_func, prefetch_size=FAISS_PREFETCH_SIZE
+            self._vec_indexer.load_from_iterator(
+                updates, prefetch_size=FAISS_PREFETCH_SIZE
             )
 
             if use_delta:
@@ -257,26 +256,16 @@ class FaissPostgresIndexer(Executor):
                 )
                 return
 
+        delta_updates = self._kv_indexer.get_delta_updates(
+            shard_id=self.runtime_args.pea_id,
+            total_shards=self.total_shards,
+            timestamp=timestamp,
+            filter_deleted=True if init_faiss else False,
+        )
+
         if init_faiss:
-            # this was startup, so treat the method as a dump_func
-            dump_func = functools.partial(
-                self._kv_indexer.get_delta_updates,
-                total_shards=self.total_shards,
-                timestamp=timestamp,
-                filter_deleted=True,
-            )
-            self._vec_indexer._load_from_iterator(dump_func, FAISS_PREFETCH_SIZE)
+            self._vec_indexer.load_from_iterator(delta_updates, FAISS_PREFETCH_SIZE)
         else:
-            self.logger.warning(
-                'Syncing via delta method. This cannot guarantee consistency'
-            )
-            delta_updates = self._kv_indexer.get_delta_updates(
-                shard_id=self.runtime_args.pea_id,
-                total_shards=self.total_shards,
-                timestamp=timestamp,
-                filter_deleted=False,
-            )
-            # deltas will be like DOC_ID, OPERATION, DATA
             self._vec_indexer.add_delta_updates(delta_updates)
 
     @requests(on='/search')

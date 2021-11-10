@@ -125,11 +125,11 @@ class FaissSearcher(Executor):
 
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
         if dump_path:
-            self._load_from_dumps(dump_path, prefetch_size, **kwargs)
+            self.load_from_dumps(dump_path, prefetch_size, **kwargs)
         else:
-            self._load(self.workspace)
+            self.load(self.workspace)
 
-    def _load_from_dumps(self, dump_path, prefetch_size, **kwargs):
+    def load_from_dumps(self, dump_path, prefetch_size, **kwargs):
         if dump_path is not None:
             self.logger.info(
                 f'Start building "FaissIndexer" from dump data {dump_path}'
@@ -140,7 +140,7 @@ class FaissSearcher(Executor):
             iterator = zip(ids_iter, vecs_iter)
 
             if iterator is not None:
-                self._load_from_iterator(iterator, prefetch_size, **kwargs)
+                self.load_from_iterator(iterator, prefetch_size, **kwargs)
         else:
             self.logger.warning(
                 'No "dump_path" or "dump_func" passed to "FaissIndexer".'
@@ -148,7 +148,7 @@ class FaissSearcher(Executor):
             )
             return
 
-    def _load_from_iterator(self, iterator, prefetch_size, **kwargs):
+    def load_from_iterator(self, iterator, prefetch_size, **kwargs):
         self._prefetch_data = []
         if self.prefetch_size and self.prefetch_size > 0:
             for _ in range(prefetch_size):
@@ -295,9 +295,13 @@ class FaissSearcher(Executor):
         if len(self._prefetch_data) > 0:
             embeddings = []
             doc_ids = []
-            for doc_id, x in self._prefetch_data:
-                doc_ids.append(doc_id)
-                embeddings.append(x)
+            for d in self._prefetch_data:
+                doc_ids.append(d[0])
+                embeddings.append(d[1])
+
+                if len(d) > 2 and d[2] is not None:
+                    self._update_timestamp(d[2])
+
             embeddings = np.stack(embeddings).astype(np.float32)
             self._append_vecs_and_ids(embeddings, doc_ids)
 
@@ -310,11 +314,14 @@ class FaissSearcher(Executor):
 
             embeddings = []
             doc_ids = []
-            for doc_id, x in batch_data:
-                if x is None:
+            for d in batch_data:
+                if d[1] is None:
                     continue
-                doc_ids.append(doc_id)
-                embeddings.append(x)
+                doc_ids.append(d[0])
+                embeddings.append(d[1])
+                if len(d) > 2 and d[2] is not None:
+                    self._update_timestamp(d[2])
+
             embeddings = np.stack(embeddings).astype(np.float32)
             self._append_vecs_and_ids(embeddings, doc_ids)
 
@@ -369,7 +376,7 @@ class FaissSearcher(Executor):
                 idx, dist = m_info
 
                 # this is related with the issue of faiss
-                if idx < 0 or self.is_deleted(idx):
+                if self._faiss_index.ntotal == 0 or self.is_deleted(idx):
                     continue
 
                 doc_id = self._ids_to_inds.inverse[idx]
@@ -449,7 +456,7 @@ class FaissSearcher(Executor):
         index_path = os.path.join(folder_path, FAISS_INDEX_FILENAME)
         return os.path.exists(index_path)
 
-    def _load(self, from_path: Optional[str] = None):
+    def load(self, from_path: Optional[str] = None):
         from_path = from_path if from_path else self.workspace
         self.logger.info(f'Try to restore indexer from {from_path}...')
         try:
@@ -600,7 +607,7 @@ class FaissSearcher(Executor):
     @property
     def size(self):
         """Return the nr of elements in the index"""
-        return self._faiss_index.ntotal - self.deleted_count
+        return self._faiss_index.ntotal - self.deleted_count if self._faiss_index else 0
 
     @property
     def deleted_count(self):
@@ -647,10 +654,13 @@ class FaissSearcher(Executor):
         :param delta: a generator yielding (id, np.ndarray, last_updated)
         """
         if delta is None:
-            self.logger.warning('No data received in Faiss._add_delta. Skipping...')
+            self.logger.warning(
+                'No data received in FaissSearcher.add_deleta_updates. Skipping...'
+            )
             return
 
         for doc_id, vec_array, doc_timestamp, is_deleted in delta:
+
             self._update_timestamp(doc_timestamp)
             idx = self._ids_to_inds.get(doc_id, None)
             if idx is None:  # add new item

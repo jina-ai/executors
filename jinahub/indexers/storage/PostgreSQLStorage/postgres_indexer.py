@@ -159,6 +159,7 @@ class PostgreSQLStorage(Executor):
 
         traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
         soft_delete = parameters.get('soft_delete', True)
+
         with self.handler as postgres_handler:
             postgres_handler.delete(
                 docs.traverse_flat(traversal_paths), soft_delete=soft_delete
@@ -254,7 +255,7 @@ class PostgreSQLStorage(Executor):
         return_embedding: bool = False,
     ):
         with self.handler as postgres_handler:
-            return postgres_handler.get_document_iterator(
+            yield from postgres_handler.get_document_iterator(
                 limit=limit,
                 check_embedding=check_embedding,
                 return_embedding=return_embedding,
@@ -296,19 +297,15 @@ class PostgreSQLStorage(Executor):
         """
         Get the rows that have changed since the last timestamp, per shard
         """
-        if self.size > 0:
 
-            shards_to_get = self._vshards_to_get(
-                shard_id, total_shards, self.virtual_shards
+        shards_to_get = self._vshards_to_get(
+            shard_id, total_shards, self.virtual_shards
+        )
+
+        with self.handler as postgres_handler:
+            return postgres_handler.get_delta_updates(
+                shards_to_get, timestamp, filter_deleted=filter_deleted
             )
-
-            with self.handler as postgres_handler:
-                return postgres_handler.get_delta_updates(
-                    shards_to_get, timestamp, filter_deleted=filter_deleted
-                )
-        else:
-            self.logger.warning('No data in PSQL to export with _get_delta...')
-        return None
 
     @property
     def last_snapshot_timestamp(self):
