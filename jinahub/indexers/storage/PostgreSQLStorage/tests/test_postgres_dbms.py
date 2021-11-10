@@ -185,6 +185,28 @@ def test_return_embeddings(docker_compose):
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_get_documents(docker_compose):
+    indexer = PostgreSQLStorage()
+
+    NR = 10
+    docs = DocumentArray(
+        list(
+            get_documents(
+                nr=NR,
+                chunks=0,
+                same_content=False,
+            )
+        )
+    )
+
+    indexer.add(docs)
+    assert len(list(indexer.get_document_iterator())) == NR
+
+    indexer.delete(docs)
+    assert len(list(indexer.get_document_iterator())) == 0
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 @pytest.mark.parametrize('psql_virtual_shards', [44, 128])
 @pytest.mark.parametrize('real_shards', [1, 5])
 def test_snapshot(docker_compose, psql_virtual_shards, real_shards):
@@ -277,14 +299,11 @@ def test_snapshot(docker_compose, psql_virtual_shards, real_shards):
     )
 
     # we use total_shards=1 in order to guarantee getting all the data in the delta
-    deltas = postgres_indexer._get_delta(
+    deltas = postgres_indexer.get_delta_updates(
         shard_id=0, total_shards=1, timestamp=timestamp
     )
     deltas = list(deltas)
     np.testing.assert_equal(len(deltas), NR_DOCS_DELTA + NR_DOCS_DELTA_DELETED)
-
-    # TODO delta is then passed to the indexer
-    # after soft-deletion is added to Faiss
 
 
 def test_postgres_shard_distribution():
@@ -294,3 +313,20 @@ def test_postgres_shard_distribution():
     assert [str(s) for s in range(5)] == PostgreSQLStorage._vshards_to_get(0, 1, 5)
     with pytest.raises(ValueError):
         PostgreSQLStorage._vshards_to_get(1, 1, 5)
+
+
+@pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
+def test_save_get_trained_model(docker_compose):
+    postgres_indexer = PostgreSQLStorage()
+
+    model = np.random.random((100, 5)).tobytes()
+    postgres_indexer.save_trained_model(model, None)
+
+    trained_model, trained_model_checksum = postgres_indexer.get_trained_model()
+    assert trained_model == model
+    assert trained_model_checksum is None
+
+    postgres_indexer.save_trained_model(model, 'sha256:hello')
+    trained_model, trained_model_checksum = postgres_indexer.get_trained_model()
+    assert trained_model == model
+    assert trained_model_checksum == 'sha256:hello'

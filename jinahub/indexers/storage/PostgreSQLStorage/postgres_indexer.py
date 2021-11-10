@@ -1,11 +1,11 @@
 __copyright__ = 'Copyright (c) 2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 from jina import DocumentArray, Executor, requests
-from jina_commons import get_logger
+from jina.logging.logger import JinaLogger
 from jina_commons.indexers.dump import export_dump_streaming
 
 from .postgreshandler import PostgreSQLHandler
@@ -41,19 +41,21 @@ class PostgreSQLStorage(Executor):
         :param password: the password to authenticate
         :param database: the database name
         :param table: the table name to use
+        :param index_traversal_paths: the default traversal path on docs used for indexing, updating and deleting, e.g. ['r'], ['c']
+        :param search_traversal_paths: the default traversal path on docs used for searching, e.g. ['r'], ['c']
         :param return_embeddings: whether to return embeddings on search or not
         :param dry_run: If True, no database connection will be build.
         :param virtual_shards: the number of shards to distribute
          the data (used when rolling update on Searcher side)
         """
         super().__init__(*args, **kwargs)
+        self.logger = JinaLogger(self.metas.name)
         self.hostname = hostname
         self.port = port
         self.username = username
         self.password = password
         self.database = database
         self.table = table
-        self.logger = get_logger(self)
         self.virtual_shards = virtual_shards
         self.handler = PostgreSQLHandler(
             hostname=self.hostname,
@@ -95,7 +97,7 @@ class PostgreSQLStorage(Executor):
             return postgres_handler.get_snapshot_size()
 
     @requests(on='/index')
-    def add(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def add(self, docs: DocumentArray, parameters: Optional[dict] = {}, **kwargs):
         """Add Documents to Postgres
 
         :param docs: list of Documents
@@ -108,7 +110,7 @@ class PostgreSQLStorage(Executor):
             postgres_handler.add(docs.traverse_flat(traversal_paths))
 
     @requests(on='/update')
-    def update(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def update(self, docs: DocumentArray, parameters: Optional[dict] = {}, **kwargs):
         """Updated document from the database.
 
         :param docs: list of Documents
@@ -116,6 +118,7 @@ class PostgreSQLStorage(Executor):
         """
         if docs is None:
             return
+
         traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
         with self.handler as postgres_handler:
             postgres_handler.update(docs.traverse_flat(traversal_paths))
@@ -130,7 +133,7 @@ class PostgreSQLStorage(Executor):
             postgres_handler.prune()
 
     @requests(on='/delete')
-    def delete(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def delete(self, docs: DocumentArray, parameters: Optional[dict] = {}, **kwargs):
         """Delete document from the database.
 
         NOTE: This is a soft-deletion, required by the snapshotting
@@ -160,6 +163,7 @@ class PostgreSQLStorage(Executor):
         path = parameters.get('dump_path')
         if path is None:
             self.logger.error(f'No "dump_path" provided for {self}')
+            return
 
         shards = int(parameters.get('shards'))
         if shards is None:
@@ -172,7 +176,7 @@ class PostgreSQLStorage(Executor):
                 path,
                 shards=shards,
                 size=self.size,
-                data=postgres_handler.get_generator(include_metas=include_metas),
+                data=postgres_handler.get_data_iterator(include_metas=include_metas),
             )
 
     def close(self) -> None:
@@ -183,7 +187,7 @@ class PostgreSQLStorage(Executor):
         self.handler.close()
 
     @requests(on='/search')
-    def search(self, docs: DocumentArray, parameters: Dict, **kwargs):
+    def search(self, docs: DocumentArray, parameters: Optional[dict] = {}, **kwargs):
         """Get the Documents by the ids of the docs in the DocArray
 
         :param docs: the DocumentArray to search
@@ -192,6 +196,7 @@ class PostgreSQLStorage(Executor):
         """
         if docs is None:
             return
+
         traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
 
         with self.handler as postgres_handler:
@@ -232,17 +237,24 @@ class PostgreSQLStorage(Executor):
             self.logger.warning('Not data in PSQL db snapshot. Nothing to export...')
         return None
 
-    def get_document_iterator(self, limit: int = 0, check_embedding: bool = False):
+    def get_document_iterator(
+        self,
+        limit: int = 0,
+        check_embedding: bool = False,
+        return_embedding: bool = False,
+    ):
         with self.handler as postgres_handler:
             return postgres_handler.get_document_iterator(
-                limit=limit, check_embedding=check_embedding
+                limit=limit,
+                check_embedding=check_embedding,
+                return_embedding=return_embedding,
             )
 
     def get_trained_model(self):
         with self.handler as postgres_handler:
             return postgres_handler.get_trained_model()
 
-    def save_trained_model(self, model: bytes, checksum: str):
+    def save_trained_model(self, model: bytes, checksum: str = None):
         with self.handler as postgres_handler:
             return postgres_handler.save_trained_model(model, checksum)
 
@@ -268,7 +280,7 @@ class PostgreSQLStorage(Executor):
             ]
         return [str(shard_id) for shard_id in shards_to_get]
 
-    def _get_delta(
+    def get_delta_updates(
         self, shard_id, total_shards, timestamp, filter_deleted: bool = False
     ):
         """
@@ -281,7 +293,7 @@ class PostgreSQLStorage(Executor):
             )
 
             with self.handler as postgres_handler:
-                return postgres_handler._get_delta(
+                return postgres_handler.get_delta_updates(
                     shards_to_get, timestamp, filter_deleted=filter_deleted
                 )
         else:
@@ -294,4 +306,4 @@ class PostgreSQLStorage(Executor):
         Get the timestamp of the snapshot
         """
         with self.handler as postgres_handler:
-            return postgres_handler._get_snapshot_timestamp()
+            return postgres_handler.get_snapshot_latest_timestamp()

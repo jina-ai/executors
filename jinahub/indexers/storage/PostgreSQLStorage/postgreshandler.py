@@ -20,7 +20,7 @@ def doc_without_embedding(d: Document):
 
 
 SCHEMA_VERSION = 3
-META_TABLE_PREFIX = 'metas'
+META_TABLE_NAME = 'index_metas'
 
 
 class PostgreSQLHandler:
@@ -113,7 +113,7 @@ class PostgreSQLHandler:
 
     def _create_meta_table(self):
         self._execute_sql_gracefully(
-            f'''CREATE TABLE IF NOT EXISTS {META_TABLE_PREFIX}_{self.table} (
+            f'''CREATE TABLE IF NOT EXISTS {META_TABLE_NAME} (
                 table_name varchar,
                 model_blob BYTEA,
                 model_checksum varchar,
@@ -132,7 +132,9 @@ class PostgreSQLHandler:
                 updated_at timestamp with time zone default current_timestamp,
                 is_deleted BOOL DEFAULT FALSE
             );
-            INSERT INTO {META_TABLE_PREFIX}_{self.table} (table_name, schema_version) VALUES (%s, %s);''',
+            CREATE INDEX idx_shard ON {self.table}(shard);
+            CREATE INDEX idx_updated_at ON {self.table}(updated_at);
+            INSERT INTO {META_TABLE_NAME} (table_name, schema_version) VALUES (%s, %s);''',
             (self.table, SCHEMA_VERSION),
         )
 
@@ -150,7 +152,7 @@ class PostgreSQLHandler:
         cursor = self.connection.cursor()
         cursor.execute(
             f'SELECT schema_version FROM '
-            f'{META_TABLE_PREFIX}_{self.table} '
+            f'{META_TABLE_NAME} '
             f'WHERE table_name=%s;',
             (self.table,),
         )
@@ -268,7 +270,7 @@ class PostgreSQLHandler:
         cursor = self.connection.cursor()
         if soft_delete:
             self.logger.warning(
-                'Performing soft-delete. Use /cleanup or a hard '
+                'Performing soft-delete. Use /prune or a hard '
                 'delete to delete the records'
             )
             psycopg2.extras.execute_batch(
@@ -324,28 +326,25 @@ class PostgreSQLHandler:
         """
         cursor = self.connection.cursor()
         cursor.execute(
-            f'SELECT model, model_checksum FROM '
-            f'{META_TABLE_PREFIX}_{self.table} '
+            f'SELECT model_blob, model_checksum FROM '
+            f'{META_TABLE_NAME} '
             f'WHERE table_name=%s;',
             (self.table,),
         )
 
         result = cursor.fetchone()
         if result:
-            return result[0], result[1]
+            return bytes(result[0]), result[1]
         return None, None
 
     def save_trained_model(self, model: bytes, checksum: str):
         cursor = self.connection.cursor()
         cursor.execute(
-            f'UPDATE {META_TABLE_PREFIX}_{self.table} '
-            f'SET model = %s, '
-            f'checksum = %s '
-            f'where table_name = {self.table}',
-            (
-                model,
-                checksum,
-            ),
+            f'UPDATE {META_TABLE_NAME} '
+            f'SET model_blob = %s, '
+            f'model_checksum = %s '
+            f'where table_name = %s',
+            (model, checksum, self.table),
         )
         self.connection.commit()
         self.logger.info('Successfully save model')
@@ -409,10 +408,8 @@ class PostgreSQLHandler:
             cursor.itersize = 10000
             cursor.execute(
                 f'SELECT doc_id, embedding from {self.snapshot_table} '
-                f'WHERE shard in %s '
-                f'and is_deleted = false'
-                if filter_deleted
-                else '',
+                f'WHERE shard in %s'
+                + (' and is_deleted = false' if filter_deleted else ''),
                 (shards_quoted,),
             )
             for rec in cursor:
@@ -428,27 +425,27 @@ class PostgreSQLHandler:
         self.connection.commit()
 
     def get_document_iterator(
-        self, limit: int = 0, check_embedding: bool = True
-    ) -> Generator[Document]:
+        self,
+        limit: int = 0,
+        return_embedding: bool = False,
+        check_embedding: bool = False,
+    ) -> Generator[Document, None, None]:
         try:
-            cursor = self.connection.cursor('iterator')
+            cursor = self.connection.cursor('doc_iterator')
             cursor.itersize = 10000
             cursor.execute(
                 f'SELECT doc_id, doc, embedding from {self.table} '
-                f'WHERE is_deleted = false'
-                f' limit = {limit}'
-                if limit > 0
-                else ''
+                f'WHERE is_deleted = false' + (f' limit = {limit}' if limit > 0 else '')
             )
             for sample in cursor:
                 doc_id = sample[0]
                 if sample[1] is not None:
-                    doc = Document(sample[1])
+                    doc = Document(bytes(sample[1]))
                 else:
                     doc = Document(id=doc_id)
 
-                if sample[2] is not None:
-                    embedding = np.frombuffer(sample[1], dtype=self.dump_dtype)
+                if return_embedding and sample[2] is not None:
+                    embedding = np.frombuffer(sample[2], dtype=self.dump_dtype)
                     doc.embedding = embedding
 
                     yield doc
@@ -460,11 +457,11 @@ class PostgreSQLHandler:
             self.connection.rollback()
         self.connection.commit()
 
-    def get_generator(
+    def get_data_iterator(
         self, include_metas=True
     ) -> Generator[Tuple[str, bytes, Optional[bytes]], None, None]:
         connection = self._get_connection()
-        cursor = connection.cursor('generator')  # server-side cursor
+        cursor = connection.cursor('dump_iterator')  # server-side cursor
         cursor.itersize = 10000
         if include_metas:
             cursor.execute(
@@ -484,22 +481,22 @@ class PostgreSQLHandler:
                 ] is not None else None, None
         self._close_connection(connection)
 
-    def _get_snapshot_timestamp(self):
+    def get_snapshot_latest_timestamp(self):
         """Get the timestamp of the snapshot"""
         connection = self._get_connection()
         cursor = connection.cursor()
         try:
-            cursor.execute(f'SELECT MAX(last_updated) FROM {self.snapshot_table}')
+            cursor.execute(f'SELECT MAX(updated_at) FROM {self.snapshot_table}')
             for rec in cursor:
                 return rec[0]
         except Exception as e:
             self.logger.error(f'Could not obtain timestamp from snapshot: {e}')
 
-    def _get_delta(
+    def get_delta_updates(
         self, shards_to_get, timestamp, filter_deleted: bool = False
     ) -> Generator[Tuple[str, bytes, datetime.datetime], None, None]:
         connection = self._get_connection()
-        cursor = connection.cursor('generator')  # server-side cursor
+        cursor = connection.cursor('delta_generator')  # server-side cursor
         cursor.itersize = 10000
         shards_quoted = tuple(int(shard) for shard in shards_to_get)
         cursor.execute(
@@ -507,9 +504,8 @@ class PostgreSQLHandler:
             f'from {self.table} '
             f'WHERE shard in %s '
             f'and updated_at > %s'
-            f' and is_deleted = false'
-            if filter_deleted
-            else ''(shards_quoted, timestamp),
+            + (' and is_deleted = false' if filter_deleted else ''),
+            (shards_quoted, timestamp),
         )
         for rec in cursor:
             second_val = (
@@ -527,7 +523,9 @@ class PostgreSQLHandler:
         """
         try:
             cursor = self.connection.cursor()
-            cursor.execute(f'SELECT COUNT(*) FROM {self.snapshot_table}')
+            cursor.execute(
+                f'SELECT COUNT(*) FROM {self.snapshot_table} WHERE is_deleted = false'
+            )
             records = cursor.fetchall()
             return records[0][0]
         except Exception as e:
