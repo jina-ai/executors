@@ -440,9 +440,9 @@ def test_faiss_delta(metas, tmpdir):
     def _generate_add_delta():
         for i in range(2, 6):
             x = np.zeros((1, num_dims))
-            yield f'{i}', x, None
+            yield f'{i}', x, None, False
 
-    indexer._add_delta(_generate_add_delta())
+    indexer.add_delta_updates(_generate_add_delta())
     assert indexer.size == 6
     assert len(indexer._is_deleted) == 0
     assert list(indexer._ids_to_inds.keys()) == ['0', '1', '2', '3', '4', '5']
@@ -450,9 +450,9 @@ def test_faiss_delta(metas, tmpdir):
 
     def _generate_delete_delta():
         for i in range(2, 4):
-            yield f'{i}', None, None
+            yield f'{i}', None, None, True
 
-    indexer._add_delta(_generate_delete_delta())
+    indexer.add_delta_updates(_generate_delete_delta())
     assert indexer.size == 4
     assert len(indexer._is_deleted) == 0
     assert list(indexer._ids_to_inds.keys()) == ['0', '1', '4', '5']
@@ -461,19 +461,19 @@ def test_faiss_delta(metas, tmpdir):
     def _generate_update_delta_bad():
         for i in range(4, 6):
             x = np.zeros((1, num_dims + 3))
-            yield f'{i}', x, None
+            yield f'{i}', x, None, False
 
     try:
-        indexer._add_delta(_generate_update_delta_bad())
+        indexer.add_delta_updates(_generate_update_delta_bad())
     except:
         pass
 
     def _generate_update_delta():
         for i in range(4, 6):
             x = np.zeros((1, num_dims))
-            yield f'{i}', x, None
+            yield f'{i}', x, None, False
 
-    indexer._add_delta(_generate_update_delta())
+    indexer.add_delta_updates(_generate_update_delta())
     assert indexer.size == 4
     assert len(indexer._is_deleted) == 0
     assert list(indexer._ids_to_inds.keys()) == ['0', '1', '4', '5']
@@ -483,9 +483,9 @@ def test_faiss_delta(metas, tmpdir):
     def _generate_update_delta():
         for i in range(2, 4):
             x = np.zeros((1, num_dims))
-            yield f'{i}', x, None
+            yield f'{i}', x, None, False
 
-    indexer._add_delta(_generate_update_delta())
+    indexer.add_delta_updates(_generate_update_delta())
     assert indexer.size == 6
     assert len(indexer._is_deleted) == 0
     assert list(indexer._ids_to_inds.keys()) == ['0', '1', '4', '5', '2', '3']

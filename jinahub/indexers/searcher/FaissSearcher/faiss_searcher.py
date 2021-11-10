@@ -15,7 +15,7 @@ from jina.logging.logger import JinaLogger
 from jina_commons.indexers.dump import import_vectors
 
 GENERATOR_DELTA = Generator[
-    Tuple[str, Optional[np.ndarray], Optional[datetime]], None, None
+    Tuple[str, Optional[np.ndarray], Optional[datetime], Optional[bool]], None, None
 ]
 
 DELETE_MARKS_FILENAME = 'delete_marks.bin'
@@ -641,7 +641,7 @@ class FaissSearcher(Executor):
         indices = np.array(indices, dtype=np.int64)
         self._faiss_index.add_with_ids(vecs, indices)
 
-    def _add_delta(self, delta: GENERATOR_DELTA):
+    def add_delta_updates(self, delta: GENERATOR_DELTA):
         """
         Adding the delta data to the indexer
         :param delta: a generator yielding (id, np.ndarray, last_updated)
