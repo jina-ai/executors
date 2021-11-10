@@ -117,11 +117,9 @@ class DPRTextEncoder(Executor):
 
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         batch_size = parameters.get('batch_size', self.batch_size)
-        document_batches_generator = docs.batch(
-            traversal_paths=traversal_paths,
-            batch_size=batch_size,
-            require_attr='text',
-        )
+        document_batches_generator = docs.traverse_flat(
+            traversal_paths, filter_fn=lambda x: bool(x.text)
+        ).batch(batch_size=batch_size)
 
         for batch_docs in document_batches_generator:
             with torch.inference_mode():
