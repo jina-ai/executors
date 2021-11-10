@@ -50,7 +50,6 @@ class FaissSearcher(Executor):
 
     def __init__(
         self,
-        num_dim: int = 0,
         index_key: str = 'Flat',
         metric: str = 'cosine',
         limit: int = 10,
@@ -61,14 +60,14 @@ class FaissSearcher(Executor):
         max_num_training_points: Optional[int] = None,
         dump_path: Optional[str] = None,
         prefetch_size: Optional[int] = 512,
-        traversal_paths: List[str] = ['r'],
+        index_traversal_paths: List[str] = ['r'],
+        search_traversal_paths: List[str] = ['r'],
         is_distance: bool = True,
         on_gpu: bool = False,
         *args,
         **kwargs,
     ):
         """
-        :param num_dim: the dimensionality of vectors to index
         :param index_key: index type supported
             by ``faiss.index_factory``
         :param metric: 'euclidean', 'cosine' or 'inner_product' accepted. Determines which distances to
@@ -95,7 +94,7 @@ class FaissSearcher(Executor):
         self.logger = JinaLogger(self.__class__.__name__)
         self.last_timestamp = datetime.min
 
-        self.num_dim = num_dim
+        self.num_dim = 0
         self.index_key = index_key
         self.trained_index_file = trained_index_file
         self.max_num_training_points = max_num_training_points
@@ -114,7 +113,8 @@ class FaissSearcher(Executor):
 
         self.on_gpu = on_gpu
 
-        self.traversal_paths = traversal_paths
+        self.index_traversal_paths = index_traversal_paths
+        self.search_traversal_paths = search_traversal_paths
         self.is_distance = is_distance
 
         self._ids_to_inds = bidict()
@@ -346,7 +346,7 @@ class FaissSearcher(Executor):
             return
 
         limit = int(parameters.get('limit', self.limit))
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
 
         # expand topk number guarantee to return topk results
         # TODO WARNING: maybe this would degrade the query speed
@@ -409,7 +409,7 @@ class FaissSearcher(Executor):
                 self.num_dim, trained_index_file=self.trained_index_file
             )
 
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
         flat_docs = docs.traverse_flat(traversal_paths)
         if len(flat_docs) == 0:
             return
@@ -499,7 +499,7 @@ class FaissSearcher(Executor):
         if docs is None:
             return
 
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
         flat_docs = docs.traverse_flat(traversal_paths)
         if len(flat_docs) == 0:
             return

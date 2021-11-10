@@ -49,7 +49,7 @@ class PostgreSQLStorage(Executor):
          the data (used when rolling update on Searcher side)
         """
         super().__init__(*args, **kwargs)
-        self.logger = JinaLogger(self.metas.name)
+        self.logger = JinaLogger(self.__class__.__name__)
         self.hostname = hostname
         self.port = port
         self.username = username
