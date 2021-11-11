@@ -648,8 +648,6 @@ class FaissSearcher(Executor):
         for i, doc_id in enumerate(doc_ids):
             idx = size + i
             indices.append(idx)
-            if doc_id in self._ids_to_inds:
-                self._is_deleted.add(self._ids_to_inds[doc_id])
 
             self._ids_to_inds.update({doc_id: idx})
         indices = np.array(indices, dtype=np.int64)
@@ -671,18 +669,31 @@ class FaissSearcher(Executor):
             updated_embeds = []
             updated_idx = []
 
+            deleted_idx = []
+
+            added_ids = []
+            added_embeds = []
+
             batch_data = list(batch_data)
             if len(batch_data) == 0:
                 break
 
             for doc_id, vec, doc_timestamp, is_deleted in batch_data:
+                if (vec is not None) and vec.shape[-1] != self.num_dim:
+                    raise ValueError(
+                        f'Attempted to index vectors with dimension'
+                        f' {vec.shape[-1]}, but dimension of index is {self.num_dim}'
+                    )
+
                 self._update_timestamp(doc_timestamp)
                 idx = self._ids_to_inds.get(doc_id, None)
 
                 if idx is None:  # add new item
                     if is_deleted or (vec is None):
                         continue
-                    self._append_vecs_and_ids(vec, [doc_id])
+                    # self._append_vecs_and_ids(vec, [doc_id])
+                    added_ids.append(doc_id)
+                    added_embeds.append(vec)
 
                 else:
                     updated_idx.append(idx)
@@ -690,20 +701,26 @@ class FaissSearcher(Executor):
                     if (not is_deleted) and (vec is not None):
                         updated_ids.append(doc_id)
                         updated_embeds.append(vec)
+                    else:
+                        deleted_idx.append(idx)
 
-            if len(updated_idx) > 0:
-                try:
-                    self._faiss_index.remove_ids(np.array(updated_idx))
-                    for _doc_id in updated_ids:
-                        del self._ids_to_inds[_doc_id]
-                except Exception as ex:
-                    self.logger.warning(f'{ex}')
-                    for _idx in updated_idx:
-                        self._is_deleted.add(_idx)
+            if len(added_ids) > 0:
+                embeddings = np.stack(added_embeds).astype(np.float32)
+                self._append_vecs_and_ids(embeddings, added_ids)
 
             if len(updated_ids) > 0:
                 embeddings = np.stack(updated_embeds).astype(np.float32)
                 self._append_vecs_and_ids(embeddings, updated_ids)
+
+            if len(updated_idx) > 0:
+                try:
+                    self._faiss_index.remove_ids(np.array(updated_idx, dtype=np.int64))
+                    for _idx in deleted_idx:
+                        self._ids_to_inds.inverse.pop(_idx)
+                except Exception as ex:
+                    self.logger.warning(f'{ex}')
+                    for _idx in updated_idx:
+                        self._is_deleted.add(_idx)
 
     def _update_timestamp(self, doc_timestamp):
         if doc_timestamp:

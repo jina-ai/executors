@@ -438,7 +438,7 @@ def test_faiss_delta(metas, tmpdir):
 
     def _generate_add_delta():
         for i in range(2, 6):
-            x = np.zeros((1, num_dims))
+            x = np.zeros((num_dims,))
             yield f'{i}', x, None, False
 
     indexer.add_delta_updates(_generate_add_delta())
@@ -459,17 +459,17 @@ def test_faiss_delta(metas, tmpdir):
 
     def _generate_update_delta_bad():
         for i in range(4, 6):
-            x = np.zeros((1, num_dims + 3))
+            x = np.zeros((num_dims + 3,))
             yield f'{i}', x, None, False
 
     try:
         indexer.add_delta_updates(_generate_update_delta_bad())
-    except:
+    except Exception:
         pass
 
     def _generate_update_delta():
         for i in range(4, 6):
-            x = np.zeros((1, num_dims))
+            x = np.zeros((num_dims,))
             yield f'{i}', x, None, False
 
     indexer.add_delta_updates(_generate_update_delta())
@@ -481,7 +481,7 @@ def test_faiss_delta(metas, tmpdir):
     # update the deleted docs take the same effect of adding new items
     def _generate_update_delta():
         for i in range(2, 4):
-            x = np.zeros((1, num_dims))
+            x = np.zeros((num_dims,))
             yield f'{i}', x, None, False
 
     indexer.add_delta_updates(_generate_update_delta())
