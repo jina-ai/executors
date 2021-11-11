@@ -96,10 +96,11 @@ class ImagePaddlehubEncoder(Executor):
             override the `self.traversal_paths` and `self.batch_size`.
         """
         if docs:
-            document_batches_generator = docs.batch(
+            document_batches_generator = docs.traverse_flat(
                 traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
+                filter_fn=lambda doc: doc.blob is not None
+            ).batch(
                 batch_size=parameters.get('batch_size', self.batch_size),
-                require_attr='blob',
             )
             self._create_embeddings(document_batches_generator)
 

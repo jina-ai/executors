@@ -117,7 +117,7 @@ class VideoTorchEncoder(Executor):
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         batch_size = parameters.get('batch_size', self.batch_size)
 
-        for batch in docs.batch(batch_size, traversal_paths):
+        for batch in docs.traverse_flat(traversal_paths).batch(batch_size):
             try:
                 self._create_embeddings(batch)
             except RuntimeError:

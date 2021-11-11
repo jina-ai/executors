@@ -81,7 +81,7 @@ class AudioCLIPEncoder(Executor):
         batch_size = parameters.get('batch_size', self.batch_size)
 
         with torch.inference_mode():
-            for batch in docs.batch(batch_size, traversal_paths):
+            for batch in docs.traverse_flat(batch_size).batch(traversal_paths):
                 self._create_embeddings(batch)
 
     def _create_embeddings(self, filtered_docs: Iterable):

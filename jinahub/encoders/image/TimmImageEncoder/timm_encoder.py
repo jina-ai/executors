@@ -77,10 +77,11 @@ class TimmImageEncoder(Executor):
 
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         batch_size = parameters.get('batch_size', self.batch_size)
-        docs_batch_generator = docs.batch(
+        docs_batch_generator = docs.traverse_flat(
             traversal_paths=traversal_paths,
-            batch_size=batch_size,
-            require_attr='blob',
+            filter_fn=lambda doc: doc.blob is not None
+        ).batch(
+            batch_size=batch_size
         )
 
         for document_batch in docs_batch_generator:
