@@ -659,29 +659,44 @@ class FaissSearcher(Executor):
             )
             return
 
-        for doc_id, vec_array, doc_timestamp, is_deleted in delta:
-            self._update_timestamp(doc_timestamp)
-            idx = self._ids_to_inds.get(doc_id, None)
-            vec = (
-                vec_array.reshape(1, -1).astype(np.float32)
-                if vec_array is not None
-                else None
-            )
-            if idx is None:  # add new item
-                if is_deleted or (vec is None):
-                    continue
-                self._append_vecs_and_ids(vec, [doc_id])
-            else:  # update or delete
+        for batch_data in batch_iterator(delta, self.prefetch_size):
+            updated_ids = []
+            updated_embeds = []
+            updated_idx = []
+
+            batch_data = list(batch_data)
+            if len(batch_data) == 0:
+                break
+
+            for doc_id, vec, doc_timestamp, is_deleted in batch_data:
+                self._update_timestamp(doc_timestamp)
+                idx = self._ids_to_inds.get(doc_id, None)
+
+                if idx is None:  # add new item
+                    if is_deleted or (vec is None):
+                        continue
+                    self._append_vecs_and_ids(vec, [doc_id])
+
+                else:
+                    updated_idx.append(idx)
+
+                    if (not is_deleted) and (vec is not None):
+                        updated_ids.append(doc_id)
+                        updated_embeds.append(vec)
+
+            if len(updated_idx) > 0:
                 try:
-                    self._faiss_index.remove_ids(np.array([idx]))
-                    del self._ids_to_inds[doc_id]
+                    self._faiss_index.remove_ids(np.array(updated_idx))
+                    for _doc_id in updated_ids:
+                        del self._ids_to_inds[_doc_id]
                 except Exception as ex:
                     self.logger.warning(f'{ex}')
-                    self._is_deleted.add(idx)
+                    for _idx in updated_idx:
+                        self._is_deleted.add(_idx)
 
-                if (not is_deleted) and (vec is not None):
-                    # then add the updated doc
-                    self._append_vecs_and_ids(vec, [doc_id])
+            if len(updated_ids) > 0:
+                embeddings = np.stack(updated_embeds).astype(np.float32)
+                self._append_vecs_and_ids(embeddings, updated_ids)
 
     def _update_timestamp(self, doc_timestamp):
         if doc_timestamp:
