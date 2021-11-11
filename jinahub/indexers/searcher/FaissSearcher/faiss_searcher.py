@@ -660,16 +660,16 @@ class FaissSearcher(Executor):
             return
 
         for doc_id, vec_array, doc_timestamp, is_deleted in delta:
-
             self._update_timestamp(doc_timestamp)
             idx = self._ids_to_inds.get(doc_id, None)
+            vec = (
+                vec_array.reshape(1, -1).astype(np.float32)
+                if vec_array is not None
+                else None
+            )
             if idx is None:  # add new item
-                if is_deleted or (vec_array is None):
+                if is_deleted or (vec is None):
                     continue
-
-                # shape [1, D]
-                vec = vec_array.reshape(1, -1).astype(np.float32)
-
                 self._append_vecs_and_ids(vec, [doc_id])
             else:  # update or delete
                 try:
@@ -679,10 +679,8 @@ class FaissSearcher(Executor):
                     self.logger.warning(f'{ex}')
                     self._is_deleted.add(idx)
 
-                if (not is_deleted) and (vec_array is not None):
+                if (not is_deleted) and (vec is not None):
                     # then add the updated doc
-                    # shape [1, D]
-                    vec = vec_array.reshape(1, -1).astype(np.float32)
                     self._append_vecs_and_ids(vec, [doc_id])
 
     def _update_timestamp(self, doc_timestamp):

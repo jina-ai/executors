@@ -135,7 +135,7 @@ class FaissPostgresIndexer(Executor):
 
         self.logger.info('Taking indexed data as training points...')
         train_docs = DocumentArray()
-        for doc in self._kv_indexer.get_document_generator(
+        for doc in self._kv_indexer.get_document_iterator(
             limit=max_num_training_points, check_embedding=True, return_embedding=True
         ):
             train_docs.append(doc)

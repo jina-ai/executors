@@ -281,10 +281,10 @@ class PostgreSQLHandler:
         cursor = self.connection.cursor()
 
         if soft_delete:
-            self.logger.warning(
-                'Performing soft-delete. Use /prune or a hard '
-                'delete to delete the records'
-            )
+            # self.logger.warning(
+            #     'Performing soft-delete. Use /prune or a hard '
+            #     'delete to delete the records'
+            # )
             psycopg2.extras.execute_batch(
                 cursor,
                 f'UPDATE {self.table} '
@@ -388,7 +388,7 @@ class PostgreSQLHandler:
         """
         Saves the state of the data table in a new table
 
-        Required to be done in two steps because
+        Required to be done in two steps becauselast_updated
         1. create table like ... doesn't include data
         2. insert into .. (select ...) doesn't include primary key definitions
         """
