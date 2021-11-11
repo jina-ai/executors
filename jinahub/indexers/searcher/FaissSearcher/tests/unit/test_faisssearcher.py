@@ -401,7 +401,7 @@ def test_gpu_indexer(metas, tmpdir, tmpdir_dump):
 
     query_data = np.array(np.random.random([10, 10]), dtype=np.float32)
     docs = _get_docs_from_vecs(query_data)
-    indexer.search(docs, parameters={'top_k': 4})
+    indexer.search(docs, parameters={'limit': 4})
     assert len(docs[0].matches) == 4
     for d in docs:
         assert (
