@@ -89,7 +89,12 @@ class FaissPostgresIndexer(Executor):
                     trained_model_checksum,
                 ) = self._kv_indexer.get_trained_model()
 
-                if trained_model is not None:
+                index_key = kwargs.get('index_key', None)
+
+                if (trained_model is not None) and (
+                    not index_key or index_key == trained_model_checksum
+                ):
+                    self.logger.info('Load the trained index model from PSQL.')
                     temp_trained_file.write(trained_model)
                     temp_trained_file.flush()
 
@@ -146,7 +151,6 @@ class FaissPostgresIndexer(Executor):
 
         self._vec_indexer.train(train_docs, parameters={'index_data': False})
 
-        import hashlib
         import tempfile
 
         temp = tempfile.NamedTemporaryFile(suffix='.bin', prefix='trained_faiss_')
@@ -157,9 +161,7 @@ class FaissPostgresIndexer(Executor):
                 temp.seek(0)
 
                 model_data = temp.read()
-                hash_md5 = hashlib.md5()
-                hash_md5.update(model_data)
-                model_checksum = hash_md5.hexdigest()
+                model_checksum = self._vec_indexer.index_key
 
                 self._kv_indexer.save_trained_model(model_data, model_checksum)
         finally:

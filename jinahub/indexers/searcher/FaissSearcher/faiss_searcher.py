@@ -123,6 +123,9 @@ class FaissSearcher(Executor):
         self._prefetch_data = []
         self._faiss_index = None
 
+        if trained_index_file:
+            self._init_faiss_index(None, trained_index_file)
+
         dump_path = dump_path or kwargs.get('runtime_args', {}).get('dump_path')
         if dump_path:
             self.load_from_dumps(dump_path, prefetch_size, **kwargs)
@@ -215,13 +218,17 @@ class FaissSearcher(Executor):
         """Initialize a Faiss indexer instance"""
         if trained_index_file and os.path.exists(trained_index_file):
             index = faiss.read_index(trained_index_file)
+            self.num_dim = index.d
             assert index.metric_type == self.metric_type
             assert index.ntotal == 0
 
-            assert not hasattr(self, 'num_dim') or index.d == self.num_dim
             assert index.is_trained
-        else:
+
+        elif num_dim:
             index = faiss.index_factory(num_dim, self.index_key, self.metric_type)
+            self.num_dim = num_dim
+        else:
+            return
 
         if hasattr(index, 'hnsw'):
             index.hnsw.efSearch = self.ef_query
