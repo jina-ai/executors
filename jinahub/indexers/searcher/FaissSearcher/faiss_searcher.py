@@ -355,7 +355,8 @@ class FaissSearcher(Executor):
         """
         if docs is None:
             return
-        if self._faiss_index is None:
+
+        if (self._faiss_index is None) or self.size == 0:
             self.logger.warning('Querying against an empty Index')
             return
 
@@ -382,11 +383,12 @@ class FaissSearcher(Executor):
             for m_info in zip(*matches):
                 idx, dist = m_info
 
+                doc_id = self._ids_to_inds.inverse.get(idx, None)
+
                 # this is related with the issue of faiss
-                if self._faiss_index.ntotal == 0 or self.is_deleted(idx):
+                if not doc_id or self.is_deleted(idx):
                     continue
 
-                doc_id = self._ids_to_inds.inverse[idx]
                 match = Document(id=doc_id)
                 if self.is_distance:
                     match.scores[self.metric] = dist
@@ -641,15 +643,18 @@ class FaissSearcher(Executor):
 
     def _append_vecs_and_ids(self, vecs: np.ndarray, doc_ids: List[str]):
         assert len(doc_ids) == vecs.shape[0]
+
         size = 0
         if len(self._ids_to_inds) > 0:
             size = max(list(self._ids_to_inds.values())) + 1
+
         indices = []
         for i, doc_id in enumerate(doc_ids):
             idx = size + i
             indices.append(idx)
 
             self._ids_to_inds.update({doc_id: idx})
+
         indices = np.array(indices, dtype=np.int64)
         self._faiss_index.add_with_ids(vecs, indices)
 

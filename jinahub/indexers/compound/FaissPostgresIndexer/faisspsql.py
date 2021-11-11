@@ -23,7 +23,7 @@ class FaissPostgresIndexer(Executor):
     def __init__(
         self,
         dump_path: Optional[str] = None,
-        startup_sync_args: Optional[Dict] = None,
+        startup_sync_args: dict = {},
         total_shards: Optional[int] = None,
         max_num_training_points: int = 0,
         **kwargs,
@@ -66,9 +66,8 @@ class FaissPostgresIndexer(Executor):
 
         self._init_executors(dump_path, kwargs, startup_sync_args)
 
-        if startup_sync_args:
-            startup_sync_args['init_faiss'] = True
-            self.sync(parameters=startup_sync_args)
+        startup_sync_args['init_faiss'] = True
+        self.sync(parameters=startup_sync_args)
 
     def _init_executors(self, dump_path, kwargs, startup_sync_args):
         # float32 because that's what faiss expects
@@ -126,6 +125,9 @@ class FaissPostgresIndexer(Executor):
         """
 
         force_retrain = parameters.get('force', False)
+
+        if self.runtime_args.pea_id != 0:
+            return
 
         if self._vec_indexer.is_trained and not force_retrain:
             self.logger.warning(
@@ -359,8 +361,8 @@ class FaissPostgresIndexer(Executor):
 
         status = Document(
             tags={
-                'count_active': self._kv_indexer.size,
-                'count_indexed': self._vec_indexer.size,
+                'total_docs': self._kv_indexer.size,
+                'active_docs': self._vec_indexer.size,
             }
         )
         return DocumentArray([status])
