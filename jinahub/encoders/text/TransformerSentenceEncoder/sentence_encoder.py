@@ -48,10 +48,11 @@ class TransformerSentenceEncoder(Executor):
         if docs is None:
             return
 
-        for batch in docs.batch(
+        for batch in docs.traverse_flat(
             traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
+            filter_fn=lambda doc: len(doc.text)>0
+        ).batch(
             batch_size=parameters.get('batch_size', self.batch_size),
-            require_attr='text',
         ):
             texts = batch.get_attributes('text')
 
