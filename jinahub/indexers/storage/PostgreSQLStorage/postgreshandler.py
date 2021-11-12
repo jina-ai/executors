@@ -329,7 +329,7 @@ class PostgreSQLHandler:
             doc.MergeFrom(retrieved_doc)
 
     def get_trained_model(self):
-        """Use the Postgres db to store the trained index parameters
+        """Get the trained index parameters from the Postgres db
 
         :return: the trained index
         """
