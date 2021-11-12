@@ -208,6 +208,7 @@ class FaissPostgresIndexer(Executor):
             updates = self._kv_indexer.get_snapshot(
                 shard_id=self.runtime_args.pea_id,
                 total_shards=self.total_shards,
+                include_metas=False,
                 filter_deleted=True,
             )
             timestamp = self._kv_indexer.last_snapshot_timestamp

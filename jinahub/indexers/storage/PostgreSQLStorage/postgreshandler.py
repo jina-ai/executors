@@ -21,6 +21,7 @@ def doc_without_embedding(d: Document):
 
 SCHEMA_VERSION = 3
 META_TABLE_NAME = 'index_metas'
+MODEL_TABLE_NAME = 'index_models'
 
 
 class PostgreSQLHandler:
@@ -91,6 +92,7 @@ class PostgreSQLHandler:
         """
         with self:
             self._create_meta_table()
+            self._create_model_table()
 
             if self._table_exists():
                 self._assert_table_schema_version()
@@ -115,9 +117,17 @@ class PostgreSQLHandler:
         self._execute_sql_gracefully(
             f'''CREATE TABLE IF NOT EXISTS {META_TABLE_NAME} (
                 table_name varchar,
+                schema_version integer
+            );'''
+        )
+
+    def _create_model_table(self):
+        self._execute_sql_gracefully(
+            f'''CREATE TABLE IF NOT EXISTS {MODEL_TABLE_NAME} (
+                table_name varchar,
                 model_blob BYTEA,
                 model_checksum varchar,
-                schema_version integer
+                updated_at timestamp with time zone default current_timestamp
             );'''
         )
 
@@ -132,8 +142,9 @@ class PostgreSQLHandler:
                 updated_at timestamp with time zone default current_timestamp,
                 is_deleted BOOL DEFAULT FALSE
             );
-            INSERT INTO {META_TABLE_NAME} (table_name, schema_version) VALUES (%s, %s);''',
-            (self.table, SCHEMA_VERSION),
+            INSERT INTO {META_TABLE_NAME} (table_name, schema_version) VALUES (%s, %s);
+            INSERT INTO {MODEL_TABLE_NAME} (table_name) VALUES (%s);''',
+            (self.table, SCHEMA_VERSION, self.table),
         )
 
     def _table_exists(self):
@@ -336,7 +347,7 @@ class PostgreSQLHandler:
         cursor = self.connection.cursor()
         cursor.execute(
             f'SELECT model_blob, model_checksum FROM '
-            f'{META_TABLE_NAME} '
+            f'{MODEL_TABLE_NAME} '
             f'WHERE table_name=%s;',
             (self.table,),
         )
@@ -349,9 +360,10 @@ class PostgreSQLHandler:
     def save_trained_model(self, model: bytes, checksum: str):
         cursor = self.connection.cursor()
         cursor.execute(
-            f'UPDATE {META_TABLE_NAME} '
+            f'UPDATE {MODEL_TABLE_NAME} '
             f'SET model_blob = %s, '
-            f'model_checksum = %s '
+            f'model_checksum = %s, '
+            f'updated_at = current_timestamp '
             f'where table_name = %s',
             (model, checksum, self.table),
         )
@@ -407,31 +419,21 @@ class PostgreSQLHandler:
             self.logger.error(f'Error snapshotting: {error}')
             self.connection.rollback()
 
-    def get_snapshot(self, shards_to_get: List[int], filter_deleted: bool = True):
+    def get_snapshot(
+        self,
+        shards_to_get: List[int],
+        include_metas: bool = False,
+        filter_deleted: bool = True,
+    ):
         """
         Get the data from the snapshot, for a specific range of virtual shards
         """
-        shards_quoted = tuple(int(shard) for shard in shards_to_get)
-        try:
-            cursor = self.connection.cursor('snapshot')
-            cursor.itersize = 10000
-            cursor.execute(
-                f'SELECT doc_id, embedding from {self.snapshot_table} '
-                f'WHERE shard in %s'
-                + (' and is_deleted = false' if filter_deleted else ''),
-                (shards_quoted,),
-            )
-            for rec in cursor:
-                vec = (
-                    np.frombuffer(rec[1], dtype=self.dump_dtype)
-                    if rec[1] is not None
-                    else None
-                )
-                yield rec[0], vec, None, None
-        except (Exception, psycopg2.Error) as error:
-            self.logger.error(f'Error importing snapshot: {error}')
-            self.connection.rollback()
-        self.connection.commit()
+        return self.get_data_iterator(
+            table_name=self.snapshot_table,
+            include_metas=include_metas,
+            filter_deleted=filter_deleted,
+            shards_to_get=shards_to_get,
+        )
 
     def get_document_iterator(
         self,
@@ -467,27 +469,43 @@ class PostgreSQLHandler:
         self.connection.commit()
 
     def get_data_iterator(
-        self, include_metas=True
+        self,
+        table_name: Optional[str] = None,
+        include_metas: bool = True,
+        filter_deleted: bool = True,
+        shards_to_get: Optional[List[int]] = None,
     ) -> Generator[Tuple[str, bytes, Optional[bytes]], None, None]:
         connection = self._get_connection()
         cursor = connection.cursor('dump_iterator')  # server-side cursor
         cursor.itersize = 10000
-        if include_metas:
-            cursor.execute(
-                f'SELECT doc_id, embedding, doc FROM {self.table} WHERE is_deleted = false ORDER BY doc_id'
-            )
-            for rec in cursor:
-                yield rec[0], np.frombuffer(rec[1]) if rec[
+
+        try:
+            if shards_to_get is not None:
+                shards_quoted = tuple(int(shard) for shard in shards_to_get)
+
+                cursor.execute(
+                    'SELECT doc_id, embedding'
+                    + (', doc ' if include_metas else ' ')
+                    + f'FROM {table_name or self.table} WHERE '
+                    + 'shard in %s '
+                    + ('and is_deleted = false ' if filter_deleted else ''),
+                    (shards_quoted,),
+                )
+            else:
+                cursor.execute(
+                    'SELECT doc_id, embedding'
+                    + (', doc ' if include_metas else ' ')
+                    + f'FROM {table_name or self.table} '
+                    + ('WHERE is_deleted = false ' if filter_deleted else ' ')
+                )
+
+            for record in cursor:
+                yield record[0], np.frombuffer(record[1]) if record[
                     1
-                ] is not None else None, rec[2]
-        else:
-            cursor.execute(
-                f'SELECT doc_id, embedding FROM {self.table} WHERE is_deleted = false ORDER BY doc_id'
-            )
-            for rec in cursor:
-                yield rec[0], np.frombuffer(rec[1]) if rec[
-                    1
-                ] is not None else None, None
+                ] is not None else None, record[2] if include_metas else None
+        except (Exception, psycopg2.Error) as error:
+            self.logger.error(f'Error executing sql statement: {error}')
+
         self._close_connection(connection)
 
     def get_snapshot_latest_timestamp(self):

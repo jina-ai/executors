@@ -187,7 +187,9 @@ class PostgreSQLStorage(Executor):
                 path,
                 shards=shards,
                 size=self.size,
-                data=postgres_handler.get_data_iterator(include_metas=include_metas),
+                data=postgres_handler.get_data_iterator(
+                    include_metas=include_metas, filter_deleted=True
+                ),
             )
 
     def close(self) -> None:
@@ -229,7 +231,11 @@ class PostgreSQLStorage(Executor):
             postgres_handler.snapshot()
 
     def get_snapshot(
-        self, shard_id: int, total_shards: int, filter_deleted: bool = True
+        self,
+        shard_id: int,
+        total_shards: int,
+        include_metas: bool = False,
+        filter_deleted: bool = True,
     ):
         """Get the data meant out of the snapshot, distributed
         to this shard id, out of X total shards, based on the virtual
@@ -242,7 +248,9 @@ class PostgreSQLStorage(Executor):
 
             with self.handler as postgres_handler:
                 return postgres_handler.get_snapshot(
-                    shards_to_get, filter_deleted=filter_deleted
+                    shards_to_get,
+                    include_metas=include_metas,
+                    filter_deleted=filter_deleted,
                 )
         else:
             self.logger.warning('Not data in PSQL db snapshot. Nothing to export...')
