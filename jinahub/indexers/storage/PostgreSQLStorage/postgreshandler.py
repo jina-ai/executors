@@ -61,7 +61,7 @@ class PostgreSQLHandler:
         self.table = table
         self.dump_dtype = dump_dtype
         self.virtual_shards = virtual_shards
-        self.snapshot_table = 'snapshot'
+        self.snapshot_table = f'snapshot_{table}'
 
         if not dry_run:
             self.postgreSQL_pool = psycopg2.pool.SimpleConnectionPool(
@@ -132,9 +132,6 @@ class PostgreSQLHandler:
                 updated_at timestamp with time zone default current_timestamp,
                 is_deleted BOOL DEFAULT FALSE
             );
-            CREATE INDEX IF NOT EXISTS idx_shard ON {self.table}(shard);
-            CREATE INDEX IF NOT EXISTS idx_is_deleted ON {self.table}(is_deleted);
-            CREATE INDEX IF NOT EXISTS idx_updated_at ON {self.table}(updated_at);
             INSERT INTO {META_TABLE_NAME} (table_name, schema_version) VALUES (%s, %s);''',
             (self.table, SCHEMA_VERSION),
         )
