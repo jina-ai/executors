@@ -358,6 +358,11 @@ class PostgreSQLHandler:
         return None, None
 
     def save_trained_model(self, model: bytes, checksum: str):
+        """Save the trained index parameters into PSQL db
+
+        :param model: the dumps of the trained model
+        :param checksum: the checksum of the trained model
+        """
         cursor = self.connection.cursor()
         cursor.execute(
             f'UPDATE {MODEL_TABLE_NAME} '
@@ -441,6 +446,13 @@ class PostgreSQLHandler:
         return_embedding: bool = False,
         check_embedding: bool = False,
     ) -> Generator[Document, None, None]:
+        """Get the documents from the PSQL database.
+
+        :param limit: the maximal number docs to get
+        :param return_embedding: whether filter out the documents without embedding
+        :param check_embedding: whether to return embeddings on search
+        :return:
+        """
         try:
             cursor = self.connection.cursor('doc_iterator')
             cursor.itersize = 10000
@@ -475,6 +487,14 @@ class PostgreSQLHandler:
         filter_deleted: bool = True,
         shards_to_get: Optional[List[int]] = None,
     ) -> Generator[Tuple[str, bytes, Optional[bytes]], None, None]:
+        """Get the rows from specific table
+
+        :param table_name: the table name to use
+        :param include_metas: whether to retrieval document's meta data
+        :param filter_deleted: whether to filter documents which has been marked as soft-delete
+        :param shards_to_get: the shards list to search
+        :return:
+        """
         connection = self._get_connection()
         cursor = connection.cursor('dump_iterator')  # server-side cursor
         cursor.itersize = 10000
@@ -522,6 +542,13 @@ class PostgreSQLHandler:
     def get_delta_updates(
         self, shards_to_get, timestamp, filter_deleted: bool = False
     ) -> Generator[Tuple[str, bytes, datetime.datetime], None, None]:
+        """
+        Get the rows that have changed since the last timestamp
+
+        :param shards_to_get: the shards list to search
+        :param timestamp: the last timestamp
+        :param filter_deleted: whether to filter out the data which has been marked as soft-delete
+        """
         connection = self._get_connection()
         cursor = connection.cursor('delta_generator')  # server-side cursor
         cursor.itersize = 10000

@@ -127,7 +127,7 @@ class PostgreSQLStorage(Executor):
     def prune(self, **kwargs):
         """
         Full deletion of the entries that
-        have been marked for soft-deletion
+        have been marked as soft-deletion
         """
         with self.handler as postgres_handler:
             postgres_handler.prune()
@@ -262,18 +262,31 @@ class PostgreSQLStorage(Executor):
         check_embedding: bool = False,
         return_embedding: bool = False,
     ):
+        """Get the documents from the PSQL db.
+
+        :param limit: the maximal number docs to get
+        :param check_embedding: whether filter out the documents without embedding
+        :param return_embedding: whether to return embeddings on search
+
+        """
         with self.handler as postgres_handler:
-            yield from postgres_handler.get_document_iterator(
+            return postgres_handler.get_document_iterator(
                 limit=limit,
                 check_embedding=check_embedding,
                 return_embedding=return_embedding,
             )
 
     def get_trained_model(self):
+        """Get the trained index model from PSQL"""
         with self.handler as postgres_handler:
             return postgres_handler.get_trained_model()
 
     def save_trained_model(self, model: bytes, checksum: str = None):
+        """Save the trained index model into PSQL
+
+        :param model: the dumps content of trained model
+        :param checksum: the checksum of the trained model
+        """
         with self.handler as postgres_handler:
             return postgres_handler.save_trained_model(model, checksum)
 
