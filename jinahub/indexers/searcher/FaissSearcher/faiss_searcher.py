@@ -165,7 +165,7 @@ class FaissSearcher(Executor):
         if len(self._prefetch_data) == 0:
             return
 
-        _num_dim = self._prefetch_data[0][1].shape[0]
+        _num_dim = self._prefetch_data[0][1].shape[-1]
         if self.num_dim == 0:
             self.num_dim = _num_dim
 
@@ -289,10 +289,6 @@ class FaissSearcher(Executor):
                 train_data = train_data[random_indices, :]
 
             self.logger.info('Training Faiss indexer...')
-
-            if self.normalize:
-                faiss.normalize_L2(train_data)
-
             self._train(train_data)
 
         self.logger.info('Building the Faiss index...')
@@ -340,7 +336,7 @@ class FaissSearcher(Executor):
     def search(
         self,
         docs: Optional[DocumentArray],
-        parameters: Optional[Dict] = dict(),
+        parameters: Dict = {},
         *args,
         **kwargs,
     ):
@@ -432,7 +428,7 @@ class FaissSearcher(Executor):
 
         try:
             doc_ids = flat_docs.get_attributes('id')
-            vecs = flat_docs.embeddings
+            vecs = flat_docs.embeddings.astype(np.float32)
             self._append_vecs_and_ids(vecs, doc_ids)
         except Exception as ex:
             self.logger.error(f'failed to index docs, {ex}')
@@ -532,9 +528,6 @@ class FaissSearcher(Executor):
         train_data = train_data.astype(np.float32)
 
         self._init_faiss_index(self.num_dim)
-
-        if self.normalize:
-            faiss.normalize_L2(train_data)
         self._train(train_data)
 
         index_data = parameters.get('index_data', True)
@@ -556,6 +549,9 @@ class FaissSearcher(Executor):
             f'Training faiss Indexer with {_num_samples} points of {self.num_dim}'
         )
 
+        if self.normalize:
+            faiss.normalize_L2(data)
+
         self._faiss_index.train(data)
 
     def save_trained_model(self, target_path: str):
@@ -567,7 +563,7 @@ class FaissSearcher(Executor):
             return False
 
     @requests(on='/fill_embedding')
-    def fill_embedding(self, docs: Optional[DocumentArray], **kwargs):
+    def fill_embedding(self, docs: Optional[DocumentArray] = None, **kwargs):
         if docs is None:
             return
         for doc in docs:
@@ -634,7 +630,7 @@ class FaissSearcher(Executor):
         if self.metric not in {'euclidean', 'cosine', 'inner_product'}:
             self.logger.warning(
                 'Invalid distance metric for Faiss index construction. Defaulting '
-                'to euclidean distance'
+                'to cosine distance'
             )
         return metric_type
 
@@ -643,6 +639,9 @@ class FaissSearcher(Executor):
 
     def _append_vecs_and_ids(self, vecs: np.ndarray, doc_ids: List[str]):
         assert len(doc_ids) == vecs.shape[0]
+
+        if self.normalize:
+            faiss.normalize_L2(vecs)
 
         size = 0
         if len(self._ids_to_inds) > 0:

@@ -223,7 +223,7 @@ class FaissPostgresIndexer(Executor):
                     shard_id=self.runtime_args.pea_id,
                     total_shards=self.total_shards,
                     timestamp=timestamp,
-                    filter_deleted=True,
+                    filter_deleted=False,
                 )
                 # deltas will be like DOC_ID, OPERATION, DATA
                 self._vec_indexer.add_delta_updates(deltas)
@@ -294,9 +294,8 @@ class FaissPostgresIndexer(Executor):
         if self._kv_indexer and self._vec_indexer:
             self._vec_indexer.search(docs, parameters)
             kv_parameters = copy.deepcopy(parameters)
-            kv_parameters['search_traversal_paths'] = [
-                path + 'm'
-                for path in kv_parameters.get('search_traversal_paths', ['r'])
+            kv_parameters['traversal_paths'] = [
+                path + 'm' for path in kv_parameters.get('traversal_paths', ['r'])
             ]
             self._kv_indexer.search(docs, kv_parameters)
         else:

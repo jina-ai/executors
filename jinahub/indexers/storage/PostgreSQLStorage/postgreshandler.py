@@ -520,9 +520,11 @@ class PostgreSQLHandler:
                 )
 
             for record in cursor:
-                yield record[0], np.frombuffer(record[1]) if record[
-                    1
-                ] is not None else None, record[2] if include_metas else None
+                yield record[0], np.frombuffer(
+                    record[1], dtype=self.dump_dtype
+                ) if record[1] is not None else None, record[
+                    2
+                ] if include_metas else None
         except (Exception, psycopg2.Error) as error:
             self.logger.error(f'Error executing sql statement: {error}')
 

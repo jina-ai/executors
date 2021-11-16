@@ -97,7 +97,9 @@ class PostgreSQLStorage(Executor):
             return postgres_handler.get_snapshot_size()
 
     @requests(on='/index')
-    def add(self, docs: DocumentArray, parameters: Optional[dict] = {}, **kwargs):
+    def add(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """Add Documents to Postgres
 
         :param docs: list of Documents
@@ -110,7 +112,9 @@ class PostgreSQLStorage(Executor):
             postgres_handler.add(docs.traverse_flat(traversal_paths))
 
     @requests(on='/update')
-    def update(self, docs: DocumentArray, parameters: Optional[dict] = {}, **kwargs):
+    def update(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """Updated document from the database.
 
         :param docs: list of Documents
@@ -143,7 +147,9 @@ class PostgreSQLStorage(Executor):
             postgres_handler.clear()
 
     @requests(on='/delete')
-    def delete(self, docs: DocumentArray, parameters: Optional[dict] = {}, **kwargs):
+    def delete(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """Delete document from the database.
 
         NOTE: This is a soft-deletion, required by the snapshotting
@@ -200,7 +206,9 @@ class PostgreSQLStorage(Executor):
         self.handler.close()
 
     @requests(on='/search')
-    def search(self, docs: DocumentArray, parameters: Optional[dict] = {}, **kwargs):
+    def search(
+        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
+    ):
         """Get the Documents by the ids of the docs in the DocArray
 
         :param docs: the DocumentArray to search

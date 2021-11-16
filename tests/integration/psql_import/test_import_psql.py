@@ -370,36 +370,38 @@ def test_psql_sync_delta(
 
         # delta syncing
         # we delete some old data
-        nr_docs_to_delete = 80
-        flow.post(on='/delete', inputs=docs_original[:nr_docs_to_delete])
+        nr_docs_to_change = 10
+        flow.post(on='/delete', inputs=docs_original[:nr_docs_to_change])
 
         # update rest of the data with perfect matches of
-        docs_search = DocumentArray(
+        updated_docs = DocumentArray(
             list(
                 get_documents(
-                    nr_docs - nr_docs_to_delete,
-                    index_start=nr_docs_to_delete,
+                    nr_docs - nr_docs_to_change,
+                    index_start=nr_docs_to_change,
                     emb_size=emb_size,
                 )
             )
         )
 
-        flow.post(on='/update', inputs=docs_search)
+        flow.post(on='/update', inputs=updated_docs)
+
         # call sync with delta
         flow.post(on='/sync', parameters={'use_delta': True})
+
         results = flow.post(
             on='/search',
-            inputs=docs_search,
-            parameters={'limit': len(docs_search)},
+            inputs=updated_docs,
+            parameters={'limit': 5},
             return_results=True,
         )
         # then we assert the contents include the latest
         # perfect matches
         assert len(results[0].docs) > 0
 
-        # for d in results[0].docs:
-        #     np.testing.assert_almost_equal(d.matches[0].embedding, d.embedding)
+        for d in results[0].docs:
+            np.testing.assert_almost_equal(d.matches[0].embedding, d.embedding)
 
     idx = PostgreSQLStorage()
 
-    assert idx.size == nr_docs - nr_docs_to_delete
+    assert idx.size == nr_docs - nr_docs_to_change
