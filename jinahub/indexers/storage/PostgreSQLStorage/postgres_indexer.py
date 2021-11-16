@@ -127,7 +127,7 @@ class PostgreSQLStorage(Executor):
         with self.handler as postgres_handler:
             postgres_handler.update(docs.traverse_flat(traversal_paths))
 
-    @requests(on='/delete')
+    @requests(on='/cleanup')
     def cleanup(self, **kwargs):
         """
         Full deletion of the entries that
