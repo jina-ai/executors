@@ -23,7 +23,7 @@ class FaissPostgresIndexer(Executor):
     def __init__(
         self,
         dump_path: Optional[str] = None,
-        startup_sync_args: dict = {},
+        startup_sync_args: Optional[Dict] = None,
         total_shards: Optional[int] = None,
         max_num_training_points: int = 0,
         **kwargs,
@@ -65,9 +65,9 @@ class FaissPostgresIndexer(Executor):
         self._init_kwargs = kwargs
 
         self._init_executors(dump_path, kwargs, startup_sync_args)
-
-        startup_sync_args['init_faiss'] = True
-        self.sync(parameters=startup_sync_args)
+        if startup_sync_args:
+            startup_sync_args['init_faiss'] = True
+            self.sync(parameters=startup_sync_args)
 
     def _init_executors(self, dump_path, kwargs, startup_sync_args):
         # float32 because that's what faiss expects

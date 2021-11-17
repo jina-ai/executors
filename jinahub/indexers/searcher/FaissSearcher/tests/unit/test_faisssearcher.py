@@ -306,9 +306,8 @@ def test_faiss_indexer_known_big(metas, tmpdir):
     assert len(idx) == (10 * top_k)
 
 
-@pytest.mark.parametrize('train_data', ['new', 'none'])
 @pytest.mark.parametrize('max_num_points', [None, 257, 500, 10000])
-def test_indexer_train(metas, train_data, max_num_points, tmpdir):
+def test_indexer_train(metas, max_num_points, tmpdir):
     np.random.seed(500)
     num_data = 500
     num_dim = 64

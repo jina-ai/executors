@@ -122,6 +122,7 @@ class FaissSearcher(Executor):
         self._is_deleted = set()
         self._prefetch_data = []
         self._faiss_index = None
+        self._total_count = 0
 
         if trained_index_file:
             self._init_faiss_index(None, trained_index_file)
@@ -240,6 +241,10 @@ class FaissSearcher(Executor):
         self._faiss_index = self.to_device(index)
 
         self._faiss_index.nprobe = self.nprobe
+
+        self._ids_to_inds = bidict()
+        self._is_deleted = set()
+        self._total_count = 0
 
     def _build_index(self, data_iter: Iterable[Tuple[str, 'np.ndarray']]):
         """Build an advanced index structure from a numpy array.
@@ -643,19 +648,22 @@ class FaissSearcher(Executor):
         if self.normalize:
             faiss.normalize_L2(vecs)
 
-        size = 0
-        if len(self._ids_to_inds) > 0:
-            size = max(list(self._ids_to_inds.values())) + 1
-
+        size = self._total_count
         indices = []
         for i, doc_id in enumerate(doc_ids):
             idx = size + i
             indices.append(idx)
 
+            doc_idx = self._ids_to_inds.get(doc_id, None)
+
+            if doc_idx is not None:
+                self._is_deleted.add(doc_idx)
+
             self._ids_to_inds.update({doc_id: idx})
 
         indices = np.array(indices, dtype=np.int64)
         self._faiss_index.add_with_ids(vecs, indices)
+        self._total_count += len(doc_ids)
 
     def add_delta_updates(self, delta: GENERATOR_DELTA):
         """
@@ -712,19 +720,19 @@ class FaissSearcher(Executor):
                 embeddings = np.stack(added_embeds).astype(np.float32)
                 self._append_vecs_and_ids(embeddings, added_ids)
 
-            if len(updated_ids) > 0:
-                embeddings = np.stack(updated_embeds).astype(np.float32)
-                self._append_vecs_and_ids(embeddings, updated_ids)
-
             if len(updated_idx) > 0:
                 try:
                     self._faiss_index.remove_ids(np.array(updated_idx, dtype=np.int64))
-                    for _idx in deleted_idx:
+                    for _idx in updated_idx:
                         self._ids_to_inds.inverse.pop(_idx)
                 except Exception as ex:
                     self.logger.warning(f'{ex}')
                     for _idx in updated_idx:
                         self._is_deleted.add(_idx)
+
+            if len(updated_ids) > 0:
+                embeddings = np.stack(updated_embeds).astype(np.float32)
+                self._append_vecs_and_ids(embeddings, updated_ids)
 
     def _update_timestamp(self, doc_timestamp):
         if doc_timestamp:
