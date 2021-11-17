@@ -53,7 +53,7 @@ def test_online_train_2_flows(docker_compose):
         for doc in result.docs:
             assert len(doc.matches) == 10
 
-        f.post(on='/index', inputs=get_documents(10, index_start=10240))
+        f.post(on='/index', inputs=get_documents(10, index_start=1024))
 
         with Flow().add(
             uses='FaissPostgresIndexer', uses_with={'index_key': 'IVF64,PQ32'}
@@ -66,7 +66,7 @@ def test_online_train_2_flows(docker_compose):
             assert len(doc.matches) == 10
 
         status = f.post(on='/status', return_results=True)[0].docs[0].tags
-        assert int(status['active_docs']) == 10250
+        assert int(status['active_docs']) == 1034
 
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
