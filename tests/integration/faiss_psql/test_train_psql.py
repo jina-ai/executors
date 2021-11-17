@@ -22,7 +22,7 @@ def get_documents(nr=10, index_start=0, emb_size=256):
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 @pytest.mark.parametrize('index_key', ['IVF64,PQ32', 'IVF8,PQ8', 'HNSW32'])
 def test_online_train(docker_compose, index_key):
-    docs = get_documents(10240)
+    docs = get_documents(1024)
     with Flow().add(
         uses='FaissPostgresIndexer', uses_with={'index_key': index_key}
     ) as f:
@@ -36,7 +36,7 @@ def test_online_train(docker_compose, index_key):
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_online_train_2_flows(docker_compose):
-    docs = get_documents(10240)
+    docs = get_documents(1024)
     with Flow().add(
         uses='FaissPostgresIndexer', uses_with={'index_key': 'IVF64,PQ32'}
     ) as f:
@@ -71,7 +71,7 @@ def test_online_train_2_flows(docker_compose):
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_online_train_3_flows(docker_compose):
-    docs = get_documents(10240)
+    docs = get_documents(1024)
     with Flow().add(
         uses='FaissPostgresIndexer', uses_with={'index_key': 'IVF64,PQ32'}
     ) as f:
@@ -93,13 +93,13 @@ def test_online_train_3_flows(docker_compose):
 
 @pytest.mark.parametrize('docker_compose', [compose_yml], indirect=['docker_compose'])
 def test_offline_train(tmpdir, docker_compose):
-    docs = get_documents(10240)
+    docs = get_documents(1024)
     with Flow().add(
         uses='FaissPostgresIndexer', uses_with={'index_key': 'IVF64,PQ32'}
     ) as f:
         f.post(on='/index', inputs=docs)
 
-    train_docs = DocumentArray(get_documents(10240))
+    train_docs = DocumentArray(get_documents(1024))
     index_filepath = os.path.join(tmpdir, 'trained_faiss.bin')
 
     with Flow().add(
