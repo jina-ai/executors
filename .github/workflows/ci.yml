@@ -1,6 +1,6 @@
 name: CI
 
-on: [pull_request]
+on: [ pull_request ]
 
 jobs:
   prep-testbed:
@@ -20,7 +20,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
   linting:
-    needs: [prep-testbed]
+    needs: [ prep-testbed ]
     runs-on: ubuntu-latest
     if: ${{ needs.prep-testbed.outputs.matrix != '[]' }}
     strategy:
@@ -43,7 +43,7 @@ jobs:
         run: black --check ${{ matrix.executor-path }}
 
   unit-tests:
-    needs: [prep-testbed]
+    needs: [ prep-testbed ]
     runs-on: ubuntu-latest
     if: ${{ needs.prep-testbed.outputs.matrix != '[]' }}
     strategy:
@@ -99,7 +99,7 @@ jobs:
   # CONTRIBUTING.md in this repo
 
   docker-tests:
-    needs: [prep-testbed]
+    needs: [ prep-testbed ]
     runs-on: ubuntu-latest
     if: ${{ needs.prep-testbed.outputs.matrix != '[]' }}
     strategy:
@@ -129,7 +129,18 @@ jobs:
         run: |
           pip install -r tests/requirements.txt
       - name: Run integration tests
-        run: PYTHONPATH=. pytest -s -v tests/integration
+        run: PYTHONPATH=. pytest -s -v tests/integration/cache
+      - name: Run integration tests
+        run: PYTHONPATH=. pytest -s -v tests/integration/faiss_psql
+      - name: Run integration tests
+        run: PYTHONPATH=. pytest -s -v tests/integration/lmdb_dump_reload
+      - name: Run integration tests
+        run: PYTHONPATH=. pytest -s -v tests/integration/psql_dump_reload
+      - name: Run integration tests
+        run: PYTHONPATH=. pytest -s -v tests/integration/psql_import
+      - name: Run integration tests
+        run: PYTHONPATH=. pytest -s -v tests/integration/sharding
+
 
   gpu-folders:
     runs-on: ubuntu-latest
@@ -147,8 +158,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
   gpu-tests:
-    needs: [gpu-folders]
-    runs-on: [self-hosted, gpu]
+    needs: [ gpu-folders ]
+    runs-on: [ self-hosted, gpu ]
     if: ${{ needs.gpu-folders.outputs.matrix != '[]' }}
     strategy:
       fail-fast: false
@@ -176,7 +187,7 @@ jobs:
       - name: build docker image
         run: docker build -t $IMAGE_NAME -f Dockerfile.gpu .
       - name: Print image size
-        run: docker inspect $IMAGE_NAME | jq '.[0].Size' | numfmt --to=iec --suffix=B      
+        run: docker inspect $IMAGE_NAME | jq '.[0].Size' | numfmt --to=iec --suffix=B
       - name: start container
         run: |
           docker run \
