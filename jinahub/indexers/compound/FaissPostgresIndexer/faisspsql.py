@@ -82,7 +82,7 @@ class FaissPostgresIndexer(Executor):
             )
 
             # check the model from PSQL
-            if not trained_index_file:
+            if (not trained_index_file) and (not self._kv_indexer.dry_run):
                 (
                     trained_model,
                     trained_model_checksum,

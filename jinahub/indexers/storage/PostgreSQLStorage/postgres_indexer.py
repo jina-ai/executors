@@ -57,6 +57,7 @@ class PostgreSQLStorage(Executor):
         self.database = database
         self.table = table
         self.virtual_shards = virtual_shards
+        self.dry_run = dry_run
         self.handler = PostgreSQLHandler(
             hostname=self.hostname,
             port=self.port,
