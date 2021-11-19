@@ -33,3 +33,4 @@ def docker_compose(request):
     os.system(
         f"docker-compose -f {request.param} --project-directory . down --remove-orphans"
     )
+    time.sleep(5)

@@ -556,7 +556,6 @@ class FaissSearcher(Executor):
 
         if self.normalize:
             faiss.normalize_L2(data)
-
         self._faiss_index.train(data)
 
     def save_trained_model(self, target_path: str):
