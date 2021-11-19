@@ -1,4 +1,5 @@
 psycopg2-binary==2.8.6
+bidict
 faiss-cpu==1.7.1
 jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
-jina_executors @ git+https://github.com/jina-ai/executors
+jina_executors @ git+https://github.com/jina-ai/executors@refactor-improve-indexer#egg=jinahub

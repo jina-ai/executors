@@ -34,16 +34,16 @@ class TagMatchMerger(Executor):
                     else:
                         results[doc.id] = doc
 
-            top_k = parameters.get('top_k')
-            if top_k:
-                top_k = int(top_k)
+            limit = parameters.get('limit')
+            if limit:
+                limit = int(limit)
 
             for doc in results.values():
                 doc.matches = sorted(
                     doc.matches,
                     key=lambda m: m.scores[METRIC].value,
                     reverse=True,
-                )[:top_k]
+                )[:limit]
 
             docs = DocumentArray(list(results.values()))
             return docs
@@ -130,7 +130,7 @@ def test_shards_numpy_filequery(tmpdir, num_shards):
         results = flow.post(
             on='/tag_search',
             inputs=inputs,
-            parameters={'top_k': TOP_K},
+            parameters={'limit': TOP_K},
             return_results=True,
         )
 

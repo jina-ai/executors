@@ -30,4 +30,4 @@ The folder needs to contain the data exported from your Indexer.
 ## Reference
 - [indexer docs](https://docs.jina.ai/advanced/experimental/indexers/).
 
-<!-- version=v0.2 -->
+<!-- version=v0.3 -->

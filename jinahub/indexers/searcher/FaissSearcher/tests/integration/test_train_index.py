@@ -61,7 +61,7 @@ def test_train_and_index(metas, tmpdir):
         f.post(on='/index', data=index_docs)
 
         result = f.post(
-            on='/search', data=query_docs, return_results=True, parameters={'top_k': 4}
+            on='/search', data=query_docs, return_results=True, parameters={'limit': 4}
         )[0].docs
         assert len(result[0].matches) == 4
         for d in result:

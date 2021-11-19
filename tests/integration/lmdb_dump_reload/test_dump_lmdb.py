@@ -53,13 +53,13 @@ class MatchMerger(Executor):
                     else:
                         results[doc.id] = doc
 
-            top_k = parameters.get('top_k')
-            if top_k:
-                top_k = int(top_k)
+            limit = parameters.get('limit')
+            if limit:
+                limit = int(limit)
 
             for doc in results.values():
                 doc.matches = sorted(doc.matches, key=lambda m: m.scores[METRIC].value)[
-                    :top_k
+                    :limit
                 ]
 
             docs = DocumentArray(list(results.values()))
@@ -167,7 +167,7 @@ def test_dump_reload(tmpdir, nr_docs, emb_size, shards):
             results = flow_query.post(
                 on='/search',
                 inputs=docs,
-                parameters={'top_k': top_k},
+                parameters={'limit': top_k},
                 return_results=True,
             )
             assert len(results[0].docs[0].matches) == top_k
