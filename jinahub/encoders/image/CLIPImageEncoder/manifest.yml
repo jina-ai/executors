@@ -1,5 +1,0 @@
-manifest_version: 1
-name: CLIPImageEncoder
-description: Image encoder that wraps the image embedding functionality using the CLIP model
-url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/image/CLIPImageEncoder
-keywords: [clip, image, crossmodal, encoder, PyTorch, en]
