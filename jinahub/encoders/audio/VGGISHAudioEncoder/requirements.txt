@@ -1,8 +1,0 @@
-tensorflow-cpu==2.6.0
-resampy==0.2.2
-tf_slim==1.1.0
-six==1.15.0
-soundfile==0.10.3.post1
-librosa==0.7
-numba==0.48
-requests
