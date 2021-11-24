@@ -1,2 +1,2 @@
-git+https://github.com/jina-ai/jina-commons
+jina-commons @ git+https://github.com/jina-ai/jina-commons.git#egg=jina-commons
 lmdb==1.2.1
