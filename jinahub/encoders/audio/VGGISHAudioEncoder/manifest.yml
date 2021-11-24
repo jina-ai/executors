@@ -1,5 +1,0 @@
-manifest_version: 1
-name: VGGishAudioEncoder
-description: This is my dummy executor
-url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/audio/VGGISHAudioEncoder
-keywords: [encoder, Numpy]
