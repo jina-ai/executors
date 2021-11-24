@@ -33,4 +33,4 @@ The folder needs to contain the data exported from your Indexer. Again, see [doc
 
 - https://github.com/spotify/annoy
 
-<!-- version=v0.1 -->
+<!-- version=v0.2 -->
