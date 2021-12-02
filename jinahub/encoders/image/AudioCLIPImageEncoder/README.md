@@ -2,21 +2,17 @@
 
 **AudioCLIPImageEncoder** is an encoder that encodes images using the [AudioCLIP](https://arxiv.org/abs/2106.13043) model.
 
-This encoder is meant to be used in conjunction with the AudioCLIP text ([AudioCLIPTextEncoder](https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/AudioCLIPTextEncoder)) and audio ([AudioCLIPEncoder](https://github.com/jina-ai/executors/tree/main/jinahub/encoders/audio/AudioCLIPEncoder)) encoders, as it can embedd text, images and audio to the same latent space.
+Before using it, please check the [prerequisites](#prerequisites).
 
-You can use either the `Full` (where all three heads were trained) or the `Partial` (where the text and image heads were frozen) version of the model.
+This encoder is meant to be used in conjunction with the [AudioCLIPTextEncoder](https://hub.jina.ai/executor/jfe8kovq) and [AudioCLIPEncoder](https://hub.jina.ai/executor/f4d22e1r) encoders, as they embed text, images and audio to the same latent space.
 
-The following arguments can be passed on initialization:
+You can either use the `Full` (where all three heads were trained) or the `Partial` (where the text and image heads were frozen) versions of the model.
 
-- `model_path`: path of the pre-trained AudioCLIP model.
-- `default_traversal_paths`: default traversal path (used if not specified in request's parameters)
-- `default_batch_size`: default batch size (used if not specified in request's parameters)
-- `device`: device that the model is on (should be "cpu", "cuda" or "cuda:X", where X is the index of the GPU on the machine)
-
+For more information, such as how to run an Executor on a GPU, check [this guide](https://docs.jina.ai/tutorials/gpu-executor/).
 
 ## Prerequisites
 
-> These are only needed if you use `jinahub://AudioCLIPTextEncoder`. 
+> These are only needed if you use it with the `jinahub://AudioCLIPImageEncoder` syntax. 
 
 First, you should download the model and the vocabulary, which will be saved into the `.cache` folder inside your current directory (will be created if it does not exist yet).
 
@@ -34,12 +30,25 @@ wget https://raw.githubusercontent.com/jina-ai/executors/main/jinahub/encoders/i
 ./download_partial.sh
 ```
 
-And then you will also need to pass the argument `model_path='.cache/AudioCLIP-Partial-Training.pt'` when you initialize the executor.
+And then you will also need to pass the argument `model_path='.cache/AudioCLIP-Partial-Training.pt'` when you initialize the executor, like so:
 
+```python
+with Flow().add(
+    uses='jinahub://AudioCLIPImageEncoder',
+    uses_with={
+        'model_path': '.cache/AudioCLIP-Partial-Training.pt'
+    }
+)
+```
 
-## Reference
+## See also
+
+- [AudioCLIPTextEncoder](https://hub.jina.ai/executor/jfe8kovq)
+- [AudioCLIPEncoder](https://hub.jina.ai/executor/f4d22e1r)
+
+## References
 
 - [AudioCLIP paper](https://arxiv.org/abs/2106.13043)
 - [AudioCLIP GitHub Repository](https://github.com/AndreyGuzhov/AudioCLIP)
 
-<!-- version=v0.4 -->
+<!-- version=v0.5 -->
