@@ -31,7 +31,8 @@ class AudioCLIPTextEncoder(Executor):
             request's parameters)
         :param batch_size: default batch size (used if not specified in
             request's parameters)
-        :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
+        :param device: device that the model is on (should be "cpu", "cuda" or
+        "cuda:X",
             where X is the index of the GPU on the machine)
         """
         super().__init__(*args, **kwargs)
@@ -65,7 +66,8 @@ class AudioCLIPTextEncoder(Executor):
         """
         Method to create embeddings for documents by encoding their text.
 
-        :param docs: A document array with documents to create embeddings for. Only the
+        :param docs: A document array with documents to create embeddings for. Only
+        the
             documents that have the ``text`` attribute will get embeddings.
         :param parameters: A dictionary that contains parameters to control encoding.
             The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
@@ -76,7 +78,7 @@ class AudioCLIPTextEncoder(Executor):
 
         batch_generator = docs.traverse_flat(
             traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-            filter_fn=lambda doc: len(doc.text)>0
+            filter_fn=lambda doc: len(doc.text) > 0,
         ).batch(
             batch_size=parameters.get('batch_size', self.batch_size),
         )
