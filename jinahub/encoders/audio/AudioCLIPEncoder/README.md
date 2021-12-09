@@ -18,14 +18,14 @@ First, you should download the model and the vocabulary, which will be saved int
 
 To do this, copy the `scripts/download_full.sh` script to your current directory and execute it:
 
-```
+```shell
 wget https://raw.githubusercontent.com/jina-ai/executors/main/jinahub/encoders/image/AudioCLIPImageEncoder/scripts/download_full.sh && chmod +x download_full.sh
 ./download_full.sh
 ```
 
 This will download the `Full` version of the model (this is the default model used by the executor). If you instead want to download the `Partial` version of the model, execute
 
-```
+```shell
 wget https://raw.githubusercontent.com/jina-ai/executors/main/jinahub/encoders/image/AudioCLIPImageEncoder/scripts/download_partial.sh && chmod +x download_partial.sh
 ./download_partial.sh
 ```

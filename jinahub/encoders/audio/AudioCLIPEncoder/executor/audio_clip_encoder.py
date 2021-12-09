@@ -21,7 +21,7 @@ class AudioCLIPEncoder(Executor):
 
     def __init__(
         self,
-        model_path: str = 'assets/AudioCLIP-Full-Training.pt',
+        model_path: str = '.cache/AudioCLIP-Full-Training.pt',
         traversal_paths: Iterable[str] = ('r',),
         batch_size: int = 32,
         device: str = 'cpu',
@@ -46,7 +46,10 @@ class AudioCLIPEncoder(Executor):
             import subprocess
 
             root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            subprocess.call(['sh', 'scripts/download_model.sh'], cwd=root_path)
+            script_name = 'scripts/download_full.sh'
+            if 'Partial' in model_path:
+                script_name = 'scripts/download_partial.sh'
+            subprocess.call(['sh', script_name], cwd=root_path)
 
         try:
             self.model = AudioCLIP(pretrained=model_path).to(device).eval()
