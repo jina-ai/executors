@@ -49,10 +49,11 @@ class AudioCLIPImageEncoder(Executor):
         self.model_path = model_path
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
+        self.device = device
         self.use_preprocessing = use_preprocessing
 
         try:
-            self.model = AudioCLIP(pretrained=self.model_path).to(device).eval()
+            self.model = AudioCLIP(pretrained=self.model_path).to(self.device).eval()
         except FileNotFoundError:
             raise FileNotFoundError(
                 'Please download AudioCLIP model and set the `model_path` argument.'
