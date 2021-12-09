@@ -94,7 +94,7 @@ class AudioCLIPEncoder(Executor):
 
         for d in filtered_docs:
             d.blob, d.tags['sample_rate'] = self._resample(
-                d.blob, d.tags.get('sample_rate', None)
+                d.blob, dict(d.tags).get('sample_rate', None)
             )
             audio = torch.Tensor(d.blob).unsqueeze(0)
             embedding = self.model.encode_audio(audio=audio)[0]
