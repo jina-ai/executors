@@ -19,7 +19,7 @@ def encoder() -> AudioCLIPEncoder:
 
 @pytest.fixture(scope="module")
 def gpu_encoder() -> AudioCLIPEncoder:
-    return AudioCLIPEncoder(device='cuda')
+    return AudioCLIPEncoder(device='cuda', download_model=True)
 
 
 @pytest.fixture(scope="function")

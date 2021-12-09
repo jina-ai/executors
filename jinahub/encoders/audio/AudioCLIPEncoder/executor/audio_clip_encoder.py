@@ -25,6 +25,7 @@ class AudioCLIPEncoder(Executor):
         traversal_paths: str = 'r',
         batch_size: int = 32,
         device: str = 'cpu',
+        download_model: bool = False,
         *args,
         **kwargs,
     ):
@@ -32,16 +33,28 @@ class AudioCLIPEncoder(Executor):
         :param model_path: path of the pre-trained AudioCLIP model
         :param traversal_paths: default traversal path
         :param device: Torch device string (e.g. 'cpu', 'cuda', 'cuda:2')
+        :param download_model: whether to download the model at start-up
         """
 
         super().__init__(*args, **kwargs)
         torch.set_grad_enabled(False)
         self.model_path = model_path
+        self.device = device
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
 
+        if download_model:
+            import os
+            import subprocess
+
+            root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            script_name = 'scripts/download_full.sh'
+            if 'Partial' in self.model_path:
+                script_name = 'scripts/download_partial.sh'
+            subprocess.call(['sh', script_name], cwd=root_path)
+
         try:
-            self.model = AudioCLIP(pretrained=self.model_path).to(device).eval()
+            self.model = AudioCLIP(pretrained=self.model_path).to(self.device).eval()
         except FileNotFoundError:
             raise FileNotFoundError(
                 'Please download AudioCLIP model and set the `model_path` argument.'

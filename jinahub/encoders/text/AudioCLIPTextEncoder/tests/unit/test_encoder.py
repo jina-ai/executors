@@ -61,7 +61,7 @@ def test_encoding_cpu():
 
 @pytest.mark.gpu
 def test_encoding_gpu():
-    enc = AudioCLIPTextEncoder(device='cuda')
+    enc = AudioCLIPTextEncoder(device='cuda', download_model=True)
     input_data = DocumentArray([Document(text='hello world')])
 
     enc.encode(docs=input_data, parameters={})
