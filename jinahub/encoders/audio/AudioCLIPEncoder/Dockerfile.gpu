@@ -5,6 +5,7 @@ RUN apt-get -y update && apt-get install -y wget ffmpeg libsndfile-dev
 
 # install requirements before copying the workspace
 COPY gpu_requirements.txt gpu_requirements.txt
+RUN pip install --upgrade pip
 RUN pip install -r gpu_requirements.txt
 
 # setup the workspace

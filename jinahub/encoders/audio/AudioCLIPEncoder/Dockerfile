@@ -5,6 +5,7 @@ RUN apt-get -y update && apt-get install -y wget ffmpeg libsndfile-dev
 
 # install requirements before copying the workspace
 COPY requirements.txt requirements.txt
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # setup the workspace
