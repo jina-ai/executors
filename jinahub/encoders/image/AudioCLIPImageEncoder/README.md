@@ -43,6 +43,20 @@ with Flow().add(
 
 Replace 'Full' with 'Partial' if you downloaded that model.
 
+### Usage within Docker
+
+If you are using the Executor within Docker, you need to mount the local model directory and tell the Executor where to find it, like so:
+
+```python
+with Flow().add(
+    uses='jinahub+docker://AudioCLIPImageEncoder',
+    uses_with={
+        'model_path': '/tmp/.cache/AudioCLIP-Full-Training.pt',
+    },
+    volumes='.cache:/tmp/.cache',
+)
+```
+
 ## See also
 
 - [AudioCLIPTextEncoder](https://hub.jina.ai/executor/jfe8kovq)

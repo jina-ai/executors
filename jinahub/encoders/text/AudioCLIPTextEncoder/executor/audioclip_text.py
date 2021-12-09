@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Iterable, Optional
+from typing import Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -18,10 +18,9 @@ class AudioCLIPTextEncoder(Executor):
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
         tokenizer_path: str = '.cache/bpe_simple_vocab_16e6.txt.gz',
-        traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: str = 'r',
         batch_size: int = 32,
         device: str = 'cpu',
-        download_model: bool = True,
         *args,
         **kwargs
     ):
@@ -36,16 +35,6 @@ class AudioCLIPTextEncoder(Executor):
             where X is the index of the GPU on the machine)
         """
         super().__init__(*args, **kwargs)
-
-        if download_model:
-            import os
-            import subprocess
-
-            root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            script_name = 'scripts/download_full.sh'
-            if 'Partial' in model_path:
-                script_name = 'scripts/download_partial.sh'
-            subprocess.call(['sh', script_name], cwd=root_path)
 
         self.model = (
             AudioCLIP(

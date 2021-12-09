@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Iterable, Optional
+from typing import Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -25,10 +25,9 @@ class AudioCLIPImageEncoder(Executor):
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
         use_preprocessing: bool = True,
-        traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: str = 'r',
         batch_size: int = 32,
         device: str = 'cpu',
-        download_model: bool = True,
         *args,
         **kwargs,
     ):
@@ -46,22 +45,18 @@ class AudioCLIPImageEncoder(Executor):
             where X is the index of the GPU on the machine)
         """
         super().__init__(*args, **kwargs)
-
-        if download_model:
-            import os
-            import subprocess
-
-            root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            script_name = 'scripts/download_full.sh'
-            if 'Partial' in model_path:
-                script_name = 'scripts/download_partial.sh'
-            subprocess.call(['sh', script_name], cwd=root_path)
-
-        self.device = device
-        self.model = AudioCLIP(pretrained=model_path).to(device).eval()
+        torch.set_grad_enabled(False)
+        self.model_path = model_path
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
         self.use_preprocessing = use_preprocessing
+
+        try:
+            self.model = AudioCLIP(pretrained=self.model_path).to(device).eval()
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                'Please download AudioCLIP model and set the `model_path` argument.'
+            )
 
         self._default_transforms = transforms.Compose(
             [

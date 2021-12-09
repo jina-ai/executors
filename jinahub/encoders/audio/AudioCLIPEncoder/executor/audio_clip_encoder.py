@@ -22,12 +22,11 @@ class AudioCLIPEncoder(Executor):
     def __init__(
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
-        traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: str = 'r',
         batch_size: int = 32,
         device: str = 'cpu',
-        download_model: bool = True,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         :param model_path: path of the pre-trained AudioCLIP model
@@ -41,18 +40,8 @@ class AudioCLIPEncoder(Executor):
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
 
-        if download_model:
-            import os
-            import subprocess
-
-            root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            script_name = 'scripts/download_full.sh'
-            if 'Partial' in model_path:
-                script_name = 'scripts/download_partial.sh'
-            subprocess.call(['sh', script_name], cwd=root_path)
-
         try:
-            self.model = AudioCLIP(pretrained=model_path).to(device).eval()
+            self.model = AudioCLIP(pretrained=self.model_path).to(device).eval()
         except FileNotFoundError:
             raise FileNotFoundError(
                 'Please download AudioCLIP model and set the `model_path` argument.'
@@ -64,7 +53,7 @@ class AudioCLIPEncoder(Executor):
         docs: Optional[DocumentArray] = None,
         parameters: dict = {},
         *args,
-        **kwargs
+        **kwargs,
     ) -> Any:
         """
         Encode all Documents with audio data (stored in the ``blob`` attribute) and store the
