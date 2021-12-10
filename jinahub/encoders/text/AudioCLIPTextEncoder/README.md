@@ -16,7 +16,7 @@ check [this guide](https://docs.jina.ai/tutorials/gpu-executor/).
 
 ## Prerequisites
 
-> These are only needed if you use it with the `jinahub://AudioCLIPTextEncoder` syntax.
+> This should be met if 1) you are using `'jinahub+docker://'` syntax, or 2) leave `'download_model'` set to `False` (default value)
 
 First, you should download the model and the vocabulary, which will be saved into the `.cache` folder inside your
 current directory (will be created if it does not exist yet).
@@ -28,16 +28,15 @@ wget https://raw.githubusercontent.com/jina-ai/executors/main/jinahub/encoders/i
 ./download_full.sh
 ```
 
-This will download the `Full` version of the model (this is the default model used by the executor). If you instead want
-to download the `Partial` version of the model, execute
+This will download the `Full` version of the model (this is the default model used by the executor. 
+If you instead want to download the `Partial` version of the model, execute:
 
 ```shell
 wget https://raw.githubusercontent.com/jina-ai/executors/main/jinahub/encoders/image/AudioCLIPImageEncoder/scripts/download_partial.sh && chmod +x download_partial.sh
 ./download_partial.sh
 ```
 
-And then you will also need to pass the argument `model_path='.cache/AudioCLIP-Full-Training.pt'` when you initialize
-the executor, like so:
+And then you will also need to pass the argument `model_path='.cache/AudioCLIP-Full-Training.pt'` when you initialize the executor, like so:
 
 ```python
 with Flow().add(
@@ -52,8 +51,7 @@ Replace 'Full' with 'Partial' if you downloaded that model.
 
 ### Usage within Docker
 
-If you are using the Executor within Docker, you need to mount the local model directory and tell the Executor where to
-find it, like so:
+If you are using the Executor within Docker, you need to mount the local model directory and tell the Executor where to find it, like so:
 
 ```python
 with Flow().add(
