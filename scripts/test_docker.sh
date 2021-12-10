@@ -32,7 +32,7 @@ if [[ -f "Dockerfile" ]]; then
   fi
   nohup jina pea --uses docker://foo:latest $ARGS > nohup.out 2>&1 &
   PID=$!
-  sleep 10
+  sleep 20
   if ps -p $PID > /dev/null;
   then
     kill -9 $PID
