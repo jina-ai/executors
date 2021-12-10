@@ -65,4 +65,4 @@ with f:
 ## Reference
 - https://pytorch.org/tutorials/beginner/saving_loading_models.html
 
-<!-- version=v0.3 -->
+<!-- version=v0.2 -->
