@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from jina import DocumentArray, Executor, requests
-from jina.excepts import PretrainedModelFileDoesNotExist
+from jina.excepts import ExecutorFailToLoad
 from jina.logging.logger import JinaLogger
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -80,7 +80,7 @@ class CustomImageTorchEncoder(Executor):
             self.model.eval()
             self.model.to(self.device)
         else:
-            raise PretrainedModelFileDoesNotExist(
+            raise ExecutorFailToLoad(
                 f'model state dict {self.model_state_dict_path} does not exist'
             )
         self.layer = getattr(self.model, self.layer_name)
