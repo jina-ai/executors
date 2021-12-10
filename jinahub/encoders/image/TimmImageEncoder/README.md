@@ -6,4 +6,4 @@ embeddings, using the models from [timm](https://rwightman.github.io/pytorch-ima
 ## Reference
 - [Timm Models](https://rwightman.github.io/pytorch-image-models/models/)
 
-<!-- version=v0.2 -->
+<!-- version=v0.3 -->

@@ -5,4 +5,4 @@ Internally, `ImageTFEncoder` wraps the models from [tensorflow.keras.application
 
 For more information on the `gpu` usage and `volume` mounting, please refer to the [documentation](https://docs.jina.ai/tutorials/gpu-executor/).
 
-<!-- version=v0.2 -->
+<!-- version=v0.3 -->
