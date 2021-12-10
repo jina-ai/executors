@@ -142,3 +142,11 @@ def test_quality_embeddings(basic_encoder: DPRTextEncoder):
     matches = ['B', 'A', 'D', 'C']
     for i, doc in enumerate(docs):
         assert doc.matches[1].id == matches[i]
+
+
+def test_ctx_encoder_with_incorrect_model():
+    with pytest.raises(
+        ValueError,
+        match='Please ensure that pretrained_model_name_or_path is correctly set',
+    ):
+        DPRTextEncoder(encoder_type='context')

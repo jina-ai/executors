@@ -6,6 +6,11 @@ The **DPR** model was originally proposed in [Dense Passage Retrieval for Open-D
 
 This encoder supports both the DPR context and question encoders - you should specify which type you are using with the `encoder_type` parameter.
 
+If the `encoder_type` is `context`, please also specify the context encoder model by setting the `pretrained_model_name_or_path`.
+
+As an example, if `encoder_type` is `context`, you may set `pretrained_model_name_or_path` to `facebook/dpr-ctx_encoder-single-nq-base`.
+
+
 
 ## Reference
 

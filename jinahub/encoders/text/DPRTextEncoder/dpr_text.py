@@ -68,6 +68,18 @@ class DPRTextEncoder(Executor):
             )
         self.encoder_type = encoder_type
 
+        if (
+            encoder_type == 'context'
+            and pretrained_model_name_or_path
+            == 'facebook/dpr-question_encoder-single-nq-base'
+        ):
+            raise ValueError(
+                'Encoder type is context but pretrained model is not set and '
+                f'default model {pretrained_model_name_or_path} is a question model.'
+                'Please ensure that pretrained_model_name_or_path is correctly set '
+                'to a dpr context encoder model.'
+            )
+
         if not base_tokenizer_model:
             base_tokenizer_model = pretrained_model_name_or_path
 
