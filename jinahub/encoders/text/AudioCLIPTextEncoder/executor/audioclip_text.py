@@ -15,15 +15,15 @@ class AudioCLIPTextEncoder(Executor):
     """
 
     def __init__(
-            self,
-            model_path: str = '.cache/AudioCLIP-Full-Training.pt',
-            tokenizer_path: str = '.cache/bpe_simple_vocab_16e6.txt.gz',
-            traversal_paths: Iterable[str] = ('r',),
-            batch_size: int = 32,
-            device: str = 'cpu',
-            download_model: bool = True,
-            *args,
-            **kwargs
+        self,
+        model_path: str = '.cache/AudioCLIP-Full-Training.pt',
+        tokenizer_path: str = '.cache/bpe_simple_vocab_16e6.txt.gz',
+        traversal_paths: Iterable[str] = ('r',),
+        batch_size: int = 32,
+        device: str = 'cpu',
+        download_model: bool = True,
+        *args,
+        **kwargs
     ):
         """
         :param model_path: path to the pre-trained AudioCLIP model.
@@ -47,20 +47,18 @@ class AudioCLIPTextEncoder(Executor):
             AudioCLIP(
                 pretrained=model_path,
                 bpe_path=tokenizer_path,
-            )
-                .to(device)
-                .eval()
+            ).to(device).eval()
         )
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
 
     @requests
     def encode(
-            self,
-            docs: Optional[DocumentArray] = None,
-            parameters: dict = {},
-            *args,
-            **kwargs
+        self,
+        docs: Optional[DocumentArray] = None,
+        parameters: dict = {},
+        *args,
+        **kwargs
     ) -> None:
         """
         Method to create embeddings for documents by encoding their text.
