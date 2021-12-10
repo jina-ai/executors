@@ -115,7 +115,7 @@ class FlairTextEncoder(Executor):
 
         document_batches_generator = docs.traverse_flat(
             traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-            filter_fn=lambda doc:len(doc.text)>0
+            filter_fn=lambda doc: len(doc.text) > 0,
         ).batch(
             batch_size=parameters.get('batch_size', self.batch_size),
         )
