@@ -47,7 +47,9 @@ class AudioCLIPTextEncoder(Executor):
             AudioCLIP(
                 pretrained=model_path,
                 bpe_path=tokenizer_path,
-            ).to(device).eval()
+            )
+            .to(device)
+            .eval()
         )
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
@@ -74,7 +76,7 @@ class AudioCLIPTextEncoder(Executor):
 
         batch_generator = docs.traverse_flat(
             traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-            filter_fn=lambda doc: len(doc.text) > 0,
+            filter_fn=lambda doc: len(doc.text)>0
         ).batch(
             batch_size=parameters.get('batch_size', self.batch_size),
         )
