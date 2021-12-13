@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Iterable, Optional
+from typing import Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -18,10 +18,10 @@ class AudioCLIPTextEncoder(Executor):
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
         tokenizer_path: str = '.cache/bpe_simple_vocab_16e6.txt.gz',
-        traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: str = 'r',
         batch_size: int = 32,
         device: str = 'cpu',
-        download_model: bool = True,
+        download_model: bool = False,
         *args,
         **kwargs
     ):
@@ -31,8 +31,10 @@ class AudioCLIPTextEncoder(Executor):
             request's parameters)
         :param batch_size: default batch size (used if not specified in
             request's parameters)
-        :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
+        :param device: device that the model is on (should be "cpu", "cuda" or
+        "cuda:X",
             where X is the index of the GPU on the machine)
+        :param download_model: whether to download the model at start-up
         """
         super().__init__(*args, **kwargs)
 
@@ -41,16 +43,25 @@ class AudioCLIPTextEncoder(Executor):
             import subprocess
 
             root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            subprocess.call(['sh', 'scripts/download_full.sh'], cwd=root_path)
+            script_name = 'scripts/download_full.sh'
+            if 'Partial' in model_path:
+                script_name = 'scripts/download_partial.sh'
+            subprocess.call(['sh', script_name], cwd=root_path)
 
-        self.model = (
-            AudioCLIP(
-                pretrained=model_path,
-                bpe_path=tokenizer_path,
+        try:
+            self.model = (
+                AudioCLIP(
+                    pretrained=model_path,
+                    bpe_path=tokenizer_path,
+                )
+                .to(device)
+                .eval()
             )
-            .to(device)
-            .eval()
-        )
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                'Please download AudioCLIP model and set the `model_path` argument.'
+            )
+
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
 
@@ -65,7 +76,8 @@ class AudioCLIPTextEncoder(Executor):
         """
         Method to create embeddings for documents by encoding their text.
 
-        :param docs: A document array with documents to create embeddings for. Only the
+        :param docs: A document array with documents to create embeddings for. Only
+        the
             documents that have the ``text`` attribute will get embeddings.
         :param parameters: A dictionary that contains parameters to control encoding.
             The accepted keys are ``traversal_paths`` and ``batch_size`` - in their
@@ -76,7 +88,7 @@ class AudioCLIPTextEncoder(Executor):
 
         batch_generator = docs.traverse_flat(
             traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-            filter_fn=lambda doc: len(doc.text)>0
+            filter_fn=lambda doc: len(doc.text) > 0,
         ).batch(
             batch_size=parameters.get('batch_size', self.batch_size),
         )

@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Iterable, Optional
+from typing import Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -25,10 +25,10 @@ class AudioCLIPImageEncoder(Executor):
         self,
         model_path: str = '.cache/AudioCLIP-Full-Training.pt',
         use_preprocessing: bool = True,
-        traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: str = 'r',
         batch_size: int = 32,
         device: str = 'cpu',
-        download_model: bool = True,
+        download_model: bool = False,
         *args,
         **kwargs,
     ):
@@ -44,21 +44,32 @@ class AudioCLIPImageEncoder(Executor):
             request's parameters)
         :param device: device that the model is on (should be "cpu", "cuda" or "cuda:X",
             where X is the index of the GPU on the machine)
+        :param download_model: whether to download the model at start-up
         """
         super().__init__(*args, **kwargs)
+        torch.set_grad_enabled(False)
+        self.model_path = model_path
+        self.traversal_paths = traversal_paths
+        self.batch_size = batch_size
+        self.device = device
+        self.use_preprocessing = use_preprocessing
 
         if download_model:
             import os
             import subprocess
 
             root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            subprocess.call(['sh', 'scripts/download_full.sh'], cwd=root_path)
+            script_name = 'scripts/download_full.sh'
+            if 'Partial' in self.model_path:
+                script_name = 'scripts/download_partial.sh'
+            subprocess.call(['sh', script_name], cwd=root_path)
 
-        self.device = device
-        self.model = AudioCLIP(pretrained=model_path).to(device).eval()
-        self.traversal_paths = traversal_paths
-        self.batch_size = batch_size
-        self.use_preprocessing = use_preprocessing
+        try:
+            self.model = AudioCLIP(pretrained=self.model_path).to(self.device).eval()
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                'Please download AudioCLIP model and set the `model_path` argument.'
+            )
 
         self._default_transforms = transforms.Compose(
             [
@@ -105,7 +116,7 @@ class AudioCLIPImageEncoder(Executor):
 
         batch_generator = docs.traverse_flat(
             traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-            filter_fn=lambda doc: doc.blob is not None
+            filter_fn=lambda doc: doc.blob is not None,
         ).batch(
             batch_size=parameters.get('batch_size', self.batch_size),
         )

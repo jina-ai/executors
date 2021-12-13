@@ -41,7 +41,7 @@ def nested_docs() -> DocumentArray:
 def test_config():
     ex = Executor.load_config(str(Path(__file__).parents[2] / 'config.yml'))
     assert ex.batch_size == 32
-    assert ex.traversal_paths == ('r',)
+    assert ex.traversal_paths == 'r'
     assert ex.use_preprocessing
 
 
@@ -78,7 +78,7 @@ def test_err_no_preprocessing(basic_encoder_no_pre):
 
 @pytest.mark.gpu
 def test_single_image_gpu():
-    encoder = AudioCLIPImageEncoder(device='cuda')
+    encoder = AudioCLIPImageEncoder(device='cuda', download_model=True)
     docs = DocumentArray([Document(blob=np.ones((100, 100, 3), dtype=np.uint8))])
     encoder.encode(docs, {})
 

@@ -40,7 +40,7 @@ jobs:
       - name: Check imports using isort
         run: isort --check-only ${{ matrix.executor-path }}
       - name: Black check formatting
-        run: black --check ${{ matrix.executor-path }}
+        run: black --check --exclude='audio_clip/|vggish/' ${{ matrix.executor-path }}
 
   unit-tests:
     needs: [ prep-testbed ]
