@@ -77,7 +77,7 @@ class DPRTextEncoder(Executor):
                 'Encoder type is context but pretrained model is not set and '
                 f'default model {pretrained_model_name_or_path} is a question model. '
                 'Please ensure that pretrained_model_name_or_path is correctly set '
-                'to a dpr context encoder model.'
+                'to a dpr context encoder model. e.g. "facebook/dpr-ctx_encoder-single-nq-base" '
             )
 
         if not base_tokenizer_model:
