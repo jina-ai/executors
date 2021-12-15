@@ -6,4 +6,4 @@
 - https://spacy.io/models/
 - https://spacy.io/usage/models
 
-<!-- version=v0.2 -->
+<!-- version=v0.3 -->

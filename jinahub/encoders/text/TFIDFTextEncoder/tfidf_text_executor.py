@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 from jina import DocumentArray, Executor, requests
-from jina.excepts import PretrainedModelFileDoesNotExist
+from jina.excepts import ExecutorFailToLoad
 
 
 class TFIDFTextEncoder(Executor):
@@ -38,7 +38,7 @@ class TFIDFTextEncoder(Executor):
         if os.path.exists(self.path_vectorizer):
             self.tfidf_vectorizer = pickle.load(open(self.path_vectorizer, 'rb'))
         else:
-            raise PretrainedModelFileDoesNotExist(
+            raise ExecutorFailToLoad(
                 f'{self.path_vectorizer} not found, cannot find a fitted tfidf_vectorizer'
             )
 
@@ -61,7 +61,7 @@ class TFIDFTextEncoder(Executor):
 
         document_batches_generator = docs.traverse_flat(
             traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-            filter_fn=lambda doc:len(doc.text)>0
+            filter_fn=lambda doc: len(doc.text) > 0,
         ).batch(
             batch_size=parameters.get('batch_size', self.batch_size),
         )
