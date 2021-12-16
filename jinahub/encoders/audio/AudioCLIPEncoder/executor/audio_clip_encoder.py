@@ -7,7 +7,6 @@ import librosa as lr
 import numpy as np
 import torch
 from jina import DocumentArray, Executor, requests
-from jina.excepts import BadDocType
 
 from .audio_clip.model import AudioCLIP
 
@@ -102,7 +101,7 @@ class AudioCLIPEncoder(Executor):
 
     def _resample(self, blob: np.ndarray, orig_sr: int):
         if orig_sr is None:
-            raise BadDocType(
+            raise NotImplementedError(
                 'sample rate is not given, please provide a valid sample rate'
             )
         if orig_sr == AudioCLIPEncoder.TARGET_SAMPLE_RATE:
