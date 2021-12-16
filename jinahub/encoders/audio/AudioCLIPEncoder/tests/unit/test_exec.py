@@ -9,7 +9,6 @@ import numpy as np
 import pytest
 from executor.audio_clip_encoder import AudioCLIPEncoder
 from jina import Document, DocumentArray, Executor
-from jina.excepts import BadDocType
 
 
 @pytest.fixture(scope="module")
@@ -195,7 +194,8 @@ def test_no_sample_rate():
     docs = DocumentArray([Document(blob=audio)])
     encoder = AudioCLIPEncoder()
     with pytest.raises(
-        BadDocType, match='sample rate is not given, please provide a valid sample rate'
+        NotImplementedError,
+        match='sample rate is not given, please provide a valid sample rate',
     ):
         encoder.encode(docs, parameters={})
 
