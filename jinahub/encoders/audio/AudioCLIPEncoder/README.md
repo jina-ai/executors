@@ -1,6 +1,6 @@
 # AudioCLIPEncoder
 
-**AudioCLIPEncoder** is a class that wraps the [AudioCLIP](https://github.com/AndreyGuzhov/AudioCLIP) model for generating embeddings for audio data.
+**AudioCLIPEncoder** is a class that wraps the [AudioCLIP](https://github.com/AndreyGuzhov/AudioCLIP) model for generating embeddings for audio data .
 
 Before using it, please check the [prerequisites](#prerequisites).
 
