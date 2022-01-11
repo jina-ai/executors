@@ -6,7 +6,8 @@ from typing import Dict, Optional, Tuple
 import torch
 import torch.nn as nn
 import torchvision.models.video as models
-from jina import DocumentArray, Executor, requests
+from docarray import DocumentArray
+from jina import Executor, requests
 from torchvision import transforms
 
 # https://github.com/pytorch/vision/blob/d391a0e992a35d7fb01e11110e2ccf8e445ad8a0/references/video_classification/transforms.py#L13
@@ -36,7 +37,7 @@ class VideoTorchEncoder(Executor):
         model_name: str = 'r3d_18',
         use_preprocessing: bool = True,
         download_progress=True,
-        traversal_paths: Tuple = ('r',),
+        traversal_paths: str = 'r',
         batch_size: int = 32,
         device: str = 'cpu',
         *args,
@@ -49,9 +50,8 @@ class VideoTorchEncoder(Executor):
         :param use_preprocessing: if True, the same preprocessing is used which got used during training
             - prevents training-serving gap. When setting `use_preprocessing=True`,
               the input `blob` must have the size of `NumFrames x Height x Width x Channel`.
-        :param traversal_paths: fallback traversal path in case there is not traversal path
-            sent in the request.
-        :param batch_size: fallback batch size in case there is not batch size sent in the request
+        :param traversal_paths: a comma-separated string that represents the traversal path, default `r`.
+        :param batch_size: fallback batch size in case there is no batch size sent in the request
             Defaults to ('r', ), i.e. root level traversal.
         :param device: device to use for encoding ['cuda', 'cpu] - if not set, the device is detected automatically
         """

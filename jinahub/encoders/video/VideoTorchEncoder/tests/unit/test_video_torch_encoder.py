@@ -137,7 +137,7 @@ def test_video_torch_encoder_traversal_paths(batch_size):
         return d
 
     da = DocumentArray([_create_doc_with_video_chunks() for _ in range(10)])
-    ex.encode(da, {'traversal_paths': ['r', 'c'], 'batch_size': batch_size})
+    ex.encode(da, {'traversal_paths': 'r,c', 'batch_size': batch_size})
     assert len(da) == 10
     for doc in da:
         assert doc.embedding.shape == (512,)
