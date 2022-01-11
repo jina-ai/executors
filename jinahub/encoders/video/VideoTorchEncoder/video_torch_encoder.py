@@ -52,7 +52,7 @@ class VideoTorchEncoder(Executor):
               the input `blob` must have the size of `NumFrames x Height x Width x Channel`.
         :param traversal_paths: a comma-separated string that represents the traversal path, default `r`.
         :param batch_size: fallback batch size in case there is no batch size sent in the request
-            Defaults to ('r', ), i.e. root level traversal.
+            Defaults to 'r', i.e. root level traversal.
         :param device: device to use for encoding ['cuda', 'cpu] - if not set, the device is detected automatically
         """
         super().__init__(*args, **kwargs)
