@@ -95,9 +95,15 @@ class AudioCLIP(CLIP):
         self.logit_scale_at = torch.nn.Parameter(torch.log(torch.ones([]) * 100))
 
         if isinstance(self.pretrained, str):
-            self.load_state_dict(
-                torch.load(self.pretrained, map_location='cpu'), strict=False
-            )
+            try:
+                self.load_state_dict(
+                    torch.load(self.pretrained, map_location='cpu'), strict=False
+                )
+            except FileNotFoundError:
+                raise FileNotFoundError(
+                    'Please download AudioCLIP model and set the `model_path` argument.'
+                )
+
         elif self.pretrained:
             self.load_state_dict(
                 torch.load(
