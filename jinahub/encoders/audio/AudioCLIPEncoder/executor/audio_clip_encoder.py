@@ -53,7 +53,6 @@ class AudioCLIPEncoder(Executor):
             subprocess.call(['sh', script_name], cwd=root_path)
 
         try:
-            #self.model = AudioCLIP(pretrained=self.model_path).to(self.device).eval()
             self.model = AudioCLIP(pretrained=self.model_path).to(self.device)
 
         except FileNotFoundError:
