@@ -127,9 +127,6 @@ class DPRTextEncoder(Executor):
         if docs is None:
             return
 
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        batch_size = parameters.get('batch_size', self.batch_size)
-
         document_batches_generator =  DocumentArray(
             filter(
                 lambda x: bool(x.text),
