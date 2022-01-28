@@ -28,7 +28,7 @@ class DPRTextEncoder(Executor):
         base_tokenizer_model: Optional[str] = None,
         title_tag_key: Optional[str] = None,
         max_length: Optional[int] = None,
-        traversal_paths: Iterable[str] = '@r',
+        traversal_paths: str = '@r',
         batch_size: int = 32,
         device: str = 'cpu',
         *args,
@@ -121,7 +121,7 @@ class DPRTextEncoder(Executor):
             ``text`` attribute.
         :param parameters: dictionary to define the ``traversal_path`` and the
             ``batch_size``. For example,
-            ``parameters={'traversal_paths': ['r'], 'batch_size': 10}``
+            ``parameters={'traversal_paths': '@r', 'batch_size': 10}``
         """
 
         if docs is None:
