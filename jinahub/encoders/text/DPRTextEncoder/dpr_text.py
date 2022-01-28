@@ -1,4 +1,4 @@
-from typing import Iterable, Optional
+from typing import Optional
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -127,13 +127,12 @@ class DPRTextEncoder(Executor):
         if docs is None:
             return
 
-        document_batches_generator =  DocumentArray(
+        document_batches_generator = DocumentArray(
             filter(
                 lambda x: bool(x.text),
                 docs[parameters.get('traversal_paths', self.traversal_paths)],
             )
         ).batch(batch_size=parameters.get('batch_size', self.batch_size))
-
 
         for batch_docs in document_batches_generator:
             with torch.inference_mode():
@@ -143,7 +142,7 @@ class DPRTextEncoder(Executor):
                     text_pairs = list(
                         filter(
                             lambda x: x is not None,
-                            batch_docs[:, f'tags__{self.title_tag_key}']
+                            batch_docs[:, f'tags__{self.title_tag_key}'],
                         )
                     )
                     if len(text_pairs) != len(batch_docs):
@@ -165,4 +164,3 @@ class DPRTextEncoder(Executor):
                 embeddings = self.model(**inputs).pooler_output.cpu().numpy()
 
             batch_docs.embeddings = embeddings
-
