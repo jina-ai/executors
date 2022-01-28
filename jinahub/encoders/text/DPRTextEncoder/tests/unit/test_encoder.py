@@ -116,7 +116,7 @@ def test_traversal_path(
 
         if embeddings is not None:
             assert len(embeddings) == count
-        else :
+        else:
             assert 0 == count
 
 
