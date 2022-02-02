@@ -1,4 +1,4 @@
-FROM jinaai/jina:master-devel
+FROM jinaai/jina:master-py37-perf
 
 RUN apt update && apt install -y git
 COPY gpu_requirements.txt gpu_requirements.txt
