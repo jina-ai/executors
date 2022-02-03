@@ -1,5 +1,0 @@
-manifest_version: 1
-name: DPRTextEncoder
-description: Encoder based on the DPR model
-url: https://github.com/jina-ai/executors/tree/main/jinahub/encoders/text/DPRTextEncoder
-keywords: [dpr, text, qa, question, contenxt, encoder, PyTorch, en]
