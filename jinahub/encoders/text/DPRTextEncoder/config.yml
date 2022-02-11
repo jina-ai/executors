@@ -1,4 +1,0 @@
-jtype: DPRTextEncoder
-metas:
-  py_modules:
-    - dpr_text.py
