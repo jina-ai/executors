@@ -81,7 +81,10 @@ def test_traversal_path(
     basic_encoder.encode(docs=docs, parameters={'traversal_paths': traversal_paths})
     for path, count in counts:
         embeddings = DocumentArray(docs[path]).embeddings
-        assert len(list(filter(lambda x: x is not None, embeddings))) == count
+        if count == 0:
+            assert embeddings is None
+        else:
+            len(embeddings) == count
 
 
 @pytest.mark.parametrize('batch_size', [1, 2, 4, 8])
