@@ -1,7 +1,7 @@
 __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
-from typing import Dict, Iterable, Optional
+from typing import Dict
 
 import torch
 from jina import DocumentArray, Executor, requests
@@ -16,7 +16,7 @@ class TransformerSentenceEncoder(Executor):
     def __init__(
         self,
         model_name: str = 'all-MiniLM-L6-v2',
-        traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: str = '@r',
         batch_size: int = 32,
         device: str = 'cpu',
         *args,
@@ -34,9 +34,7 @@ class TransformerSentenceEncoder(Executor):
         self.model = SentenceTransformer(model_name, device=device)
 
     @requests
-    def encode(
-        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
-    ):
+    def encode(self, docs: DocumentArray = [], parameters: Dict = {}, **kwargs):
         """
         Encode all docs with text and store the encodings in the ``embedding`` attribute
         of the docs.
@@ -45,18 +43,15 @@ class TransformerSentenceEncoder(Executor):
             attribute get an embedding.
         :param parameters: Any additional parameters for the `encode` function.
         """
-        if docs is None:
-            return
+        document_batches_generator = DocumentArray(
+            filter(
+                lambda d: d.text,
+                docs[parameters.get('traversal_paths', self.traversal_paths)],
+            )
+        ).batch(batch_size=parameters.get('batch_size', self.batch_size))
 
-        for batch in docs.traverse_flat(
-            traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-            filter_fn=lambda doc: len(doc.text) > 0,
-        ).batch(
-            batch_size=parameters.get('batch_size', self.batch_size),
-        ):
-            texts = batch.get_attributes('text')
-
-            with torch.inference_mode():
-                embeddings = self.model.encode(texts)
-                for doc, embedding in zip(batch, embeddings):
-                    doc.embedding = embedding
+        with torch.inference_mode():
+            for batch in document_batches_generator:
+                embeddings = self.model.encode(batch.texts)
+                embeddings = embeddings.cpu().numpy()
+                batch.embeddings = embeddings
