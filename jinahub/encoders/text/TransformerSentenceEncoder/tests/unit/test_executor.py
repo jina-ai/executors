@@ -57,10 +57,10 @@ def test_models(model_name: str, emb_dim: int):
 @pytest.mark.parametrize(
     'traversal_paths, counts',
     [
-        ('@r', [['r', 1], ['c', 0], ['cc', 0]]),
-        ('@c', [['r', 0], ['c', 3], ['cc', 0]]),
-        ('@cc', [['r', 0], ['c', 0], ['cc', 2]]),
-        ('@r,cc', [['r', 1], ['c', 0], ['cc', 2]]),
+        ('@r', [['@r', 1], ['@c', 0], ['@cc', 0]]),
+        ('@c', [['@r', 0], ['@c', 3], ['@cc', 0]]),
+        ('@cc', [['@r', 0], ['@c', 0], ['@cc', 2]]),
+        ('@r,cc', [['@r', 1], ['@c', 0], ['@cc', 2]]),
     ],
 )
 def test_traversal_path(
@@ -80,7 +80,7 @@ def test_traversal_path(
 
     basic_encoder.encode(docs=docs, parameters={'traversal_paths': traversal_paths})
     for path, count in counts:
-        embeddings = DocumentArray(docs.traverse_flat(path)).embeddings
+        embeddings = DocumentArray(docs[path]).embeddings
         assert len(list(filter(lambda x: x is not None, embeddings))) == count
 
 
