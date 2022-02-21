@@ -53,5 +53,4 @@ class TransformerSentenceEncoder(Executor):
         with torch.inference_mode():
             for batch in document_batches_generator:
                 embeddings = self.model.encode(batch.texts)
-                embeddings = embeddings.cpu().numpy()
                 batch.embeddings = embeddings
