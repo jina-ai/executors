@@ -16,17 +16,11 @@ def test_integration(request_size: int):
         [Document(text='just some random text here') for _ in range(50)]
     )
     with Flow(return_results=True).add(uses=TransformerSentenceEncoder) as flow:
-        resp = flow.post(
-            on='/index',
-            inputs=docs,
-            request_size=request_size,
-            return_results=True,
-        )
+        resp_docs = flow.post(on='/index', inputs=docs, request_size=request_size)
 
-    assert sum(len(resp_batch.docs) for resp_batch in resp) == 50
-    for r in resp:
-        for doc in r.docs:
-            assert doc.embedding.shape == (_EMBEDDING_DIM,)
+    assert len(resp_docs) == 50
+    for doc in resp_docs:
+        assert doc.embedding.shape == (_EMBEDDING_DIM,)
 
 
 @pytest.mark.docker

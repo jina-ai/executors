@@ -80,7 +80,7 @@ def test_traversal_path(
 
     basic_encoder.encode(docs=docs, parameters={'traversal_paths': traversal_paths})
     for path, count in counts:
-        embeddings = docs.traverse_flat([path]).get_attributes('embedding')
+        embeddings = DocumentArray(docs.traverse_flat(path)).embeddings
         assert len(list(filter(lambda x: x is not None, embeddings))) == count
 
 
