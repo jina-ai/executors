@@ -126,7 +126,7 @@ class FaissPostgresIndexer(Executor):
 
         force_retrain = parameters.get('force', False)
 
-        if self.runtime_args.pea_id != 0:
+        if self.runtime_args.shard_id != 0:
             return
 
         if self._vec_indexer.is_trained and not force_retrain:
@@ -206,7 +206,7 @@ class FaissPostgresIndexer(Executor):
 
         if self.total_shards:
             updates = self._kv_indexer.get_snapshot(
-                shard_id=self.runtime_args.pea_id,
+                shard_id=self.runtime_args.shard_id,
                 total_shards=self.total_shards,
                 include_metas=False,
                 filter_deleted=True,
@@ -220,7 +220,7 @@ class FaissPostgresIndexer(Executor):
                 self.logger.info(f'Now adding delta from timestamp {timestamp}')
 
                 deltas = self._kv_indexer.get_delta_updates(
-                    shard_id=self.runtime_args.pea_id,
+                    shard_id=self.runtime_args.shard_id,
                     total_shards=self.total_shards,
                     timestamp=timestamp,
                     filter_deleted=False,
@@ -262,7 +262,7 @@ class FaissPostgresIndexer(Executor):
                 return
 
         delta_updates = self._kv_indexer.get_delta_updates(
-            shard_id=self.runtime_args.pea_id,
+            shard_id=self.runtime_args.shard_id,
             total_shards=self.total_shards,
             timestamp=timestamp,
             filter_deleted=True if init_faiss else False,
