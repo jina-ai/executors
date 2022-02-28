@@ -1,5 +1,5 @@
-__copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
-__license__ = "Apache-2.0"
+__copyright__ = 'Copyright (c) 2021 Jina AI Limited. All rights reserved.'
+__license__ = 'Apache-2.0'
 
 import datetime
 import hashlib
@@ -12,11 +12,14 @@ from jina import Document, DocumentArray
 from jina.logging.logger import JinaLogger
 from psycopg2 import pool  # noqa: F401
 
+# TODO(winston): remove the following
+from .utils import RAND_STR_LEN
+
 
 def doc_without_embedding(d: Document):
     new_doc = Document(d, copy=True)
-    new_doc.ClearField('embedding')
-    return new_doc.SerializeToString()
+    new_doc.embedding = None
+    return new_doc.to_bytes()
 
 
 SCHEMA_VERSION = 3
@@ -299,13 +302,13 @@ class PostgreSQLHandler:
                 f'SET is_deleted = true, '
                 f'updated_at = current_timestamp '
                 f'WHERE doc_id = %s;',
-                [(doc.id,) for doc in docs],
+                map(tuple, docs[:, 'id']),
             )
         else:
             psycopg2.extras.execute_batch(
                 cursor,
                 f'DELETE FROM {self.table} WHERE doc_id = %s;',
-                [(doc.id,) for doc in docs],
+                map(tuple, docs[:, 'id']),
             )
         self.connection.commit()
         return
@@ -321,11 +324,14 @@ class PostgreSQLHandler:
         else:
             embeddings_field = ''
         cursor = self.connection.cursor()
+        retrieved_docs = DocumentArray()
+
         for doc in docs:
             # retrieve metadata
             cursor.execute(
                 f'SELECT doc {embeddings_field} FROM {self.table} WHERE doc_id = %s and is_deleted = false;',
-                (doc.id,),
+                # TODO (winston): this should just be doc.id after the issue is addressed
+                (doc.id[:-RAND_STR_LEN],),
             )
             result = cursor.fetchone()
 
@@ -333,11 +339,14 @@ class PostgreSQLHandler:
                 continue
 
             data = bytes(result[0])
-            retrieved_doc = Document(data)
+            retrieved_doc = Document.from_bytes(data)
             if return_embeddings and result[1] is not None:
                 embedding = np.frombuffer(result[1], dtype=self.dump_dtype)
                 retrieved_doc.embedding = embedding
-            doc.MergeFrom(retrieved_doc)
+                # TODO (winston): remove the following after issue is addressed
+                retrieved_doc.id = doc.id
+            retrieved_docs.append(retrieved_doc)
+        docs.reduce(retrieved_docs)
 
     def get_trained_model(self):
         """Get the trained index parameters from the Postgres db
@@ -463,7 +472,7 @@ class PostgreSQLHandler:
             for sample in cursor:
                 doc_id = sample[0]
                 if sample[1] is not None:
-                    doc = Document(bytes(sample[1]))
+                    doc = Document.from_bytes(bytes(sample[1]))
                 else:
                     doc = Document(id=doc_id)
 

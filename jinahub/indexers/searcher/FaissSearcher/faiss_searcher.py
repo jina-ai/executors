@@ -3,16 +3,21 @@ __license__ = 'Apache-2.0'
 
 import os
 import pickle
+
+# TODO(winston): remove the following
+import random
+import string
 from datetime import datetime
 from typing import Dict, Generator, Iterable, List, Optional, Tuple
 
 import faiss
 import numpy as np
 from bidict import bidict
-from jina import Document, DocumentArray, Executor, requests
+from jina import Document, DocumentArray, Executor
 from jina.helper import batch_iterator
 from jina.logging.logger import JinaLogger
-from jina_commons.indexers.dump import import_vectors
+
+from .utils import RAND_STR_LEN, import_vectors
 
 GENERATOR_DELTA = Generator[
     Tuple[str, Optional[np.ndarray], Optional[datetime], Optional[bool]], None, None
@@ -60,8 +65,8 @@ class FaissSearcher(Executor):
         max_num_training_points: Optional[int] = None,
         dump_path: Optional[str] = None,
         prefetch_size: Optional[int] = 512,
-        index_traversal_paths: List[str] = ['r'],
-        search_traversal_paths: List[str] = ['r'],
+        index_traversal_paths: str = '@r',
+        search_traversal_paths: str = '@r',
         is_distance: bool = True,
         on_gpu: bool = False,
         *args,
@@ -139,7 +144,7 @@ class FaissSearcher(Executor):
                 f'Start building "FaissIndexer" from dump data {dump_path}'
             )
             ids_iter, vecs_iter = import_vectors(
-                dump_path, str(self.runtime_args.pea_id)
+                dump_path, str(self.runtime_args.pea_id), self.logger
             )
             iterator = zip(ids_iter, vecs_iter)
 
@@ -337,10 +342,9 @@ class FaissSearcher(Executor):
     def is_trained(self):
         return self._faiss_index.is_trained if self._faiss_index else False
 
-    @requests(on='/search')
     def search(
         self,
-        docs: Optional[DocumentArray],
+        docs: DocumentArray,
         parameters: Dict = {},
         *args,
         **kwargs,
@@ -368,7 +372,7 @@ class FaissSearcher(Executor):
         # TODO WARNING: maybe this would degrade the query speed
         expand_topk = limit + self.deleted_count
 
-        query_docs = docs.traverse_flat(traversal_paths)
+        query_docs = docs[traversal_paths]
         vecs = query_docs.embeddings.astype(np.float32)
 
         if self.normalize:
@@ -390,14 +394,19 @@ class FaissSearcher(Executor):
                 if not doc_id or self.is_deleted(idx):
                     continue
 
-                match = Document(id=doc_id)
+                # TODO (winston): remove the following
+                unique_id = ''.join(
+                    random.choice(string.ascii_lowercase) for i in range(RAND_STR_LEN)
+                )
+                match = Document(id=doc_id + unique_id)
+
                 if self.is_distance:
-                    match.scores[self.metric] = dist
+                    match.scores[self.metric].value = dist
                 else:
                     if self.metric in ['cosine', 'inner_product']:
-                        match.scores[self.metric] = 1 - dist
+                        match.scores[self.metric].value = 1 - dist
                     else:
-                        match.scores[self.metric] = 1 / (1 + dist)
+                        match.scores[self.metric].value = 1 / (1 + dist)
 
                 query_docs[doc_idx].matches.append(match)
 
@@ -406,10 +415,7 @@ class FaissSearcher(Executor):
                 if count >= limit:
                     break
 
-    @requests(on='/index')
-    def index(
-        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
-    ):
+    def index(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
         """Index the Documents' embeddings.
         :param docs: `Document` with same shaped `.embedding`.
         :param parameters: Dictionary with optional parameters that can be used to
@@ -427,19 +433,18 @@ class FaissSearcher(Executor):
             )
 
         traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
-        flat_docs = docs.traverse_flat(traversal_paths)
+        flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
             return
 
         try:
-            doc_ids = flat_docs.get_attributes('id')
+            doc_ids = flat_docs[:, 'id']
             vecs = flat_docs.embeddings.astype(np.float32)
             self._append_vecs_and_ids(vecs, doc_ids)
         except Exception as ex:
             self.logger.error(f'failed to index docs, {ex}')
             raise ex
 
-    @requests(on='/save')
     def save(self, parameters: Dict, **kwargs):
         """
         Save a snapshot of the current indexer
@@ -456,10 +461,10 @@ class FaissSearcher(Executor):
             self._faiss_index, os.path.join(target_path, FAISS_INDEX_FILENAME)
         )
 
-        with open(os.path.join(target_path, DOC_IDS_FILENAME), "wb") as fp:
+        with open(os.path.join(target_path, DOC_IDS_FILENAME), 'wb') as fp:
             pickle.dump(self._ids_to_inds, fp)
 
-        with open(os.path.join(target_path, DELETE_MARKS_FILENAME), "wb") as fp:
+        with open(os.path.join(target_path, DELETE_MARKS_FILENAME), 'wb') as fp:
             pickle.dump(self._is_deleted, fp)
 
     def _faiss_index_exist(self, folder_path: str):
@@ -504,7 +509,7 @@ class FaissSearcher(Executor):
 
     def train(
         self,
-        docs: Optional[DocumentArray] = None,
+        docs: DocumentArray,
         parameters: Optional[Dict] = None,
         **kwargs,
     ):
@@ -517,7 +522,7 @@ class FaissSearcher(Executor):
             return
 
         traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
-        flat_docs = docs.traverse_flat(traversal_paths)
+        flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
             return
 
@@ -566,8 +571,7 @@ class FaissSearcher(Executor):
             self.logger.error('The index instance is not initialized or not trained')
             return False
 
-    @requests(on='/fill_embedding')
-    def fill_embedding(self, docs: Optional[DocumentArray] = None, **kwargs):
+    def fill_embedding(self, docs: DocumentArray, **kwargs):
         if docs is None:
             return
         for doc in docs:
@@ -589,7 +593,6 @@ class FaissSearcher(Executor):
             else:
                 self.logger.debug(f'Document {doc.id} not found in index')
 
-    @requests(on='/status')
     def status(self, **kwargs) -> DocumentArray:
         """Return the document containing status information about the indexer.
 
@@ -606,7 +609,6 @@ class FaissSearcher(Executor):
         )
         return DocumentArray([status])
 
-    @requests(on='/clear')
     def clear(self, **kwargs):
         if self._faiss_index is not None:
             self._faiss_index.reset()

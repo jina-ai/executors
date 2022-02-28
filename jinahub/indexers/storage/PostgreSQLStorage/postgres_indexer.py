@@ -1,10 +1,10 @@
 __copyright__ = 'Copyright (c) 2021 Jina AI Limited. All rights reserved.'
 __license__ = 'Apache-2.0'
 
-from typing import Dict, List, Optional
+from typing import Dict
 
 import numpy as np
-from jina import DocumentArray, Executor, requests
+from jina import DocumentArray, Executor
 from jina.logging.logger import JinaLogger
 from jina_commons.indexers.dump import export_dump_streaming
 
@@ -23,8 +23,8 @@ class PostgreSQLStorage(Executor):
         database: str = 'postgres',
         table: str = 'default_table',
         max_connections=5,
-        index_traversal_paths: List[str] = ['r'],
-        search_traversal_paths: List[str] = ['r'],
+        index_traversal_paths: str = '@r',
+        search_traversal_paths: str = '@r',
         return_embeddings: bool = True,
         dry_run: bool = False,
         virtual_shards: int = 128,
@@ -97,10 +97,7 @@ class PostgreSQLStorage(Executor):
         with self.handler as postgres_handler:
             return postgres_handler.get_snapshot_size()
 
-    @requests(on='/index')
-    def add(
-        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
-    ):
+    def add(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
         """Add Documents to Postgres
 
         :param docs: list of Documents
@@ -110,12 +107,9 @@ class PostgreSQLStorage(Executor):
             return
         traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
         with self.handler as postgres_handler:
-            postgres_handler.add(docs.traverse_flat(traversal_paths))
+            postgres_handler.add(docs[traversal_paths])
 
-    @requests(on='/update')
-    def update(
-        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
-    ):
+    def update(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
         """Updated document from the database.
 
         :param docs: list of Documents
@@ -126,9 +120,8 @@ class PostgreSQLStorage(Executor):
 
         traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
         with self.handler as postgres_handler:
-            postgres_handler.update(docs.traverse_flat(traversal_paths))
+            postgres_handler.update(docs[traversal_paths])
 
-    @requests(on='/prune')
     def prune(self, **kwargs):
         """
         Full deletion of the entries that
@@ -137,7 +130,6 @@ class PostgreSQLStorage(Executor):
         with self.handler as postgres_handler:
             postgres_handler.prune()
 
-    @requests(on='/clear')
     def clear(self, **kwargs):
         """
         Full deletion of the entries (hard-delete)
@@ -147,10 +139,7 @@ class PostgreSQLStorage(Executor):
         with self.handler as postgres_handler:
             postgres_handler.clear()
 
-    @requests(on='/delete')
-    def delete(
-        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
-    ):
+    def delete(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
         """Delete document from the database.
 
         NOTE: This is a soft-deletion, required by the snapshotting
@@ -168,11 +157,8 @@ class PostgreSQLStorage(Executor):
         soft_delete = parameters.get('soft_delete', True)
 
         with self.handler as postgres_handler:
-            postgres_handler.delete(
-                docs.traverse_flat(traversal_paths), soft_delete=soft_delete
-            )
+            postgres_handler.delete(docs[traversal_paths], soft_delete=soft_delete)
 
-    @requests(on='/dump')
     def dump(self, parameters: Dict, **kwargs):
         """Dump the index
 
@@ -206,10 +192,7 @@ class PostgreSQLStorage(Executor):
         # TODO perhaps store next_shard_to_use?
         self.handler.close()
 
-    @requests(on='/search')
-    def search(
-        self, docs: Optional[DocumentArray] = None, parameters: Dict = {}, **kwargs
-    ):
+    def search(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
         """Get the Documents by the ids of the docs in the DocArray
 
         :param docs: the DocumentArray to search
@@ -223,13 +206,12 @@ class PostgreSQLStorage(Executor):
 
         with self.handler as postgres_handler:
             postgres_handler.search(
-                docs.traverse_flat(traversal_paths),
+                docs[traversal_paths],
                 return_embeddings=parameters.get(
                     'return_embeddings', self.return_embeddings
                 ),
             )
 
-    @requests(on='/snapshot')
     def snapshot(self, **kwargs):
         """
         Create a snapshot duplicate of the current table
@@ -303,7 +285,7 @@ class PostgreSQLStorage(Executor):
     def _vshards_to_get(shard_id, total_shards, virtual_shards):
         if shard_id > total_shards - 1:
             raise ValueError(
-                'shard_id should be 0-indexed out ' 'of range(total_shards)'
+                'shard_id should be 0-indexed out " "of range(total_shards)'
             )
         vshards = list(range(virtual_shards))
         vshard_part = (
