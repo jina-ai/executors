@@ -23,20 +23,20 @@ def gpu_encoder() -> AudioCLIPEncoder:
 
 @pytest.fixture(scope="function")
 def nested_docs() -> DocumentArray:
-    blob, sample_rate = librosa.load(
+    tensor, sample_rate = librosa.load(
         str(Path(__file__).parents[1] / 'test_data/sample.wav')
     )
     docs = DocumentArray(
-        [Document(id="root1", blob=blob, tags={'sample_rate': sample_rate})]
+        [Document(id="root1", tensor=tensor, tags={'sample_rate': sample_rate})]
     )
     docs[0].chunks = [
-        Document(id="chunk11", blob=blob, tags={'sample_rate': sample_rate}),
-        Document(id="chunk12", blob=blob, tags={'sample_rate': sample_rate}),
-        Document(id="chunk13", blob=blob, tags={'sample_rate': sample_rate}),
+        Document(id="chunk11", tensor=tensor, tags={'sample_rate': sample_rate}),
+        Document(id="chunk12", tensor=tensor, tags={'sample_rate': sample_rate}),
+        Document(id="chunk13", tensor=tensor, tags={'sample_rate': sample_rate}),
     ]
     docs[0].chunks[0].chunks = [
-        Document(id="chunk111", blob=blob, tags={'sample_rate': sample_rate}),
-        Document(id="chunk112", blob=blob, tags={'sample_rate': sample_rate}),
+        Document(id="chunk111", tensor=tensor, tags={'sample_rate': sample_rate}),
+        Document(id="chunk112", tensor=tensor, tags={'sample_rate': sample_rate}),
     ]
 
     return docs
@@ -57,7 +57,7 @@ def test_none_docs(encoder: AudioCLIPEncoder):
     encoder.encode(docs=None, parameters={})
 
 
-def test_docs_no_blobs(encoder: AudioCLIPEncoder):
+def test_docs_no_tensors(encoder: AudioCLIPEncoder):
     docs = DocumentArray([Document()])
     encoder.encode(docs=DocumentArray(), parameters={})
     assert len(docs) == 1
@@ -68,7 +68,7 @@ def test_encode_single_document(encoder: AudioCLIPEncoder):
     x_audio, sample_rate = librosa.load(
         str(Path(__file__).parents[1] / 'test_data/sample.wav')
     )
-    docs = DocumentArray([Document(blob=x_audio, tags={'sample_rate': sample_rate})])
+    docs = DocumentArray([Document(tensor=x_audio, tags={'sample_rate': sample_rate})])
     encoder.encode(docs, parameters={})
     assert docs[0].embedding.shape == (1024,)
     assert docs[0].tags['sample_rate'] == AudioCLIPEncoder.TARGET_SAMPLE_RATE
@@ -84,8 +84,8 @@ def test_encode_multiple_documents():
     )
     docs = DocumentArray(
         [
-            Document(blob=audio1, tags={'sample_rate': sample_rate1}),
-            Document(blob=audio2, tags={'sample_rate': sample_rate2}),
+            Document(tensor=audio1, tags={'sample_rate': sample_rate1}),
+            Document(tensor=audio2, tags={'sample_rate': sample_rate2}),
         ]
     )
 
@@ -103,7 +103,7 @@ def test_embedding_dimension_gpu(gpu_encoder: AudioCLIPEncoder):
     x_audio, sample_rate = librosa.load(
         str(Path(__file__).parents[1] / 'test_data/sample.wav')
     )
-    docs = DocumentArray([Document(blob=x_audio, tags={'sample_rate': sample_rate})])
+    docs = DocumentArray([Document(tensor=x_audio, tags={'sample_rate': sample_rate})])
     gpu_encoder.encode(docs, parameters={})
     assert docs[0].embedding.shape == (1024,)
     assert docs[0].tags['sample_rate'] == AudioCLIPEncoder.TARGET_SAMPLE_RATE
@@ -125,33 +125,33 @@ def test_traversal_paths():
         [
             Document(
                 id='root1',
-                blob=audio1,
+                tensor=audio1,
                 tags={'sample_rate': sample_rate1},
                 chunks=[
                     Document(
-                        id=f'chunk1{i}', blob=chunk, tags={'sample_rate': sample_rate1}
+                        id=f'chunk1{i}', tensor=chunk, tags={'sample_rate': sample_rate1}
                     )
                     for i, chunk in enumerate(audio1_chunks)
                 ],
             ),
             Document(
                 id='root2',
-                blob=audio2,
+                tensor=audio2,
                 tags={'sample_rate': sample_rate2},
                 chunks=[
                     Document(
                         id='chunk21',
-                        blob=audio2_chunks[0],
+                        tensor=audio2_chunks[0],
                         tags={'sample_rate': sample_rate2},
                     ),
                     Document(
                         id='chunk22',
-                        blob=audio2_chunks[1],
+                        tensor=audio2_chunks[1],
                         tags={'sample_rate': sample_rate2},
                         chunks=[
                             Document(
                                 id=f'chunk22{i}',
-                                blob=chunk,
+                                tensor=chunk,
                                 tags={'sample_rate': sample_rate2},
                             )
                             for i, chunk in enumerate(np.split(audio2_chunks[1], 3))
@@ -162,20 +162,18 @@ def test_traversal_paths():
         ]
     )
 
-    encoder = AudioCLIPEncoder(traversal_paths=['c'])
+    encoder = AudioCLIPEncoder(traversal_paths=['@c'])
     encoder.encode(docs, parameters={})
-    encoder.encode(docs, parameters={'traversal_paths': ['cc']})
-    for path, count in [['r', 0], ['c', 6], ['cc', 3]]:
+    encoder.encode(docs, parameters={'traversal_paths': ['@cc']})
+    for path, count in [['@r', 0], ['@c', 6], ['@cc', 3]]:
         embeddings = [
             embedding
-            for embedding in DocumentArray(docs)
-            .traverse_flat([path])
-            .get_attributes('embedding')
+            for embedding in DocumentArray(docs)[path].embeddings
             if embedding is not None
         ]
 
         sample_rates = {
-            doc.tags['sample_rate'] for doc in DocumentArray(docs).traverse_flat([path])
+            doc.tags['sample_rate'] for doc in DocumentArray(docs)[path]
         }
 
         assert all(embedding.shape == (1024,) for embedding in embeddings)
@@ -191,7 +189,7 @@ def test_no_sample_rate():
     audio, sample_rate = librosa.load(
         str(Path(__file__).parents[1] / 'test_data/sample.mp3')
     )
-    docs = DocumentArray([Document(blob=audio)])
+    docs = DocumentArray([Document(tensor=audio)])
     encoder = AudioCLIPEncoder()
     with pytest.raises(
         NotImplementedError,
@@ -206,7 +204,7 @@ def test_batch_size(encoder: AudioCLIPEncoder, batch_size: int):
         str(Path(__file__).parents[1] / 'test_data/sample.mp3')
     )
     docs = DocumentArray(
-        [Document(blob=audio, tags={'sample_rate': sample_rate}) for _ in range(32)]
+        [Document(tensor=audio, tags={'sample_rate': sample_rate}) for _ in range(32)]
     )
     encoder.encode(docs, parameters={'batch_size': batch_size})
 
@@ -217,19 +215,19 @@ def test_batch_size(encoder: AudioCLIPEncoder, batch_size: int):
 @pytest.mark.parametrize(
     "traversal_paths, counts",
     [
-        [('c',), (('r', 0), ('c', 3), ('cc', 0))],
-        [('cc',), (("r", 0), ('c', 0), ('cc', 2))],
-        [('r',), (('r', 1), ('c', 0), ('cc', 0))],
-        [('cc', 'r'), (('r', 1), ('c', 0), ('cc', 2))],
+        [('@c',), (('@r', 0), ('@c', 3), ('@cc', 0))],
+        [('@cc',), (('@r', 0), ('@c', 0), ('@cc', 2))],
+        [('@r',), (('@r', 1), ('@c', 0), ('@cc', 0))],
+        [('@cc,r'), (('@r', 1), ('@c', 0), ('@cc', 2))],
     ],
 )
 def test_traversal_path(
-    traversal_paths: Tuple[str],
+    traversal_paths: str,
     counts: Tuple[str, int],
     nested_docs: DocumentArray,
     encoder: AudioCLIPEncoder,
 ):
     encoder.encode(nested_docs, parameters={"traversal_paths": traversal_paths})
     for path, count in counts:
-        embeddings = nested_docs.traverse_flat([path]).get_attributes('embedding')
+        embeddings = nested_docs[path].embeddings
         assert len([em for em in embeddings if em is not None]) == count

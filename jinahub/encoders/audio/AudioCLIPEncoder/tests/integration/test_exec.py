@@ -21,7 +21,7 @@ def test_flow_from_yml():
 
 def test_embedding_exists():
     x_audio, sr = librosa.load(os.path.join(cur_dir, '../test_data/sample.mp3'))
-    doc = DocumentArray([Document(blob=x_audio, tags={'sample_rate': sr})])
+    doc = DocumentArray([Document(tensor=x_audio, tags={'sample_rate': sr})])
 
     with Flow().add(uses=AudioCLIPEncoder) as f:
         responses = f.post(on='index', inputs=doc, return_results=True)
