@@ -10,7 +10,7 @@ def test_config():
     assert ex.min_sent_len == 1
 
 
-@pytest.mark.parametrize('traversal_paths', [('r',), ('c',)])
+@pytest.mark.parametrize('traversal_paths', ['@r', '@c'])
 def test_executor(traversal_paths):
     ex = Sentencizer(traversal_paths=traversal_paths)
     doc = Document(text='Hello. World! Go? Back')
@@ -19,7 +19,7 @@ def test_executor(traversal_paths):
     else:
         da = DocumentArray([doc])
     ex.segment(da, {})
-    flattened_docs = da.traverse_flat(traversal_paths)
+    flattened_docs = da[traversal_paths]
     assert len(flattened_docs) == 1
     assert len(flattened_docs[0].chunks) == 4
     assert flattened_docs[0].chunks[0].text == 'Hello.'
