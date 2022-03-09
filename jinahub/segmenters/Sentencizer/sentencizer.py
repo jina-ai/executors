@@ -23,7 +23,7 @@ class Sentencizer(Executor):
         max_sent_len: int = 512,
         punct_chars: Optional[List[str]] = None,
         uniform_weight: bool = True,
-        traversal_paths: str = 'r',
+        traversal_paths: str = '@r',
         *args,
         **kwargs
     ):
