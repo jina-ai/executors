@@ -37,7 +37,7 @@ class Sentencizer(Executor):
             for example ['!', '.', '?'] will use '!', '.' and '?'
         :param uniform_weight: the definition of it should have
             uniform weight or should be calculated
-        :param traversal_paths: traverse path on docs, e.g. 'r', 'r,c'
+        :param traversal_paths: traverse path on docs, e.g. '@r', '@r,c'
         """
         super().__init__(*args, **kwargs)
         self.min_sent_len = min_sent_len
