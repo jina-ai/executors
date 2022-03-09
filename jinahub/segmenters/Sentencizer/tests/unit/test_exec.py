@@ -19,7 +19,7 @@ def test_executor(traversal_paths):
     else:
         da = DocumentArray([doc])
     ex.segment(da, {})
-    flattened_docs = da.traverse_flat(traversal_paths)
+    flattened_docs = da[traversal_paths]
     assert len(flattened_docs) == 1
     assert len(flattened_docs[0].chunks) == 4
     assert flattened_docs[0].chunks[0].text == 'Hello.'

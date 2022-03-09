@@ -94,7 +94,7 @@ class Sentencizer(Executor):
         if not docs:
             return
         traversal_path = parameters.get('traversal_paths', self.traversal_paths)
-        flat_docs = docs.traverse_flat(traversal_path)
+        flat_docs = docs[traversal_path]
         for doc in flat_docs:
             text = doc.text
             ret = [
