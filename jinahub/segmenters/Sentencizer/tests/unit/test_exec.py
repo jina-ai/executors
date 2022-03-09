@@ -10,7 +10,7 @@ def test_config():
     assert ex.min_sent_len == 1
 
 
-@pytest.mark.parametrize('traversal_paths', [('r',), ('c',)])
+@pytest.mark.parametrize('traversal_paths', ['r', 'c'])
 def test_executor(traversal_paths):
     ex = Sentencizer(traversal_paths=traversal_paths)
     doc = Document(text='Hello. World! Go? Back')
