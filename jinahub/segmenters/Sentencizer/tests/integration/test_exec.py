@@ -8,7 +8,6 @@ def test_exec():
         resp = f.post(
             on='/test',
             inputs=Document(text='Hello. World! Go? Back'),
-            return_results=True,
         )
         assert resp[0].chunks[0].text == 'Hello.'
         assert resp[0].chunks[1].text == 'World!'
