@@ -58,6 +58,7 @@ with Flow().add(
         uses='jinahub+docker://AudioCLIPTextEncoder',
         uses_with={
             'model_path': '/tmp/.cache/AudioCLIP-Full-Training.pt',
+            'tokenizer_path': '/tmp/.cache/bpe_simple_vocab_16e6.txt.gz',
         },
         volumes='.cache:/tmp/.cache',
 )

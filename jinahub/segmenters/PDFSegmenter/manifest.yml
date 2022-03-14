@@ -1,5 +1,0 @@
-manifest_version: 1
-name: PDFSegmenter
-description: This executor extracts text and image data from PDF
-url: https://github.com/jina-ai/executors/tree/main/jinahub/segmenters/PDFSegmenter
-keywords: [pdf, text, image]

@@ -48,19 +48,14 @@ class AudioCLIPTextEncoder(Executor):
                 script_name = 'scripts/download_partial.sh'
             subprocess.call(['sh', script_name], cwd=root_path)
 
-        try:
-            self.model = (
-                AudioCLIP(
-                    pretrained=model_path,
-                    bpe_path=tokenizer_path,
-                )
-                .to(device)
-                .eval()
+        self.model = (
+            AudioCLIP(
+                pretrained=model_path,
+                bpe_path=tokenizer_path,
             )
-        except FileNotFoundError:
-            raise FileNotFoundError(
-                'Please download AudioCLIP model and set the `model_path` argument.'
-            )
+            .to(device)
+            .eval()
+        )
 
         self.traversal_paths = traversal_paths
         self.batch_size = batch_size
