@@ -43,26 +43,27 @@ def input_pdf(test_dir: str):
 
 @pytest.fixture()
 def doc_generator_img_text(input_pdf):
-    doc_array = []
+    doc_arrays = []
     for uri, buffer in input_pdf['img_text']:
         if uri:
-            doc = DocumentArray([Document(uri=uri, mime_type='application/pdf')])
+            docs = DocumentArray([Document(uri=uri, mime_type='application/pdf')])
         else:
-            doc = DocumentArray([Document(buffer=buffer, mime_type='application/pdf')])
-        doc_array.append(doc)
-    return doc_array
+            docs = DocumentArray([Document(blob=buffer, mime_type='application/pdf')])
+        doc_arrays.append(docs)
+    return doc_arrays
 
 
 @pytest.fixture()
 def doc_generator_text(input_pdf):
-    doc_array = []
+    # import epdb; epdb.serve()
+    doc_arrays = []
     for uri, buffer in input_pdf['text']:
         if uri:
-            doc = DocumentArray([Document(uri=uri, mime_type='application/pdf')])
+            docs = DocumentArray([Document(uri=uri, mime_type='application/pdf')])
         else:
-            doc = DocumentArray([Document(buffer=buffer, mime_type='application/pdf')])
-        doc_array.append(doc)
-    return doc_array
+            docs = DocumentArray([Document(blob=buffer, mime_type='application/pdf')])
+        doc_arrays.append(docs)
+    return doc_arrays
 
 
 @pytest.fixture()
@@ -72,6 +73,6 @@ def doc_generator_img(input_pdf):
         if uri:
             doc = DocumentArray([Document(uri=uri, mime_type='application/pdf')])
         else:
-            doc = DocumentArray([Document(buffer=buffer, mime_type='application/pdf')])
+            doc = DocumentArray([Document(blob=buffer, mime_type='application/pdf')])
         doc_array.append(doc)
     return doc_array

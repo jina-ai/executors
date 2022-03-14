@@ -44,7 +44,7 @@ class PDFSegmenter(Executor):
             if pdf_img is not None:
                 images = self._extract_image(pdf_img)
                 doc.chunks.extend(
-                    [Document(blob=img, mime_type='image/*') for img in images]
+                    [Document(tensor=img, mime_type='image/*') for img in images]
                 )
             if pdf_text is not None:
                 texts = self._extract_text(pdf_text)
@@ -59,9 +59,9 @@ class PDFSegmenter(Executor):
             if doc.uri:
                 pdf_img = fitz.open(doc.uri)
                 pdf_text = pdfplumber.open(doc.uri)
-            if doc.buffer:
-                pdf_img = fitz.open(stream=doc.buffer, filetype='pdf')
-                pdf_text = pdfplumber.open(io.BytesIO(doc.buffer))
+            if doc.blob:
+                pdf_img = fitz.open(stream=doc.blob, filetype='pdf')
+                pdf_text = pdfplumber.open(io.BytesIO(doc.blob))
         except Exception as ex:
             self.logger.error(f'Failed to open due to: {ex}')
         return pdf_img, pdf_text
