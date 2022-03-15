@@ -2,4 +2,4 @@ manifest_version: 1
 name: Sentencizer
 description: The sentencizer splits text into sentences.
 url: https://github.com/jina-ai/executors/tree/main/jinahub/segmenters/Sentencizer
-keywords: [text, sentencizer]
+keywords: [text, sentencizer, 3.0-exclusive]
