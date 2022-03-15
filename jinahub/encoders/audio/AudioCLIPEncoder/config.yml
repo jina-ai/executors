@@ -1,4 +1,0 @@
-jtype: AudioCLIPEncoder
-metas:
-  py_modules:
-    - executor/__init__.py
