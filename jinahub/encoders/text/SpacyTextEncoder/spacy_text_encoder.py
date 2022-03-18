@@ -27,7 +27,7 @@ class SpacyTextEncoder(Executor):
         self,
         model_name: str = 'en_core_web_sm',
         download_data: bool = True,
-        traversal_paths: Iterable[str] = ('r',),
+        traversal_paths: str = '@r',
         batch_size: int = 32,
         device: str = 'cpu',
         *args,
@@ -74,7 +74,7 @@ class SpacyTextEncoder(Executor):
             docs_batch_generator =  DocumentArray(
                 filter(
                     lambda x: bool(x.text),
-                    docs['@r'],
+                    docs[self.traversal_paths],
                 )
             ).batch(batch_size=parameters.get('batch_size', self.batch_size))
 
