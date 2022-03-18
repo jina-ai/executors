@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2020-2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import subprocess
-from typing import Dict, Iterable, Optional
+from typing import Dict, Optional
 
 import spacy
 from docarray import DocumentArray
@@ -64,7 +64,7 @@ class SpacyTextEncoder(Executor):
             ``text`` attribute.
         :param parameters: dictionary to define the ``traversal_path`` and the
             ``batch_size``. For example,
-            ``parameters={'traversal_paths': ['@r'], 'batch_size': 10}``
+            ``parameters={'traversal_paths': '@r', 'batch_size': 10}``
         """
         if self.device.startswith('cuda'):
             from cupy import asnumpy
