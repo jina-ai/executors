@@ -5,7 +5,8 @@ import subprocess
 from typing import Dict, Iterable, Optional
 
 import spacy
-from jina import DocumentArray, Executor, requests
+from docarray import DocumentArray
+from jina import Executor, requests
 
 _EXCLUDE_COMPONENTS = [
     'tagger',
@@ -63,19 +64,22 @@ class SpacyTextEncoder(Executor):
             ``text`` attribute.
         :param parameters: dictionary to define the ``traversal_path`` and the
             ``batch_size``. For example,
-            ``parameters={'traversal_paths': ['r'], 'batch_size': 10}``
+            ``parameters={'traversal_paths': ['@r'], 'batch_size': 10}``
         """
         if self.device.startswith('cuda'):
             from cupy import asnumpy
         if docs:
             batch_size = parameters.get('batch_size', self.batch_size)
-            document_batches_generator = docs.traverse_flat(
-                traversal_paths=parameters.get('traversal_paths', self.traversal_paths),
-                filter_fn=lambda doc: len(doc.text) > 0,
-            ).batch(
-                batch_size=batch_size,
-            )
-            for document_batch in document_batches_generator:
+
+            docs_batch_generator =  DocumentArray(
+                filter(
+                    lambda x: bool(x.text),
+                    docs['@r'],
+                )
+            ).batch(batch_size=parameters.get('batch_size', self.batch_size))
+
+
+            for document_batch in docs_batch_generator:
                 texts = [doc.text for doc in document_batch]
                 for doc, spacy_doc in zip(
                     document_batch, self.spacy_model.pipe(texts, batch_size=batch_size)
