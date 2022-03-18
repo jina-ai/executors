@@ -68,16 +68,18 @@ class SpacyTextEncoder(Executor):
         """
         if self.device.startswith('cuda'):
             from cupy import asnumpy
+
         if docs:
+            trav_path = parameters.get('traversal_paths', self.traversal_paths)
+
             batch_size = parameters.get('batch_size', self.batch_size)
 
-            docs_batch_generator =  DocumentArray(
+            docs_batch_generator = DocumentArray(
                 filter(
                     lambda x: bool(x.text),
-                    docs[self.traversal_paths],
+                    docs[trav_path],
                 )
             ).batch(batch_size=parameters.get('batch_size', self.batch_size))
-
 
             for document_batch in docs_batch_generator:
                 texts = [doc.text for doc in document_batch]
