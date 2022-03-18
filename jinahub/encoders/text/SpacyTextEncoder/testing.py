@@ -1,5 +1,4 @@
-from three_spacy_text_encoder import SpacyTextEncoder
-import pretty_errors
+from spacy_text_encoder import SpacyTextEncoder
 from jina import Flow
 from jina import Document, DocumentArray
 
