@@ -9,8 +9,8 @@ import numpy as np
 from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
-from jinahub.indexers.searcher.FaissSearcher import FaissSearcher
-from jinahub.indexers.storage.PostgreSQLStorage import PostgreSQLStorage
+from .faiss_searcher import FaissSearcher
+from .postgres_indexer import PostgreSQLStorage
 
 FAISS_PREFETCH_SIZE = 256
 
@@ -35,13 +35,12 @@ class FaissPostgresIndexer(Executor):
         startup
         :param total_shards: the total nr of shards that this shard is part of.
 
-            NOTE: This is REQUIRED in k8s, since there `runtime_args.parallel` is always 1
+            NOTE: This is REQUIRED in k8s, since there `runtime_args.replicas` is always 1
         """
         super().__init__(**kwargs)
         self.logger = JinaLogger(self.__class__.__name__)
-
         if total_shards is None:
-            self.total_shards = getattr(self.runtime_args, 'parallel', None)
+            self.total_shards = getattr(self.runtime_args, 'replicas', None)
         else:
             self.total_shards = total_shards
 
@@ -293,10 +292,14 @@ class FaissPostgresIndexer(Executor):
         """
         if self._kv_indexer and self._vec_indexer:
             self._vec_indexer.search(docs, parameters)
+
             kv_parameters = copy.deepcopy(parameters)
-            kv_parameters['traversal_paths'] = [
-                path + 'm' for path in kv_parameters.get('traversal_paths', ['r'])
-            ]
+            kv_parameters['traversal_paths'] = ','.join(
+                [
+                    path + 'm'
+                    for path in kv_parameters.get('traversal_paths', '@r').split(',')
+                ]
+            )
             self._kv_indexer.search(docs, kv_parameters)
         else:
             self.logger.warning('Indexers have not been initialized. Empty results')
@@ -317,9 +320,7 @@ class FaissPostgresIndexer(Executor):
         self._kv_indexer.snapshot()
 
     @requests(on='/index')
-    def index(
-        self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs
-    ):
+    def index(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
         """Index new documents
 
         NOTE: PSQL has a uniqueness constraint on ID
@@ -327,18 +328,14 @@ class FaissPostgresIndexer(Executor):
         self._kv_indexer.add(docs, parameters, **kwargs)
 
     @requests(on='/update')
-    def update(
-        self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs
-    ):
+    def update(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
         """
         Update documents in PSQL, based on id
         """
         self._kv_indexer.update(docs, parameters, **kwargs)
 
     @requests(on='/delete')
-    def delete(
-        self, docs: Optional[DocumentArray], parameters: Optional[Dict] = {}, **kwargs
-    ):
+    def delete(self, docs: DocumentArray, parameters: Optional[Dict] = {}, **kwargs):
         """
         Delete docs from PSQL, based on id.
 
