@@ -139,7 +139,7 @@ class FaissSearcher(Executor):
                 f'Start building "FaissIndexer" from dump data {dump_path}'
             )
             ids_iter, vecs_iter = import_vectors(
-                dump_path, str(self.runtime_args.pea_id)
+                dump_path, str(self.runtime_args.shard_id)
             )
             iterator = zip(ids_iter, vecs_iter)
 
